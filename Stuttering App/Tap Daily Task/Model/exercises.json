@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Reading Practice",
+    "description": "Promotes steady breathing and a relaxed rhythm.",
+    "duration": "10m",
+    "isCompleted": false
+  },
+  {
+    "title": "Conversation Practice",
+    "description": "Systematically tensing and relaxing muscle groups to reduce tension.",
+    "duration": "10m",
+    "isCompleted": false
+  },
+  {
+    "title": "Continuous Phonation",
+    "description": "Start voicing softly and gradually to reduce speech tension.",
+    "duration": "1m",
+    "isCompleted": false
+  },
+  {
+    "title": "Diaphragm Breathing",
+    "description": "Use gentle mouth movements to ease speech muscle tension.",
+    "duration": "60s",
+    "isCompleted": true
+  },
+  {
+    "title": "Tongue Trills",
+    "description": "Keep a smooth, connected voice flow while speaking aloud.",
+    "duration": "50s",
+    "isCompleted": true
+  }
+]
