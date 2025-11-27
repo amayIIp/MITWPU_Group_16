@@ -99,3 +99,7 @@ Package.resolved
 ###############################
 *.simstate
 
+# Ignore only the target-specific plist
+**/Info.plist
+
+
