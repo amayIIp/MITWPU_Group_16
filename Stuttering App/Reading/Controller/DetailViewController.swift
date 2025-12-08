@@ -1,22 +1,22 @@
 //
 //  DetailViewController.swift
-//  Spasht
+//
 //
 //
 
 import UIKit
 
 class DetailViewController: UIViewController {
-
+    
     @IBOutlet weak var textView: UITextView!
     
     var textToDisplay: String = ""
     var titleToDisplay: String = ""
     var exerciseDuration1: String = "N/A"
-    private let wordsPerHighlight = 4
-    private var highlightDuration: TimeInterval = 1.0
+    private let wordsPerHighlight = 3
+    private var highlightDuration: TimeInterval = 1.7
     private let minDuration: TimeInterval = 0.3
-    private let maxDuration: TimeInterval = 2.0
+    private let maxDuration: TimeInterval = 4.0
     
     // State
     private(set) var isPlaying = false // set makes such that only this file type can make changes
@@ -30,10 +30,11 @@ class DetailViewController: UIViewController {
     
     // Reference to sheet (for callbacks)
     private weak var sheetVC: ReadingControlsViewController?
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        view.backgroundColor = UIColor(named: "bg")
+        textView.backgroundColor = UIColor(named: "bg")
         setupTextView()
         //view.insetsLayoutMarginsFromSafeArea = false
         
@@ -55,7 +56,7 @@ class DetailViewController: UIViewController {
     }
     
     private func setupTextView() {
-        let baseFont = UIFont.systemFont(ofSize: 16, weight: .regular)
+        let baseFont = UIFont.systemFont(ofSize: 18, weight: .semibold)
         
         defaultAttributes = [
             .font: baseFont,
@@ -65,6 +66,7 @@ class DetailViewController: UIViewController {
         highlightAttributes = [
             .font: baseFont,
             .foregroundColor: UIColor.black,
+            
         ]
         
         let attributedString = NSMutableAttributedString(string: textToDisplay, attributes: defaultAttributes)
@@ -103,7 +105,7 @@ class DetailViewController: UIViewController {
                     0.25 * context.maximumDetentValue
                 },
                 .custom(identifier: .init("half")) { context in
-                    0.5 * context.maximumDetentValue
+                    0.38 * context.maximumDetentValue
                 }
             ]
             sheet.selectedDetentIdentifier = .init("quarter")
@@ -245,52 +247,35 @@ class DetailViewController: UIViewController {
             textView.setContentOffset(targetOffset, animated: true)
         }
     }
-
     
-    // *** ADD THIS FUNCTION ***
-    @objc func didTapCloseDetail() {
-        // Dismiss this full-screen modal
-        self.dismiss(animated: true, completion: nil)
-        self.dismiss(animated: true, completion: nil)
-        
-    }
     
     func didTapOpenButton() {
-//        guard let ResultVC = storyboard?.instantiateViewController(withIdentifier: "ResultViewController") as? ResultViewController else {
-//            return
-//        }
-//        
-//        // --- *** UPDATED PRESENTATION LOGIC *** ---
-//        
-//        // 1. Wrap the DetailVC in its own Navigation Controller
-//        //    This is required to show the top bar with the close button
-//        let ResultNav = UINavigationController(rootViewController: ResultVC)
-//        
-//        // 2. Set the presentation style to full screen
-//        ResultNav.modalPresentationStyle = .fullScreen
-//        
-//        // 3. Present it modally
-//        self.present(ResultNav, animated: true, completion: nil)
-//        logReadingActivity()
+        guard let ResultVC = storyboard?.instantiateViewController(withIdentifier: "ResultViewController") as? ResultViewController else {
+            return
+        }
+        let ResultNav = UINavigationController(rootViewController: ResultVC)
+        ResultNav.modalPresentationStyle = .fullScreen
+        self.present(ResultNav, animated: true, completion: nil)
+        logReadingActivity()
     }
     
-
+    
     func logReadingActivity() {
-//        // This assumes you've added ".reading" to your ExerciseSource enum
-//        if let duration = ExerciseDataManager.shared.getDurationString(for: titleToDisplay) {
-//            exerciseDuration1 = duration
-//        } else {
-//            exerciseDuration1 = "N/A"
-//        }
-//        
-//        // 2. Use the LogManager to save the new log
-//        LogManager.shared.addLog(
-//            exerciseName: titleToDisplay, // Use the name that was passed
-//            source: .reading,
-//            exerciseDuration: exerciseDuration1
-//        )
-//        
-//        print("Reading activity logged.") // For debugging
+        //        // This assumes you've added ".reading" to your ExerciseSource enum
+        //        if let duration = ExerciseDataManager.shared.getDurationString(for: titleToDisplay) {
+        //            exerciseDuration1 = duration
+        //        } else {
+        //            exerciseDuration1 = "N/A"
+        //        }
+        //
+        //        // 2. Use the LogManager to save the new log
+        //        LogManager.shared.addLog(
+        //            exerciseName: titleToDisplay, // Use the name that was passed
+        //            source: .reading,
+        //            exerciseDuration: exerciseDuration1
+        //        )
+        //
+        //        print("Reading activity logged.") // For debugging
     }
 }
 

@@ -19,10 +19,10 @@ class ReadingControlsViewController: UIViewController {
     weak var delegate: WorkoutSheetDelegate?
     
     @IBOutlet weak var playPauseButton: UIButton!
-    @IBOutlet weak var decreaseSpeedButton: UIButton!
-    @IBOutlet weak var increaseSpeedButton: UIButton!
+    @IBOutlet weak var speedUpButton: UIButton!
+    @IBOutlet weak var speedDownButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
-    @IBOutlet weak var showResult: UIButton!
+    @IBOutlet weak var endButton: UIButton!
     
     @IBOutlet weak var dafButton: UIButton!
         
@@ -40,17 +40,34 @@ class ReadingControlsViewController: UIViewController {
     // MARK: - Setup
     
     private func setupButtons() {
-        let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .light, scale: .default)
-        let playSymbol = UIImage(systemName: "play", withConfiguration: config)
+        let config = UIImage.SymbolConfiguration(pointSize: 42, weight: .regular, scale: .default)
+        let playSymbol = UIImage(systemName: "microphone.slash", withConfiguration: config)
         playPauseButton.setImage(playSymbol, for: .normal)
-        playPauseButton.tintColor = .systemBlue
         
         playPauseButton.configuration = .glass()
-        decreaseSpeedButton.configuration = .glass()
-        decreaseSpeedButton.setImage(UIImage(systemName: "tortoise"), for: .normal)
-        increaseSpeedButton.configuration = .glass()
+        speedUpButton.configuration = .glass()
+        speedUpButton.setImage(UIImage(systemName: "hare"), for: .normal)
+        speedDownButton.configuration = .glass()
+        speedDownButton.setImage(UIImage(systemName: "tortoise"), for: .normal)
         resetButton.configuration = .glass()
-        showResult.configuration = .glass()
+        resetButton.setImage(UIImage(systemName: "arrow.trianglehead.clockwise"), for: .normal)
+        dafButton.configuration = .glass()
+        dafButton.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
+        
+        
+        endButton.configuration = .prominentGlass()
+        endButton.configuration?.baseBackgroundColor = .systemRed
+        endButton.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.systemFont(ofSize: 32, weight: .semibold)
+            return outgoing
+        }
+        endButton.setTitle("End", for: .normal)
+
+        
+
+
+        
     }
     
     // MARK: - Actions
@@ -87,13 +104,11 @@ class ReadingControlsViewController: UIViewController {
     
     /// Called by WorkoutViewController to update button state
     func updatePlaybackState(isPlaying: Bool, hasFinished: Bool) {
-        let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .light, scale: .default)
-        let symbolName = isPlaying ? "pause" : "play"
+        let config = UIImage.SymbolConfiguration(pointSize: 42, weight: .regular, scale: .default)
+        let symbolName = isPlaying ? "microphone" : "microphone.slash"
         let symbol = UIImage(systemName: symbolName, withConfiguration: config)
         playPauseButton.setImage(symbol, for: .normal)
         
-        // Optional: change tint color based on state
-        playPauseButton.tintColor = isPlaying ? .systemRed : .systemBlue
     }
     
     func configureMenu() {

@@ -14,6 +14,7 @@ class ReadingTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = UIColor(named: "bg")
 
     }
 
@@ -21,7 +22,6 @@ class ReadingTableViewController: UITableViewController {
         let cellTitle = presetTitles[indexPath.row]
         // First 9 cells (Preset Content)
         if indexPath.row < 9 {
-            let cellTitle = presetTitles[indexPath.row]
             self.textForDetailView = presetContent[indexPath.row]
             presentModal(withTitle: cellTitle)
             
@@ -76,8 +76,15 @@ class ReadingTableViewController: UITableViewController {
             self?.textForDetailView = enteredText
             self?.showDetailScreen()
         }
+        
+       
 
         self.present(modalNav, animated: true, completion: nil)
+       
+           textInputVC.onEmptyInput = { [weak self] in
+               self?.showEmptyInputAlert()
+           }
+
     }
     
 
@@ -96,5 +103,16 @@ class ReadingTableViewController: UITableViewController {
         detailNav.modalPresentationStyle = .fullScreen
         self.present(detailNav, animated: true, completion: nil)
     }
+    
+    func showEmptyInputAlert() {
+        let alert = UIAlertController(
+            title: "No Text Entered",
+            message: "Please enter some text.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
 
 }

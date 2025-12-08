@@ -14,6 +14,7 @@ class ModalViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = UIColor(named: "bg")
 
         self.navigationItem.title = modalTitle
         
