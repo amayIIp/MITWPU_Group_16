@@ -23,13 +23,9 @@ class ReadingControlsViewController: UIViewController {
     @IBOutlet weak var speedDownButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
     @IBOutlet weak var endButton: UIButton!
-    
     @IBOutlet weak var dafButton: UIButton!
-        
-    // The variable to update
-    var currentPlaybackSpeed: Double = 1.0
     
-    // MARK: - Lifecycle
+    var currentPlaybackSpeed: Double = 1.0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,10 +33,8 @@ class ReadingControlsViewController: UIViewController {
         configureMenu()
     }
     
-    // MARK: - Setup
-    
     private func setupButtons() {
-        let config = UIImage.SymbolConfiguration(pointSize: 42, weight: .regular, scale: .default)
+        let config = UIImage.SymbolConfiguration(pointSize: 36, weight: .regular, scale: .default)
         let playSymbol = UIImage(systemName: "microphone.slash", withConfiguration: config)
         playPauseButton.setImage(playSymbol, for: .normal)
         
@@ -59,18 +53,12 @@ class ReadingControlsViewController: UIViewController {
         endButton.configuration?.baseBackgroundColor = .systemRed
         endButton.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var outgoing = incoming
-            outgoing.font = UIFont.systemFont(ofSize: 32, weight: .semibold)
+            outgoing.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
             return outgoing
         }
         endButton.setTitle("End", for: .normal)
-
-        
-
-
         
     }
-    
-    // MARK: - Actions
     
     @IBAction func playPauseTapped(_ sender: UIButton) {
         delegate?.didTapPlayPause()
@@ -99,10 +87,6 @@ class ReadingControlsViewController: UIViewController {
         delegate?.didTapShowResult()
     }
     
-    
-    // MARK: - Public Update Method
-    
-    /// Called by WorkoutViewController to update button state
     func updatePlaybackState(isPlaying: Bool, hasFinished: Bool) {
         let config = UIImage.SymbolConfiguration(pointSize: 42, weight: .regular, scale: .default)
         let symbolName = isPlaying ? "microphone" : "microphone.slash"
@@ -122,32 +106,25 @@ class ReadingControlsViewController: UIViewController {
             print("Playback stopped (0x)")
             self?.configureMenu()
         }
-        // Define your options
+        
         let speedOptions = [0.05, 0.1, 0.15, 0.25, 0.5, 0.75, 1.0, 1.5]
         
-        // Create actions (rows)
         let menuActions = speedOptions.map { speed in
             UIAction(title: "\(speed)s", state: speed == currentPlaybackSpeed ? .on : .off) { [weak self] action in
-                // Update the variable
                 self?.currentPlaybackSpeed = speed
                 print("Speed updated to: \(speed)")
-                
-                
-                // Rebuild menu to update checkmark position
                 self?.configureMenu()
             }
         }
         
         let speedsMenu = UIMenu(options: .displayInline, children: menuActions)
-        // Create the Menu
-        // 'options: .displayInline' creates the separators seen in your image if mixed with other elements
+        
         let menu = UIMenu(
             title: "Choose Delay for DAF",
-            image: UIImage(systemName: "speedometer"), // SF Symbol
+            image: UIImage(systemName: "speedometer"),
             children: [offAction, speedsMenu]
         )
         
-        // Attach to Button
         dafButton.menu = menu
         dafButton.showsMenuAsPrimaryAction = true
     }

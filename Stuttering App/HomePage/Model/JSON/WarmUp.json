@@ -1,0 +1,32 @@
+[
+  {
+    "id": "ex_diaphragm_breathing",
+    "name": "Diaphragm Breathing",
+    "description": "Use gentle mouth movements to ease speech muscle tension.",
+    "short_time": 60
+  },
+  {
+    "id": "ex_muscle_ease",
+    "name": "Muscle Ease",
+    "description": "Systematically tensing and relaxing muscle groups to reduce tension.",
+    "short_time": 60
+  },
+  {
+    "id": "ex_jaw_mobility",
+    "name": "Jaw Mobility",
+    "description": "Start voicing softly and gradually to reduce speech tension.",
+    "short_time": 60
+  },
+  {
+    "id": "ex_feared_word_lists",
+    "name": "Feared Word Lists",
+    "description": "Promotes steady breathing and a relaxed rhythm.",
+    "short_time": 60
+  },
+  {
+    "id": "ex_tongue_twisters",
+    "name": "Tongue Twisters",
+    "description": "Keep a smooth, connected voice flow while speaking aloud.",
+    "short_time": 60
+  }
+]

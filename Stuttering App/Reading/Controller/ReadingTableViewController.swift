@@ -14,18 +14,16 @@ class ReadingTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(named: "bg")
-
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        _ = presetTitles[indexPath.row]
-        // First 9 cells (Preset Content)
+        let cellTitle = presetTitles[indexPath.row]
+    
         if indexPath.row < 9 {
             self.textForDetailView = presetContent[indexPath.row]
+            self.titleForDetailView = cellTitle
             presentModal(withTitle: cellTitle)
             
-        // 10th cell (Custom Content)
         } else if indexPath.row == 9 {
             presentTextInputModal()
         }
@@ -49,12 +47,7 @@ class ReadingTableViewController: UITableViewController {
                     return 200 // custom height
                 }
                 sheet.detents = [customDetent]
-                //sheet.prefersGrabberVisible = false
             }
-            
-            
-            // modalNav.isModalInPresentation = true // removes tapping outside or sliding down not work
-            
             self.present(modalNav, animated: true, completion: nil)
         }
     
@@ -66,7 +59,7 @@ class ReadingTableViewController: UITableViewController {
 
         if let sheet = modalNav.sheetPresentationController {
             let customDetent = UISheetPresentationController.Detent.custom { context in
-                return 500 // Your custom height
+                return 500
             }
             sheet.detents = [customDetent]
             sheet.prefersGrabberVisible = false
@@ -77,27 +70,20 @@ class ReadingTableViewController: UITableViewController {
             self?.showDetailScreen()
         }
         
-       
-
         self.present(modalNav, animated: true, completion: nil)
        
            textInputVC.onEmptyInput = { [weak self] in
                self?.showEmptyInputAlert()
            }
-
     }
     
-
     func showDetailScreen() {
         guard let detailVC = storyboard?.instantiateViewController(withIdentifier: "DetailVC") as? DetailViewController else {
             return
         }
         
-        // Pass the text
         detailVC.textToDisplay = self.textForDetailView
         detailVC.titleToDisplay = self.titleForDetailView
-        
-        
 
         let detailNav = UINavigationController(rootViewController: detailVC)
         detailNav.modalPresentationStyle = .fullScreen

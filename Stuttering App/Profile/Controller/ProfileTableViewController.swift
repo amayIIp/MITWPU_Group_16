@@ -1,50 +1,58 @@
 import UIKit
 
 class ProfileTableViewController: UITableViewController {
-
+    
+    @IBOutlet weak var nameLabel: UILabel!
     override func viewDidLoad() {
         super.viewDidLoad()
     }
-
-    // MARK: - Table View Delegate (The Click Logic)
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        // 1. Deselect the row immediately for a clean effect
-        tableView.deselectRow(at: indexPath, animated: true)
-
-        // 2. Check which row was tapped (assuming Section 0)
-        if indexPath.section == 0 {
-            
-            switch indexPath.row {
-            case 0: // Row 0: "Profile"
-                performSegue(withIdentifier: "goToEditProfile", sender: self)
-                
-            case 1: // Row 1: "Progress"
-                // Placeholder for future implementation
-                print("Progress tapped")
-                
-            case 2: // Row 2: "Set Goals"
-                performSegue(withIdentifier: "goToSetGoals", sender: self)
-                
-            default:
-                break
-            }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadUserName()
+    }
+    
+    private func loadUserName() {
+        if let name = StorageManager.shared.getName() {
+            nameLabel.text = "\(name)"
+        } else {
+            nameLabel.text = "User"
         }
     }
     
-    // MARK: - Prepare for Navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    @IBAction func logoutButtonTapped(_ sender: UIButton) {
+        let alert = UIAlertController(title: "Log Out", message: "Are you sure?", preferredStyle: .alert)
         
-        // Handling the Set Goals Screen
-        if segue.identifier == "goToSetGoals" {
-            // If you needed to pass current goals to the next screen, you would do it here.
-            // let destVC = segue.destination as! SetGoalsViewController
-            // destVC.exerciseCount = 20 (Example)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Log Out", style: .destructive) { _ in
+            self.performLogout()
+        })
+        
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func performLogout() {
+        
+        AppState.isLoginCompleted = false
+        AppState.isOnboardingCompleted = false
+        
+        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+        
+        guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {
+            print("Error: Could not find LandingNav")
+            return
         }
         
-        // Handling the Profile Screen
-        if segue.identifier == "goToEditProfile" {
-            // Pass profile data if needed
+        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
+           let window = sceneDelegate.window {
+            UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                window.rootViewController = landingNav
+            }, completion: nil)
         }
     }
+    
 }

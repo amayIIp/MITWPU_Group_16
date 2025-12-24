@@ -12,7 +12,7 @@ class DetailViewController: UIViewController {
     
     var textToDisplay: String = ""
     var titleToDisplay: String = ""
-    var exerciseDuration1: String = "N/A"
+    var exerciseDuration: Int = 0
     private let wordsPerHighlight = 3
     private var highlightDuration: TimeInterval = 1.7
     private let minDuration: TimeInterval = 0.3
@@ -250,9 +250,10 @@ class DetailViewController: UIViewController {
     
     
     func didTapOpenButton() {
-        guard let ResultVC = storyboard?.instantiateViewController(withIdentifier: "ResultViewController") as? ResultViewController else {
+        guard let ResultVC = storyboard?.instantiateViewController(withIdentifier: "ReadingResultViewController") as? ReadingResultViewController else {
             return
         }
+        
         let ResultNav = UINavigationController(rootViewController: ResultVC)
         ResultNav.modalPresentationStyle = .fullScreen
         self.present(ResultNav, animated: true, completion: nil)
@@ -261,21 +262,19 @@ class DetailViewController: UIViewController {
     
     
     func logReadingActivity() {
-        //        // This assumes you've added ".reading" to your ExerciseSource enum
-        //        if let duration = ExerciseDataManager.shared.getDurationString(for: titleToDisplay) {
-        //            exerciseDuration1 = duration
-        //        } else {
-        //            exerciseDuration1 = "N/A"
-        //        }
-        //
-        //        // 2. Use the LogManager to save the new log
-        //        LogManager.shared.addLog(
-        //            exerciseName: titleToDisplay, // Use the name that was passed
-        //            source: .reading,
-        //            exerciseDuration: exerciseDuration1
-        //        )
-        //
-        //        print("Reading activity logged.") // For debugging
+        // This assumes you've added ".reading" to your ExerciseSource enum
+        if let duration = ExerciseDataManager.shared.getDurationString(for: titleToDisplay) {
+            self.exerciseDuration = duration
+        }
+
+        // 2. Use the LogManager to save the new log
+        LogManager.shared.addLog(
+            exerciseName: titleToDisplay, // Use the name that was passed
+            source: .reading,
+            exerciseDuration: self.exerciseDuration
+        )
+
+        print("Reading activity logged.") // For debugging
     }
 }
 

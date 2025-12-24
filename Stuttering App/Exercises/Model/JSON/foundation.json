@@ -1,0 +1,175 @@
+{
+  "module_name": "The Foundation (General Motor Skills)",
+  "description": "These exercises apply to all speech. They are the prerequisite for tackling specific hard sounds.",
+  "module_id": "level_1",
+  "exercises": [
+    {
+      "id": "ex_1_1",
+      "title": "Airflow Management",
+      "desc": "Learn steady breath release to ensure smooth vowel initiation.",
+      "category": "Respiration",
+      "target_group": "Vowel Initiation",
+      "difficulty": "Beginner",
+      "word_start": 4,
+      "meta": {
+        "duration_seconds": 300,
+        "recommended_reps": 10
+      },
+      "purpose": "To prevent holding breath before speaking and ensure continuous air support.",
+      "instruction_set": {
+        "steps": [
+          {
+            "step_number": 1,
+            "label": "Posture",
+            "image": "Posture",
+            "text": "Sit upright with shoulders relaxed.",
+            "time": 10
+          },
+          {
+            "step_number": 2,
+            "label": "Inhale",
+            "image": "Inhale",
+            "text": "Take a deep breath into your belly (not chest). Feel your stomach expand.",
+            "time": 7
+          },
+          {
+            "step_number": 3,
+            "label": "The Pre-Exhale",
+            "image": "Pre-Exhale",
+            "text": "Let out a tiny, silent 'sigh' of air.",
+            "time": 5
+          },
+          {
+            "step_number": 4,
+            "label": "The Voice",
+            "image": "Voice",
+            "text": "Ride that sigh into pronouncing the word. Do not stop the air.",
+            "time": 7
+          }
+        ],
+        "visual_cue": "[Image of diaphragm breathing vs chest breathing]",
+        "audio_guide_url": "path/to/airflow_guide.mp3"
+      },
+      "example_demonstration": {
+        "target_word": "Apple",
+        "execution_text": "(Inhale) -> (Silent puff) -> 'Hhh-Apple' (The 'H' is barely audible).",
+        "audio_url": "path/to/example_apple.mp3"
+      },
+      "data_bank": {
+        "description": "Words starting with vowels, categorized by phoneme for specific selection.",
+        "targets": {
+          "A": [
+            "Apple",
+            "After",
+            "Ask",
+            "Adam",
+            "Action",
+            "Animal",
+            "Answer",
+            "Actor",
+            "Active",
+            "Anchor",
+            "Album",
+            "Angle",
+            "Arrow",
+            "Asset",
+            "Atlas",
+            "Atom",
+            "Attic",
+            "Audio",
+            "Audit",
+            "Aunt"
+          ],
+          "E": [
+            "Elephant",
+            "Echo",
+            "Every",
+            "Egg",
+            "Exit",
+            "Enter",
+            "End",
+            "Edit",
+            "Elbow",
+            "Elder",
+            "Empty",
+            "Enemy",
+            "Engine",
+            "Entry",
+            "Envy",
+            "Epic",
+            "Error",
+            "Essay",
+            "Ethics",
+            "Extra"
+          ],
+          "I": [
+            "Igloo",
+            "Into",
+            "Itch",
+            "In",
+            "Illness",
+            "Image",
+            "Impact",
+            "Import",
+            "Income",
+            "Index",
+            "Indoor",
+            "Infant",
+            "Input",
+            "Insect",
+            "Inside",
+            "Instant",
+            "Issue",
+            "Item",
+            "Inner",
+            "Ink"
+          ],
+          "O": [
+            "Olive",
+            "Octopus",
+            "Opera",
+            "Office",
+            "Often",
+            "Object",
+            "Offer",
+            "Oil",
+            "Okay",
+            "Omen",
+            "Only",
+            "Open",
+            "Orbit",
+            "Order",
+            "Organ",
+            "Other",
+            "Otter",
+            "Ounce",
+            "Outer",
+            "Owner"
+          ],
+          "U": [
+            "Umbrella",
+            "Under",
+            "Up",
+            "Ugly",
+            "Uncle",
+            "Undo",
+            "Unit",
+            "Upper",
+            "Upset",
+            "Urban",
+            "Urge",
+            "Urgent",
+            "Usage",
+            "Usher",
+            "Utter",
+            "Ultra",
+            "Umpire",
+            "Uncut",
+            "Under",
+            "Union"
+          ]
+        }
+      }
+    }
+  ]
+}
