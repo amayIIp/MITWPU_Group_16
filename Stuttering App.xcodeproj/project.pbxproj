@@ -11,7 +11,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		194796C02ED8094300DFD6F6 /* Stuttering App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stuttering App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		083581952F0E4B5A00D0E2BC /* Stuttering App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Stuttering App.app"; path = "/Users/prathameshravsopatil/Documents/MITWPU_Group_16/build/Debug-iphoneos/Stuttering App.app"; sourceTree = "<absolute>"; };
 		19EB3DD42ED71B340003B76D /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -39,7 +39,6 @@
 			children = (
 				19EB3DD42ED71B340003B76D /* .gitignore */,
 				19EB3D352ED6ED290003B76D /* Stuttering App */,
-				194796C02ED8094300DFD6F6 /* Stuttering App.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,7 +64,7 @@
 			packageProductDependencies = (
 			);
 			productName = "Stuttering App";
-			productReference = 194796C02ED8094300DFD6F6 /* Stuttering App.app */;
+			productReference = 083581952F0E4B5A00D0E2BC /* Stuttering App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -131,6 +130,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C2N3Q4846H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -162,6 +162,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C2N3Q4846H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

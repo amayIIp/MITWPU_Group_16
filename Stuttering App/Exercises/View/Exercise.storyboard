@@ -429,12 +429,12 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fun Exercise" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CGh-33-W8a">
-                                    <rect key="frame" x="36" y="12" width="106" height="23"/>
+                                    <rect key="frame" x="36" y="12" width="116" height="23"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="23" id="ZXT-vG-G7X"/>
                                     </constraints>
-                                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="18"/>
-                                    <color key="textColor" red="0.517578125" green="0.517578125" blue="0.5498046875" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="20"/>
+                                    <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zgb-8Q-kj1">
@@ -690,6 +690,7 @@
                                                         <constraint firstAttribute="height" constant="37" id="CRA-Kw-AqU"/>
                                                         <constraint firstAttribute="width" constant="37" id="kGe-99-KnP"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -765,6 +766,7 @@
                                                         <constraint firstAttribute="height" constant="37" id="O3I-e7-LRR"/>
                                                         <constraint firstAttribute="width" constant="37" id="fae-T7-gb7"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -844,6 +846,7 @@
                                                         <constraint firstAttribute="width" constant="37" id="a56-g6-OUs"/>
                                                         <constraint firstAttribute="height" constant="37" id="e44-9v-TIA"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -919,6 +922,7 @@
                                                         <constraint firstAttribute="height" constant="37" id="Cco-pr-dOi"/>
                                                         <constraint firstAttribute="width" constant="37" id="iMg-9X-dbP"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -994,6 +998,7 @@
                                                         <constraint firstAttribute="width" constant="37" id="lDu-Uq-FhE"/>
                                                         <constraint firstAttribute="height" constant="37" id="su0-uC-aNt"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -1073,6 +1078,7 @@
                                                         <constraint firstAttribute="width" constant="37" id="iUu-9e-0Ec"/>
                                                         <constraint firstAttribute="height" constant="37" id="jmB-W3-yDd"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -1148,6 +1154,7 @@
                                                         <constraint firstAttribute="height" constant="37" id="P8Z-Dj-uBO"/>
                                                         <constraint firstAttribute="width" constant="37" id="wIq-bB-ZXK"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -1223,6 +1230,7 @@
                                                         <constraint firstAttribute="height" constant="37" id="fnc-OP-6Uq"/>
                                                         <constraint firstAttribute="width" constant="37" id="tHq-6N-mOg"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>

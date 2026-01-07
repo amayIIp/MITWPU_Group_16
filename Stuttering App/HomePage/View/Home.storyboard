@@ -68,6 +68,7 @@
                                                         <constraint firstAttribute="width" constant="41" id="LW2-0y-Dty"/>
                                                         <constraint firstAttribute="height" constant="41" id="mAf-II-Vjm"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -183,6 +184,7 @@
                                                         <constraint firstAttribute="height" constant="41" id="fBZ-qN-Bt6"/>
                                                         <constraint firstAttribute="width" constant="41" id="wP9-MB-hoR"/>
                                                     </constraints>
+                                                    <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                                                         <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -298,7 +300,7 @@
                                                         <buttonConfiguration key="configuration" style="plain">
                                                             <imageReference key="image" image="person.circle" catalog="system" symbolScale="large"/>
                                                             <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="30"/>
-                                                            <color key="baseForegroundColor" name="bgd"/>
+                                                            <color key="baseForegroundColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                         </buttonConfiguration>
                                                         <connections>
                                                             <action selector="profileButtonTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="AWO-fL-rvK"/>
@@ -342,28 +344,21 @@
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zop-8n-3LV">
                                                         <rect key="frame" x="20" y="0.0" width="353" height="80"/>
                                                         <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="insights" translatesAutoresizingMaskIntoConstraints="NO" id="f6Z-6x-2NQ">
-                                                                <rect key="frame" x="0.0" y="0.0" width="353" height="80"/>
-                                                            </imageView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your /r/ and /s/ sounds have improved 12% today !! " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rOK-A0-7ko">
                                                                 <rect key="frame" x="16" y="16" width="321" height="48"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="48" id="EEw-Hz-ozC"/>
                                                                 </constraints>
-                                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="18"/>
-                                                                <nil key="textColor"/>
+                                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="18"/>
+                                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                         </subviews>
-                                                        <color key="backgroundColor" red="0.66460130269999995" green="0.79760662019999995" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                        <color key="backgroundColor" red="0.20784313725490194" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="trailing" secondItem="f6Z-6x-2NQ" secondAttribute="trailing" id="Acc-S9-kth"/>
                                                             <constraint firstItem="rOK-A0-7ko" firstAttribute="top" secondItem="zop-8n-3LV" secondAttribute="top" constant="16" id="EaL-vY-CEA"/>
                                                             <constraint firstAttribute="height" constant="80" id="Kye-Nh-IKX"/>
-                                                            <constraint firstAttribute="bottom" secondItem="f6Z-6x-2NQ" secondAttribute="bottom" id="Lsr-op-sMZ"/>
                                                             <constraint firstAttribute="trailing" secondItem="rOK-A0-7ko" secondAttribute="trailing" constant="16" id="YK7-qS-2tO"/>
-                                                            <constraint firstItem="f6Z-6x-2NQ" firstAttribute="top" secondItem="zop-8n-3LV" secondAttribute="top" id="apF-Jd-XNF"/>
-                                                            <constraint firstItem="f6Z-6x-2NQ" firstAttribute="leading" secondItem="zop-8n-3LV" secondAttribute="leading" id="u6p-yp-rem"/>
                                                             <constraint firstItem="rOK-A0-7ko" firstAttribute="leading" secondItem="zop-8n-3LV" secondAttribute="leading" constant="16" id="xcH-mu-V0s"/>
                                                         </constraints>
                                                         <userDefinedRuntimeAttributes>
@@ -386,9 +381,9 @@
                                                 <rect key="frame" x="0.0" y="189" width="393" height="30"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Tasks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="giW-xr-2c8">
-                                                        <rect key="frame" x="35.999999999999993" y="10" width="95.333333333333314" height="23"/>
-                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
-                                                        <color key="textColor" red="0.517578125" green="0.517578125" blue="0.5498046875" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                        <rect key="frame" x="36.000000000000007" y="10" width="98.666666666666686" height="24"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="20"/>
+                                                        <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
@@ -729,9 +724,9 @@
                                                 <rect key="frame" x="0.0" y="599" width="393" height="40"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Explore" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2bD-ZA-czn">
-                                                        <rect key="frame" x="35.999999999999993" y="20" width="66.333333333333314" height="23"/>
-                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
-                                                        <color key="textColor" red="0.517578125" green="0.517578125" blue="0.5498046875" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                        <rect key="frame" x="36" y="20" width="69" height="24"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="20"/>
+                                                        <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
@@ -999,7 +994,14 @@
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Ni4-t1-mkl">
                         <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="tintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
+                        <color key="barTintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
+                        <tabBarAppearance key="standardAppearance">
+                            <color key="selectionIndicatorTintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
+                        </tabBarAppearance>
+                        <tabBarAppearance key="scrollEdgeAppearance">
+                            <color key="selectionIndicatorTintColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
+                        </tabBarAppearance>
                     </tabBar>
                     <connections>
                         <segue destination="g46-Yj-ESt" kind="relationship" relationship="viewControllers" id="8WU-1t-nAi"/>
@@ -1126,14 +1128,10 @@
         <image name="flame.fill" catalog="system" width="106" height="128"/>
         <image name="generated-svg-image" width="98" height="127"/>
         <image name="house" catalog="system" width="128" height="104"/>
-        <image name="insights" width="740" height="164"/>
         <image name="person.circle" catalog="system" width="128" height="123"/>
         <image name="play.circle.fill" catalog="system" width="128" height="123"/>
         <namedColor name="bg">
             <color red="0.91764705882352937" green="0.94901960784313721" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-        </namedColor>
-        <namedColor name="bgd">
-            <color red="0.16660000000000003" green="0.57585786163522001" blue="0.97999999999999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

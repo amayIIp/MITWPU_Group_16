@@ -16,7 +16,7 @@ class SignUpViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupButtons() //glass
+        setupButtons()
         setupUI()
     }
     

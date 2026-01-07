@@ -36,8 +36,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     
     // MARK: - Lifecycle Management
     
-    /// NEW: Completely halts all audio and AI processing.
-    /// Call this when the View Controller is dismissing.
+    // NEW: Completely halts all audio and AI processing.
+    // Call this when the View Controller is dismissing.
     func stopSession() {
         // 1. Stop Speaking immediately
         if synthesizer.isSpeaking {
