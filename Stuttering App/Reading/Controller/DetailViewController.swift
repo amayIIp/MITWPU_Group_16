@@ -341,9 +341,11 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func logReadingActivity() {
-        if let duration = ExerciseDataManager.shared.getDurationString(for: titleToDisplay) {
-            self.exerciseDuration = duration
-        }
+//        if let duration = ExerciseDataManager.shared.getDurationString(for: titleToDisplay) {
+//            self.exerciseDuration = duration
+        let duration = Date().timeIntervalSince(startTime ?? Date())
+        self.exerciseDuration = Int(duration)
+        
         LogManager.shared.addLog(exerciseName: titleToDisplay, source: .reading, exerciseDuration: self.exerciseDuration)
         print("Reading activity logged.")
     }
