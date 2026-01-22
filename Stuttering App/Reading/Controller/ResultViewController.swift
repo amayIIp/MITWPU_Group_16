@@ -14,9 +14,7 @@ class ResultViewController: UIViewController {
         
         self.navigationItem.title = "Result"
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(didTapCloseResult))
-        
     }
-    
     
     @objc func didTapCloseResult() {
         if let initialPresenter = self.presentingViewController?.presentingViewController {

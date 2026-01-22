@@ -11,7 +11,7 @@ class FirstPageAnimationViewController: UIViewController {
 
     @IBOutlet weak var headerLabel: UIImageView!
     @IBOutlet weak var infoLabel: UIStackView!
-    @IBOutlet weak var continueButton: UIButton!
+    @IBOutlet weak var buttonView: UIView!
     
     var hasSetInitialState = false
     
@@ -20,11 +20,9 @@ class FirstPageAnimationViewController: UIViewController {
         
         headerLabel.alpha = 0
         infoLabel.alpha = 0
-        continueButton.alpha = 0
-        
-        setupButton()
+        buttonView.alpha = 0
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
@@ -39,11 +37,6 @@ class FirstPageAnimationViewController: UIViewController {
         startSequenceAnimation()
     }
     
-    func setupButton() {
-        continueButton.configuration = .prominentGlass()
-        continueButton.configuration?.title = "Continue"
-    }
-    
     private func setupInitialState() {
         headerLabel.alpha = 1
         
@@ -51,8 +44,6 @@ class FirstPageAnimationViewController: UIViewController {
         let screenCenterY = view.bounds.midY
         let labelCenterY = headerLabel.center.y
         
-        //print("ScreenCenterY\(screenCenterY)")
-        //print("LabelCenterY\(labelCenterY)")
         let distanceToCenter = screenCenterY - labelCenterY
         // Move it down to the center
         let moveDown = CGAffineTransform(translationX: 0, y: distanceToCenter)
@@ -62,7 +53,7 @@ class FirstPageAnimationViewController: UIViewController {
     }
     
     private func startSequenceAnimation() {
-        // Animate Header back to Top
+          // Animate Header back to Top
         UIView.animate(withDuration: 2.0,
                        delay: 0.2,
                        usingSpringWithDamping: 0.85,
@@ -76,9 +67,9 @@ class FirstPageAnimationViewController: UIViewController {
             
             UIView.animate(withDuration: 0.5) {
                 self.infoLabel.alpha = 1.0
-                self.continueButton.alpha = 1.0
+                self.buttonView.alpha = 1.0
+                
             }
         }
     }
-
 }

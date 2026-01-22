@@ -6,123 +6,69 @@
       "groups": [
         {
           "id": "group_breathing_relaxation",
-          "name": "Breathing And Relaxation",
+          "name": "Speech Fundamentals",
           "description": "Prepare the body and build core speech mechanics.",
           "exercises": [
               {
                 "id": "ex_diaph_breathing",
-                "name": "Smooth Flow",
-                "description": "Slow belly breathing to calm tension and support airflow.",
+                "name": "Airflow Practice",
+                "description": "Learn breath release to ensure smooth vowel.",
                 "short_time": 120
               },
               {
                 "id": "ex_pmr",
-                "name": "Muscle Relax",
+                "name": "Flexible Pacing",
                 "description": "Gently tense and release muscles to reduce speaking tension.",
                 "short_time": 123
-              },
-              {
-                "id": "ex_breath_speech",
-                "name": "Speech Breathing",
-                "description": "Blend breath and voice for smoother, steadier speech flow.",
-                "short_time": 534
-              },
-              {
-                "id": "ex_box_breath",
-                "name": "Box Breathing",
-                "description": "A calm four-step breathing cycle for focus and rhythm.",
-                "short_time": 123
-              },
-              {
-                "id": "ex_breath_medit",
-                "name": "Breath Calmness",
-                "description": "Gentle awareness of natural breathing to relax the body.",
-                "short_time": 65
               }
             ]
         },
         {
           "id": "group_motor_speech_coordination",
-          "name": "Motor Speech Coordination",
+          "name": "Targeted Practice",
           "description": "Prepare the body and build core speech mechanics.",
           "exercises": [
               {
                 "id": "ex_artic_precision",
-                "name": "Clear Precision",
+                "name": "Gentle Onset",
                 "description": "Shape each sound clearly to improve accuracy and smoothness.",
                 "short_time": 545
               },
               {
                 "id": "ex_coarticulation",
-                "name": "Blend Sounds",
+                "name": "Light Contacts",
                 "description": "Move smoothly between sounds for natural word flow.",
                 "short_time": 320
               },
               {
                 "id": "ex_light_contact",
-                "name": "Soft Contact",
+                "name": "Prolongation",
                 "description": "Use light consonant contact to reduce tension.",
                 "short_time": 434
-              },
-              {
-                "id": "ex_rate_control",
-                "name": "Pace Control",
-                "description": "Slow your speech to keep rhythm steady and clear.",
-                "short_time": 566
-              },
-              {
-                "id": "ex_coord_speech",
-                "name": "Speech Sync",
-                "description": "Coordinate breath and voice for smoother speech flow.",
-                "short_time": 344
               }
             ]
         },
         {
           "id": "group_fluency_shaping_techniques",
-          "name": "Fluency Shaping Techniques",
+          "name": "Correction & Refinement",
           "description": "Prepare the body and build core speech mechanics.",
           "exercises": [
               {
-                "id": "ex_easy_onset",
-                "name": "Gentle Onset",
-                "description": "Start sounds softly to reduce tension and ease speech.",
-                "short_time": 120
+                "id": "ex_rate_control",
+                "name": "Preparatory Set",
+                "description": "Slow your speech to keep rhythm steady and clear.",
+                "short_time": 566
               },
               {
-                "id": "ex_light_contact",
-                "name": "Light Contact",
-                "description": "Touch sounds lightly to support relaxed articulation.",
-                "short_time": 120
+                "id": "ex_coord_speech",
+                "name": "Pull-Out",
+                "description": "Coordinate breath and voice for smoother speech flow.",
+                "short_time": 344
               },
               {
                 "id": "ex_prolonged_speech",
-                "name": "Prolongation",
+                "name": "Block Correction",
                 "description": "Stretch syllables gently for calm, steady fluency.",
-                "short_time": 120
-              },
-              {
-                "id": "ex_continuous_phonation",
-                "name": "Smooth Phonation",
-                "description": "Keep your voice flowing for even, relaxed speech.",
-                "short_time": 120
-              },
-              {
-                "id": "ex_pausing_phrasing",
-                "name": "Calm Phrasing",
-                "description": "Pause mindfully between phrases to control pace and improve focus.",
-                "short_time": 120
-              },
-              {
-                "id": "ex_rate_control",
-                "name": "Pace Control",
-                "description": "Adjust speaking speed to maintain steady rhythm and relaxed delivery.",
-                "short_time": 120
-              },
-              {
-                "id": "ex_syllable_timed",
-                "name": "Syllable Flow",
-                "description": "Speak each syllable evenly to build consistent timing and smoother flow.",
                 "short_time": 120
               }
             ]

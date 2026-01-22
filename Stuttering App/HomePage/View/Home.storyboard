@@ -13,7 +13,7 @@
         <!--WarmUp-->
         <scene sceneID="3Q9-VE-JoU">
             <objects>
-                <viewController id="nN5-Zq-oHy" customClass="WarmUpListViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="nN5-Zq-oHy" customClass="WarmUpListViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IZc-eb-M0Y">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -22,7 +22,7 @@
                                 <rect key="frame" x="0.0" y="172" width="393" height="680"/>
                                 <color key="backgroundColor" name="bg"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ExerciseCell" rowHeight="95" id="HTB-Uy-BOF" customClass="ExerciseCell" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ExerciseCell" rowHeight="95" id="HTB-Uy-BOF" customClass="ExerciseCell" customModule="Stutter1" customModuleProvider="target">
                                         <rect key="frame" x="20" y="55.333332061767578" width="353" height="95"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="HTB-Uy-BOF" id="2hH-4n-HtI">
@@ -129,7 +129,7 @@
         <!--Daily Tasks-->
         <scene sceneID="20K-K0-BxH">
             <objects>
-                <viewController id="6DB-5V-Brq" customClass="DailyTasksViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="6DB-5V-Brq" customClass="DailyTasksViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Qaf-EY-Q8B">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -138,7 +138,7 @@
                                 <rect key="frame" x="0.0" y="172" width="393" height="680"/>
                                 <color key="backgroundColor" name="bg"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DailyTasksCell" rowHeight="95" id="3cH-s3-fOs" customClass="DailyTasksCell" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DailyTasksCell" rowHeight="95" id="3cH-s3-fOs" customClass="DailyTasksCell" customModule="Stutter1" customModuleProvider="target">
                                         <rect key="frame" x="20" y="55.333332061767578" width="353" height="95"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="3cH-s3-fOs" id="hce-3l-ClF">
@@ -245,7 +245,7 @@
         <!--Home Page View Controller-->
         <scene sceneID="79V-B2-KAj">
             <objects>
-                <viewController id="mT6-n7-IrL" customClass="HomePageViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="mT6-n7-IrL" customClass="HomePageViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="qpD-5Y-tI0">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -344,19 +344,17 @@
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zop-8n-3LV">
                                                         <rect key="frame" x="20" y="0.0" width="353" height="80"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your /r/ and /s/ sounds have improved 12% today !! " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rOK-A0-7ko">
-                                                                <rect key="frame" x="16" y="16" width="321" height="48"/>
-                                                                <constraints>
-                                                                    <constraint firstAttribute="height" constant="48" id="EEw-Hz-ozC"/>
-                                                                </constraints>
-                                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="18"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your 'r' and 's' sounds have improved 12% today !! " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rOK-A0-7ko">
+                                                                <rect key="frame" x="16" y="10" width="321" height="60"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                         </subviews>
                                                         <color key="backgroundColor" red="0.20784313725490194" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                         <constraints>
-                                                            <constraint firstItem="rOK-A0-7ko" firstAttribute="top" secondItem="zop-8n-3LV" secondAttribute="top" constant="16" id="EaL-vY-CEA"/>
+                                                            <constraint firstAttribute="bottom" secondItem="rOK-A0-7ko" secondAttribute="bottom" constant="10" id="6hG-AD-z6f"/>
+                                                            <constraint firstItem="rOK-A0-7ko" firstAttribute="top" secondItem="zop-8n-3LV" secondAttribute="top" constant="10" id="EaL-vY-CEA"/>
                                                             <constraint firstAttribute="height" constant="80" id="Kye-Nh-IKX"/>
                                                             <constraint firstAttribute="trailing" secondItem="rOK-A0-7ko" secondAttribute="trailing" constant="16" id="YK7-qS-2tO"/>
                                                             <constraint firstItem="rOK-A0-7ko" firstAttribute="leading" secondItem="zop-8n-3LV" secondAttribute="leading" constant="16" id="xcH-mu-V0s"/>
@@ -416,7 +414,7 @@
                                                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="KvL-Na-Fyd">
                                                                 <rect key="frame" x="10" y="50" width="333.33333333333331" height="142"/>
                                                                 <subviews>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xwO-pb-ywU" customClass="RadialProgressView" customModule="Stuttering_Final" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xwO-pb-ywU" customClass="RadialProgressView" customModule="Stutter1" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="142" height="142"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="3" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WUQ-17-CFc">
@@ -633,21 +631,21 @@
                                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="pLW-m5-ATm">
                                                                         <rect key="frame" x="102" y="0.0" width="123" height="70"/>
                                                                         <subviews>
-                                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uxM-am-24l" customClass="ProgressBarView" customModule="Stuttering_Final" customModuleProvider="target">
+                                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uxM-am-24l" customClass="ProgressBarView" customModule="Stutter1" customModuleProvider="target">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="123" height="18"/>
                                                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="height" constant="18" id="cDN-Pb-5mf"/>
                                                                                 </constraints>
                                                                             </view>
-                                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qz1-Nc-aN3" customClass="ProgressBarView" customModule="Stuttering_Final" customModuleProvider="target">
+                                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qz1-Nc-aN3" customClass="ProgressBarView" customModule="Stutter1" customModuleProvider="target">
                                                                                 <rect key="frame" x="0.0" y="26" width="123" height="18"/>
                                                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="height" constant="18" id="C2k-2z-gGu"/>
                                                                                 </constraints>
                                                                             </view>
-                                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ogj-ev-ecO" customClass="ProgressBarView" customModule="Stuttering_Final" customModuleProvider="target">
+                                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ogj-ev-ecO" customClass="ProgressBarView" customModule="Stutter1" customModuleProvider="target">
                                                                                 <rect key="frame" x="0.0" y="52" width="123" height="18"/>
                                                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                                                 <constraints>
@@ -901,7 +899,7 @@
                                                             <label opaque="NO" userInteractionEnabled="NO" alpha="0.80000001192092896" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h9x-9y-mS8">
                                                                 <rect key="frame" x="12" y="12" width="329" height="82"/>
                                                                 <string key="text">“I’ve stuttered all my days. … Once I accepted it … my demon lost its hold on me.”                                                                    — Charles Van Riper</string>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <nil key="textColor"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
@@ -1022,7 +1020,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Igz-Xk-f2w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1697" y="791"/>
+            <point key="canvasLocation" x="1729" y="705"/>
         </scene>
         <!--Reading-->
         <scene sceneID="yNa-0a-zJo">
@@ -1032,7 +1030,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2Wj-39-UUK" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2279" y="905"/>
+            <point key="canvasLocation" x="2225" y="705"/>
         </scene>
         <!--Conversation-->
         <scene sceneID="TU6-XJ-y3f">
@@ -1042,7 +1040,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="T8J-ku-7kI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2831" y="595"/>
+            <point key="canvasLocation" x="2757" y="705"/>
         </scene>
         <!--Home-->
         <scene sceneID="MVn-d3-dI7">
@@ -1066,13 +1064,13 @@
         <!--View Controller-->
         <scene sceneID="F58-em-Jfl">
             <objects>
-                <viewController storyboardIdentifier="Streak" id="60l-pD-3n1" customClass="ViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Streak" id="60l-pD-3n1" customClass="ViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="k0X-DX-Eae">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="generated-svg-image" translatesAutoresizingMaskIntoConstraints="NO" id="rco-sU-DC9">
-                                <rect key="frame" x="146.66666666666666" y="188" width="100" height="135"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="flame.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="rco-sU-DC9">
+                                <rect key="frame" x="146.66666666666666" y="187.66666666666669" width="100" height="134.66666666666669"/>
                                 <color key="tintColor" systemColor="systemOrangeColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="100" id="g9L-Xq-S9W"/>
@@ -1085,8 +1083,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="day streak" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dkb-92-Woq">
-                                <rect key="frame" x="147" y="470.66666666666669" width="99" height="24"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Day streak" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dkb-92-Woq">
+                                <rect key="frame" x="146.33333333333334" y="470.66666666666669" width="100.33333333333334" height="24"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -1126,7 +1124,6 @@
         <image name="checkmark.circle" catalog="system" width="128" height="123"/>
         <image name="chevron.forward" catalog="system" width="97" height="128"/>
         <image name="flame.fill" catalog="system" width="106" height="128"/>
-        <image name="generated-svg-image" width="98" height="127"/>
         <image name="house" catalog="system" width="128" height="104"/>
         <image name="person.circle" catalog="system" width="128" height="123"/>
         <image name="play.circle.fill" catalog="system" width="128" height="123"/>
@@ -1137,7 +1134,7 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemOrangeColor">
-            <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.55294117647058827" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

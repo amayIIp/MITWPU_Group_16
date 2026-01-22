@@ -10,23 +10,14 @@ import UIKit
 class TextInputViewController: UIViewController {
     var onEmptyInput: (() -> Void)?
 
-    
-    @IBOutlet weak var textViewView: UIView!
-    @IBOutlet weak var textDisplayView: UIView!
     @IBOutlet weak var textDisplay: UITextView!
     
-    var onDoneButtonTapped: ((String) -> Void)? // This closure will pass the text *back* to the TableViewController
+    var onDoneButtonTapped: ((String) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        textDisplay.layer.cornerRadius = 16.0
-        textDisplay.layer.masksToBounds = true
-        view.backgroundColor = UIColor(named: "bg")
-        textViewView.backgroundColor = UIColor(named: "bg")
-        textDisplayView.backgroundColor = UIColor(named: "bg")
         
-        
-        self.navigationItem.title = "Enter Custom Text"
+        self.navigationItem.title = "Custom Text"
         
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(didTapClose))
         
@@ -48,10 +39,8 @@ class TextInputViewController: UIViewController {
                 self.onDoneButtonTapped?(text)
                 
             } else {
-                // Show an alert for empty input
-                self.onEmptyInput?()   // ← tell PARENT to show the alert
+                self.onEmptyInput?()
             }
         }
-        
     }
 }

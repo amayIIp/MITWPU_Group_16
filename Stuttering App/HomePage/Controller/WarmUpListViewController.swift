@@ -24,11 +24,11 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
     
     func loadExercises() {
         guard let url = Bundle.main.url(forResource: "WarmUp", withExtension: "json") else {
-            //print("JSON file not found")
+            print("JSON file not found")
             return
         }
         guard let data = try? Data(contentsOf: url) else {
-           // print("Could not load data")
+            print("Could not load data")
             return
         }
     
@@ -39,7 +39,7 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
                 self.tableView1.reloadData()
             }
         } catch {
-            //print("Error decoding JSON: \(error)")
+            print("Error decoding JSON: \(error)")
         }
     }
     
@@ -67,8 +67,8 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
         guard let vc = storyboard?.instantiateViewController(withIdentifier: exerciseName),
               let exerciseVC = vc as? ExerciseStarting else {
             
-            //print("Error: Could not find VC with ID \(exerciseName)")
-            //print("OR that VC does not conform to the 'ExerciseStarting' protocol.")
+            print("Error: Could not find VC with ID \(exerciseName)")
+            print("OR that VC does not conform to the 'ExerciseStarting' protocol.")
             return
         }
         

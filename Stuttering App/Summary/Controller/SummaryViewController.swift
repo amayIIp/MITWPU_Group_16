@@ -137,7 +137,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     private func calculateTotalDuration(for logs: [ExerciseLog]) -> Int {
-        // 1. Reduce the array to a single sum integer
+        // Reduce the array to a single sum integer
         // We start at 0, and for every log, add its duration to the running total.
         let totalSeconds = logs.reduce(0) { (runningTotal, log) -> Int in
             return runningTotal + log.exerciseDuration

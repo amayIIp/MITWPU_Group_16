@@ -22,7 +22,7 @@ class ExerciseDataManager {
     
     private func loadExerciseData(from filename: String) {
         guard let url = Bundle.main.url(forResource: filename, withExtension: "json") else {
-            //print("Error: \(filename).json file not found in bundle.")
+            print("Error: \(filename).json file not found in bundle.")
             return
         }
         
@@ -39,10 +39,8 @@ class ExerciseDataManager {
                     }
                 }
             }
-            //print("Success: Loaded duration data for \(durationLookup.count) exercises.")
-            
         } catch {
-            //print("Error parsing \(filename).json: \(error)")
+            print("Error parsing \(filename).json: \(error)")
         }
     }
 }

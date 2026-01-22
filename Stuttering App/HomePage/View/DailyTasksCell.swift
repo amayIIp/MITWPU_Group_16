@@ -17,7 +17,7 @@ class DailyTasksCell: UITableViewCell {
             playButton.setImage(checkmarkIcon, for: .normal)
             
         } else {
-            playButton.tintColor = .systemBlue
+            playButton.tintColor = UIColor(named: "ButtonTheme") ?? .systemBlue
             let playIcon = UIImage(systemName: "play.circle.fill")
             playButton.setImage(playIcon, for: .normal)
         }

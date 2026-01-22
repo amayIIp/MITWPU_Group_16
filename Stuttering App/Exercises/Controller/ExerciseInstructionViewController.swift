@@ -2,47 +2,59 @@
 //  ExerciseInstructionViewController.swift
 //  Stuttering App 1
 //
-//  Created by SDC-USER on 16/12/25.
+//  Updated with modular animation system
 //
 
 import UIKit
 
-class ExerciseInstructionViewController: UIViewController {
+class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
+    
+    var startingSource: ExerciseSource?
+    var exerciseName = ""
 
-    // MARK: - Dependencies
-    // pass this String from the previous View Controller
-    var exerciseID: String = "ex_1_1"
-    var exerciseName = "Airflow Practice"
-    // Internal State
-    private var currentExercise: Exercise1?
+    private var currentExercise: LibraryExercises?
     private var currentStepIndex: Int = 0
     private var steps: [ExerciseStep] = []
+    
+    private var animationController: AnimationController!
+    private var exerciseTemplate: ExerciseAnimationTemplate?
+    private var currentWord: String = ""
 
-    // MARK: - IBOutlets
-    @IBOutlet weak var stepLabel: UILabel!       // e.g., "Step 1: Posture"
+    @IBOutlet weak var stepLabel: UILabel!
     @IBOutlet weak var stepImageView: UIImageView!
-    @IBOutlet weak var stepTextLabel: UILabel!   // e.g., "Sit upright..."
-    @IBOutlet weak var targetWordLabel: UILabel! // e.g., "Apple"
+    @IBOutlet weak var stepTextLabel: UILabel!
+    @IBOutlet weak var targetWordLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var prevButton: UIButton!
     @IBOutlet weak var skipButton: UIButton!
     @IBOutlet weak var bottomViewConstraint: NSLayoutConstraint!
+    
+    @IBOutlet weak var targetLabelBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var targetLabelCenterYConstraint: NSLayoutConstraint!
 
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupAnimationController()
         setupDesign()
         loadExerciseData()
         setupInitialState()
     }
-
-    // MARK: - Setup
+    
+    private func setupAnimationController() {
+        animationController = AnimationController()
+        animationController.delegate = self
+    }
+    
     private func setupDesign() {
-        targetWordLabel.font = .systemFont(ofSize: 48, weight: .bold)
-        targetWordLabel.textColor = .systemIndigo
+        targetWordLabel.adjustsFontSizeToFitWidth = true
+        targetWordLabel.minimumScaleFactor = 0.4
+        targetWordLabel.numberOfLines = 2
+        targetWordLabel.lineBreakMode = .byTruncatingTail
         targetWordLabel.textAlignment = .center
         targetWordLabel.isHidden = true
+        targetWordLabel.font = .systemFont(ofSize: 48, weight: .bold)
+        targetWordLabel.textColor = .systemIndigo
         
         stepLabel.font = .systemFont(ofSize: 20, weight: .bold)
         
@@ -64,96 +76,192 @@ class ExerciseInstructionViewController: UIViewController {
         prevButton.isHidden = true
         prevButton.alpha = 0
     }
+
+    private func loadExerciseData() {
+        guard let exercise = ExerciseManager.fetchExercise(title: exerciseName) else { return }
+        self.currentExercise = exercise
+        self.steps = exercise.instructionSet.steps
+        
+        self.exerciseTemplate = ExerciseAnimationRegistry.shared.getTemplate(for: exerciseName)
+        
+        loadWordData(from: exercise)
+        updateUIForStep(at: 0)
+    }
+    
+    private func loadWordData(from exercise: LibraryExercises) {
+        if let twoSyllables = exercise.dataBank.targets["2_syllables"],
+           let randomWord = twoSyllables.randomElement() {
+            currentWord = randomWord
+        } else {
+            // Fallback to example demonstration
+            currentWord = exercise.exampleDemonstration.first?.displayText ?? "Ba-by"
+        }
+    }
+
+    private func updateUIForStep(at index: Int) {
+        guard let exercise = currentExercise, index < steps.count else { return }
+        
+        let step = steps[index]
+        let currentStepNumber = index + 1
+        
+        stepLabel.text = "\(step.label)"
+        stepTextLabel.text = step.text
+        
+        let progress = Float(currentStepNumber) / Float(steps.count)
+        progressView.setProgress(progress, animated: true)
+        
+        nextButton.configuration?.title = (index == steps.count - 1) ? "Complete" : "Next"
+        
+        if let template = exerciseTemplate {
+            handleAnimatedExercise(template: template, stepNumber: currentStepNumber, step: step)
+        } else {
+            handleTraditionalExercise(step: step)
+        }
+    }
+    
+    private func handleAnimatedExercise(template: ExerciseAnimationTemplate, stepNumber: Int, step: ExerciseStep) {
+        // Check if this is a text-only exercise (3.1, 3.2, 3.3)
+        if template.exerciseType == .textOnly {
+            handleTextOnlyExercise(step: step)
+            return
+        }
+        
+        
+        if let stepConfig = template.stepConfigs.first(where: { $0.stepNumber == stepNumber }) {
+            
+            // Update layout constraints based on whether image is shown
+            updateLayoutConstraints(showImage: stepConfig.showImage)
+            
+            if stepConfig.showImage {
+                // Show image, hide text
+                showImage(step.image)
+                targetWordLabel.isHidden = true
+            } else {
+                // Hide image, show animated text
+                stepImageView.isHidden = true
+                
+                // Start animation sequence
+                animationController.startAnimation(for: stepConfig, word: currentWord)
+                
+                // Disable next button during auto-advance sequences
+                if stepConfig.autoAdvance {
+                    nextButton.isEnabled = false
+                }
+            }
+        } else {
+            // No config for this step, treat as traditional
+            handleTraditionalExercise(step: step)
+        }
+    }
+    
+    private func handleTextOnlyExercise(step: ExerciseStep) {
+        guard let exercise = currentExercise else { return }
+        
+        // Hide image, center the text
+        updateLayoutConstraints(showImage: false)
+        stepImageView.isHidden = true
+        
+        // Get the sentence data from example demonstration
+        let rawText = exercise.exampleDemonstration.first?.displayText ?? currentWord
+        
+        // Apply sentence formatting with highlighted word
+        targetWordLabel.attributedText = formatToolkitSentence(rawText)
+        
+        // ALWAYS show text for text-only exercises (visible in all steps)
+        UIView.animate(withDuration: 0.3) {
+            self.targetWordLabel.alpha = 1.0
+            self.targetWordLabel.isHidden = false
+        }
+    }
+    
+    private func handleTraditionalExercise(step: ExerciseStep) {
+        guard let exercise = currentExercise else { return }
+        
+        // Traditional image-based flow
+        updateLayoutConstraints(showImage: true)
+        showImage(step.image)
+        
+        // Get the text from example demonstration
+        let rawText = exercise.exampleDemonstration.first?.displayText ?? ""
+        
+        // Apply sentence formatting with highlighted word
+        targetWordLabel.attributedText = formatToolkitSentence(rawText)
+        
+        // Show text at the target step along with the image
+        let isTargetStep = (step.stepNumber == exercise.wordStartStep)
+        
+        UIView.animate(withDuration: 0.3) {
+            self.targetWordLabel.alpha = isTargetStep ? 1.0 : 0.0
+            self.targetWordLabel.isHidden = !isTargetStep
+        }
+    }
+    
+    private func showImage(_ imageName: String) {
+        stepImageView.isHidden = false
+        if !imageName.isEmpty {
+            stepImageView.image = UIImage(named: imageName)
+        } else {
+            stepImageView.image = UIImage(systemName: "figure.mind.and.body")
+        }
+    }
+    
+    private func updateLayoutConstraints(showImage: Bool) {
+        if showImage {
+            // Image Mode: Label at bottom, image visible
+            targetLabelCenterYConstraint.isActive = false
+            targetLabelBottomConstraint.isActive = true
+        } else {
+            // Centered Mode: Label vertically centered, no image
+            targetLabelBottomConstraint.isActive = false
+            targetLabelCenterYConstraint.isActive = true
+        }
+        
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
     
     private func startSequenceAnimation() {
-        
         UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseOut) {
             self.skipButton.isHidden = true
             self.prevButton.isHidden = false
             self.prevButton.alpha = 1
             self.bottomViewConstraint.constant = 80
+            self.view.layoutIfNeeded()
         }
-        
     }
-    private func loadExerciseData() {
-        
-        // Fetch specific exercise using our Helper
-        guard let exercise = ExerciseManager.fetchExercise(id: exerciseID) else {
-            // Handle error (e.g., show alert)
-            return
-        }
-        
-        self.currentExercise = exercise
-        self.steps = exercise.instructionSet.steps
-        
-        // Initialize UI with the first step
-        updateUIForStep(at: 0)
-    }
-
-    // MARK: - Main Logic Engine
-    private func updateUIForStep(at index: Int) {
-        guard let exercise = currentExercise, index < steps.count else { return }
-        
-        let step = steps[index]
-        
-        // 1. Text & Labels
-        stepLabel.text = "\(step.label)"
-        stepTextLabel.text = step.text
-        
-        // 2. Logic: Target Word
-        // We inject the word from 'example_demonstration'
-        targetWordLabel.text = exercise.exampleDemonstration.targetWord
-        
-        // Logic: Show ONLY if current step matches the JSON variable "word_start"
-        // Note: steps are usually 1-indexed in JSON, index is 0-indexed in code.
-        let currentStepNumber = index + 1
-        let shouldShowWord = (currentStepNumber == exercise.wordStartStep)
-        
-        // Smooth fade animation
-        UIView.animate(withDuration: 0.3) {
-            self.targetWordLabel.alpha = shouldShowWord ? 1.0 : 0.0
-            self.targetWordLabel.isHidden = !shouldShowWord
-        }
-        
-        // 3. Image Handling
-        if !step.image.isEmpty {
-            stepImageView.image = UIImage(named: step.image)
-        } else {
-            // Placeholder if JSON has empty string
-            stepImageView.image = UIImage(systemName: "figure.mind.and.body")
-        }
-        
-        // 4. Progress Logic
-        let totalSteps = Float(steps.count)
-        let progress = Float(currentStepNumber) / totalSteps
-        progressView.setProgress(progress, animated: true)
-        
-        // 5. Button State
-        if index == steps.count - 1 {
-            nextButton.configuration?.title = "Complete"
-        } else {
-            nextButton.configuration?.title = "Next"
+    
+    private func resetSequenceAnimation() {
+        UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseIn) {
+            self.skipButton.isHidden = false
+            self.prevButton.isHidden = true
+            self.prevButton.alpha = 0
+            self.bottomViewConstraint.constant = 140
+            self.view.layoutIfNeeded()
         }
     }
 
-    // MARK: - Interactions
     @IBAction func nextButtonTapped(_ sender: UIButton) {
+        if currentStepIndex == 0 { startSequenceAnimation() }
         
-        if currentStepIndex == 0 {
-            startSequenceAnimation()
-        }
-        // Check if we have steps remaining
+        // Cancel ongoing animations
+        animationController.cancelAnimations()
+        
         if currentStepIndex < steps.count - 1 {
             currentStepIndex += 1
             updateUIForStep(at: currentStepIndex)
         } else if currentStepIndex == steps.count - 1 {
             finishInstructions()
         }
-        
     }
     
     @IBAction func prevButtonTapped(_ sender: UIButton) {
-        if currentStepIndex < steps.count - 1 && currentStepIndex >= 0 {
+        if currentStepIndex == 1 { resetSequenceAnimation() }
+        
+        // Cancel ongoing animations
+        animationController.cancelAnimations()
+        
+        if currentStepIndex > 0 {
             currentStepIndex -= 1
             updateUIForStep(at: currentStepIndex)
         }
@@ -164,19 +272,85 @@ class ExerciseInstructionViewController: UIViewController {
     }
     
     private func finishInstructions() {
-        let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
         
-        guard let VC = storyboard.instantiateViewController(withIdentifier: "AirFlowExerciseViewController") as? AirFlowExerciseViewController else { return
+        guard let source = startingSource else {
+            print("Error: Source is nil. Dismissing.")
+            self.dismiss(animated: true)
+            return
         }
         
-        VC.exerciseID = self.exerciseID
+        let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
+        guard let VC = storyboard.instantiateViewController(withIdentifier: "AirFlowExerciseViewController") as? AirFlowExerciseViewController else { return }
+        
         VC.exerciseName = self.exerciseName
+        VC.startingSource = source
         
         self.navigationController?.pushViewController(VC, animated: true)
     }
     
-    @IBAction func closeButtonTapped(_ sender: UIButton) {
+    private func formatToolkitSentence(_ text: String) -> NSAttributedString {
+        let fullString = NSMutableAttributedString()
         
+        let components = text.components(separatedBy: "'")
+        
+        let baseSize: CGFloat = 20
+        let highlightedSize: CGFloat = 22
+        let regularAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: baseSize, weight: .medium),
+            .foregroundColor: UIColor.label
+        ]
+        
+        let highlightAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: highlightedSize, weight: .bold),
+            .foregroundColor: UIColor.systemIndigo
+        ]
+        
+        for (i, part) in components.enumerated() {
+            if i % 2 == 0 {
+                fullString.append(NSAttributedString(string: part, attributes: regularAttributes))
+            } else {
+                fullString.append(NSAttributedString(string: part, attributes: highlightAttributes))
+            }
+        }
+        
+        return fullString
+    }
+    
+    @IBAction func closeButtonTapped(_ sender: UIButton) {
+        animationController.cancelAnimations()
         self.dismiss(animated: true, completion: nil)
+    }
+}
+
+extension ExerciseInstructionViewController: AnimationControllerDelegate {
+    
+    func didUpdateText(_ attributedText: NSAttributedString) {
+        UIView.transition(
+            with: targetWordLabel,
+            duration: 0.3,
+            options: .transitionCrossDissolve,
+            animations: {
+                self.targetWordLabel.attributedText = attributedText
+            }
+        )
+    }
+    
+    func didCompleteStep(shouldAutoAdvance: Bool) {
+        // Re-enable next button
+        nextButton.isEnabled = true
+        
+        if shouldAutoAdvance {
+            // Auto-advance to next step
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.nextButtonTapped(self!.nextButton)
+            }
+        }
+    }
+    
+    func shouldHideTargetLabel(_ hide: Bool) {
+        UIView.animate(withDuration: 0.3) {
+            self.targetWordLabel.alpha = hide ? 0.0 : 1.0
+            self.targetWordLabel.isHidden = hide
+        }
     }
 }

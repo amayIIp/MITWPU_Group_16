@@ -45,7 +45,6 @@ class LogManager {
         """
         execute(sql: createLogTableString, successMessage: "ExerciseLog table ready.")
         
-        // 2. Goals Table
         let createGoalsTableString = """
         CREATE TABLE IF NOT EXISTS Goals(
         goalName TEXT PRIMARY KEY,

@@ -20,8 +20,6 @@ class ExerciseResultViewController: UIViewController {
         
         exerciceNameLabel.text = exerciseName
         exerciseDurationLabel.text = formatDuration(durationLabelForExercise)
-
-
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -50,26 +48,18 @@ class ExerciseResultViewController: UIViewController {
     }
     
     @IBAction func RepeatTheExercise(_ sender: Any) {
-        
         if exerciseName == "Airflow Practice" {
             guard let navPresenter = self.presentingViewController as? UINavigationController ?? self.presentingViewController?.navigationController else {
                         print("Error: Could not find the underlying Navigation Controller.")
-                        self.dismiss(animated: true) // Safety fallback
+                        self.dismiss(animated: true)
                         return
                     }
 
-                    // Step 2: Dismiss this 3rd View Controller
-                    self.dismiss(animated: true) {
-                        // Step 3: executed ONLY after the modal is fully gone
-                        // This ensures animations do not conflict
-                        navPresenter.popToRootViewController(animated: true)
+                    self.dismiss(animated: true) {                        navPresenter.popToRootViewController(animated: true)
                     }
         } else {
             self.dismiss(animated: true, completion: nil)
         }
-        
     }
-    
-
 }
            

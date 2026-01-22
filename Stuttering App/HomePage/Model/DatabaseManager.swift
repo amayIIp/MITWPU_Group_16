@@ -50,7 +50,7 @@ class DatabaseManager {
         if count == 0 {
             print("Database: Journey table empty. Populating initial sequence...")
             let exercises = [
-                "Smooth Flow", "Muscle Relax", "Speech Breathing", "Box Breathing", "Breath Calmness", "Clear Precision", "Blend Sounds", "Soft Contact", "Pace Control", "Speech Sync", "Gentle Onset", "Light Contact", "Stretched Speech", "Smooth Phonation", "Calm Phrasing", "Pace Control", "Syllable Flow"
+                "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction", "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction"
             ]
             
             let insertQuery = "INSERT INTO Journey (name, isCompleted) VALUES (?, 0)"

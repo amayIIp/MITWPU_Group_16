@@ -25,6 +25,7 @@ class ReadingTableViewController: UITableViewController {
             presentModal(withTitle: cellTitle)
             
         } else if indexPath.row == 9 {
+            self.titleForDetailView = cellTitle
             presentTextInputModal()
         }
         

@@ -7,34 +7,37 @@
 
 import UIKit
 
-class OnboardingNameViewController: UIViewController, UITextViewDelegate {
+class OnboardingNameViewController: UIViewController, UITextFieldDelegate {
     
-    @IBOutlet weak var nameTextView: UITextView!
+    @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var continueButton: UIButton!
         
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupButton()
+        setupTextField()
         setupDismissKeyboardGesture()
     }
     
-    
-    func setupButton() {
-        continueButton.configuration = .prominentGlass()
-        continueButton.configuration?.title = "Continue"
+    func setupTextField() {
+        nameTextField.delegate = self
+        nameTextField.returnKeyType = .done
     }
     
     func setupDismissKeyboardGesture() {
-        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
+        let tapGesture = UITapGestureRecognizer(target: view,
+                                               action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tapGesture)
     }
 
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+
     @IBAction func continueButtonTapped(_ sender: UIButton) {
-        guard let name = nameTextView.text,
-              !name.isEmpty,
-              nameTextView.textColor != .placeholderText else {
-//            print("Name field is empty or contains placeholder.")
+        guard let name = nameTextField.text,
+              !name.trimmingCharacters(in: .whitespaces).isEmpty else {
             return
         }
         

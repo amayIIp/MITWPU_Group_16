@@ -16,7 +16,6 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupButton()
     }
     
     func setupUI() {
@@ -26,15 +25,10 @@ class LoginViewController: UIViewController {
         passwordTextField.isSecureTextEntry = true
     }
     
-    func setupButton() {
-        continueButton.configuration = .prominentGlass()
-        continueButton.configuration?.title = "Sign In"
-    }
 
     @IBAction func loginButtonTapped(_ sender: UIButton) {
         guard let inputEmail = emailTextField.text, !inputEmail.isEmpty,
               let inputPassword = passwordTextField.text, !inputPassword.isEmpty else {
-//            print("Error: Please fill in all fields.")
             return
         }
         

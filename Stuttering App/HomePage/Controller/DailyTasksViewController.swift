@@ -54,14 +54,16 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
         
         let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
     
-        guard let exerciseVC = storyboard.instantiateViewController(withIdentifier: "ExerciseMain") as? ExerciseTemplateViewController else {
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "AirFlowInstruction") as? ExerciseInstructionViewController else {
             print("Error: Could not find ExerciseResult VC")
             return
         }
         
-        exerciseVC.startingSource = .dailyTasks
-        exerciseVC.exerciseName = exerciseName
-        exerciseVC.modalPresentationStyle = .fullScreen
-        present(exerciseVC, animated: true)
+        vc.startingSource = .dailyTasks
+        vc.exerciseName = exerciseName
+        
+        let ResultNav = UINavigationController(rootViewController: vc)
+        ResultNav.modalPresentationStyle = .fullScreen
+        self.present(ResultNav, animated: true, completion: nil)
     }
 }

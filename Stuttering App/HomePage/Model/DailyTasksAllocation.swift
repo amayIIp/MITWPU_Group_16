@@ -17,13 +17,11 @@ class LogicMaker {
         
         let lastDate = defaults.object(forKey: kLastRefreshDate) as? Date ?? Date.distantPast
         if !calendar.isDateInToday(lastDate) {
-            //print("LogicMaker: New Day Detected. Resetting tasks...")
-            
+            print("LogicMaker: New Day Detected. Resetting tasks...")
             resetDailyTasks()
-            
             defaults.set(Date(), forKey: kLastRefreshDate)
         } else {
-            //print("LogicMaker: Same day. No reset needed.")
+            print("LogicMaker: Same day. No reset needed.")
         }
     }
     
@@ -32,14 +30,14 @@ class LogicMaker {
         let nextExercises = db.fetchNextFiveFromJourney()
         
         if nextExercises.isEmpty {
-            //print("Journey complete! No more exercises.")
+            print("Journey complete! No more exercises.")
             return
         }
     
         guard let url = Bundle.main.url(forResource: "exerciselogs", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let root = try? JSONDecoder().decode(LibraryData.self, from: data) else {
-            //print("Error: Could not load JSON data")
+            print("Error: Could not load JSON data")
             return
         }
         
@@ -59,7 +57,7 @@ class LogicMaker {
             )
         }
         
-        //print("Daily Tasks Reset Successfully.")
+        print("Daily Tasks Reset Successfully.")
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
     }
 }
