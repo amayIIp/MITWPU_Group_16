@@ -15,9 +15,22 @@
 		19EB3DD42ED71B340003B76D /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 19EB3D322ED6ED290003B76D /* Stuttering App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		19EB3D352ED6ED290003B76D /* Stuttering App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
+			);
 			path = "Stuttering App";
 			sourceTree = "<group>";
 		};

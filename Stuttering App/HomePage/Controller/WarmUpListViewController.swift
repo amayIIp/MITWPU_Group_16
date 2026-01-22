@@ -64,19 +64,34 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
     }
     
     func navigateToExercise(with exerciseName: String) {
-        guard let vc = storyboard?.instantiateViewController(withIdentifier: exerciseName),
-              let exerciseVC = vc as? ExerciseStarting else {
-            
-            print("Error: Could not find VC with ID \(exerciseName)")
-            print("OR that VC does not conform to the 'ExerciseStarting' protocol.")
+        
+//        let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
+//        let vc = storyboard.instantiateViewController(withIdentifier: exerciseName)
+//            
+//            print("Error: Could not find VC with ID \(exerciseName)")
+//            print("OR that VC does not conform to the 'ExerciseStarting' protocol.")
+//            return
+//        
+//        
+//        vc.startingSource = .warmup
+//        vc.exerciseName = exerciseName
+//        
+//        vc.modalPresentationStyle = .fullScreen
+//        present(vc, animated: true, completion: nil)
+        
+        let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
+    
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "AirFlowInstruction") as? ExerciseInstructionViewController else {
+            print("Error: Could not find ExerciseResult VC")
             return
         }
         
-        exerciseVC.startingSource = .warmup
-        exerciseVC.exerciseName = exerciseName
+        vc.startingSource = .warmup
+        vc.exerciseName = exerciseName
         
-        vc.modalPresentationStyle = .fullScreen
-        present(vc, animated: true, completion: nil)
+        let ResultNav = UINavigationController(rootViewController: vc)
+        ResultNav.modalPresentationStyle = .fullScreen
+        self.present(ResultNav, animated: true, completion: nil)
     }
 
 }
