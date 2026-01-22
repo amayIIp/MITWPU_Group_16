@@ -329,37 +329,37 @@
                 "id": "topic_festivals",
                 "name": "Festivals",
                 "description": "Explore different celebrations and learn their cultural meaning.",
-                "short_time": 10
+                "short_time": 100
               },
               {
                 "id": "topic_science",
                 "name": "Science",
                 "description": "Discover new ideas and concepts through simple scientific topics.",
-                "short_time": 12
+                "short_time": 120
               },
               {
                 "id": "topic_culture",
                 "name": "Culture",
                 "description": "Understand traditions, lifestyles, and stories from around the world.",
-                "short_time": 8
+                "short_time": 80
               },
               {
                 "id": "topic_travel",
                 "name": "Travel",
                 "description": "Experience new places and learn about global destinations.",
-                "short_time": 56
+                "short_time": 560
               },
               {
                 "id": "topic_mindset",
                 "name": "Mindset",
                 "description": "Build positive thinking and develop a calm, focused outlook.",
-                "short_time": 98
+                "short_time": 80
               },
               {
                 "id": "topic_stories",
                 "name": "Stories",
                 "description": "Read engaging narratives that inspire imagination and clarity.",
-                "short_time": 45
+                "short_time": 250
               },
               {
                 "id": "topic_technology",
