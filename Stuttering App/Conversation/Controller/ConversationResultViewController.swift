@@ -1,3 +1,5 @@
+// ConversationResultViewController.swift
+
 import UIKit
 
 class ConversationResultViewController: UIViewController {
@@ -38,31 +40,16 @@ class ConversationResultViewController: UIViewController {
     }
     
     private func parseStutterAnalysis() {
-        print("=== PARSING STUTTER ANALYSIS ===")
-        print("JSON Length: \(stutterAnalysisJSON.count)")
-        
         guard !stutterAnalysisJSON.isEmpty,
               let jsonData = stutterAnalysisJSON.data(using: .utf8) else {
-            print("No stutter analysis data available")
             return
         }
         
         let decoder = JSONDecoder()
         do {
             analysisReport = try decoder.decode(StutterJSONReport.self, from: jsonData)
-            print("Successfully parsed stutter analysis:")
-            if let report = analysisReport {
-                print("   - Fluency Score: \(report.fluencyScore)")
-                print("   - Duration: \(report.duration)")
-                print("   - Stuttered Words: \(report.stutteredWords)")
-                print("   - Blocks: \(report.blocks)")
-                print("   - Repetitions: \(report.breakdown.repetition)")
-                print("   - Prolongations: \(report.breakdown.prolongation)")
-                print("   - Letter Analysis: \(report.letterAnalysis)")
-            }
         } catch {
-            print("Failed to parse stutter analysis: \(error)")
-            print("Raw JSON: \(stutterAnalysisJSON)")
+            return
         }
     }
     
@@ -83,7 +70,6 @@ class ConversationResultViewController: UIViewController {
         }
         
         let percentages = report.percentages
-        
         var insights: [String] = []
         
         if percentages.correct >= 90 {
@@ -116,106 +102,25 @@ class ConversationResultViewController: UIViewController {
     }
     
     func loadTroubledWords() {
-        print("\n=== LOADING TROUBLED WORDS ===")
-        
         guard let report = analysisReport else {
-            print("No analysis report - loading defaults")
             loadDefaultTroubledWords()
             return
         }
-        print("Raw stuttered words: \(report.stutteredWords)")
-
-        let uniqueWords = Array(Set(report.stutteredWords))
-        print("Unique words: \(uniqueWords)")
         
+        let uniqueWords = Array(Set(report.stutteredWords))
         let words = Array(uniqueWords.prefix(9))
-        print("Display words (max 9): \(words)")
         
         if words.isEmpty {
-            print("No stuttered words detected - loading defaults")
             loadDefaultTroubledWords()
             return
         }
         
-        let maxPerRow = 3
-        
-        troubledWordsStackView.arrangedSubviews.forEach { view in
-            if !(view is UILabel) {
-                troubledWordsStackView.removeArrangedSubview(view)
-                view.removeFromSuperview()
-            }
-        }
-        
-        var currentRowStack: UIStackView?
-        
-        for (index, word) in words.enumerated() {
-            if index % maxPerRow == 0 {
-                currentRowStack = UIStackView()
-                currentRowStack?.axis = .horizontal
-                currentRowStack?.alignment = .fill
-                currentRowStack?.distribution = .fillEqually
-                currentRowStack?.spacing = 8
-                
-                troubledWordsStackView.addArrangedSubview(currentRowStack!)
-            }
-            
-            let chip = createChipLabel(text: word, textColor: .systemRed)
-            currentRowStack?.addArrangedSubview(chip)
-            print("Added chip for word: \(word)")
-        }
-        
-        if let lastRow = currentRowStack {
-            let itemsInLastRow = lastRow.arrangedSubviews.count
-            let emptySlots = maxPerRow - itemsInLastRow
-            
-            for _ in 0..<emptySlots {
-                let spacer = UIView()
-                spacer.backgroundColor = .clear
-                lastRow.addArrangedSubview(spacer)
-            }
-        }
-        
-        print("Finished loading troubled words UI")
+        displayWordChips(words, in: troubledWordsStackView, color: .systemRed)
     }
     
     private func loadDefaultTroubledWords() {
         let words = ResultData.troubledWordsArray
-        let maxPerRow = 3
-        
-        troubledWordsStackView.arrangedSubviews.forEach { view in
-            if !(view is UILabel) {
-                troubledWordsStackView.removeArrangedSubview(view)
-                view.removeFromSuperview()
-            }
-        }
-        
-        var currentRowStack: UIStackView?
-        
-        for (index, word) in words.enumerated() {
-            if index % maxPerRow == 0 {
-                currentRowStack = UIStackView()
-                currentRowStack?.axis = .horizontal
-                currentRowStack?.alignment = .fill
-                currentRowStack?.distribution = .fillEqually
-                currentRowStack?.spacing = 8
-                
-                troubledWordsStackView.addArrangedSubview(currentRowStack!)
-            }
-            
-            let chip = createChipLabel(text: word, textColor: .systemBlue)
-            currentRowStack?.addArrangedSubview(chip)
-        }
-        
-        if let lastRow = currentRowStack {
-            let itemsInLastRow = lastRow.arrangedSubviews.count
-            let emptySlots = maxPerRow - itemsInLastRow
-            
-            for _ in 0..<emptySlots {
-                let spacer = UIView()
-                spacer.backgroundColor = .clear
-                lastRow.addArrangedSubview(spacer)
-            }
-        }
+        displayWordChips(words, in: troubledWordsStackView, color: .systemBlue)
     }
     
     func loadExercises() {
@@ -251,28 +156,27 @@ class ConversationResultViewController: UIViewController {
         }
         
         exercises = Array(exercises.prefix(9))
-        
-        displayExerciseChips(exercises)
+        displayWordChips(exercises, in: exercisesStackView, color: .systemGreen)
     }
     
     private func loadDefaultExercises() {
         let exercises = ResultData.recommendedExercisesArray
-        displayExerciseChips(exercises)
+        displayWordChips(exercises, in: exercisesStackView, color: .systemGreen)
     }
     
-    private func displayExerciseChips(_ exercises: [String]) {
+    private func displayWordChips(_ words: [String], in stackView: UIStackView, color: UIColor) {
         let maxPerRow = 3
         
-        exercisesStackView.arrangedSubviews.forEach { view in
+        stackView.arrangedSubviews.forEach { view in
             if !(view is UILabel) {
-                exercisesStackView.removeArrangedSubview(view)
+                stackView.removeArrangedSubview(view)
                 view.removeFromSuperview()
             }
         }
         
         var currentRowStack: UIStackView?
         
-        for (index, exercise) in exercises.enumerated() {
+        for (index, word) in words.enumerated() {
             if index % maxPerRow == 0 {
                 currentRowStack = UIStackView()
                 currentRowStack?.axis = .horizontal
@@ -280,10 +184,10 @@ class ConversationResultViewController: UIViewController {
                 currentRowStack?.distribution = .fillEqually
                 currentRowStack?.spacing = 8
                 
-                exercisesStackView.addArrangedSubview(currentRowStack!)
+                stackView.addArrangedSubview(currentRowStack!)
             }
             
-            let chip = createChipLabel(text: exercise, textColor: .systemGreen)
+            let chip = createChipLabel(text: word, textColor: color)
             currentRowStack?.addArrangedSubview(chip)
         }
         
@@ -298,24 +202,42 @@ class ConversationResultViewController: UIViewController {
             }
         }
     }
-    
+//    
+//    func createChipLabel(text: String, textColor: UIColor) -> UILabel {
+//        let label = UILabel()
+//        label.text = text
+//        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+//        label.textColor = textColor
+//        label.backgroundColor = textColor.withAlphaComponent(0.15)
+//        label.textAlignment = .center
+//        label.numberOfLines = 1
+//        label.adjustsFontSizeToFitWidth = true
+//        label.minimumScaleFactor = 0.7
+//        
+//        label.layer.cornerRadius = 16
+//        label.layer.masksToBounds = true
+//        
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.heightAnchor.constraint(equalToConstant: 32).isActive = true
+//        
+//        return label
+//    }
+//    
     func createChipLabel(text: String, textColor: UIColor) -> UILabel {
         let label = UILabel()
         label.text = text
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         label.textColor = textColor
-        label.backgroundColor = textColor.withAlphaComponent(0.15)
+        label.backgroundColor = textColor.withAlphaComponent(0.12)
         label.textAlignment = .center
         label.numberOfLines = 1
-        label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.7
-        
-        label.layer.cornerRadius = 16
+        label.layer.cornerRadius = 14
         label.layer.masksToBounds = true
-        
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.heightAnchor.constraint(equalToConstant: 32).isActive = true
-        
+        label.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
+        label.text = "  \(text)  "
         return label
     }
     
@@ -347,7 +269,6 @@ class ConversationResultViewController: UIViewController {
             clockwise: true
         )
         
-        // Background circle
         let backgroundCircle = CAShapeLayer()
         backgroundCircle.path = circlePath.cgPath
         backgroundCircle.strokeColor = UIColor.systemGray5.cgColor
@@ -356,7 +277,6 @@ class ConversationResultViewController: UIViewController {
         backgroundCircle.lineCap = .round
         fluencyCircleView.layer.addSublayer(backgroundCircle)
         
-        // Progress circle
         let progressCircle = CAShapeLayer()
         progressCircle.path = circlePath.cgPath
         progressCircle.strokeColor = UIColor.systemBlue.cgColor
@@ -366,7 +286,6 @@ class ConversationResultViewController: UIViewController {
         progressCircle.strokeEnd = 0
         fluencyCircleView.layer.addSublayer(progressCircle)
         
-        // Animate
         let animation = CABasicAnimation(keyPath: "strokeEnd")
         animation.toValue = score / 100
         animation.duration = 1.2
@@ -375,7 +294,6 @@ class ConversationResultViewController: UIViewController {
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         progressCircle.add(animation, forKey: "progressAnim")
         
-        // Score label
         let scoreLabel = UILabel(frame: fluencyCircleView.bounds)
         scoreLabel.text = "\(Int(score))"
         scoreLabel.textAlignment = .center

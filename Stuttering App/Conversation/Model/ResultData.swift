@@ -1,26 +1,21 @@
-//
-//  ResultData.swift
-//  Stuttering Final
-//
-//  Created by SDC-USER on 20/01/26.
-//
+// ResultData.swift
 
 import Foundation
 
 struct ResultData {
     
-    static let insightsText = "Your /R/ & /S/ phoneme words have improved by 43%."
+    static let insightsText = "Your 'R' & 'S' phoneme words have improved by 43%."
     
     static let troubledWordsArray: [String] = [
         "School",
-        "Stereotype",
-        "Conversation",
-        "Speaking",
-        "Presentation",
-        "Confidence",
+        "Test",
+        "Small",
+        "Speak",
+        "Pen",
+        "confident",
         "Reading",
-        "Practice",
-        "Interview"
+        "Door",
+        "Enter"
     ]
     
     static let recommendedExercisesArray: [String] = [

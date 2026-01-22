@@ -5,12 +5,14 @@ class LastOnboardingViewController: UIViewController {
     @IBOutlet weak var blocks: UILabel!
     @IBOutlet weak var repitition: UILabel!
     @IBOutlet weak var prolongation: UILabel!
-    @IBOutlet weak var troubledWords: UIStackView!
+    @IBOutlet weak var troubledWords: UIStackView! // This should be the StackView inside "Words you find hard to say"
+    
     @IBOutlet weak var splashStackView: UIStackView!
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var getStartedButton: UIButton!
-    @IBOutlet weak var chartContainerView: UIView!
+    //@IBOutlet weak var chartContainerView: UIView!
 
+    // ✅ Variable to receive data
     var report: StutterJSONReport?
     
     override func viewDidLoad() {
@@ -113,7 +115,7 @@ class LastOnboardingViewController: UIViewController {
     }
     
     private func performEntryAnimation() {
-        UIView.animate(withDuration: 1.0, delay: 1.5, options: [.curveEaseInOut], animations: {
+        UIView.animate(withDuration: 1.0, delay: 2.0, options: [.curveEaseInOut], animations: {
             self.splashStackView.alpha = 0.0
             
         }) { _ in
@@ -121,6 +123,7 @@ class LastOnboardingViewController: UIViewController {
             self.navigationController?.setNavigationBarHidden(false, animated: false)
             self.scrollView.alpha = 1.0
             self.getStartedButton.alpha = 1.0
+            
         }
     }
 

@@ -1,4 +1,4 @@
-// VoiceViewModel.swift - UPDATED
+// VoiceViewModel.swift
 
 import UIKit
 import AVFoundation
@@ -13,7 +13,7 @@ protocol VoiceViewModelDelegate: AnyObject {
 }
 
 class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
-
+    
     enum VoiceState {
         case idle, speaking, listening, thinking
         
@@ -23,10 +23,10 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     }
     
     weak var delegate: VoiceViewModelDelegate?
+    
     private(set) var state: VoiceState = .idle {
         didSet {
             delegate?.didUpdateState(state)
-            print("State changed: \(state)")
         }
     }
     
@@ -37,25 +37,24 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
     
-    // Data
     private var currentBufferText: String = ""
     private var conversationHistory: [(speaker: String, text: String)] = []
     
-    // STUTTER DETECTION DATA
     private var allUserSegments: [SFTranscriptionSegment] = []
     private var fullUserTranscript: String = ""
     private var conversationStartTime: Date?
     
-    // Silence detection for auto-stop
     private var silenceTimer: Timer?
     private let silenceThreshold: TimeInterval = 2.5
-    private var hasDetectedSpeech = false // 🆕 Track if ANY speech detected
+    private var hasDetectedSpeech = false
     
     override init() {
         super.init()
         synthesizer.delegate = self
         configureAudioSession()
     }
+    
+    // MARK: - Public Properties
     
     var isConversationActive: Bool {
         return state.isActive
@@ -72,7 +71,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     func getTotalWordCount() -> Int {
         return conversationHistory
             .filter { $0.speaker == "User" }
-            .map { $0.text.split(separator: " ").count }
+            .map { $0.text.components(separatedBy: .whitespaces).filter { !$0.isEmpty }.count }
             .reduce(0, +)
     }
     
@@ -93,11 +92,6 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         
         let duration = conversationStartTime.map { Date().timeIntervalSince($0) } ?? 0
         
-        print("Analyzing stutter data:")
-        print("   - Full transcript: \(fullUserTranscript)")
-        print("   - Total segments: \(allUserSegments.count)")
-        print("   - Duration: \(duration)s")
-        
         return StutterAnalyzer.analyze(
             reference: fullUserTranscript,
             transcript: fullUserTranscript,
@@ -106,9 +100,9 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         )
     }
     
+    // MARK: - Lifecycle Management
+    
     func stopSession() {
-        print("Stopping voice session...")
-        
         silenceTimer?.invalidate()
         silenceTimer = nil
         
@@ -117,32 +111,27 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         }
         
         stopListening()
-        
         state = .idle
         currentBufferText = ""
         
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-            print("Audio session deactivated")
         } catch {
-            print("Error deactivating audio session: \(error)")
+            delegate?.didEncounterError("Failed to deactivate audio session")
         }
     }
     
     private func configureAudioSession() {
         do {
             let audioSession = AVAudioSession.sharedInstance()
-            // Updated options to suppress deprecation warning and ensure modern routing behavior
-            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth])
+            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothA2DP])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-            
-            print("Audio session configured successfully")
         } catch {
-            print("Audio Session Error: \(error)")
-            // Updated error handling for the pitch
-            delegate?.didEncounterError("Unable to initialize audio configuration. Please verify your device settings.")
+            delegate?.didEncounterError("Audio setup failed. Please restart the app.")
         }
     }
+    
+    // MARK: - AI Initialization
     
     @MainActor
     func prepareModel() async {
@@ -157,9 +146,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         
         if model.availability == .available {
             self.session = LanguageModelSession(model: model, instructions: personaInstructions)
-            print("AI Model ready")
         } else {
-            print("Model unavailable: \(model.availability)")
             delegate?.didEncounterError("AI model is not available on this device.")
         }
     }
@@ -173,6 +160,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         conversationStartTime = Date()
         speak("Hi there! I'm ready to chat. How are you doing today?")
     }
+    
+    // MARK: - Speech Synthesis
     
     func speak(_ text: String) {
         guard !text.isEmpty else { return }
@@ -204,17 +193,15 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        print("Speech was cancelled")
         if state == .speaking {
             state = .idle
         }
     }
-        
+    
+    // MARK: - Speech Recognition
+    
     func startListening() {
-        guard !audioEngine.isRunning else {
-            print("Audio engine already running")
-            return
-        }
+        guard !audioEngine.isRunning else { return }
         
         SFSpeechRecognizer.requestAuthorization { status in
             if status != .authorized {
@@ -244,19 +231,15 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                 if !newText.trimmingCharacters(in: .whitespaces).isEmpty {
                     if !self.hasDetectedSpeech {
                         self.hasDetectedSpeech = true
-                        print("Speech detected: '\(newText)'")
                     }
                     
                     self.currentBufferText = newText
                     self.delegate?.didUpdateTranscript(self.currentBufferText, isUser: true)
                     
-                    // COLLECT SEGMENTS FOR STUTTER DETECTION
                     if !res.bestTranscription.segments.isEmpty {
                         self.allUserSegments.append(contentsOf: res.bestTranscription.segments)
-                        print("Collected \(res.bestTranscription.segments.count) segments")
                     }
                     
-                    // Only reset timer if we have speech
                     self.resetSilenceTimer()
                 }
                 
@@ -268,26 +251,21 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             if let error = error {
                 let nsError = error as NSError
                 
-                // IGNORE "No speech detected" errors - they're normal
                 if nsError.domain == "kAFAssistantErrorDomain" && nsError.code == 1110 {
-                    print("Waiting for speech input...")
-                    return // Don't stop listening
+                    return
                 }
                 
-                // Ignore cancellation errors (code 301)
                 if nsError.domain == "kLSRErrorDomain" && nsError.code == 301 {
-                    print("Recognition was canceled (expected)")
-                } else {
-                    print("Recognition error: \(error)")
-                    self.stopListening()
+                    return
                 }
+                
+                self.stopListening()
             }
         }
         
         let format = inputNode.outputFormat(forBus: 0)
         
         guard format.sampleRate > 0 && format.channelCount > 0 else {
-            print("Invalid audio format")
             delegate?.didEncounterError("Microphone format error")
             return
         }
@@ -300,10 +278,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         do {
             audioEngine.prepare()
             try audioEngine.start()
-            print("Audio engine started - waiting for speech...")
-            // DON'T start timer until speech is detected
         } catch {
-            print("Audio engine start error: \(error)")
             delegate?.didEncounterError("Microphone failed to start")
         }
     }
@@ -324,8 +299,6 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             self?.recognitionRequest = nil
             self?.recognitionTask = nil
         }
-        
-        print("Listening stopped")
     }
     
     private func resetSilenceTimer() {
@@ -336,12 +309,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     }
     
     private func handleSilenceDetected() {
-        guard hasDetectedSpeech else {
-            print("Silence timeout but no speech detected - continuing...")
-            return
-        }
+        guard hasDetectedSpeech else { return }
         
-        print("Silence detected after speech - auto-submitting")
         DispatchQueue.main.async {
             self.commitUserBuffer()
         }
@@ -355,7 +324,6 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     func resetConversation() {
         stopSession()
         conversationHistory.removeAll()
-        
         allUserSegments.removeAll()
         fullUserTranscript = ""
         conversationStartTime = nil
@@ -364,7 +332,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         do {
             try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            print("Error reactivating audio: \(error)")
+            delegate?.didEncounterError("Failed to restart audio session")
         }
         
         state = .idle
@@ -385,7 +353,6 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         guard !currentBufferText.isEmpty,
               currentBufferText != "Listening...",
               currentBufferText.count > 1 else {
-            print("No valid input detected")
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 self.startListening()
             }
@@ -400,32 +367,22 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         }
         fullUserTranscript += userInput
         
-        print("User said: \(userInput)")
-        print("Full transcript now: \(fullUserTranscript)")
-        
         delegate?.addMessageToConversation(speaker: "User", text: userInput)
-        
         state = .thinking
         
-        Task {
+        Task { @MainActor in
             guard let session = self.session else {
-                await MainActor.run {
-                    self.delegate?.didEncounterError("AI session not initialized")
-                    self.state = .idle
-                }
+                self.delegate?.didEncounterError("AI session not initialized")
+                self.state = .idle
                 return
             }
             
             do {
                 let response = try await session.respond(to: userInput)
-                await MainActor.run {
-                    self.speak(response.content)
-                }
+                let responseContent = response.content
+                self.speak(responseContent)
             } catch {
-                print("AI response error: \(error)")
-                await MainActor.run {
-                    self.speak("Sorry, could you say that again?")
-                }
+                self.speak("Sorry, could you say that again?")
             }
         }
     }

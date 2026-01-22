@@ -36,6 +36,29 @@ class PhonemesSelectionViewController: UIViewController {
     func setupButtons() {
         phonemeButtons = [phonemeB, phonemeP, phonemeK, phonemeG, phonemeT, phonemeD,
                          phonemeS, phonemeSH, phonemeF, phonemeV, phonemeR, phonemeL]
+        
+//        for button in phonemeButtons {
+//            stylePhonemeButton(button)
+//        }
+//        stylePhonemeButton(noneButton)
+//        stylePhonemeButton(notSureButton)
+//        
+//        continueButton.configuration = .prominentGlass()
+//        continueButton.configuration?.title = "Continue"
+    
+    }
+    
+    func stylePhonemeButton(_ button: UIButton) {
+        button.backgroundColor = .white
+        button.layer.cornerRadius = 12
+        button.setTitleColor(.black, for: .normal)
+        button.setTitleColor(.white, for: .selected)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        // Add shadow for depth
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOffset = CGSize(width: 0, height: 1)
+        button.layer.shadowOpacity = 0.1
+        button.layer.shadowRadius = 3
     }
 
     @IBAction func phonemeButtonTapped(_ sender: UIButton) {
@@ -77,6 +100,7 @@ class PhonemesSelectionViewController: UIViewController {
     
     @IBAction func continueButtonTapped(_ sender: UIButton) {
         StorageManager.shared.savePhonemes(selectedPhonemes)
+        //print("Saved phonemes: \(selectedPhonemes)")
     }
     
     func clearAllSelections() {

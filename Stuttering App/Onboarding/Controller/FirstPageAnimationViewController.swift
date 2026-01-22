@@ -11,8 +11,8 @@ class FirstPageAnimationViewController: UIViewController {
 
     @IBOutlet weak var headerLabel: UIImageView!
     @IBOutlet weak var infoLabel: UIStackView!
+
     @IBOutlet weak var buttonView: UIView!
-    
     var hasSetInitialState = false
     
     override func viewDidLoad() {
@@ -22,6 +22,8 @@ class FirstPageAnimationViewController: UIViewController {
         infoLabel.alpha = 0
         buttonView.alpha = 0
     }
+    
+
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -36,6 +38,7 @@ class FirstPageAnimationViewController: UIViewController {
         super.viewDidAppear(animated)
         startSequenceAnimation()
     }
+    
     
     private func setupInitialState() {
         headerLabel.alpha = 1
@@ -72,4 +75,5 @@ class FirstPageAnimationViewController: UIViewController {
             }
         }
     }
+
 }

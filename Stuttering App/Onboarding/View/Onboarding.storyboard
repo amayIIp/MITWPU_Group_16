@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24127" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="UPJ-sX-5LM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="UPJ-sX-5LM">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -12,7 +12,7 @@
         <!--First Page Animation View Controller-->
         <scene sceneID="ldD-9X-sbZ">
             <objects>
-                <viewController id="QqP-2e-2ML" customClass="FirstPageAnimationViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="QqP-2e-2ML" customClass="FirstPageAnimationViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="PNw-Eb-IBa">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -158,7 +158,7 @@
         <!--Sign Up View Controller-->
         <scene sceneID="clU-63-TPd">
             <objects>
-                <viewController storyboardIdentifier="SignUpVC" id="IR9-UT-Kdf" customClass="SignUpViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SignUpVC" id="IR9-UT-Kdf" customClass="SignUpViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="WmY-j7-kix">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -263,7 +263,7 @@
         <!--Login View Controller-->
         <scene sceneID="9E4-yP-eCZ">
             <objects>
-                <viewController storyboardIdentifier="LoginVC" id="f20-eP-Po3" customClass="LoginViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="LoginVC" id="f20-eP-Po3" customClass="LoginViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="9Zj-v5-zzU">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -369,12 +369,12 @@
         <!--Enter your name-->
         <scene sceneID="6sK-ct-3cw">
             <objects>
-                <viewController storyboardIdentifier="OnboardingVC" id="wNi-qZ-XqS" customClass="OnboardingNameViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="OnboardingVC" id="wNi-qZ-XqS" customClass="OnboardingNameViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="13P-A1-7jr">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HMu-4z-V5x" customClass="ProminentButton" customModule="Stuttering_Final" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HMu-4z-V5x" customClass="ProminentButton" customModule="Stutter1" customModuleProvider="target">
                                 <rect key="frame" x="32" y="770" width="329" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="iqk-lt-urx"/>
@@ -401,7 +401,7 @@
                                 <rect key="frame" x="20" y="244" width="353" height="41"/>
                                 <subviews>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2L5-mU-yu2">
-                                        <rect key="frame" x="8" y="11.333333333333345" width="337" height="18.666666666666671"/>
+                                        <rect key="frame" x="8" y="9.6666666666666572" width="337" height="22"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
@@ -442,15 +442,15 @@
             </objects>
             <point key="canvasLocation" x="-5030" y="1477"/>
         </scene>
-        <!--View Controller-->
+        <!--Onboarding Instructions View Controller-->
         <scene sceneID="Pei-Q8-0XH">
             <objects>
-                <viewController id="ddt-Di-a0D" sceneMemberID="viewController">
+                <viewController id="ddt-Di-a0D" customClass="OnboardingInstructionsViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="XhU-EI-Qhc">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yIF-pN-SNn" customClass="ProminentButton" customModule="Stuttering_Final" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yIF-pN-SNn" customClass="ProminentButton" customModule="Stutter1" customModuleProvider="target">
                                 <rect key="frame" x="32" y="770" width="329" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="BpS-0b-DbS"/>
@@ -570,7 +570,7 @@ speech test
         <!--Result-->
         <scene sceneID="nT6-vX-2xs">
             <objects>
-                <viewController storyboardIdentifier="LastOnboardingViewController" id="EBs-ep-9Fc" customClass="LastOnboardingViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="LastOnboardingViewController" id="EBs-ep-9Fc" customClass="LastOnboardingViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="2M7-wk-pRC">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -600,7 +600,7 @@ speech test
                                 <rect key="frame" x="0.0" y="118" width="393" height="734"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="9" translatesAutoresizingMaskIntoConstraints="NO" id="pLh-tV-mnA">
-                                        <rect key="frame" x="20" y="0.0" width="353" height="508"/>
+                                        <rect key="frame" x="20" y="0.0" width="353" height="458"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Kp8-1T-drg">
                                                 <rect key="frame" x="0.0" y="0.0" width="353" height="120"/>
@@ -685,7 +685,7 @@ speech test
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kxW-Io-Uhp">
-                                                <rect key="frame" x="0.0" y="129" width="353" height="200"/>
+                                                <rect key="frame" x="0.0" y="129" width="353" height="150"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Words you find hard to say" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WTu-uL-b9D">
                                                         <rect key="frame" x="20" y="15.999999999999998" width="211.33333333333334" height="20.333333333333329"/>
@@ -694,12 +694,12 @@ speech test
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="W5D-tJ-BCl">
-                                                        <rect key="frame" x="20" y="46.333333333333314" width="313" height="133.66666666666666"/>
+                                                        <rect key="frame" x="20" y="46.333333333333321" width="313" height="83.666666666666686"/>
                                                     </stackView>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="200" id="KMP-7i-7N3"/>
+                                                    <constraint firstAttribute="height" constant="150" id="KMP-7i-7N3"/>
                                                     <constraint firstItem="W5D-tJ-BCl" firstAttribute="leading" secondItem="kxW-Io-Uhp" secondAttribute="leading" constant="20" id="OEq-NR-Gz1"/>
                                                     <constraint firstItem="W5D-tJ-BCl" firstAttribute="top" secondItem="WTu-uL-b9D" secondAttribute="bottom" constant="10" id="YPL-Gi-YIZ"/>
                                                     <constraint firstItem="WTu-uL-b9D" firstAttribute="top" secondItem="kxW-Io-Uhp" secondAttribute="top" constant="16" id="YRo-Yp-GEG"/>
@@ -715,7 +715,7 @@ speech test
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7lp-aa-yqA">
-                                                <rect key="frame" x="0.0" y="338" width="353" height="170"/>
+                                                <rect key="frame" x="0.0" y="288" width="353" height="170"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Did you know ?" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PwE-nc-if8">
                                                         <rect key="frame" x="19.999999999999993" y="15.999999999999998" width="119.33333333333331" height="20.333333333333329"/>
@@ -836,7 +836,7 @@ speech test
         <!--Test View Controller-->
         <scene sceneID="TzT-nr-xa9">
             <objects>
-                <viewController id="TwK-Tn-5kw" customClass="TestViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="TwK-Tn-5kw" customClass="TestViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Enn-bN-XJK">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -879,7 +879,7 @@ speech test
                                             <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
                                         </userDefinedRuntimeAttributes>
                                     </view>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2HX-q4-n0h" customClass="GlassButton" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2HX-q4-n0h" customClass="GlassButton" customModule="Stutter1" customModuleProvider="target">
                                         <rect key="frame" x="245" y="350" width="50" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="aMq-Rf-ioi"/>
@@ -893,7 +893,7 @@ speech test
                                             <action selector="previousButtonTapped:" destination="TwK-Tn-5kw" eventType="touchUpInside" id="zYf-s9-xly"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Hoh-c8-cpt" customClass="GlassButton" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Hoh-c8-cpt" customClass="GlassButton" customModule="Stutter1" customModuleProvider="target">
                                         <rect key="frame" x="318" y="350" width="50" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="lhR-Yi-lG2"/>
@@ -907,7 +907,7 @@ speech test
                                             <action selector="nextButtonTapped:" destination="TwK-Tn-5kw" eventType="touchUpInside" id="aOm-Nl-fsB"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j7u-gU-Jmz" customClass="GlassButton" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j7u-gU-Jmz" customClass="GlassButton" customModule="Stutter1" customModuleProvider="target">
                                         <rect key="frame" x="25" y="350" width="50" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="IaR-98-9Cm"/>
@@ -989,48 +989,10 @@ speech test
             </objects>
             <point key="canvasLocation" x="-2739.6946564885493" y="1476.7605633802818"/>
         </scene>
-        <!--View Controller-->
-        <scene sceneID="GOH-M5-2Yu">
-            <objects>
-                <viewController id="bjb-5t-Y4o" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="H7s-uh-7gE">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" fixedFrame="YES" axis="vertical" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="RWu-Jj-P27">
-                                <rect key="frame" x="86.666666666666686" y="256" width="239" height="307.33333333333326"/>
-                                <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalCompressionResistancePriority="749" image="Trophie" translatesAutoresizingMaskIntoConstraints="NO" id="WFZ-74-X58">
-                                        <rect key="frame" x="0.0" y="0.0" width="239" height="201.33333333333334"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="201.33000000000001" id="zAY-Ay-hg0"/>
-                                        </constraints>
-                                    </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You’ve completed your first step towards clear speech" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wu3-uf-KbK">
-                                        <rect key="frame" x="0.0" y="208.33333333333337" width="239" height="99"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="239" id="7TE-2t-G0e"/>
-                                            <constraint firstAttribute="height" constant="99" id="O9t-jQ-fJD"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="22"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                </subviews>
-                            </stackView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="WLa-pa-UdP"/>
-                        <color key="backgroundColor" name="bg"/>
-                    </view>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="gna-mi-O6y" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-1014.5038167938931" y="1476.7605633802818"/>
-        </scene>
         <!--Phonemes Selection View Controller-->
         <scene sceneID="vDw-kt-QEp">
             <objects>
-                <viewController id="GcJ-lZ-6Xr" customClass="PhonemesSelectionViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="GcJ-lZ-6Xr" customClass="PhonemesSelectionViewController" customModule="Stutter1" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="et2-5h-7sB">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1047,7 +1009,7 @@ to say?</string>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZL5-B4-8e3" customClass="ProminentButton" customModule="Stuttering_Final" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZL5-B4-8e3" customClass="ProminentButton" customModule="Stutter1" customModuleProvider="target">
                                 <rect key="frame" x="32" y="770" width="329" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="329" id="20Y-2L-YEB"/>

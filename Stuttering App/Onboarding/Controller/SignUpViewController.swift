@@ -16,7 +16,13 @@ class SignUpViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //setupButtons()
         setupUI()
+    }
+    
+    func setupButtons() {
+        SignUpButton.configuration = .prominentGlass()
+        SignUpButton.configuration?.title = "Sign Up"
     }
     
     func setupUI() {

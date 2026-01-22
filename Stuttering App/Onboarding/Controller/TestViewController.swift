@@ -12,6 +12,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     @IBOutlet weak var continueButton: UIButton!
     @IBOutlet weak var bottomViewConstraint: NSLayoutConstraint!
     
+    // The text the user needs to read
     let paragraphs: [String] = [
         "Because everyone has a significant story to tell, Peter, a professional photographer, typically describes his most incredible, adventurous experiences. My grandfather, who is nearly ninety-three years old, often ponders those vibrant, green mountains while talking to anyone who will listen attentively.",
         "Although communication can be challenging, he persists in connecting with the people in his community through vivid, descriptive language. Critics frequently keep track of his complicated techniques because they require great concentration and persistent practice.",
@@ -21,10 +22,14 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     var paragraphLabels: [UILabel] = []
     var currentIndex: Int = 0
     
+    // --- 🎤 AUDIO & SPEECH VARS ---
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+    
+    // ✅ ADDED: Timer Variable
+    var startTime: Date?
     
     // Data to hold the recording
     var recordedTranscript = ""
@@ -40,23 +45,29 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        // Start recording as soon as the test screen appears
         try? startRecording()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        stopRecording()
+        stopRecording() // Safety stop
     }
+    
+    // MARK: - Audio Logic
     
     func setupPermissions() {
         SFSpeechRecognizer.requestAuthorization { authStatus in
+            // Handle auth status if needed
         }
     }
     
     func startRecording() throws {
+        // 1. Cancel existing tasks
         recognitionTask?.cancel()
         self.recognitionTask = nil
         
+        // 2. Setup Session
         let audioSession = AVAudioSession.sharedInstance()
         try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
@@ -64,26 +75,40 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         let inputNode = audioEngine.inputNode
         
+        // 3. Reset Engine to prevent crashes
         inputNode.removeTap(onBus: 0)
+        
+        // ✅ START TIMER
+        startTime = Date()
         
         guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create request") }
         recognitionRequest.shouldReportPartialResults = true
         
+        // 4. Keep recording even if user pauses
         if #available(iOS 13, *) {
             recognitionRequest.requiresOnDeviceRecognition = true
         }
         
+        // 5. Start Recognition Task
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
-                self.recordedTranscript = result.bestTranscription.formattedString
-                self.recordedSegments = result.bestTranscription.segments
-                // print("Test Live: \(self.recordedTranscript)")
+                let newText = result.bestTranscription.formattedString
+                
+                // ✅ CRITICAL FIX: SAFETY CHECK FOR LONG BLOCKS
+                // Only update if the new text is NOT empty.
+                // This prevents the engine from wiping your data when it detects a long silence (block).
+                if !newText.isEmpty {
+                    self.recordedTranscript = newText
+                    self.recordedSegments = result.bestTranscription.segments
+                    // print("📝 Test Live: \(self.recordedTranscript)") // Debug if needed
+                }
             }
             if error != nil {
                 self.stopRecording()
             }
         }
         
+        // 6. Install Tap on Mic
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer, when) in
             self.recognitionRequest?.append(buffer)
@@ -91,7 +116,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         audioEngine.prepare()
         try audioEngine.start()
-        print("Test Recording Started...")
+        print("🎤 Test Recording Started...")
     }
     
     func stopRecording() {
@@ -99,9 +124,11 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             audioEngine.stop()
             recognitionRequest?.endAudio()
             audioEngine.inputNode.removeTap(onBus: 0)
-            print("Test Recording Stopped.")
+            print("🛑 Test Recording Stopped.")
         }
     }
+    
+    // MARK: - Navigation & Analysis
     
     func setupButtons() {
         updateButtonStates()
@@ -116,7 +143,9 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             highlightParagraph(at: currentIndex + 1, animated: true)
         }
         
+        // If we reached the last paragraph, show the "Submit" button
         if currentIndex == paragraphs.count - 1 {
+            //self.bottomViewConstraint.constant = 60
             self.continueButton.isHidden = false
             self.continueButton.isEnabled = true
             
@@ -134,11 +163,13 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     @IBAction func resetButtonTapped(_ sender: UIButton) {
+        // 1. Reset Recording
         stopRecording()
         recordedTranscript = ""
         recordedSegments = []
         try? startRecording()
         
+        // 2. Reset UI
         highlightParagraph(at: 0, animated: true)
         bottomViewConstraint.constant = 0
         continueButton.isEnabled = false
@@ -150,24 +181,42 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
     }
     
+    // ✅ "Submit" Button Action
     @IBAction func continueButtonTapped(_ sender: UIButton) {
+        // 1. Stop Recording
         stopRecording()
+        
+        // 2. ✅ Calculate Duration
+        let duration = Date().timeIntervalSince(startTime ?? Date())
+        
+        // 3. Combine all paragraphs into one reference string
         let fullReferenceText = paragraphs.joined(separator: " ")
-        let jsonResult = StutterAnalyzer.analyze(reference: fullReferenceText, transcript: recordedTranscript, segments: recordedSegments, duration: 1)
         
-        print("Analysis Result: \(jsonResult)")
+        // 4. Run Analysis (Added Duration Parameter)
+        let jsonResult = StutterAnalyzer.analyze(
+            reference: fullReferenceText,
+            transcript: recordedTranscript,
+            segments: recordedSegments,
+            duration: duration
+        )
         
+        print("📊 Analysis Result: \(jsonResult)")
+        
+        // 5. Decode JSON
         guard let jsonData = jsonResult.data(using: .utf8),
               let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
-            print("Error decoding report")
+            print("❌ Error decoding report")
             return
         }
         
+        // 6. Navigate to Result Screen
         if let resultVC = storyboard?.instantiateViewController(withIdentifier: "LastOnboardingViewController") as? LastOnboardingViewController {
             resultVC.report = report // Pass data
             navigationController?.pushViewController(resultVC, animated: true)
         }
     }
+    
+    // MARK: - UI Logic (Standard)
     
     func createParagraphLabels() {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }

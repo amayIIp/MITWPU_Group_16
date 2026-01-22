@@ -15,12 +15,19 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //setupButton()
         setupTextField()
         setupDismissKeyboardGesture()
     }
     
+    func setupButton() {
+        continueButton.configuration = .prominentGlass()
+        continueButton.configuration?.title = "Continue"
+    }
+    
     func setupTextField() {
         nameTextField.delegate = self
+        //nameTextField.placeholder = "Enter your name"
         nameTextField.returnKeyType = .done
     }
     

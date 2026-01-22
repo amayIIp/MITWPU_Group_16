@@ -1,0 +1,230 @@
+{
+  "module_name": "Fun Exercises",
+  "description": "Playful, low-pressure exercises designed to build fluency, confidence, and spontaneous speech through engagement rather than correction.",
+  "module_id": "fun_level_1",
+  "exercises": [
+    {
+      "id": "ex_fun_1_tongue_twisters",
+      "title": "Controlled Tongue Twisters",
+      "desc": "Practice precise articulation and smooth initiation using playful but demanding phrases.",
+      "category": "Articulation",
+      "target_group": "Consonant Clusters & Hard Sounds",
+      "difficulty": "Intermediate",
+      "word_start": 1,
+      "meta": {
+        "duration_seconds": 300,
+        "recommended_reps": 8
+      },
+      "purpose": "To improve articulatory control while maintaining airflow and reducing fear of difficult sound sequences.",
+      "instruction_set": {
+        "steps": [
+          {
+            "step_number": 1,
+            "label": "Preview",
+            "image": "",
+            "text": "Read the tongue twister silently and identify tricky sound clusters.",
+            "time": 10
+          },
+          {
+            "step_number": 2,
+            "label": "Slow Initiation",
+            "image": "",
+            "text": "Begin speaking slowly with steady airflow.",
+            "time": 15
+          },
+          {
+            "step_number": 3,
+            "label": "Connected Speech",
+            "image": "",
+            "text": "Repeat again, keeping sounds connected without stopping airflow.",
+            "time": 15
+          }
+        ],
+        "visual_cue": "Wave or dot-based pacing under each word.",
+        "audio_guide_url": "path/to/tongue_twister_guide.mp3"
+      },
+      "example_demonstration": {
+        "target_phrase": "She sells seashells by the seashore",
+        "execution_text": "Maintain airflow and let mistakes pass without restarting.",
+        "audio_url": "path/to/example_seashells.mp3"
+      },
+      "data_bank": {
+        "description": "Tongue twisters grouped by dominant sound focus.",
+        "targets": {
+          "S": [
+            "She sells seashells by the seashore",
+            "Six slippery snails slid slowly seaward",
+            "Seven slick swans swam silently",
+            "Silly snakes slithered smoothly",
+            "Small snowy stones sparkled softly",
+            "Sunny skies stay serene",
+            "Sneaky spiders spun strong silk",
+            "Silver ships sailed south"
+          ],
+          "B": [
+            "Big black bugs bleed blue blood",
+            "Busy buzzing bumblebees",
+            "Brave brown bears bake bread",
+            "Blue balloons bounce brightly",
+            "Bold boys bring big boxes",
+            "Bright birds build big nests",
+            "Busy bakers bake bread"
+          ],
+          "T_K": [
+            "Tiny turtles talk together",
+            "Clever cats catch quick quails",
+            "Tick-tock clocks tick quickly",
+            "Tall kangaroos kick kindly",
+            "Two tricky tigers tiptoe",
+            "Curious kids crack cookies",
+            "Talking crows call calmly"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ex_fun_2_video_diary",
+      "title": "Video Diary",
+      "desc": "Record short, low-pressure videos responding to simple prompts.",
+      "category": "Spontaneous Speech",
+      "target_group": "Everyday Communication",
+      "difficulty": "Beginner",
+      "word_start": 0,
+      "meta": {
+        "duration_seconds": 120,
+        "recommended_reps": 1
+      },
+      "purpose": "To build comfort with spontaneous speech and reduce anxiety around being heard or seen.",
+      "instruction_set": {
+        "steps": [
+          {
+            "step_number": 1,
+            "label": "Prompt",
+            "image": "",
+            "text": "Read the prompt and take a moment to think.",
+            "time": 10
+          },
+          {
+            "step_number": 2,
+            "label": "Record",
+            "image": "",
+            "text": "Speak naturally. Pauses are allowed.",
+            "time": 90
+          },
+          {
+            "step_number": 3,
+            "label": "Reflect",
+            "image": "",
+            "text": "Replay only if you want to.",
+            "time": 20
+          }
+        ],
+        "visual_cue": "Soft countdown timer with no error indicators.",
+        "audio_guide_url": ""
+      },
+      "example_demonstration": {
+        "target_prompt": "Describe something that made you smile today.",
+        "execution_text": "Speak freely without restarting.",
+        "audio_url": ""
+      },
+      "data_bank": {
+        "description": "Open-ended prompts encouraging natural, unscripted speech.",
+        "targets": {
+          "daily_life": [
+            "How was your day?",
+            "What did you enjoy today?",
+            "What was something unexpected?",
+            "What did you eat today?",
+            "Describe a small moment you noticed",
+            "What made today different?"
+          ],
+          "opinions": [
+            "Talk about a movie or show you like",
+            "Describe a hobby you enjoy",
+            "Explain something you are learning",
+            "What is your favorite place?",
+            "Talk about a song you love",
+            "Describe a person you admire"
+          ],
+          "reflection": [
+            "What challenged you today?",
+            "What went better than expected?",
+            "What are you looking forward to?",
+            "What did you learn today?",
+            "What made you feel calm?"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ex_fun_3_story_cubes",
+      "title": "Story Cubes",
+      "desc": "Create short spoken stories using random visual or textual cues.",
+      "category": "Cognitive Load & Fluency",
+      "target_group": "Sentence Initiation & Flow",
+      "difficulty": "Intermediate",
+      "word_start": 0,
+      "meta": {
+        "duration_seconds": 180,
+        "recommended_reps": 3
+      },
+      "purpose": "To practice fluent speech while thinking on the spot, similar to real-life conversations.",
+      "instruction_set": {
+        "steps": [
+          {
+            "step_number": 1,
+            "label": "Reveal Cues",
+            "image": "",
+            "text": "Look at the randomly generated story cues.",
+            "time": 10
+          },
+          {
+            "step_number": 2,
+            "label": "Begin Story",
+            "image": "",
+            "text": "Start speaking and build a story using the cues.",
+            "time": 120
+          },
+          {
+            "step_number": 3,
+            "label": "Continue Flow",
+            "image": "",
+            "text": "If you pause or stumble, continue without restarting.",
+            "time": 30
+          }
+        ],
+        "visual_cue": "Floating cue cards with gentle animations.",
+        "audio_guide_url": "path/to/story_cubes_guide.mp3"
+      },
+      "example_demonstration": {
+        "target_cues": ["Dog", "Rain", "Lost Key"],
+        "execution_text": "Focus on flow, not perfect storytelling.",
+        "audio_url": ""
+      },
+      "data_bank": {
+        "description": "Randomized cues grouped by type to vary cognitive demand.",
+        "targets": {
+          "objects": [
+            "Key", "Book", "Phone", "Bag", "Clock", "Bottle", "Hat", "Map", "Shoes", "Camera"
+          ],
+          "actions": [
+            "Running", "Searching", "Waiting", "Helping", "Hiding", "Calling", "Building", "Fixing", "Exploring"
+          ],
+          "emotions": [
+            "Excited", "Nervous", "Curious", "Relieved", "Confused", "Happy", "Proud", "Surprised", "Calm"
+          ],
+          "settings": [
+            "Park", "Home", "Bus Stop", "School", "Market", "Beach", "Forest", "Train Station", "Cafe"
+          ],
+          "constraints": [
+            "Must include a problem",
+            "Must include a solution",
+            "Story in past tense",
+            "Story in first person",
+            "Story under one minute"
+          ]
+        }
+      }
+    }
+  ]
+}

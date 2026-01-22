@@ -23,28 +23,28 @@
                        {
                           "step_number":1,
                           "label":"Posture",
-                          "image":"1",
+                          "image":"1.1.1",
                           "text":"Sit upright with shoulders relaxed.",
                           "time":10
                        },
                        {
                           "step_number":2,
                           "label":"Inhale",
-                          "image":"2",
+                          "image":"1.1.2",
                           "text":"Take a deep breath into your belly (not chest). Feel your stomach expand.",
                           "time":7
                        },
                        {
                           "step_number":3,
                           "label":"The Pre-Exhale",
-                          "image":"3",
+                          "image":"1.1.3",
                           "text":"Let out a tiny, silent 'sigh' of air.",
                           "time":5
                        },
                        {
                           "step_number":4,
                           "label":"The Voice",
-                          "image":"4",
+                          "image":"1.1.4",
                           "text":"Ride that sigh into pronouncing the word. Do not stop the air.",
                           "time":7
                        }
@@ -568,7 +568,7 @@
                        {
                           "step_number":1,
                           "label":"Airflow",
-                          "image":"5",
+                          "image":"2.1.1",
                           "text":"Start with a gentle breath. Let the air move freely before you begin to speak.",
                           "time":10
                        },
@@ -779,21 +779,21 @@
                        {
                           "step_number":1,
                           "label":"Touch",
-                          "image":"",
+                          "image":"2.2.1",
                           "text":"Bring your articulators (lips or tongue) together so lightly that they barely touch.",
                           "time":8
                        },
                        {
                           "step_number":2,
                           "label":"Initiation",
-                          "image":"",
+                          "image":"2.2.2",
                           "text":"Initiate pronouncing the word from first letter making the sound 'mushy.'",
                           "time":6
                        },
                        {
                           "step_number":3,
                           "label":"Finish",
-                          "image":"",
+                          "image":"2.2.3",
                           "text":"Don't let the air stop completely and finish the word.",
                           "time":5
                        }

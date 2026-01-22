@@ -12,21 +12,23 @@ class VoiceViewController: UIViewController {
     
     private let viewModel = VoiceViewModel()
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
+    
     var exerciseDuration = 0
     private var exerciseTimer: Timer?
     private var exerciseStartTime: Date?
     private var pendingTabViewController: UIViewController?
     private var conversationMessages: [(speaker: String, text: String)] = []
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         viewModel.delegate = self
         setupTabBarDelegate()
         configureUI()
         feedbackGenerator.prepare()
+        
         aiTextView.inputView = UIView()
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -52,6 +54,8 @@ class VoiceViewController: UIViewController {
         stopExerciseTimer()
         viewModel.stopSession()
     }
+    
+    // MARK: - UI Configuration
     
     private func clearConversation() {
         conversationMessages.removeAll()
@@ -86,30 +90,30 @@ class VoiceViewController: UIViewController {
         var resetConfig = UIButton.Configuration.glass()
         resetConfig.image = UIImage(systemName: "arrow.counterclockwise")
         resetConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
-        resetConfig.baseBackgroundColor = .systemBlue
-        resetConfig.baseForegroundColor = .white
-        resetConfig.cornerStyle = .capsule
-        resetConfig.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+//        resetConfig.baseBackgroundColor = .systemBlue
+//        resetConfig.baseForegroundColor = .white
+//        resetConfig.cornerStyle = .capsule
+//        resetConfig.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
         resetButton.configuration = resetConfig
         resetButton.setTitle("", for: .normal)
         
         var recordConfig = UIButton.Configuration.glass()
         recordConfig.image = UIImage(systemName: "waveform")
         recordConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 24, weight: .semibold)
-        recordConfig.baseBackgroundColor = .systemBlue
-        recordConfig.baseForegroundColor = .white
-        recordConfig.cornerStyle = .capsule
-        recordConfig.contentInsets = NSDirectionalEdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
+//        recordConfig.baseBackgroundColor = .systemBlue
+//        recordConfig.baseForegroundColor = .white
+//        recordConfig.cornerStyle = .capsule
+//        recordConfig.contentInsets = NSDirectionalEdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
         recordButton.configuration = recordConfig
         recordButton.setTitle("", for: .normal)
         
         var reportConfig = UIButton.Configuration.glass()
         reportConfig.image = UIImage(systemName: "doc.text")
         reportConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
-        reportConfig.baseBackgroundColor = .systemBlue
-        reportConfig.baseForegroundColor = .white
-        reportConfig.cornerStyle = .capsule
-        reportConfig.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+//        reportConfig.baseBackgroundColor = .systemBlue
+//        reportConfig.baseForegroundColor = .white
+//        reportConfig.cornerStyle = .capsule
+//        reportConfig.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
         reportButton.configuration = reportConfig
         reportButton.setTitle("", for: .normal)
     }
@@ -117,6 +121,8 @@ class VoiceViewController: UIViewController {
     private func setupTabBarDelegate() {
         self.tabBarController?.delegate = self
     }
+    
+    // MARK: - Exercise Timer
     
     private func startExerciseTimer() {
         exerciseStartTime = Date()
@@ -130,7 +136,9 @@ class VoiceViewController: UIViewController {
         exerciseTimer?.invalidate()
         exerciseTimer = nil
     }
-
+    
+    // MARK: - Actions
+    
     @IBAction func didTapReset(_ sender: UIButton) {
         feedbackGenerator.impactOccurred()
         
@@ -180,9 +188,7 @@ class VoiceViewController: UIViewController {
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Back", style: .cancel) { [weak self] _ in
-            print("User chose to continue conversation")
-        })
+        alert.addAction(UIAlertAction(title: "Back", style: .destructive))
         
         alert.addAction(UIAlertAction(title: "Result", style: .default) { [weak self] _ in
             guard let self = self else { return }
@@ -227,6 +233,8 @@ class VoiceViewController: UIViewController {
         present(alert, animated: true)
     }
     
+    // MARK: - Conversation Display
+    
     private func updateConversationDisplay() {
         if conversationMessages.isEmpty {
             showCenteredMessage("Tap the microphone to begin", isPlaceholder: true)
@@ -243,7 +251,6 @@ class VoiceViewController: UIViewController {
             let messageAge = visibleMessages.count - 1 - index
             let label = message.speaker == "AI" ? "AI" : "You"
             let prefix = "\(label): "
-        
             let messageText = prefix + message.text
             let attributed = NSMutableAttributedString(string: messageText)
             
@@ -252,19 +259,19 @@ class VoiceViewController: UIViewController {
             let weight: UIFont.Weight
             
             switch messageAge {
-            case 0: // Latest message
+            case 0:
                 opacity = 1.0
                 fontSize = 17
                 weight = .medium
-            case 1: // One message back
+            case 1:
                 opacity = 0.55
                 fontSize = 16
                 weight = .regular
-            case 2: // Two messages back
+            case 2:
                 opacity = 0.3
                 fontSize = 15
                 weight = .regular
-            default: // Three or more back
+            default:
                 opacity = 0.15
                 fontSize = 14
                 weight = .light
@@ -275,16 +282,13 @@ class VoiceViewController: UIViewController {
                 .foregroundColor: UIColor.label.withAlphaComponent(opacity)
             ], range: NSRange(location: 0, length: attributed.length))
             
-            // Add to main text
             attributedText.append(attributed)
             
-            // Add spacing between messages
             if index < visibleMessages.count - 1 {
                 attributedText.append(NSAttributedString(string: "\n\n"))
             }
         }
         
-        // Animate the text change and center it
         UIView.transition(with: aiTextView, duration: 0.3, options: .transitionCrossDissolve) {
             self.aiTextView.attributedText = attributedText
             self.aiTextView.textAlignment = .center
@@ -311,6 +315,8 @@ class VoiceViewController: UIViewController {
         }
     }
     
+    // MARK: - Visual Updates
+    
     private func updateVisuals(for state: VoiceViewModel.VoiceState) {
         var symbol: String
         var statusText: String
@@ -320,15 +326,12 @@ class VoiceViewController: UIViewController {
         case .idle:
             symbol = "mic"
             statusText = viewModel.hasConversationHistory ? "Tap to speak" : "Tap to start"
-            
         case .speaking:
-            symbol = "stop.fill"
+            symbol = "stop"
             statusText = "AI is speaking..."
-            
         case .listening:
             symbol = "waveform"
             statusText = "Listening..."
-            
         case .thinking:
             symbol = "brain"
             statusText = "Thinking..."
@@ -338,7 +341,7 @@ class VoiceViewController: UIViewController {
         UIView.animate(withDuration: 0.25) {
             self.userLabel.text = statusText
             self.userLabel.textColor = state == .idle ? .secondaryLabel : .label
-
+            
             var config = self.recordButton.configuration ?? UIButton.Configuration.filled()
             config.image = UIImage(systemName: symbol)
             config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 24, weight: .semibold)
@@ -372,6 +375,8 @@ class VoiceViewController: UIViewController {
     }
 }
 
+// MARK: - VoiceViewModel Delegate
+
 extension VoiceViewController: VoiceViewModelDelegate {
     
     func didUpdateState(_ state: VoiceViewModel.VoiceState) {
@@ -389,7 +394,6 @@ extension VoiceViewController: VoiceViewModelDelegate {
                     self.userLabel.text = "You're speaking..."
                 }
                 self.userLabel.textColor = .systemBlue
-            } else {
             }
         }
     }
@@ -420,10 +424,11 @@ extension VoiceViewController: VoiceViewModelDelegate {
     }
 }
 
+// MARK: - Tab Bar Controller Delegate
+
 extension VoiceViewController: UITabBarControllerDelegate {
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        
         if viewModel.isConversationActive {
             pendingTabViewController = viewController
             showExitConversationAlert()
@@ -468,10 +473,7 @@ extension VoiceViewController: UITabBarControllerDelegate {
     
     private func switchToPendingTab() {
         guard let destination = pendingTabViewController else { return }
-        
-        // Clear conversation when leaving
         clearConversation()
-        
         tabBarController?.selectedViewController = destination
     }
 }

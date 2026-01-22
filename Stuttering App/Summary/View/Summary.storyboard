@@ -364,50 +364,28 @@
                                                     <rect key="frame" x="0.0" y="191" width="393" height="100"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Insights" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="U0O-jB-njg">
-                                                            <rect key="frame" x="35.999999999999993" y="0.0" width="70.333333333333314" height="28"/>
-                                                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
-                                                            <color key="textColor" red="0.517578125" green="0.517578125" blue="0.5498046875" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                            <rect key="frame" x="36" y="0.0" width="73" height="28"/>
+                                                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="20"/>
+                                                            <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Fot-oe-Zox">
-                                                            <rect key="frame" x="20" y="30" width="353" height="66"/>
+                                                            <rect key="frame" x="20" y="28" width="353" height="72"/>
                                                             <subviews>
-                                                                <stackView opaque="NO" contentMode="scaleToFill" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="ag7-EZ-N8c">
-                                                                    <rect key="frame" x="40.666666666666657" y="14.666666666666657" width="272" height="37"/>
-                                                                    <subviews>
-                                                                        <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PE2-gY-3pJ">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="54.333333333333336" height="37"/>
-                                                                            <subviews>
-                                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="12" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jyp-FD-l31">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="34.666666666666664" height="37"/>
-                                                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="31"/>
-                                                                                    <color key="textColor" systemColor="systemGreenColor"/>
-                                                                                    <nil key="highlightedColor"/>
-                                                                                </label>
-                                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="%" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k0w-7e-uOd">
-                                                                                    <rect key="frame" x="34.666666666666664" y="0.0" width="19.666666666666664" height="37"/>
-                                                                                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="22"/>
-                                                                                    <color key="textColor" systemColor="systemGreenColor"/>
-                                                                                    <nil key="highlightedColor"/>
-                                                                                </label>
-                                                                            </subviews>
-                                                                        </stackView>
-                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ho-5M-fIL">
-                                                                            <rect key="frame" x="79.333333333333357" y="0.0" width="192.66666666666663" height="37"/>
-                                                                            <string key="text">Your /r/ and /s/ sounds have 
-improved today. </string>
-                                                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                                            <nil key="textColor"/>
-                                                                            <nil key="highlightedColor"/>
-                                                                        </label>
-                                                                    </subviews>
-                                                                </stackView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your ‘r’ and ‘s’ sounds have improved 12% today." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ho-5M-fIL">
+                                                                    <rect key="frame" x="16" y="12" width="327" height="50"/>
+                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
                                                             </subviews>
-                                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                            <color key="backgroundColor" name="ButtonTheme"/>
                                                             <constraints>
-                                                                <constraint firstItem="ag7-EZ-N8c" firstAttribute="centerY" secondItem="Fot-oe-Zox" secondAttribute="centerY" id="Uyg-9q-2yS"/>
-                                                                <constraint firstItem="ag7-EZ-N8c" firstAttribute="centerX" secondItem="Fot-oe-Zox" secondAttribute="centerX" id="V8c-ru-0Lz"/>
-                                                                <constraint firstAttribute="height" constant="66" id="h2F-WL-e3n"/>
+                                                                <constraint firstAttribute="bottom" secondItem="5Ho-5M-fIL" secondAttribute="bottom" constant="10" id="9Fp-74-OQx"/>
+                                                                <constraint firstAttribute="trailing" secondItem="5Ho-5M-fIL" secondAttribute="trailing" constant="10" id="GU2-ey-6IY"/>
+                                                                <constraint firstItem="5Ho-5M-fIL" firstAttribute="top" secondItem="Fot-oe-Zox" secondAttribute="top" constant="12" id="VQb-fs-kmc"/>
+                                                                <constraint firstItem="5Ho-5M-fIL" firstAttribute="leading" secondItem="Fot-oe-Zox" secondAttribute="leading" constant="16" id="aoq-6G-QZS"/>
+                                                                <constraint firstAttribute="height" constant="72" id="h2F-WL-e3n"/>
                                                             </constraints>
                                                             <userDefinedRuntimeAttributes>
                                                                 <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -419,10 +397,10 @@ improved today. </string>
                                                     </subviews>
                                                     <constraints>
                                                         <constraint firstItem="Fot-oe-Zox" firstAttribute="leading" secondItem="alX-Rr-pkH" secondAttribute="leading" constant="20" symbolic="YES" id="Gxf-hL-riY"/>
-                                                        <constraint firstAttribute="bottom" secondItem="Fot-oe-Zox" secondAttribute="bottom" constant="4" id="IuO-0r-QcF"/>
+                                                        <constraint firstAttribute="bottom" secondItem="Fot-oe-Zox" secondAttribute="bottom" id="IuO-0r-QcF"/>
                                                         <constraint firstItem="U0O-jB-njg" firstAttribute="leading" secondItem="alX-Rr-pkH" secondAttribute="leading" constant="36" id="J9B-SY-ta0"/>
                                                         <constraint firstItem="U0O-jB-njg" firstAttribute="top" secondItem="alX-Rr-pkH" secondAttribute="top" id="ifV-NV-6qY"/>
-                                                        <constraint firstItem="Fot-oe-Zox" firstAttribute="top" secondItem="U0O-jB-njg" secondAttribute="bottom" constant="2" id="nWx-RN-PhC"/>
+                                                        <constraint firstItem="Fot-oe-Zox" firstAttribute="top" secondItem="U0O-jB-njg" secondAttribute="bottom" id="nWx-RN-PhC"/>
                                                         <constraint firstAttribute="trailing" secondItem="Fot-oe-Zox" secondAttribute="trailing" constant="20" id="qLv-LX-0ir"/>
                                                         <constraint firstItem="Fot-oe-Zox" firstAttribute="centerX" secondItem="alX-Rr-pkH" secondAttribute="centerX" id="uBT-qh-5v5"/>
                                                     </constraints>
@@ -844,14 +822,14 @@ improved today. </string>
     <resources>
         <image name="calendar" catalog="system" width="128" height="107"/>
         <image name="chart.bar.fill" catalog="system" width="128" height="90"/>
+        <namedColor name="ButtonTheme">
+            <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="bg">
             <color red="0.91764705882352937" green="0.94901960784313721" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
-        <systemColor name="systemGreenColor">
-            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
