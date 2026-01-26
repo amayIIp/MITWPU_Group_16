@@ -1,0 +1,135 @@
+{
+  "groups": [
+    {
+      "type": "normal",
+      "awards": [
+        {
+          "id": "nm_001",
+          "name": "First Step",
+          "description": "Completed your very first guided speech exercise inside the app.",
+          "status": "0 of 1 completed"
+        },
+        {
+          "id": "nm_002",
+          "name": "Voice Explorer",
+          "description": "explored all basic warm-up drills.",
+          "status": "0 of 5 days"
+        },
+        {
+          "id": "nm_003",
+          "name": "Breath control",
+          "description": "learned to control steady breathing during speech.",
+          "status": "0 of 20 exercises"
+        },
+        {
+          "id": "nm_004",
+          "name": "Steady Reader",
+          "description": "maintained steady pace in 15 reading mode.",
+          "status": "0 of 15 days "
+        },
+        {
+          "id": "nm_005",
+          "name": "Steady Speaker",
+          "description": "maintained steady pace in 15 Conversation  mode.",
+          "status": "0 of 15 days"
+        },
+        {
+          "id": "nm_006",
+          "name": "Dedication Master",
+          "description": "Maintained a full uninterrupted practice streak throughout 30 days.",
+          "status": "0 of 30 exercises"
+        },
+        {
+          "id": "nm_007",
+          "name": "Calm Communicator",
+          "description": "Got 80 fluency score in Conversation Mode .",
+          "status": "0 of 80 score "
+        },
+        {
+          "id": "nm_008",
+          "name": "Voice Explorer",
+          "description": "Explored a wide range of exercise types to improve overall speech control.",
+          "status": "0 of 5 types"
+        },
+        {
+          "id": "nm_009",
+          "name": "Practice Pro",
+          "description": "Invested dedicated time consistently in conversation mode .",
+          "status": "0 of 11 hours"
+        },
+        {
+          "id": "nm_010",
+          "name": "Fluency Legend",
+          "description": "Showed commitment by returning for multiple focused practice for 100 sessions.",
+          "status": "0 of 100 days "
+        }
+      ]
+    },
+    {
+      "type": "weekly",
+      "awards": [
+        {
+          "id": "wk_001",
+          "name": "Weekly Beginner",
+          "description": "Practiced at least one speech exercise every single day this week.",
+          "status": "0 of 7 days"
+        },
+        {
+          "id": "wk_002",
+          "name": "Persistence Pro",
+          "description": "Maintained a full uninterrupted practice streak throughout the week.",
+          "status": "0 of 7 days"
+        },
+        {
+          "id": "wk_003",
+          "name": "Weekly Momentum",
+          "description": "Built strong weekly momentum by spending extended time practicing for 30 minutes .",
+          "status": "0 of 30 minutes "
+        },
+        {
+          "id": "wk_004",
+          "name": "Weekly Champion",
+          "description": "Got 80 fluency score in Reading Mode for 4 days in week  .",
+          "status": "0 of 4 days "
+        },
+        {
+          "id": "wk_005",
+          "name": "Steady 7",
+          "description": "Maintained 60 and above  fluecy score for all conversation mode  ",
+          "status": "0 of 7 days"
+        },
+        {
+          "id": "wk_006",
+          "name": "Strong Start",
+          "description": "Kicked off the week by completing your first practice session.",
+          "status": "0 of 1 session"
+        },
+        {
+          "id": "wk_007",
+          "name": "Calm Week",
+          "description": "Prioritized relaxation and breathing exercises consistently this week.",
+          "status": "0 of 5 sessions"
+        },
+        {
+          "id": "wk_008",
+          "name": "Fluency Drive",
+          "description": "Pushed fluency growth by completing many speech exercises in one week.",
+          "status": "0 of 10 exercises"
+        },
+        {
+          "id": "wk_009",
+          "name": "Active Speaker",
+          "description": "Stayed actively engaged by spending quality time practicing speech.",
+          "status": "0 of 30 minutes"
+        },
+        {
+          "id": "wk_010",
+          "name": "Weekly Dedication",
+          "description": "Returned on consecutive days showing strong dedication this week.",
+          "status": "0 of consecutive days"
+        }
+      ]
+    }
+  ]
+}
+

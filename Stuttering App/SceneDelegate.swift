@@ -1,8 +1,8 @@
 //
 //  SceneDelegate.swift
-//  Stuttering App
+//  Stuttering App 1
 //
-//  Created by sdc - user on 26/11/25.
+//  Created by Prathamesh Patil on 09/12/25.
 //
 
 import UIKit
@@ -13,10 +13,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        guard (scene is UIWindowScene) else { return }
+    
+        var initialVC: UIViewController
+        
+        if AppState.isLoginCompleted {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+        } else if AppState.isOnboardingCompleted {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+        } else {
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            initialVC = storyboard.instantiateViewController(withIdentifier: "LandingNav")
+        }
+        
+        window?.rootViewController = initialVC
+        window?.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -37,6 +50,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
+        let logic = LogicMaker()
+        logic.checkForNewDay()
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
     }

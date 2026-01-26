@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  Stuttering App
+//  Stuttering App 1
 //
-//  Created by sdc - user on 26/11/25.
+//  Created by Prathamesh Patil on 09/12/25.
 //
 
 import UIKit
@@ -13,7 +13,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        AwardsManager.shared.openDatabase()
+        AwardsManager.shared.seedDatabaseIfNeeded()
+        
         return true
     }
 

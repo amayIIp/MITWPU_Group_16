@@ -1,8 +1,8 @@
 //
 //  ViewController.swift
-//  Stuttering App
+//  Stuttering App 1
 //
-//  Created by sdc - user on 26/11/25.
+//  Created by Prathamesh Patil on 09/12/25.
 //
 
 import UIKit

@@ -1,0 +1,407 @@
+{
+  "sections": [
+    {
+      "id": "section_speech_foundations",
+      "name": "Speech Foundations",
+      "groups": [
+        {
+          "id": "group_breathing_relaxation",
+          "name": "Speech Fundamentals",
+          "description": "Prepare the body and build core speech mechanics.",
+          "exercises": [
+              {
+                "id": "ex_diaph_breathing",
+                "name": "Airflow Practice",
+                "description": "Learn breath release to ensure smooth vowel.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_pmr",
+                "name": "Flexible Pacing",
+                "description": "Gently tense and release muscles to reduce speaking tension.",
+                "short_time": 123
+              }
+            ]
+        },
+        {
+          "id": "group_motor_speech_coordination",
+          "name": "Targeted Practice",
+          "description": "Prepare the body and build core speech mechanics.",
+          "exercises": [
+              {
+                "id": "ex_artic_precision",
+                "name": "Gentle Onset",
+                "description": "Shape each sound clearly to improve accuracy and smoothness.",
+                "short_time": 545
+              },
+              {
+                "id": "ex_coarticulation",
+                "name": "Light Contacts",
+                "description": "Move smoothly between sounds for natural word flow.",
+                "short_time": 320
+              },
+              {
+                "id": "ex_light_contact",
+                "name": "Prolongation",
+                "description": "Use light consonant contact to reduce tension.",
+                "short_time": 434
+              }
+            ]
+        },
+        {
+          "id": "group_fluency_shaping_techniques",
+          "name": "Correction & Refinement",
+          "description": "Prepare the body and build core speech mechanics.",
+          "exercises": [
+              {
+                "id": "ex_rate_control",
+                "name": "Preparatory Set",
+                "description": "Slow your speech to keep rhythm steady and clear.",
+                "short_time": 566
+              },
+              {
+                "id": "ex_coord_speech",
+                "name": "Pull-Out",
+                "description": "Coordinate breath and voice for smoother speech flow.",
+                "short_time": 344
+              },
+              {
+                "id": "ex_prolonged_speech",
+                "name": "Block Correction",
+                "description": "Stretch syllables gently for calm, steady fluency.",
+                "short_time": 120
+              }
+            ]
+        }
+      ]
+    },
+    {
+      "id": "section_mind_mastery",
+      "name": "Mind & Mastery",
+      "groups": [
+        {
+          "id": "group_stutter_modification_techniques",
+          "name": "Stutter Modification Techniques",
+          "description": "Advanced control, psychological support, and articulation mastery.",
+          "exercises": [
+              {
+                "id": "ex_identification",
+                "name": "Self Awareness",
+                "description": "Increase awareness of speech patterns, tension points, and reactions.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_desensitization",
+                "name": "Fear Reduction",
+                "description": "Gradually face speech fears to reduce avoidance and build resilience.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_voluntary_stutter",
+                "name": "Voluntary Ease",
+                "description": "Stutter on purpose in a gentle way to reduce fear and gain control.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_feared_words",
+                "name": "Word Challenge",
+                "description": "Face feared words slowly and calmly to break avoidance and anxiety.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_situation_hierarchy",
+                "name": "Step Exposure",
+                "description": "Practice feared situations gradually to build steady confidence.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_cancellations",
+                "name": "Airflow Practice",
+                "description": "Learn steady breath release to ensure smooth vowel initiation.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_pullouts",
+                "name": "Midflow Ease",
+                "description": "Soften a block while speaking by easing tension and sliding forward.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_preparatory_sets",
+                "name": "Ready Entry",
+                "description": "Prepare gently before difficult words to start speech with control.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_stabilization",
+                "name": "Skill Maintain",
+                "description": "Reinforce fluency habits daily to ensure long-term stability.",
+                "short_time": 120
+              }
+            ]
+        },
+        {
+          "id": "group_cognitive_psych_training",
+          "name": "Cognitive Psychological Training",
+          "description": "Advanced control, psychological support, and articulation mastery.",
+          "exercises": [
+              {
+                "id": "ex_cbt",
+                "name": "CBT Practice",
+                "description": "Build healthier thought patterns to reduce speech anxiety and tension.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_cognitive_restructuring",
+                "name": "Thought Shift",
+                "description": "Challenge unhelpful thoughts and replace them with calm, balanced ones.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_exposure_therapy",
+                "name": "Calm Exposure",
+                "description": "Face feared speaking situations gradually to build confidence safely.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_relax_training",
+                "name": "Relax Skills",
+                "description": "Use structured relaxation techniques to reduce stress before speaking.",
+                "short_time": 120
+              },
+
+              {
+                "id": "ex_act",
+                "name": "ACT Practice",
+                "description": "Build acceptance and flexible thinking to reduce struggle with speech.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_acceptance",
+                "name": "Calm Acceptance",
+                "description": "Allow speech moments without resistance to reduce fear and pressure.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_values",
+                "name": "Value Focus",
+                "description": "Clarify personal values to guide meaningful communication choices.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_defusion",
+                "name": "Thought Distance",
+                "description": "Create space from difficult thoughts to speak with greater ease.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_committed_action",
+                "name": "Steady Action",
+                "description": "Take small value-driven steps that strengthen confident speaking.",
+                "short_time": 120
+              },
+
+              {
+                "id": "ex_mindfulness",
+                "name": "Calm Mindfulness",
+                "description": "Focus gently on breathing and awareness to reduce stress and improve control.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_self_compassion",
+                "name": "Self Kindness",
+                "description": "Practice gentle, supportive thinking to reduce shame and build confidence.",
+                "short_time": 120
+              }
+            ]
+        },
+        {
+          "id": "group_advanced_articulation_practice",
+          "name": "Advanced Articulation Practice",
+          "description": "Advanced control, psychological support, and articulation mastery.",
+          "exercises": [
+              {
+                "id": "ex_vowel_prolong",
+                "name": "Vowel Stretch",
+                "description": "Prolong vowel sounds smoothly to build steady airflow and clear tone.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_phoneme_specific",
+                "name": "Sound Focus",
+                "description": "Practice individual phonemes carefully to strengthen clean production.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_fricative_airflow",
+                "name": "Airflow Control",
+                "description": "Shape fricative sounds with steady air to improve clarity and ease.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_nasal_resonance",
+                "name": "Nasal Balance",
+                "description": "Guide airflow naturally through the nose to build resonant, smooth tone.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_liquid_sound",
+                "name": "Liquid Control",
+                "description": "Refine liquid sounds gently to improve smoothness and natural clarity.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_glide_sounds",
+                "name": "Glide Practice",
+                "description": "Practice easy movement between sounds to support flowing articulation.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_tongue_twister",
+                "name": "Twister Drills",
+                "description": "Strengthen agility and precision through fun, rhythmic tongue-twisters.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_consonant_cluster",
+                "name": "Cluster Control",
+                "description": "Break complex sound clusters into steps to build accuracy and flow.",
+                "short_time": 120
+              }
+            ]
+
+        }
+      ]
+    },
+    {
+      "id": "section_fun_exercises",
+      "name": "Fun Exercises",
+      "groups": [
+        {
+          "id": "group_fun",
+          "name": "Fun",
+          "description": "Light, playful exercises to make speech practice enjoyable.",
+          "exercises": [
+              {
+                "id": "ex_karaoke_therapy",
+                "name": "Karaoke Flow",
+                "description": "Sing freely with rhythm to improve pitch control, and fluency.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_video_diary",
+                "name": "Video Diary",
+                "description": "Record short reflections to track progress and improve awareness.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_mirror_protocol",
+                "name": "Mirror Routine",
+                "description": "Observe yourself speaking to refine clarity and confidence.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_story_cubes",
+                "name": "Story Cubes",
+                "description": "Create quick stories from prompts to build confident speech.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_tongue_twisters",
+                "name": "Tongue Twist",
+                "description": "Practice playful twists to boost articulation and speech control.",
+                "short_time": 120
+              }
+            ]
+        }
+      ]
+    },
+    {
+      "id": "section_reading_convo",
+      "name": "Reading and Convo",
+      "groups": [
+        {
+          "id": "reading",
+          "name": "Reading",
+          "description": "Light, playful exercises to make speech practice enjoyable.",
+          "exercises": [
+              {
+                "id": "topic_festivals",
+                "name": "Festivals",
+                "description": "Explore different celebrations and learn their cultural meaning.",
+                "short_time": 100
+              },
+              {
+                "id": "topic_science",
+                "name": "Science",
+                "description": "Discover new ideas and concepts through simple scientific topics.",
+                "short_time": 120
+              },
+              {
+                "id": "topic_culture",
+                "name": "Culture",
+                "description": "Understand traditions, lifestyles, and stories from around the world.",
+                "short_time": 80
+              },
+              {
+                "id": "topic_travel",
+                "name": "Travel",
+                "description": "Experience new places and learn about global destinations.",
+                "short_time": 560
+              },
+              {
+                "id": "topic_mindset",
+                "name": "Mindset",
+                "description": "Build positive thinking and develop a calm, focused outlook.",
+                "short_time": 80
+              },
+              {
+                "id": "topic_stories",
+                "name": "Stories",
+                "description": "Read engaging narratives that inspire imagination and clarity.",
+                "short_time": 250
+              },
+              {
+                "id": "topic_technology",
+                "name": "Technology",
+                "description": "Learn about modern tools, innovations, and digital advancements.",
+                "short_time": 435
+              },
+              {
+                "id": "topic_nature",
+                "name": "Nature",
+                "description": "Explore plants, animals, and the beauty of natural environments.",
+                "short_time": 435
+              },
+              {
+                "id": "topic_history",
+                "name": "History",
+                "description": "Discover important events and influential stories from the past.",
+                "short_time": 453
+              },
+              {
+                "id": "topic_custom",
+                "name": "Custom",
+                "description": "Choose your own topic and tailor the reading to your interest.",
+                "short_time": 120
+              }
+            ]
+        },
+        {
+          "id": "convo",
+          "name": "Conversation",
+          "description": "Light, playful exercises to make speech practice enjoyable.",
+          "exercises": [
+              {
+                "id": "topic_conversation",
+                "name": "Conversation",
+                "description": "Choose your own topic and tailor the reading to your interest.",
+                "short_time": 120
+              }
+            ]
+        }
+      ]
+    }
+  ]
+}
+

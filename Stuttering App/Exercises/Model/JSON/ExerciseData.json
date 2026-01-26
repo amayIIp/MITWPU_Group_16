@@ -1,0 +1,1096 @@
+{
+    "modules": [
+        {
+           "module_name":"The Foundation (General Motor Skills)",
+           "description":"These exercises apply to all speech. They are the prerequisite for tackling specific hard sounds.",
+           "module_id":"level_1",
+           "exercises":[
+              {
+                 "id":"ex_1_1",
+                 "title":"Airflow Practice",
+                 "desc":"Learn steady breath release to ensure smooth vowel initiation.",
+                 "category":"Respiration",
+                 "target_group":"Vowel Initiation",
+                 "difficulty":"Beginner",
+                 "word_start":4,
+                 "meta":{
+                    "duration_seconds":300,
+                    "recommended_reps":10
+                 },
+                 "purpose":"To prevent holding breath before speaking and ensure continuous air support.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Posture",
+                          "image":"1.1.1",
+                          "text":"Sit upright with shoulders relaxed.",
+                          "time":10
+                       },
+                       {
+                          "step_number":2,
+                          "label":"Inhale",
+                          "image":"1.1.2",
+                          "text":"Take a deep breath into your belly (not chest). Feel your stomach expand.",
+                          "time":7
+                       },
+                       {
+                          "step_number":3,
+                          "label":"The Pre-Exhale",
+                          "image":"1.1.3",
+                          "text":"Let out a tiny, silent 'sigh' of air.",
+                          "time":5
+                       },
+                       {
+                          "step_number":4,
+                          "label":"The Voice",
+                          "image":"1.1.4",
+                          "text":"Ride that sigh into pronouncing the word. Do not stop the air.",
+                          "time":7
+                       }
+                    ],
+                    "visual_cue":"[Image of diaphragm breathing vs chest breathing]",
+                    "audio_guide_url":"path/to/airflow_guide.mp3"
+                 },
+                 "example_demonstration":[
+                 {
+                    "target_word":"Apple",
+                    "execution_text":"(Inhale) -> (Silent puff) -> 'Hhh-Apple' (The 'H' is barely audible)."
+                 }
+                 ],
+                 "data_bank":{
+                    "description":"Words starting with vowels, categorized by phoneme for specific selection.",
+                    "targets":{
+              "A": [
+                "A-pple",
+                "A-fter",
+                "A-sk",
+                "A-dam",
+                "A-ction",
+                "A-nimal",
+                "A-nswer",
+                "A-ctor",
+                "A-ctive",
+                "A-nchor",
+                "A-lbum",
+                "A-ngle",
+                "A-rrow",
+                "A-sset",
+                "A-tlas",
+                "A-tom",
+                "A-ttic",
+                "A-udio",
+                "A-udit",
+                "A-unt"
+              ],
+              "E": [
+                "E-lephant",
+                "E-cho",
+                "E-very",
+                "E-gg",
+                "E-xit",
+                "E-nter",
+                "E-nd",
+                "E-dit",
+                "E-lbow",
+                "E-lder",
+                "E-mpty",
+                "E-nemy",
+                "E-ngine",
+                "E-ntry",
+                "E-nvy",
+                "E-pic",
+                "E-rror",
+                "E-ssay",
+                "E-thics",
+                "E-xtra"
+              ],
+              "I": [
+                "I-gloo",
+                "I-nto",
+                "I-tch",
+                "I-n",
+                "I-llness",
+                "I-mage",
+                "I-mpact",
+                "I-mport",
+                "I-ncome",
+                "I-ndex",
+                "I-ndoor",
+                "I-nfant",
+                "I-nput",
+                "I-nsect",
+                "I-nside",
+                "I-nstant",
+                "I-ssue",
+                "I-tem",
+                "I-nner",
+                "I-nk"
+              ],
+              "O": [
+                "O-live",
+                "O-ctopus",
+                "O-pera",
+                "O-ffice",
+                "O-often",
+                "O-bject",
+                "O-ffer",
+                "O-il",
+                "O-kay",
+                "O-men",
+                "O-nly",
+                "O-pen",
+                "O-rbit",
+                "O-rder",
+                "O-rgan",
+                "O-ther",
+                "O-tter",
+                "O-ounce",
+                "O-uter",
+                "O-owner"
+              ],
+              "U": [
+                "U-mbrella",
+                "U-nder",
+                "U-p",
+                "U-gly",
+                "U-ncle",
+                "U-ndo",
+                "U-nit",
+                "U-pper",
+                "U-pset",
+                "U-rban",
+                "U-rge",
+                "U-rgent",
+                "U-sage",
+                "U-sher",
+                "U-tter",
+                "U-ltra",
+                "U-mpire",
+                "U-ncut",
+                "U-nion"
+              ]
+            }
+                 }
+              },
+              {
+                 "id":"ex_1_2_flexible_rate",
+                 "title":"Flexible Pacing",
+                 "desc":"Practise slowing initial pace to plan complex speech movements.",
+                 "category":"Phonation & Timing",
+                 "target_group":"Multi-syllabic Words",
+                 "difficulty":"Intermediate",
+                 "word_start":1,
+                 "meta":{
+                    "duration_minutes":5,
+                    "recommended_reps":10
+                 },
+                 "purpose":"To buy your brain time to plan motor movements by slowing the first syllable.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Identify",
+                          "image":"",
+                          "text":"Identify the first syllable of the word.",
+                          "time":5
+                       },
+                       {
+                          "step_number":2,
+                          "label":"Stretch",
+                          "image":"",
+                          "text":"Intentionally stretch the vowel of that first syllable.",
+                          "time":7
+                       },
+                       {
+                          "step_number":3,
+                          "label":"Slide",
+                          "image":"",
+                          "text":"Slide continuously into the rest of the word without chopping it up.",
+                          "time":5
+                       }
+                    ],
+                    "visual_cue":"",
+                    "audio_guide_url":"path/to/flexible_rate_guide.mp3"
+                 },
+                 "example_demonstration":[
+                 {
+                    "target_word":"Te-lephone",
+                    "execution_text":"'Teeeeeeele-phone' (Not T-elephone. Keep the sound connected).",
+                    "audio_url":"path/to/example_telephone.mp3"
+                 }
+                 ],
+                 "data_bank":{
+                    "description":"Multi-syllabic words with stretched first syllable.",
+                    "targets":{
+                       "2_syllables":[
+                          "Ba-by",
+                          "Ta-ble",
+                          "Pa-per",
+                          "Wa-ter",
+                          "Mu-sic",
+                          "Do-ctor",
+                          "Si-mple",
+                          "Ha-ppy",
+                          "Co-ffee",
+                          "Ga-rden",
+                          "Si-ster",
+                          "Bro-ther",
+                          "Wi-ndow",
+                          "Ma-rket",
+                          "Di-nner",
+                          "Pa-rty",
+                          "Su-mmer",
+                          "Wi-nter",
+                          "Mo-rning",
+                          "Le-tter"
+                       ],
+                       "3_syllables":[
+                          "Te-lephone",
+                          "Ba-nana",
+                          "Co-mputer",
+                          "Po-tato",
+                          "To-mato",
+                          "No-body",
+                          "E-nergy",
+                          "Fa-mily",
+                          "Ho-liday",
+                          "Ho-spital",
+                          "A-nimal",
+                          "Ca-mera",
+                          "Ci-nema",
+                          "Co-mpany",
+                          "E-xample",
+                          "Hi-story",
+                          "Li-brary",
+                          "Ma-nager",
+                          "Me-mory",
+                          "Mi-nister"
+                       ],
+                       "4_syllables":[
+                          "Wa-termelon",
+                          "Te-levision",
+                          "E-levator",
+                          "Ca-lculator",
+                          "Ca-lifornia",
+                          "Co-mpetition",
+                          "Co-nversation",
+                          "De-finition",
+                          "E-ducation",
+                          "E-ntertainment",
+                          "I-nformation",
+                          "Ki-ndergarten",
+                          "Me-dication",
+                          "Po-pulation",
+                          "Re-laxation",
+                          "Re-servation",
+                          "Si-tuation",
+                          "Su-permarket",
+                          "Tra-nsportation",
+                          "U-niversity"
+                       ]
+                    }
+                 }
+              }
+           ]
+        },
+        {
+           "module_name":"Toolkit",
+           "description":"These exercises are for when the user is ALREADY stuck or about to be stuck.",
+           "module_id":"level_3_modification",
+           "exercises":[
+              {
+                 "id":"ex_3_1_preparatory_set",
+                 "title":"Preparatory Set",
+                 "desc":"Practise a soft, easy start for clearer, effortless speaking.",
+                 "category":"Anticipatory Management",
+                 "difficulty":"Advanced",
+                 "word_start":1,
+                 "meta":{
+                    "duration_minutes":5,
+                    "recommended_reps":5
+                 },
+                 "purpose":"To plan a fluent onset when you anticipate a stutter on a specific word.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Pause",
+                          "image":"",
+                          "text":"Identify the word. Do not rush into the word. Stop immediately when you fear the word.",
+                          "time":5
+                       },
+                       {
+                          "step_number":2,
+                          "label":"Map",
+                          "image":"",
+                          "text":"Mentally plan to use an 'Easy Onset' (for vowels) or 'Light Contact' (for consonants).",
+                          "time":7
+                       },
+                       {
+                          "step_number":3,
+                          "label":"Action",
+                          "image":"",
+                          "text":"Say the word using the tool you planned.",
+                          "time":5
+                       }
+                    ],
+                    "visual_cue":"",
+                    "audio_guide_url":"path/to/preparatory_set_guide.mp3"
+                 },
+                 "example_demonstration":[
+                 {
+                    "target_sound":"Can I ask you a 'Question'?",
+                    "execution_text":"Can I ask you a 'Question'?"
+                 }
+                 ],
+                 "data_bank":{
+                    "description":"High-pressure words commonly associated with anticipation anxiety.",
+                    "targets":{
+                        "Examples":[
+                            "Can I ask you a 'Question'?",
+                            "See you 'Tomorrow' morning.",
+                            "The weather is 'Perfect' today.",
+                            "She moved to 'California'.",
+                            "The view is 'Beautiful'.",
+                            "Let’s work 'Together'.",
+                            "My 'Computer' is fast.",
+                            "Which 'Direction' is north?",
+                            "The party is on 'Saturday'.",
+                            "He owns a small 'Business'.",
+                            "Your 'Presentation' was clear.",
+                            "I am 'Grateful' for you.",
+                            "We reached our 'Destination'.",
+                            "I love dark 'Chocolate'.",
+                            "She attends a 'University'.",
+                            "Read the 'Introduction' first.",
+                            "Spinach is a 'Vegetable'.",
+                            "'Congratulations' on winning!",
+                            "He enjoys 'Photography'.",
+                            "Please 'Remember' this rule.",
+                            "The 'Telephone' is ringing.",
+                            "I do not 'Understand'.",
+                            "'Everything' is ready now.",
+                            "Go to the 'Hospital'.",
+                            "It rained 'Yesterday'.",
+                            "The 'Internet' is slow.",
+                            "Let's find a 'Restaurant'.",
+                            "I stayed 'Because' of you.",
+                            "Many 'People' are here.",
+                            "Try a 'Different' way."
+                        ]
+                    }
+                 }
+              },
+              {
+                 "id":"ex_3_2_pull_out",
+                 "title":"Pull-Out",
+                 "desc":"To relax muscles to slide out of the stutter.",
+                 "category":"In-Block Correction",
+                 "difficulty":"Advanced",
+                 "word_start":1,
+                 "meta":{
+                    "duration_minutes":5,
+                    "recommended_reps":5
+                 },
+                 "purpose":"To reduce tension and release a word while you are currently stuck.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Freeze",
+                          "image":"",
+                          "text":"Don't force it. Freeze exactly where you would stutter.",
+                          "time":10
+                       },
+                       {
+                          "step_number":2,
+                          "label":"Locate Tension",
+                          "image":"",
+                          "text":"Where is the tightness? (Throat? Lips? Tongue?). Focus on it.",
+                          "time":10
+                       },
+                       {
+                          "step_number":3,
+                          "label":"Melt & Slide",
+                          "image":"",
+                          "text":"Consciously relax that specific muscle while prolonging the sound, then slide out.",
+                          "time":10
+                       }
+                    ],
+                    "visual_cue":"",
+                    "audio_guide_url":"path/to/pull_out_guide.mp3"
+                 },
+                 "example_demonstration":[
+                 {
+                    "target_sound":"He scored the 'Goal'.",
+                    "execution_text":"'G-G-(Freeze)-(Relax Throat)-Ggggggoal.'"
+                 }
+                 ],
+                 "data_bank":{
+                    "description":"Visual representations of stuttered words. User must simulate the block and pull out.",
+                    "targets":{
+                        "Examples":[
+                            "He scored the 'Goal'.",
+                            "Put it in the 'Basket'.",
+                            "Sit at the 'Table'.",
+                            "Time for 'Dinner'.",
+                            "I need some 'Paper'.",
+                            "Drink your 'Coffee'.",
+                            "See you on 'Monday'.",
+                            "I love 'Summer'.",
+                            "Please drink 'Water'.",
+                            "Climb the 'Ladder'.",
+                            "They are my 'Family'.",
+                            "We ate 'Chicken'.",
+                            "Wear your 'Jacket'.",
+                            "Clean the 'Kitchen'.",
+                            "I am so 'Happy'.",
+                            "Say 'Never' again.",
+                            "Turn on the 'Radio'.",
+                            "Please 'Stop' now.",
+                            "Say 'Please'.",
+                            "Catch the 'Train'.",
+                            "Look at the 'Spider'.",
+                            "The grass is 'Green'.",
+                            "The sky is 'Blue'.",
+                            "Bake the 'Bread'.",
+                            "Walk to 'School'.",
+                            "Go to 'Sleep'.",
+                            "That is very 'Sweet'.",
+                            "It is too 'Small'.",
+                            "I like the 'Snow'.",
+                            "Look up at the 'Sky'."
+                        ]
+                    }
+                 }
+              },
+              {
+                 "id":"ex_3_3_Block_Correction",
+                 "title":"Block Correction",
+                 "desc":"To reset speech, then re-program the brain with fluency.",
+                 "category":"Post-Block Correction",
+                 "difficulty":"Advanced",
+                 "word_start":1,
+                 "meta":{
+                    "duration_minutes":5,
+                    "recommended_reps":5
+                 },
+                 "purpose":"To neutralize panic after a stutter and re-program the brain with a fluent correction.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Stop",
+                          "image":"",
+                          "text":"Finish the word/sentence, then stop completely for 3 seconds.",
+                          "time":10
+                       },
+                       {
+                          "step_number":2,
+                          "label":"Reset",
+                          "image":"",
+                          "text":"Use this pause to neutralize the panic and calm the motor system.",
+                          "time":5
+                       },
+                       {
+                          "step_number":3,
+                          "label":"Re-do",
+                          "image":"",
+                          "text":"Say the word again, but this time use a 'Light Contact' or 'Easy Onset'.",
+                          "time":6
+                       }
+                    ],
+                    "visual_cue":"",
+                    "audio_guide_url":"path/to/cancellation_guide.mp3"
+                 },
+                 "example_demonstration":[
+                 {
+                    "target_sound":"I need to buy a 'Ticket'.",
+                    "execution_text":"(Pause 3 seconds). (Internal thought: Light contact on C). 'Coffee.'"
+                 }
+                 ],
+                 "data_bank":{
+                     "description":"Sentences containing a target word to simulate a stutter on.",
+                     "targets":{
+                         "Examples":[
+                             "I need to buy a 'Ticket'.",
+                             "Can you pass the 'Butter'?",
+                             "Where is the 'Station'?",
+                             "I love eating 'Pizza'.",
+                             "My name is 'David'.",
+                             "Look at the 'Garden'.",
+                             "Open the 'Door' please.",
+                             "Have a 'Great' day.",
+                             "This is my 'Phone'.",
+                             "Lets go to the 'Beach'.",
+                             "I want a 'Cookie'.",
+                             "Turn on the 'Light'.",
+                             "Read the 'Book'.",
+                             "Write a 'Letter'.",
+                             "Pay with 'Cash'.",
+                             "Drive the 'Car'.",
+                             "Wear a 'Coat'.",
+                             "Drink some 'Tea'.",
+                             "Play the 'Game'.",
+                             "Watch the 'Movie'.",
+                             "Call the 'Doctor'.",
+                             "Meet the 'Team'.",
+                             "Check the 'Time'.",
+                             "Clean the 'Room'.",
+                             "Cook the 'Food'."
+                         ]
+                     }
+                 }
+              }
+           ]
+        },
+        {
+           "module_name":"The Sound Lab",
+           "description":"This is the core feature you requested. Users select the specific sound family they are struggling with.",
+           "module_id":"level_2",
+           "exercises":[
+              {
+                 "id":"ex_2_1_easy_onset",
+                 "title":"Gentle Onset",
+                 "desc":"Practise a soft, easy start for clearer, effortless speaking.",
+                 "category":"Phonation",
+                 "target_group":"Vowels (A,E,I,O,U) & Voiced (M,N,L)",
+                 "difficulty":"Intermediate",
+                 "word_start":2,
+                 "meta":{
+                    "duration_minutes":5,
+                    "recommended_reps":10
+                 },
+                 "purpose":"To prevent hard glottal attacks (vocal cords slamming shut) by initiating sound gently.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Airflow",
+                          "image":"2.1.1",
+                          "text":"Start with a gentle breath. Let the air move freely before you begin to speak.",
+                          "time":10
+                       },
+                       {
+                          "step_number":2,
+                          "label":"The Ramp",
+                          "image":"",
+                          "text":"Focus on the first letter, gradually raising your volume from 1% to 100% .",
+                          "time":8
+                       },
+                       {
+                          "step_number":3,
+                          "label":"Connection",
+                          "image":"",
+                          "text":"Do not stop the airflow between the start and the rest of the word. Blend the sound smoothly.",
+                          "time":5
+                       }
+                    ],
+                    "visual_cue":"",
+                    "audio_guide_url":"path/to/easy_onset_guide.mp3"
+                 },
+                 "example_demonstration":[
+                    {
+                       "target_sound":"A-pple",
+                       "execution_text":"(Breath out) -> 'aaaApple' (low to high volume)."
+                    },
+                    {
+                       "target_sound":"O-ver",
+                       "execution_text":"(Breath out) -> 'oooOver'."
+                    },
+                    {
+                        "target_sound":"Mo-ther",
+                       "execution_text":"Hum the ‘m’ gently before opening mouth. 'Mmmmother'."
+                    }
+                 ],
+                 "data_bank":{
+                    "description":"Words starting with vowels and voiced liquid/nasal consonants.",
+                    "targets":{
+                       "A":[
+                          "A-pple",
+                          "A-fter",
+                          "A-sk",
+                          "A-dam",
+                          "A-ction",
+                          "A-nimal",
+                          "A-nswer",
+                          "A-ctor",
+                          "A-ctive",
+                          "A-nchor",
+                          "A-lbum",
+                          "A-ngle",
+                          "A-rrow",
+                          "A-sset",
+                          "A-tlas"
+                       ],
+                       "E":[
+                          "E-lephant",
+                          "E-cho",
+                          "E-very",
+                          "E-gg",
+                          "E-xit",
+                          "E-nter",
+                          "E-nd",
+                          "E-dit",
+                          "E-lbow",
+                          "E-lder",
+                          "E-mpty",
+                          "E-nemy",
+                          "E-ngine",
+                          "E-ntry",
+                          "E-nvy"
+                       ],
+                       "I":[
+                          "I-gloo",
+                          "I-nto",
+                          "I-tch",
+                          "I-n",
+                          "I-llness",
+                          "I-mage",
+                          "I-mpact",
+                          "I-mport",
+                          "I-ncome",
+                          "I-ndex",
+                          "I-ndoor",
+                          "I-nfant",
+                          "I-nput",
+                          "I-nsect",
+                          "I-nside"
+                       ],
+                       "O":[
+                          "O-live",
+                          "O-ctopus",
+                          "O-pera",
+                          "O-ffice",
+                          "O-ften",
+                          "O-bject",
+                          "O-ffer",
+                          "O-il",
+                          "O-kay",
+                          "O-men",
+                          "O-nly",
+                          "O-pen",
+                          "O-rbit",
+                          "O-rder",
+                          "O-rgan"
+                       ],
+                       "U":[
+                          "U-mbrella",
+                          "U-nder",
+                          "U-p",
+                          "U-gly",
+                          "U-ncle",
+                          "U-ndo",
+                          "U-nit",
+                          "U-pper",
+                          "U-pset",
+                          "U-rban",
+                          "U-rge",
+                          "U-rgent",
+                          "U-sage",
+                          "U-sher",
+                          "U-tter"
+                       ],
+                       "M":[
+                          "M-other",
+                          "M-ake",
+                          "M-an",
+                          "M-ap",
+                          "M-arket",
+                          "M-ask",
+                          "M-aster",
+                          "M-atch",
+                          "M-aterial",
+                          "M-atter",
+                          "M-ayor",
+                          "M-eal",
+                          "M-eat",
+                          "M-edia",
+                          "M-edical",
+                          "M-edicine",
+                          "M-eeting",
+                          "M-ember",
+                          "M-emory",
+                          "M-ental"
+                       ],
+                       "N":[
+                          "N-ever",
+                          "N-ame",
+                          "N-ation",
+                          "N-ature",
+                          "N-ear",
+                          "N-eed",
+                          "N-eighbor",
+                          "N-etwork",
+                          "N-ews",
+                          "N-ice",
+                          "N-ight",
+                          "N-oise",
+                          "N-ormal",
+                          "N-orth",
+                          "N-ote",
+                          "N-otice",
+                          "N-umber",
+                          "N-urse",
+                          "N-ut",
+                          "N-ovel"
+                       ],
+                       "L":[
+                          "L-ater",
+                          "L-ady",
+                          "L-ake",
+                          "L-amp",
+                          "L-and",
+                          "L-anguage",
+                          "L-arge",
+                          "L-ast",
+                          "L-ate",
+                          "L-augh",
+                          "L-aw",
+                          "L-ayer",
+                          "L-eader",
+                          "L-eaf",
+                          "L-earn",
+                          "L-eave",
+                          "L-ecture",
+                          "L-eft",
+                          "L-eg",
+                          "L-egal"
+                       ]
+                    }
+                 }
+              },
+              {
+                 "id":"ex_2_2_light_contacts",
+                 "title":"Light Contacts",
+                 "desc":"Practise a light touch to stop blocking air with lips.",
+                 "category":"Articulation",
+                 "target_group":"Plosives (P, B, T, D, K, G)",
+                 "difficulty":"Intermediate",
+                 "word_start":2,
+                 "meta":{
+                    "duration_minutes":5,
+                    "recommended_reps":10
+                 },
+                 "purpose":"To prevent lips or tongue from pressing too tightly and blocking air.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Touch",
+                          "image":"2.2.1",
+                          "text":"Bring your articulators (lips or tongue) together so lightly that they barely touch.",
+                          "time":8
+                       },
+                       {
+                          "step_number":2,
+                          "label":"Initiation",
+                          "image":"2.2.2",
+                          "text":"Initiate pronouncing the word from first letter making the sound 'mushy.'",
+                          "time":6
+                       },
+                       {
+                          "step_number":3,
+                          "label":"Finish",
+                          "image":"2.2.3",
+                          "text":"Don't let the air stop completely and finish the word.",
+                          "time":5
+                       }
+                    ],
+                    "visual_cue":"",
+                    "audio_guide_url":"path/to/light_contact_guide.mp3"
+                 },
+                 "example_demonstration":[
+                    {
+                       "target_sound":"Ba-by",
+                       "execution_text":"Barely touch lips. Sound almost like a 'V' or 'W'. 'Bvbaby'."
+                    },
+                    {
+                       "target_sound":"Ti-me",
+                       "execution_text":"Touch tongue tip feather-lightly to the roof of the mouth. 'Tthime'."
+                    },
+                    {
+                       "target_sound":"Ki-te",
+                       "execution_text":"Back of tongue touches roof of mouth gently. Let air leak through. 'Khh-ite'."
+                    }
+                 ],
+                 "data_bank":{
+                    "description":"Stop consonants that require softening.",
+                    "targets":{
+                       "P":[
+                          "P-aper",
+                          "P-age",
+                          "P-ain",
+                          "P-aint",
+                          "P-air",
+                          "P-anel",
+                          "P-anic",
+                          "P-arent",
+                          "P-ark",
+                          "P-art",
+                          "P-arty",
+                          "P-ass",
+                          "P-ast",
+                          "P-ath",
+                          "P-atient",
+                          "P-attern",
+                          "P-ause",
+                          "P-ayment",
+                          "P-eace",
+                          "P-en"
+                       ],
+                       "B":[
+                          "B-aby",
+                          "B-ack",
+                          "B-ad",
+                          "B-ag",
+                          "B-alance",
+                          "B-all",
+                          "B-and",
+                          "B-ank",
+                          "B-ar",
+                          "B-ase",
+                          "B-asic",
+                          "B-asis",
+                          "B-asket",
+                          "B-ath",
+                          "B-attle",
+                          "B-each",
+                          "B-ear",
+                          "B-eat",
+                          "B-eautiful",
+                          "B-ed"
+                       ],
+                       "T":[
+                          "T-ime",
+                          "T-able",
+                          "T-ail",
+                          "T-ake",
+                          "T-alk",
+                          "T-all",
+                          "T-ank",
+                          "T-ape",
+                          "T-arget",
+                          "T-ask",
+                          "T-aste",
+                          "T-ax",
+                          "T-ea",
+                          "T-each",
+                          "T-eam",
+                          "T-ear",
+                          "T-ech",
+                          "T-ell",
+                          "T-emp",
+                          "T-en"
+                       ],
+                       "D":[
+                          "D-ay",
+                          "D-ad",
+                          "D-aily",
+                          "D-amage",
+                          "D-ance",
+                          "D-anger",
+                          "D-ark",
+                          "D-ata",
+                          "D-ate",
+                          "D-eal",
+                          "D-ear",
+                          "D-eath",
+                          "D-ebate",
+                          "D-ebt",
+                          "D-ecade",
+                          "D-eep",
+                          "D-efine",
+                          "D-egree",
+                          "D-elay",
+                          "D-emand"
+                       ],
+                       "K":[
+                          "K-ite",
+                          "K-eep",
+                          "K-ey",
+                          "K-ick",
+                          "K-id",
+                          "K-ill",
+                          "K-ind",
+                          "K-ing",
+                          "K-iss",
+                          "K-itchen",
+                          "K-nee",
+                          "K-nife",
+                          "K-nock",
+                          "K-now",
+                          "K-nowledge",
+                          "K-arma",
+                          "K-een",
+                          "K-eeper",
+                          "K-ettle",
+                          "K-eyboard"
+                       ],
+                       "G":[
+                          "G-ame",
+                          "G-ain",
+                          "G-ap",
+                          "G-arage",
+                          "G-arden",
+                          "G-as",
+                          "G-ate",
+                          "G-ather",
+                          "G-ear",
+                          "G-ene",
+                          "G-eneral",
+                          "G-entle",
+                          "G-et",
+                          "G-host",
+                          "G-iant",
+                          "G-ift",
+                          "G-irl",
+                          "G-ive",
+                          "G-lad",
+                          "G-lass"
+                       ]
+                    }
+                 }
+              },
+              {
+                 "id":"ex_2_3_continuous_airflow",
+                 "title":"Prolongation",
+                 "desc":"Practise flowing air for smooth production of words.",
+                 "category":"Airflow & Articulation",
+                 "target_group":"Fricatives (S, F, SH, TH)",
+                 "difficulty":"Intermediate",
+                 "word_start":1,
+                 "meta":{
+                    "duration_minutes":5,
+                    "recommended_reps":10
+                 },
+                 "purpose":"To maintain flowing air through sounds where stutterers often hold their breath.",
+                 "instruction_set":{
+                    "steps":[
+                       {
+                          "step_number":1,
+                          "label":"Identify",
+                          "image":"",
+                          "text":"Prepare yourself to read the word in a single breath focusing on the first letter.",
+                          "time":5
+                       },
+                       {
+                          "step_number":2,
+                          "label":"Slide",
+                          "image":"",
+                          "text":"Start the first letter and slide physically into the vowel without taking a pause between letters.",
+                          "time":7
+                       }
+                    ],
+                    "visual_cue":"",
+                    "audio_guide_url":"path/to/continuous_airflow_guide.mp3"
+                 },
+                 "example_demonstration":[
+                    {
+                       "target_sound":"S-nake",
+                       "execution_text":"'Ssssssnake' (Do not pause between S and n)."
+                    },
+                    {
+                       "target_sound":"F-ish",
+                       "execution_text":"'Ffffffish'."
+                    }
+                 ],
+                 "data_bank":{
+                    "description":"Fricative sounds requiring sustained airflow.",
+                    "targets":{
+                       "S":[
+                          "S-nake",
+                          "S-afe",
+                          "S-afety",
+                          "S-ail",
+                          "S-alad",
+                          "S-alary",
+                          "S-ale",
+                          "S-alt",
+                          "S-ame",
+                          "S-ample",
+                          "S-and",
+                          "S-ave",
+                          "S-cale",
+                          "S-cene",
+                          "S-chool",
+                          "S-cience",
+                          "S-core",
+                          "S-creen",
+                          "S-ea",
+                          "S-earch"
+                       ],
+                       "F":[
+                          "F-ish",
+                          "F-ace",
+                          "F-act",
+                          "F-actor",
+                          "F-ail",
+                          "F-air",
+                          "F-all",
+                          "F-amily",
+                          "F-an",
+                          "F-ar",
+                          "F-arm",
+                          "F-armer",
+                          "F-ast",
+                          "F-at",
+                          "F-ather",
+                          "F-ault",
+                          "F-ear",
+                          "F-eature",
+                          "F-ee",
+                          "F-eed"
+                       ],
+                       "SH":[
+                          "Sh-ip",
+                          "Sh-adow",
+                          "Sh-ake",
+                          "Sh-ame",
+                          "Sh-ape",
+                          "Sh-are",
+                          "Sh-ark",
+                          "Sh-arp",
+                          "Sh-e",
+                          "Sh-eep",
+                          "Sh-eet",
+                          "Sh-elf",
+                          "Sh-ell",
+                          "Sh-ift",
+                          "Sh-ine",
+                          "Sh-irt",
+                          "Sh-ock",
+                          "Sh-oe",
+                          "Sh-oot",
+                          "Sh-op"
+                       ],
+                       "TH":[
+                          "Th-ink",
+                          "Th-ank",
+                          "Th-at",
+                          "Th-eater",
+                          "Th-eft",
+                          "Th-eme",
+                          "Th-eory",
+                          "Th-ere",
+                          "Th-ermal",
+                          "Th-ick",
+                          "Th-in",
+                          "Th-ing",
+                          "Th-ird",
+                          "Th-irst",
+                          "Th-irty",
+                          "Th-is",
+                          "Th-orn",
+                          "Th-ose",
+                          "Th-ought",
+                          "Th-read"
+                       ]
+                    }
+                 }
+              }
+           ]
+        }
+    ]
+}

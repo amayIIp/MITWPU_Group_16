@@ -6,12 +6,17 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		19EB3DD52ED71B340003B76D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 19EB3DD42ED71B340003B76D /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		19EB3D332ED6ED290003B76D /* Stuttering App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stuttering App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		194C02B42F21D937009DB06D /* Stuttering App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stuttering App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		19EB3DD42ED71B340003B76D /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		19EB3D452ED6ED2A0003B76D /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
+		19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -24,7 +29,7 @@
 		19EB3D352ED6ED290003B76D /* Stuttering App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				19EB3D452ED6ED2A0003B76D /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
+				19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
 			);
 			path = "Stuttering App";
 			sourceTree = "<group>";
@@ -45,17 +50,10 @@
 		19EB3D2A2ED6ED290003B76D = {
 			isa = PBXGroup;
 			children = (
+				19EB3DD42ED71B340003B76D /* .gitignore */,
 				19EB3D352ED6ED290003B76D /* Stuttering App */,
-				19EB3D342ED6ED290003B76D /* Products */,
+				194C02B42F21D937009DB06D /* Stuttering App.app */,
 			);
-			sourceTree = "<group>";
-		};
-		19EB3D342ED6ED290003B76D /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				19EB3D332ED6ED290003B76D /* Stuttering App.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -80,7 +78,7 @@
 			packageProductDependencies = (
 			);
 			productName = "Stuttering App";
-			productReference = 19EB3D332ED6ED290003B76D /* Stuttering App.app */;
+			productReference = 194C02B42F21D937009DB06D /* Stuttering App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -108,7 +106,7 @@
 			mainGroup = 19EB3D2A2ED6ED290003B76D;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 19EB3D342ED6ED290003B76D /* Products */;
+			productRefGroup = 19EB3D2A2ED6ED290003B76D;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -122,6 +120,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19EB3DD52ED71B340003B76D /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,6 +144,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C2N3Q4846H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -176,6 +176,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C2N3Q4846H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
