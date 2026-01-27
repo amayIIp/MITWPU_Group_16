@@ -50,7 +50,7 @@ class LibraryViewController: UIViewController {
         }
         
         collectionView.collectionViewLayout = layout
-        collectionView.backgroundColor = .systemGroupedBackground
+        collectionView.backgroundColor = UIColor(named: "bg")
         
         // 3. Setup Header Logic
         setupHeaderRegistration()
@@ -65,7 +65,7 @@ class LibraryViewController: UIViewController {
     private func createListSectionLayout(layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
         var config = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
         config.headerMode = .supplementary
-        config.backgroundColor = .systemGroupedBackground
+        config.backgroundColor = UIColor(named: "bg")
         
         return NSCollectionLayoutSection.list(using: config, layoutEnvironment: layoutEnvironment)
     }

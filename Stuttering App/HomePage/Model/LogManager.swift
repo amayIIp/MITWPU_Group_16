@@ -52,6 +52,14 @@ class LogManager {
         );
         """
         execute(sql: createGoalsTableString, successMessage: "Goals table ready.")
+        
+        let createStutterStatsTableString = """
+        CREATE TABLE IF NOT EXISTS StutterStats(
+        letter TEXT PRIMARY KEY,
+        count INTEGER
+        );
+        """
+        execute(sql: createStutterStatsTableString, successMessage: "StutterStats table ready.")
     }
     
     private func execute(sql: String, successMessage: String) {
@@ -189,5 +197,55 @@ class LogManager {
         
         return resultLogs
     }
+    
+    // MARK: - Stutter Stats
+    func updateStutterStats(letterCounts: [String: Int]) {
+        let sql = "INSERT INTO StutterStats (letter, count) VALUES (?, ?) ON CONFLICT(letter) DO UPDATE SET count = count + excluded.count;"
+        
+        var statement: OpaquePointer?
+        
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            for (letter, count) in letterCounts {
+                // Reset bindings for each iteration
+                sqlite3_reset(statement)
+                sqlite3_clear_bindings(statement)
+                
+                sqlite3_bind_text(statement, 1, (letter as NSString).utf8String, -1, nil)
+                sqlite3_bind_int(statement, 2, Int32(count))
+                
+                if sqlite3_step(statement) != SQLITE_DONE {
+                    print("Failed to update stats for letter: \(letter)")
+                }
+            }
+            print("Stutter stats updated.")
+        } else {
+            print("Failed to prepare stutter stats update statement.")
+        }
+        sqlite3_finalize(statement)
+    }
+    
+    func getTopStruggledLetters(limit: Int) -> [String] {
+        let sql = "SELECT letter FROM StutterStats ORDER BY count DESC LIMIT ?;"
+        var statement: OpaquePointer?
+        var letters: [String] = []
+        
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_int(statement, 1, Int32(limit))
+            
+            while sqlite3_step(statement) == SQLITE_ROW {
+                if let letterCStr = sqlite3_column_text(statement, 0) {
+                    letters.append(String(cString: letterCStr))
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+        return letters
+    }
+    
+    func resetStutterStats() {
+        let sql = "DELETE FROM StutterStats;"
+        execute(sql: sql, successMessage: "Stutter stats reset.")
+    }
 }
+
 

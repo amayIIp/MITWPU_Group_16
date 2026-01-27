@@ -37,28 +37,22 @@ class StutterAnalyzer {
         let durationString = minutes > 0 ? "\(minutes) min \(seconds) sec" : "\(seconds) sec"
         
         if transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            print("Analyzer received empty transcript (Long Block). Returning default 0 score.")
-            return """
-            {
-              "fluencyScore": 0,
-              "duration": "\(durationString)",
-              "stutteredWords": [],
-              "blocks": [],
-              "breakdown": { "repetition": [], "prolongation": [], "blocks": 0 },
-              "percentages": { "repetition": 0, "prolongation": 0, "blocks": 0, "correct": 0 },
-              "letterAnalysis": {}
-            }
-            """
+            return emptyReport(duration: durationString)
         }
         
         let refWords = normalize(reference)
         let transWords = normalize(transcript)
+        
+        // --- DISPLAY FILTER SETUP ---
+        // Create a set of words that actually exist in the original paragraph
+        let paragraphWordsWhitelist = Set(refWords)
+        
         let ops = levenshteinAlignment(ref: refWords, hyp: transWords)
         
         var correctCount = 0
-        var repetitions: [String] = []
-        var prolongations: [String] = []
-        var allStutteredWords: [String] = []
+        var rawRepetitions: [String] = []
+        var rawProlongations: [String] = []
+        var rawAllStutteredWords: [String] = []
         
         var refIndex = 0
         var transIndex = 0
@@ -71,8 +65,8 @@ class StutterAnalyzer {
             case .substitute:
                 if refIndex < refWords.count {
                     let word = refWords[refIndex]
-                    prolongations.append(word)
-                    allStutteredWords.append(word)
+                    rawProlongations.append(word)
+                    rawAllStutteredWords.append(word)
                 }
                 refIndex += 1; transIndex += 1
             case .insert:
@@ -82,15 +76,22 @@ class StutterAnalyzer {
                 else if transIndex > 0 && insertedWord == transWords[transIndex - 1] { isRepetition = true }
                 
                 let targetWord = (refIndex < refWords.count) ? refWords[refIndex] : insertedWord
-                if isRepetition { repetitions.append(targetWord) }
-                else { prolongations.append(targetWord) }
-                allStutteredWords.append(targetWord)
+                if isRepetition { rawRepetitions.append(targetWord) }
+                else { rawProlongations.append(targetWord) }
+                rawAllStutteredWords.append(targetWord)
                 transIndex += 1
             case .delete:
                 refIndex += 1
             }
         }
         
+        // --- FILTERING FOR DISPLAY ---
+        // We keep the logic above the same, but only "Display" words that are in the original paragraph
+        let stutteredWords = rawAllStutteredWords.filter { paragraphWordsWhitelist.contains($0) }
+        let repetitions = rawRepetitions.filter { paragraphWordsWhitelist.contains($0) }
+        let prolongations = rawProlongations.filter { paragraphWordsWhitelist.contains($0) }
+
+        // --- BLOCK LOGIC (Unchanged) ---
         var detectedBlocks: [String] = []
         let validSegments = segments.filter { !$0.substring.trimmingCharacters(in: .whitespaces).isEmpty }
         let warmUpCount = 2
@@ -117,9 +118,12 @@ class StutterAnalyzer {
                 let currentStart = validSegments[i].timestamp
                 let gap = currentStart - previousEnd
                 if gap > blockThreshold {
-                    let word = validSegments[i].substring
-                    let durationStr = String(format: "%.2f", gap)
-                    detectedBlocks.append("\(word) (Pause: \(durationStr)s)")
+                    let rawWord = validSegments[i].substring.lowercased().trimmingCharacters(in: .punctuationCharacters)
+                    // Only display the block if the word is actually in the paragraph
+                    if paragraphWordsWhitelist.contains(rawWord) {
+                        let durationStr = String(format: "%.2f", gap)
+                        detectedBlocks.append("\(rawWord) (Pause: \(durationStr)s)")
+                    }
                 }
             }
         }
@@ -138,14 +142,14 @@ class StutterAnalyzer {
         let corPercent = totalSpoken > 0 ? (Double(correctCount) / totalSpoken) * 100 : 0.0
         
         var letterCounts: [String: Int] = [:]
-        for word in allStutteredWords {
+        for word in stutteredWords {
             if let firstChar = word.first { letterCounts[String(firstChar).uppercased(), default: 0] += 1 }
         }
         
         let reportData = StutterJSONReport(
             fluencyScore: max(0, score),
             duration: durationString,
-            stutteredWords: allStutteredWords,
+            stutteredWords: stutteredWords,
             blocks: detectedBlocks,
             breakdown: StutterBreakdown(repetition: repetitions, prolongation: prolongations, blocks: detectedBlocks.count),
             percentages: StutterPercentages(
@@ -165,13 +169,15 @@ class StutterAnalyzer {
     }
     
     private static func normalize(_ text: String) -> [String] {
-        return text.lowercased().components(separatedBy: .punctuationCharacters).joined().components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        return text.lowercased().components(separatedBy: CharacterSet.punctuationCharacters.union(.whitespacesAndNewlines)).filter { !$0.isEmpty }
     }
     
+    // Memory-Optimized Levenshtein (Prevents crashes on long paragraphs)
     private static func levenshteinAlignment(ref: [String], hyp: [String]) -> [Operation] {
         let n = ref.count; let m = hyp.count
         if n == 0 { return Array(repeating: .insert, count: m) }
         if m == 0 { return Array(repeating: .delete, count: n) }
+        
         var matrix = Array(repeating: Array(repeating: 0, count: m + 1), count: n + 1)
         for i in 0...n { matrix[i][0] = i }
         for j in 0...m { matrix[0][j] = j }
@@ -189,5 +195,19 @@ class StutterAnalyzer {
             else { ops.append(.insert); j -= 1 }
         }
         return ops.reversed()
+    }
+    
+    private static func emptyReport(duration: String) -> String {
+        return """
+        {
+          "fluencyScore": 0,
+          "duration": "\(duration)",
+          "stutteredWords": [],
+          "blocks": [],
+          "breakdown": { "repetition": [], "prolongation": [], "blocks": 0 },
+          "percentages": { "repetition": 0, "prolongation": 0, "blocks": 0, "correct": 0 },
+          "letterAnalysis": {}
+        }
+        """
     }
 }

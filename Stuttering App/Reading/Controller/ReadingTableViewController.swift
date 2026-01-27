@@ -19,12 +19,21 @@ class ReadingTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cellTitle = presetTitles[indexPath.row]
     
-        if indexPath.row < 9 {
+        if indexPath.row == 0 {
+            // Daily Challenge (Long Form)
+            let troubledLetters = LogManager.shared.getTopStruggledLetters(limit: 5)
+            let content = PhonemeContent.generateLongFormContent(for: troubledLetters)
+            
+            self.textForDetailView = content
+            self.titleForDetailView = cellTitle
+            presentModal(withTitle: cellTitle)
+            
+        } else if indexPath.row > 0 && indexPath.row < 10 {
             self.textForDetailView = presetContent[indexPath.row]
             self.titleForDetailView = cellTitle
             presentModal(withTitle: cellTitle)
             
-        } else if indexPath.row == 9 {
+        } else if indexPath.row == 10 {
             self.titleForDetailView = cellTitle
             presentTextInputModal()
         }

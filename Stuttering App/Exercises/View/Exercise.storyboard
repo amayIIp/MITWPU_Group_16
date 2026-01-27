@@ -14,7 +14,7 @@
         <!--Exercise Result View Controller-->
         <scene sceneID="ovW-WA-VBe">
             <objects>
-                <viewController storyboardIdentifier="ExerciseResult" id="u6W-sf-9wB" customClass="ExerciseResultViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ExerciseResult" id="u6W-sf-9wB" customClass="ExerciseResultViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="a40-DG-G4e">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -121,7 +121,7 @@
         <!--ReadingControls-->
         <scene sceneID="du9-3i-MOE">
             <objects>
-                <viewController storyboardIdentifier="AirFlowControlsViewController" title="ReadingControls" id="UFS-l2-jF2" customClass="AirFlowControlsViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AirFlowControlsViewController" title="ReadingControls" id="UFS-l2-jF2" customClass="AirFlowControlsViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="tuc-jr-4Ek">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -176,7 +176,7 @@
                                             <action selector="nextTapped:" destination="UFS-l2-jF2" eventType="touchUpInside" id="eZG-gm-5Vr"/>
                                         </connections>
                                     </button>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JNd-7J-MFD" customClass="RadialProgressView" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JNd-7J-MFD" customClass="RadialProgressView" customModule="Stuttering_App" customModuleProvider="target">
                                         <rect key="frame" x="272.66666666666669" y="90" width="80" height="80"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
@@ -241,7 +241,7 @@
         <!--Instructions-->
         <scene sceneID="6F3-IT-544">
             <objects>
-                <viewController storyboardIdentifier="AirFlowExerciseViewController" id="e4s-gf-6g9" customClass="AirFlowExerciseViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AirFlowExerciseViewController" id="e4s-gf-6g9" customClass="AirFlowExerciseViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="vx9-gT-UfL">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -337,7 +337,7 @@
         <!--Instructions-->
         <scene sceneID="xOE-fI-dEB">
             <objects>
-                <viewController storyboardIdentifier="AirFlowInstruction" id="tSf-aK-YYd" customClass="ExerciseInstructionViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AirFlowInstruction" id="tSf-aK-YYd" customClass="ExerciseInstructionViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3Os-Yy-kuK">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -498,14 +498,14 @@
         <!--Exercise-->
         <scene sceneID="red-Ek-yjh">
             <objects>
-                <viewController id="uPe-bu-Hn0" customClass="LibraryViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="uPe-bu-Hn0" customClass="LibraryViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="9SM-Q6-mP7">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="foe-85-cc9">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" red="0.9169921875" green="0.9477539062" blue="0.98046875" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="gY4-J4-Gxk">
                                     <size key="itemSize" width="220" height="217"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -513,7 +513,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="GroupCell" id="oOL-DQ-fUB" customClass="GroupCollectionViewCell" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="GroupCell" id="oOL-DQ-fUB" customClass="GroupCollectionViewCell" customModule="Stuttering_App" customModuleProvider="target">
                                         <rect key="frame" x="86.666666666666671" y="0.0" width="220" height="217"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="KeV-je-aZG">
