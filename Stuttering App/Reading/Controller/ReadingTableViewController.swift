@@ -20,13 +20,36 @@ class ReadingTableViewController: UITableViewController {
         let cellTitle = presetTitles[indexPath.row]
     
         if indexPath.row == 0 {
-            // Daily Challenge (Long Form)
+            // Daily Challenge (AI Generated)
+            let cellTitle = presetTitles[indexPath.row]
             let troubledLetters = LogManager.shared.getTopStruggledLetters(limit: 5)
-            let content = PhonemeContent.generateLongFormContent(for: troubledLetters)
             
-            self.textForDetailView = content
-            self.titleForDetailView = cellTitle
-            presentModal(withTitle: cellTitle)
+            // Show Loading Indicator
+            let alert = UIAlertController(title: "Creative Mode", message: "Writing a unique story for you...", preferredStyle: .alert)
+            self.present(alert, animated: true)
+            
+            Task {
+                do {
+                    // Try AI Generation
+                    let story = try await AIParagraphGenerator.shared.generate(for: troubledLetters)
+                    
+                    // Dismiss Loading -> Show Content
+                    alert.dismiss(animated: true) { [weak self] in
+                        self?.textForDetailView = story
+                        self?.titleForDetailView = cellTitle
+                        self?.presentModal(withTitle: cellTitle)
+                    }
+                } catch {
+                    // Fallback to Offline Corpus
+                    print("AI Failed, using Fallback: \(error)")
+                    alert.dismiss(animated: true) { [weak self] in
+                        let fallbackContent = PhonemeContent.generateLongFormContent(for: troubledLetters)
+                        self?.textForDetailView = fallbackContent
+                        self?.titleForDetailView = cellTitle
+                        self?.presentModal(withTitle: cellTitle)
+                    }
+                }
+            }
             
         } else if indexPath.row > 0 && indexPath.row < 10 {
             self.textForDetailView = presetContent[indexPath.row]

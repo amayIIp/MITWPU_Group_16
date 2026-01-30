@@ -60,5 +60,33 @@ let presetContent = [
     Teamwork in sports mirrors the collaborative nature of modern society. Learning to rely on a teammate, to communicate under pressure, and to sacrifice personal glory for the success of the group are vital life lessons. The discipline of a morning practice or the focus required to execute a complex play builds a mental toughness that serves athletes long after they leave the field.
     """,
     
-    // ... (Similar expansions applied to Festival, History, Mindset, Travel, Technology, and Nature)
+    // Festival
+    """
+    Festivals mark the rhythm of the year, breaking the monotony of daily life with outbursts of colour, music, and shared joy. They connect communities to their history, religion, and harvest cycles. From the lantern-lit skies of Diwali to the rhythmic drumming of carnival, every festival tells a story of triumph, gratitude, or renewal. They are times when strangers become friends, and streets transform into stages for collective celebration.
+    """,
+
+    // History
+    """
+    History is the map of human experience, charting the rise and fall of empires, the evolution of ideas, and the quiet struggles of ordinary people. It is not just a collection of dates, but a continuous narrative that explains why the world looks the way it does today. Studying history builds wisdom, helping us avoid past mistakes and appreciate the sacrifices made for the freedoms we enjoy. It reminds us that change is the only constant.
+    """,
+
+    // Mindset
+    """
+    Mindset determines how we navigate challenges. A growth mindset views failure not as a dead end, but as a necessary step toward mastery. It transforms obstacles into opportunities for learning. Cultivating resilience, gratitude, and curiosity allows individuals to adapt to an ever-changing world. Your internal dialogue shapes your external reality; believing in your capacity to improve is half the battle in achieving any goal.
+    """,
+
+    // Travel
+    """
+    Travel opens the mind like nothing else. Stepping into a foreign land, hearing a new language, and tasting unfamiliar food strips away prejudice. It forces you to adapt, to trust strangers, and to see your own life from a distance. The memories made while exploring—whether hiking a mountain at sunrise or navigating a bustling market—become part of who you are, expanding your understanding of the vast, diverse human family.
+    """,
+
+    // Technology
+    """
+    Technology has reshaped the landscape of human possibility. It has collapsed distances, making global communication instant and effortless. From the device in your pocket to the satellites orbiting Earth, technology drives progress in health, education, and commerce. However, it also challenges us to balance convenience with connection, ensuring that while we are digitally linked, we remain humanely grounded. The value of technology lies in how we use it to improve lives.
+    """,
+
+    // Nature
+    """
+    Nature is the ultimate artist and healer. The stillness of a forest, the rhythmic crash of ocean waves, and the vastness of a desert sky offer a profound sense of peace. Nature reminds us of our scale in the universe. It operates on cycles of growth, decay, and rebirth, teaching patience and resilience. Protecting the natural world is not just about survival; it is about preserving the beauty and balance that sustains our spirits.
+    """
 ]
