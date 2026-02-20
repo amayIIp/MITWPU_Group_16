@@ -10,6 +10,8 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     var titleToDisplay: String = ""
     var exerciseDuration: Int = 0
     var startTime: Date?
+    var initialDAFDelay: Double = 0.0
+
     
     private let wordsPerHighlight = 3
     private var highlightDuration: TimeInterval = 1.7
@@ -36,10 +38,20 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     // NEW: Background state management for long paragraphs
     private var totalSegmentsCaptured: [SFTranscriptionSegment] = []
 
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("DEBUG: DetailVC viewDidLoad")
+        print("DEBUG: textToDisplay: '\(textToDisplay.prefix(50))...'")
+        
+        if textView == nil {
+            print("ERROR: textView is NIL in DetailVC! Check Storyboard Outlet connection.")
+        } else {
+            print("DEBUG: textView is connected.")
+        }
+        
         view.backgroundColor = UIColor(named: "bg")
-        textView.backgroundColor = UIColor(named: "bg")
+        textView?.backgroundColor = UIColor(named: "bg") // Use optional chaining just in case
         setupTextView()
         setupPermissions()
         setupAudioSession()
@@ -61,7 +73,10 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
-    private func setupTextView() {
+
+    func setupTextView() {
+        guard let textView = textView else { return }
+        
         let baseFont = UIFont.systemFont(ofSize: 18, weight: .semibold)
         defaultAttributes = [.font: baseFont, .foregroundColor: UIColor.gray]
         highlightAttributes = [.font: baseFont, .foregroundColor: UIColor.black]
@@ -85,24 +100,60 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         return ranges
     }
     
+//    private func presentWorkoutSheet() {
+//        guard let sheetVC = storyboard?.instantiateViewController(withIdentifier: "ReadingControlsViewController") as? ReadingControlsViewController else { return }
+//        sheetVC.delegate = self
+//        self.sheetVC = sheetVC
+//        sheetVC.isModalInPresentation = true
+//        
+//        if let sheet = sheetVC.sheetPresentationController {
+//            sheet.detents = [
+//                .custom(identifier: .init("quarter")) { $0.maximumDetentValue * 0.25 },
+//                .custom(identifier: .init("half")) { $0.maximumDetentValue * 0.38 }
+//            ]
+//            sheet.selectedDetentIdentifier = .init("quarter")
+//            sheet.prefersGrabberVisible = true
+//            sheet.largestUndimmedDetentIdentifier = .init("quarter")
+//            sheet.preferredCornerRadius = 20
+//        }
+//        present(sheetVC, animated: true)
+//    }
+    
     private func presentWorkoutSheet() {
         guard let sheetVC = storyboard?.instantiateViewController(withIdentifier: "ReadingControlsViewController") as? ReadingControlsViewController else { return }
+        
         sheetVC.delegate = self
         self.sheetVC = sheetVC
         sheetVC.isModalInPresentation = true
         
         if let sheet = sheetVC.sheetPresentationController {
+            sheet.delegate = self // Set the delegate to track manual dragging
+            
             sheet.detents = [
-                .custom(identifier: .init("quarter")) { $0.maximumDetentValue * 0.25 },
-                .custom(identifier: .init("half")) { $0.maximumDetentValue * 0.38 }
+                .custom(identifier: .init("quarter")) { context in
+                    0.25 * context.maximumDetentValue
+                },
+                .custom(identifier: .init("half")) { context in
+                    0.38 * context.maximumDetentValue
+                }
             ]
             sheet.selectedDetentIdentifier = .init("quarter")
             sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
             sheet.largestUndimmedDetentIdentifier = .init("quarter")
             sheet.preferredCornerRadius = 20
         }
-        present(sheetVC, animated: true)
+        
+        sheetVC.view.layer.cornerRadius = 20
+        sheetVC.view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        sheetVC.view.clipsToBounds = true
+        
+        present(sheetVC, animated: true) {
+            // Ensure initial state hides the Done button since we start at "quarter"
+            sheetVC.toggleDoneButtonVisibility(isHidden: true)
+        }
     }
+
     
     func setupPermissions() {
         SFSpeechRecognizer.requestAuthorization { _ in }
@@ -207,15 +258,19 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         startTimer()
         highlightBlock(at: currentWordBlockIndex)
         currentWordBlockIndex += 1
+        
         notifySheetOfStateChange()
+        animateSheet(to: .init("quarter")) // Automatically collapse on play
     }
-    
+
     func pausePlayback() {
         isPlaying = false
         stopRecording()
         highlightTimer?.invalidate()
         highlightTimer = nil
+        
         notifySheetOfStateChange()
+        animateSheet(to: .init("half")) // Automatically expand on pause
     }
     
     func decreaseSpeed() {
@@ -237,6 +292,19 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         recordedTranscript = ""
         recordedSegments = []
         notifySheetOfStateChange()
+    }
+    
+    private func animateSheet(to detentIdentifier: UISheetPresentationController.Detent.Identifier) {
+        guard let sheet = sheetVC?.sheetPresentationController else { return }
+        
+        // Smoothly animate the detent change
+        sheet.animateChanges {
+            sheet.selectedDetentIdentifier = detentIdentifier
+        }
+        
+        // Update the Done button visibility based on the new state
+        let isExpanded = (detentIdentifier == .init("half"))
+        sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
     }
     
     private func notifySheetOfStateChange() {
@@ -325,6 +393,30 @@ extension DetailViewController: WorkoutSheetDelegate {
             delayNode.wetDryMix = (delay > 0) ? 100 : 0
         } else {
             delayNode.wetDryMix = 0
+        }
+    }
+}
+
+extension DetailViewController: UISheetPresentationControllerDelegate {
+    func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheetPresentationController: UISheetPresentationController) {
+        
+        // Determine if the sheet was dragged to the expanded "half" state
+        let isExpanded = sheetPresentationController.selectedDetentIdentifier == .init("half")
+        
+        // 1. Update the Done button visibility based on the new size
+        sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
+        
+        // 2. Sync the playback state with the modal's physical position
+        if isExpanded {
+            // Modal was dragged UP: Pause the exercise if it's currently running
+            if isPlaying {
+                pausePlayback()
+            }
+        } else {
+            // Modal was dragged DOWN: Resume the exercise if it's currently paused
+            if !isPlaying {
+                startPlayback()
+            }
         }
     }
 }

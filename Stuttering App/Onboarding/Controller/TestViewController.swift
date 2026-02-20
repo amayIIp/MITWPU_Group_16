@@ -12,6 +12,10 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     @IBOutlet weak var continueButton: UIButton!
     @IBOutlet weak var bottomViewConstraint: NSLayoutConstraint!
     
+    @IBOutlet weak var waveformStackView: UIStackView!
+    private var waveformBars: [UIView] = []
+    private let numberOfBars = 9 // Adjust based on preference
+    
     // The text the user needs to read
     let paragraphs: [String] = [
         "Because everyone has a significant story to tell, Peter, a professional photographer, typically describes his most incredible, adventurous experiences. My grandfather, who is nearly ninety-three years old, often ponders those vibrant, green mountains while talking to anyone who will listen attentively.",
@@ -41,6 +45,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         createParagraphLabels()
         highlightParagraph(at: currentIndex, animated: false)
         setupPermissions()
+        setupWaveformUI()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -52,6 +57,22 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopRecording() // Safety stop
+    }
+    
+    func setupWaveformUI() {
+        waveformStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        waveformBars.removeAll()
+        
+        for _ in 0..<numberOfBars {
+            let bar = UIView()
+            bar.backgroundColor = .buttonTheme // Or your preferred color
+            bar.layer.cornerRadius = 6
+            bar.translatesAutoresizingMaskIntoConstraints = false
+            bar.heightAnchor.constraint(equalToConstant: 5).isActive = true
+            
+            waveformStackView.addArrangedSubview(bar)
+            waveformBars.append(bar)
+        }
     }
     
     // MARK: - Audio Logic
@@ -110,13 +131,53 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         // 6. Install Tap on Mic
         let recordingFormat = inputNode.outputFormat(forBus: 0)
+//        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer, when) in
+//            self.recognitionRequest?.append(buffer)
+//        }
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer, when) in
             self.recognitionRequest?.append(buffer)
+            
+            guard let channelData = buffer.floatChannelData?[0] else { return }
+            let frameLength = UInt32(buffer.frameLength)
+            
+            // Calculate RMS (Volume level)
+            var sum: Float = 0
+            for i in 0..<Int(frameLength) {
+                sum += channelData[i] * channelData[i]
+            }
+            
+            let rms = sqrt(sum / Float(frameLength))
+            
+            // ADJUST THIS: Sensitivity multiplier
+            // If it's not moving, increase '20'. If it's always maxed, decrease it.
+            let magnitude = Swift.max(0.1, Swift.min(1.0, rms * 40))
+            
+            DispatchQueue.main.async {
+                self.updateWaveform(with: CGFloat(magnitude))
+            }
         }
         
         audioEngine.prepare()
         try audioEngine.start()
         print("🎤 Test Recording Started...")
+    }
+    func updateWaveform(with magnitude: CGFloat) {
+        let maxHeight: CGFloat = 48.0
+        
+        for bar in waveformBars {
+            let randomFactor = CGFloat.random(in: 0.8...1.2)
+            let targetHeight = max(5, maxHeight * magnitude * randomFactor)
+            
+            if let heightConstraint = bar.constraints.first(where: { $0.firstAttribute == .height }) {
+                // Remove the individual UIView.animate from here
+                heightConstraint.constant = targetHeight
+            }
+        }
+        
+        // One single animation for all bars at once
+        UIView.animate(withDuration: 0.1, delay: 0, options: .curveEaseOut, animations: {
+            self.view.layoutIfNeeded()
+        }, completion: nil)
     }
     
     func stopRecording() {
@@ -124,6 +185,18 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             audioEngine.stop()
             recognitionRequest?.endAudio()
             audioEngine.inputNode.removeTap(onBus: 0)
+            
+            // Wrap UI reset in Main thread + Animation
+            DispatchQueue.main.async {
+                UIView.animate(withDuration: 0.3) {
+                    for bar in self.waveformBars {
+                        if let height = bar.constraints.first(where: { $0.firstAttribute == .height }) {
+                            height.constant = 5
+                        }
+                    }
+                    self.view.layoutIfNeeded()
+                }
+            }
             print("🛑 Test Recording Stopped.")
         }
     }

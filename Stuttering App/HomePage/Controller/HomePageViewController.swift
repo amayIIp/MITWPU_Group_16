@@ -32,21 +32,30 @@ class HomePageViewController: UIViewController {
     @IBOutlet weak var readingStat: UILabel!
     @IBOutlet weak var convoStat: UILabel!
     
-    @IBOutlet weak var userNameLabel: UILabel!
+    //@IBOutlet weak var userNameLabel: UILabel!
     
     @IBOutlet weak var achievedAwardImage: UIImageView!
     @IBOutlet weak var achievedAwardName: UILabel!
     @IBOutlet weak var achievedAwardDescription: UILabel!
     
-        
+    @IBOutlet weak var quoteText: UILabel!
+    
+    @IBOutlet weak var streakCount: UILabel!
     private var exerciseLogs: [ExerciseLog] = []
     private var readingLogs: [ExerciseLog] = []
     private var conversationLogs: [ExerciseLog] = []
     
     var currentDailyTasks: [DailyTask] = []
+    
+    
+
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        let streak = DatabaseManager.shared.fetchCurrentStreak()
+        streakCount.text = String(streak)
+        displayRandomQuote()
 
         progressBar1.progressColor = UIColor(red: 0.4, green: 0.71, blue: 0.84, alpha: 1.0)
         progressBar2.progressColor = UIColor(red: 0.95, green: 0.77, blue: 0.24, alpha: 1.0)
@@ -54,7 +63,7 @@ class HomePageViewController: UIViewController {
         radialChartView.chartData = initialChartData
         
         loadTaskName()
-        loadUserName()
+        //loadUserName()
         AchievedAwardsUpdate()
         
         NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("ProfileDataUpdated"), object: nil)
@@ -73,24 +82,29 @@ class HomePageViewController: UIViewController {
 
         updateTaskStatus()
         loadProgressView()
-        loadUserName()
+        //loadUserName()
         loadTaskName()
         AchievedAwardsUpdate()
     }
     
     @objc func handleProfileUpdate() {
-        loadUserName()
+        //loadUserName()
         loadProgressView()
         updateTaskStatus()
     }
     
-    private func loadUserName() {
-        if let name = StorageManager.shared.getName() {
-            userNameLabel.text = "\(name)"
-        } else {
-            userNameLabel.text = "User"
+//    private func loadUserName() {
+//        if let name = StorageManager.shared.getName() {
+//            userNameLabel.text = "\(name)"
+//        } else {
+//            userNameLabel.text = "User"
+//        }
+//    }
+    func displayRandomQuote() {
+            quoteText.text = quotes.randomElement()
+            quoteText.numberOfLines = 0
+            quoteText.textAlignment = .center
         }
-    }
     
     @IBAction func profileButtonTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Profile", bundle: nil)
@@ -230,7 +244,7 @@ class HomePageViewController: UIViewController {
     @IBAction func showModalButtonTapped(_ sender: UIButton) {
         
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
-        guard let modalVC = storyboard.instantiateViewController(withIdentifier: "Streak") as? ViewController else {
+        guard let modalVC = storyboard.instantiateViewController(withIdentifier: "Streak") as? StreaksViewController else {
             return
         }
         
@@ -238,7 +252,7 @@ class HomePageViewController: UIViewController {
 
             sheet.prefersGrabberVisible = true
             let customHeightDetent = UISheetPresentationController.Detent.custom { context in
-                return 500
+                return 250
             }
             sheet.detents = [customHeightDetent]
         }

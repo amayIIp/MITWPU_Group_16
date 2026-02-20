@@ -9,7 +9,7 @@ class AIParagraphGenerator {
     private init() {}
     
     @MainActor
-    func generate(for letters: [String]) async throws -> String {
+    func generate(for letters: [String], topic: String) async throws -> String {
         let model = SystemLanguageModel.default
         
         guard model.availability == .available else {
@@ -21,22 +21,27 @@ class AIParagraphGenerator {
         
         // Persona and Prompt Construction
         let instructions = """
-        You are a creative writing assistant for speech therapy. 
-        Your goal is to write a cohesive, interesting short story (about 1500-2000 words).
-        Crucially, you must frequently use words starting with the letters: [\(lettersString)].
-        Keep the sentence structure simple but engaging. 
-        Do not mention that this is for speech therapy. Just write the story.
+                write a comprehension on "\(topic)".
+                this comprehension must include the following words: [\(lettersString)].
+                it must be atleast 3000 words.
         """
         
         let session = LanguageModelSession(model: model, instructions: instructions)
         
-        let prompt = "Write a story now."
+        let prompt = "Write a 3000 word paragraph about \(topic) in simple English ."
         
         do {
             let response = try await session.respond(to: prompt)
-            return response.content
+            
+            // Post-process: Force double spacing between paragraphs
+            // Replace single newlines that aren't already double with double newlines
+            let rawContent = response.content
+            let spacedContent = rawContent.replacingOccurrences(of: "\n", with: "\n\n")
+                                          .replacingOccurrences(of: "\n\n\n", with: "\n\n") // Normalize massive gaps
+            
+            return spacedContent
         } catch {
-            print("AI Generation Error: \(error)")
+            print("Debug: AI Model skipped generation (Safety/Reference). Error: \(error.localizedDescription)")
             throw error
         }
     }

@@ -13,6 +13,8 @@ class ReadingResultViewController: UIViewController {
     
     var report: StutterJSONReport?
     
+    private var hasSavedSession = false
+    
     let customBrandBlue = UIColor(red: 0.21, green: 0.32, blue: 0.63, alpha: 1.0)
     
     override func viewDidLoad() {
@@ -36,12 +38,62 @@ class ReadingResultViewController: UIViewController {
         }
     }
     
+//    func setupUIWithReport(_ report: StutterJSONReport) {
+//        // 1. Score
+//        setupFluencyCircle(score: CGFloat(report.fluencyScore))
+//        
+//        // 2. Insight Message
+//        insightsLabel.text = "Your /r/ and /s/ sounds have improved 12% today !!"
+//        
+//        // 3. Set Percentages & Time
+//        readingTime.text = report.duration
+//        blockPercentage.text = "\(Int(report.percentages.blocks))%"
+//        repetitionPercentage.text = "\(Int(report.percentages.repetition))%"
+//        prolongationPercentage.text = "\(Int(report.percentages.prolongation))%"
+//        
+//        // 4. Troubled Words
+//        loadTroubledWords(words: report.stutteredWords)
+//        
+//        // 5. Exercises
+//        var recommended: [String] = []
+//        if report.percentages.blocks > 5.0 { recommended.append("Easy Onset") }
+//        if report.percentages.repetition > 5.0 { recommended.append("Pull-outs") }
+//        if report.percentages.prolongation > 5.0 { recommended.append("Light Contact") }
+//        
+//        if recommended.isEmpty {
+//            recommended.append("Breathing Control")
+//            recommended.append("Slow Reading")
+//        }
+//        
+//        loadExercises(exercises: recommended)
+//    }
+
     func setupUIWithReport(_ report: StutterJSONReport) {
+        
+        // ✅ SAVE SESSION (only once)
+        if !hasSavedSession {
+            LogManager.shared.saveReadingSession(report: report)
+            hasSavedSession = true
+        }
+        
         // 1. Score
         setupFluencyCircle(score: CGFloat(report.fluencyScore))
         
         // 2. Insight Message
-        insightsLabel.text = "Your /r/ and /s/ sounds have improved 12% today !!"
+        //insightsLabel.text = "Your /r/ and /s/ sounds have improved 12% today !!"
+        
+        // 2. Insight Message (Dynamic)
+        Task {
+            if let dayReport = await LogManager.shared.getDayReport(for: Date()) {
+                await MainActor.run {
+                    self.insightsLabel.text = dayReport.insight
+                }
+            } else {
+                await MainActor.run {
+                    self.insightsLabel.text = "You showed up and practiced — that matters."
+                }
+            }
+        }
         
         // 3. Set Percentages & Time
         readingTime.text = report.duration
@@ -64,7 +116,11 @@ class ReadingResultViewController: UIViewController {
         }
         
         loadExercises(exercises: recommended)
+        LogManager.shared.saveReadingSession(report: report)
+        LogManager.shared.debugPrintAllReadingSessions()
+
     }
+
     
     func loadTroubledWords(words: [String]) {
         troubledWordsStackView.arrangedSubviews.forEach { view in

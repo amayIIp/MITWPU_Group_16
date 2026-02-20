@@ -8,22 +8,18 @@
 import Foundation
 
 let presetTitles = [ //Indexing Sections
-    "Daily Challenge",
+
     "Science",
-    "Culture",
-    "Sports",
-    "Festival",
-    "History",
+    "Space",
+    "Astronomy",
     "Mindset",
-    "Travel",
-    "Technology",
-    "Nature",
+    "Sports",
     "Custom"
 ]
 
 let presetContent = [
     // Daily Challenge (Dynamic)
-    "Daily Challenge Content Placeholder",
+
 
     // Science
     """

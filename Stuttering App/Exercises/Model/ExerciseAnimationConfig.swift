@@ -180,7 +180,7 @@ class ExerciseAnimationRegistry {
                         AnimationSubstep(type: .fullWord, duration: 1.5, delay: 0.0),
                         AnimationSubstep(type: .elongate, duration: 1.5, delay: 0.3)
                     ],
-                    autoAdvance: true
+                    autoAdvance: false
                 ),
                 StepAnimationConfig(
                     stepNumber: 2,
@@ -195,7 +195,7 @@ class ExerciseAnimationRegistry {
         )
         
         // ==========================================
-        // EXERCISES 3.1, 3.2, 3.3 - Keep as Before
+        // EXERCISES 3.1, 3.2, 3.3 - Toolkit
         // ==========================================
         templates["Preparatory Set"] = ExerciseAnimationTemplate(
             exerciseTitle: "Preparatory Set",
@@ -211,6 +211,24 @@ class ExerciseAnimationRegistry {
         
         templates["Block Correction"] = ExerciseAnimationTemplate(
             exerciseTitle: "Block Correction",
+            exerciseType: .textOnly,
+            stepConfigs: []
+        )
+        
+        templates["Tongue Twisters"] = ExerciseAnimationTemplate(
+            exerciseTitle: "Tongue Twisters",
+            exerciseType: .textOnly,
+            stepConfigs: []
+        )
+        
+        templates["Video Diary"] = ExerciseAnimationTemplate(
+            exerciseTitle: "Video Diary",
+            exerciseType: .textOnly,
+            stepConfigs: []
+        )
+        
+        templates["Story Cubes"] = ExerciseAnimationTemplate(
+            exerciseTitle: "Story Cubes",
             exerciseType: .textOnly,
             stepConfigs: []
         )

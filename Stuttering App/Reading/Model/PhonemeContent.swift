@@ -12,7 +12,27 @@ struct PhonemeContent {
             "Aviation adventures are always amusing.",
             "Architects arrange amazing apartment avenues.",
             "Ancient artifacts always attract attention.",
-            "Apples and apricots are available around August."
+            "Apples and apricots are available around August.",
+            "Ambitious apprentices always achieve amazing advancements.",
+            "Acoustic arrangements always attract appreciative audiences.",
+            "Artistic abilities awaken after active afternoons.",
+            "Abundant acorns are available around ancient areas.",
+            "Amiable actors always appreciate authentic applause.",
+            "Active ants assemble around an abandoned apple.",
+            "Advanced algorithms always assist accurate analysis.",
+            "Astronomy aficionados admire amazing astral alignments.",
+            "Affable athletes always avoid arrogant attitudes.",
+            "Attentive assistants arrange all available appointments.",
+            "Aquatic adventures always afford amazing atmospheres.",
+            "Aged alloys always appear aesthetically appealing.",
+            "Autumnal aesthetics always awaken artistic aspirations.",
+            "Agile aviators attempt always ambitious aerials.",
+            "Ample apertures allow abundant afternoon air.",
+            "Authentic accounts always assure absolute accuracy.",
+            "Arid areas always affect agricultural activities.",
+            "Aromatic appetizers always arrive at appropriate amounts.",
+            "Ambitious architects always apply advanced aesthetics.",
+            "Appreciative ancestors always admire ancient achievements.",
         ],
         "B": [
             "Big brown bears build big bridges.",
@@ -192,7 +212,27 @@ struct PhonemeContent {
             "Small stars shine silently.",
             "Six slippery snails slid slowly.",
             "Sleepy shepherds see soft sheep.",
-            "Silver spoons suit sweet soup."
+            "Silver spoons suit sweet soup.",
+            "Several smart students study science Saturday.",
+            "Skilled sailors steer ships south steadily.",
+            "Sunny skies seem so splendid sometimes.",
+            "Six small sparrows sing sweet songs.",
+            "Simple stories stay so significant surely.",
+            "Silver spoons suit some special supper.",
+            "Smooth stones stay submerged so silently.",
+            "Strict supervisors seek some solid solutions.",
+            "Sweet strawberries smell so scrumptious seasonal.",
+            "Standard software saves some small spaces.",
+            "Spring sunshine sparks some small seeds.",
+            "Soft silk suits some stylish shirts.",
+            "Strong swimmers seek some shallow shores.",
+            "Secret scouts search some secluded sites.",
+            "Steady streams splash some small stones.",
+            "Skilled surgeons save several sick souls.",
+            "Stylish sandals suit some sunny seasons.",
+            "Small seedlings sprout so slowly south.",
+            "Sincere smiles spread so some sunshine.",
+            "Silent snow settles so softly Sunday."
         ],
         "T": [
             "Ten tiny tigers took two taxis.",
@@ -293,6 +333,7 @@ struct PhonemeContent {
         return combinedSentences.joined(separator: " ")
     }
 
+
     static func generateLongFormContent(for letters: [String]) -> String {
         let totalSentencesNeeded = 300 // Increased for 10-minute density
         var combinedSentences: [String] = []
@@ -325,5 +366,49 @@ struct PhonemeContent {
         
         combinedSentences.shuffle()
         return combinedSentences.joined(separator: " ")
+    }
+    
+    // NEW: Inject phoneme sentences into an existing meaningful story
+    static func injectPhonemePractice(into content: String, for letters: [String]) -> String {
+        // 1. Get pool of practice sentences for these letters
+        var practicePool: [String] = []
+        let targetLetters = letters.isEmpty ? ["S", "R"] : letters
+        
+        for letter in targetLetters {
+            if let sentences = practiceSentences[letter.uppercased()] {
+                practicePool.append(contentsOf: sentences)
+            }
+        }
+        practicePool.shuffle()
+        
+        if practicePool.isEmpty { return content }
+        
+        // 2. Split content into paragraphs
+        // Detect paragraphs by double newline or simple newline
+        var paragraphs = content.components(separatedBy: "\n\n")
+        if paragraphs.count <= 1 {
+            paragraphs = content.components(separatedBy: "\n")
+        }
+        
+        var enrichedParagraphs: [String] = []
+        var poolIndex = 0
+        
+        for para in paragraphs {
+            let trimmed = para.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty { continue }
+            
+            enrichedParagraphs.append(trimmed)
+            
+            // Inject 1-2 sentences after every paragraph (or every other)
+            if poolIndex < practicePool.count {
+                let injection = practicePool[poolIndex]
+                // Format distinctly? Or blend in? Let's blend in but maybe append.
+                // Adding a newline makes it a "Challenge" line.
+                enrichedParagraphs.append("Challenge: \(injection)") 
+                poolIndex = (poolIndex + 1) % practicePool.count
+            }
+        }
+        
+        return enrichedParagraphs.joined(separator: "\n\n")
     }
 }

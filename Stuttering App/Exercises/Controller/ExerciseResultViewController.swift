@@ -27,6 +27,15 @@ class ExerciseResultViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Execute closure after 2.0 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.goToMainScreen()
+        }
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.setNavigationBarHidden(false, animated: false)
@@ -34,32 +43,17 @@ class ExerciseResultViewController: UIViewController {
     
     func formatDuration(_ seconds: Int) -> String {
         if seconds < 60 {
-            return String("\(seconds) Sec")
+            return "\(seconds) Sec"
         } else {
+            // Using modern rounding style
             let minutes = Int((Double(seconds) / 60.0).rounded())
-            return String("\(minutes) Min")
+            return "\(minutes) Min"
         }
     }
     
-    @IBAction func tapToMainScreen(_ sender: Any) {
+    func goToMainScreen() {
         if let initialPresenter = self.presentingViewController?.presentingViewController {
-                initialPresenter.dismiss(animated: true, completion: nil)
-            }
-    }
-    
-    @IBAction func RepeatTheExercise(_ sender: Any) {
-        if exerciseName == "Airflow Practice" {
-            guard let navPresenter = self.presentingViewController as? UINavigationController ?? self.presentingViewController?.navigationController else {
-                        print("Error: Could not find the underlying Navigation Controller.")
-                        self.dismiss(animated: true)
-                        return
-                    }
-
-                    self.dismiss(animated: true) {                        navPresenter.popToRootViewController(animated: true)
-                    }
-        } else {
-            self.dismiss(animated: true, completion: nil)
+            initialPresenter.dismiss(animated: true, completion: nil)
         }
     }
 }
-           

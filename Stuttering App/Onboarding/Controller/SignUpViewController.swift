@@ -7,24 +7,30 @@
 
 import UIKit
 
-class SignUpViewController: UIViewController {
+class SignUpViewController: UIViewController, UITextFieldDelegate {
 
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var confirmPasswordTextField: UITextField!
     @IBOutlet weak var SignUpButton: UIButton!
     
+    @IBOutlet weak var nameTextField: UITextField!
     override func viewDidLoad() {
         super.viewDidLoad()
         //setupButtons()
         setupUI()
+        setupTextField()
     }
     
     func setupButtons() {
         SignUpButton.configuration = .prominentGlass()
         SignUpButton.configuration?.title = "Sign Up"
     }
-    
+    func setupTextField() {
+        nameTextField.delegate = self
+        //nameTextField.placeholder = "Enter your name"
+        nameTextField.returnKeyType = .done
+    }
     func setupUI() {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
@@ -59,6 +65,13 @@ class SignUpViewController: UIViewController {
             return
         }
         
+            guard let name = nameTextField.text,
+                  !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+                return
+            }
+            
+            StorageManager.shared.saveName(name)
+        
         StorageManager.shared.saveEmail(email)
         StorageManager.shared.savePassword(password)
         AppState.isLoginCompleted = true
@@ -92,7 +105,7 @@ class SignUpViewController: UIViewController {
             }
         } else {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "OnboardingVC")
+            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "onboardingPg2")
             navigationController?.pushViewController(onboardingVC, animated: true)
         }
     }

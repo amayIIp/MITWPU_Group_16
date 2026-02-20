@@ -19,7 +19,6 @@ class ExerciseCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var captionLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var actionButton: UIButton!
-    @IBOutlet weak var exerciseLogo: UIImageView!
     
     var didTapButton: (() -> Void)?
 
@@ -44,7 +43,6 @@ class ExerciseCollectionViewCell: UICollectionViewCell {
     func configure(with exercise: Exercise) {
         titleLabel.text = exercise.name
         captionLabel.text = exercise.description
-        exerciseLogo.image = UIImage(named: exercise.name) ?? UIImage(systemName: "dumbbell")
         // Formatting the time label to stand out (e.g., pills or distinct color)
         timeLabel.text = formatDuration(exercise.short_time)
         

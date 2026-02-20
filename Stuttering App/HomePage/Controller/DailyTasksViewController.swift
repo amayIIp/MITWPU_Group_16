@@ -38,17 +38,44 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "DailyTasksCell", for: indexPath) as? DailyTasksCell else { return UITableViewCell() }
-        
-        let task = dailyTasks[indexPath.row]
-        cell.configure(with: task)
-        
-        cell.playButtonAction = { [weak self] in
-            guard !task.isCompleted else { return }
-            self?.navigateToExercise(with: task.name)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "DailyTasksCell", for: indexPath) as? DailyTasksCell else {
+                return UITableViewCell()
+            }
+            
+            let task = dailyTasks[indexPath.row]
+            cell.configure(with: task)
+            
+            let firstIncompleteIndex = firstIncompleteTaskIndex()
+            let isPlayable = (indexPath.row == firstIncompleteIndex)
+            
+            // Disable button if not playable
+        if task.isCompleted {
+            // COMPLETED STATE
+            cell.playButton.isEnabled = true
+            cell.playButton.alpha = 1.0   // keep full color (green tick)
         }
-        return cell
+        else if indexPath.row == firstIncompleteIndex {
+            // CURRENT PLAYABLE TASK
+            cell.playButton.isEnabled = true
+            cell.playButton.alpha = 1.0
+        }
+        else {
+            // LOCKED TASK
+            cell.playButton.isEnabled = false
+            cell.playButton.alpha = 0.4
+        }
+            
+            cell.playButtonAction = { [weak self] in
+                guard isPlayable else { return }
+                self?.navigateToExercise(with: task.name)
+            }
+            
+            return cell
     }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+
     
     func navigateToExercise(with exerciseName: String) {
         
@@ -66,4 +93,9 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
         ResultNav.modalPresentationStyle = .fullScreen
         self.present(ResultNav, animated: true, completion: nil)
     }
+    
+    func firstIncompleteTaskIndex() -> Int? {
+        return dailyTasks.firstIndex(where: { !$0.isCompleted })
+    }
+
 }

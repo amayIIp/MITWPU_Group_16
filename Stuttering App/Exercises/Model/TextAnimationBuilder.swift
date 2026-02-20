@@ -15,7 +15,7 @@ class TextAnimationBuilder {
     
     private let normalSize: CGFloat = 48
     private let normalWeight: UIFont.Weight = .bold
-    private let normalColor: UIColor = .systemIndigo
+    private let normalColor: UIColor = .buttonTheme
     
     private let fadedAlpha: CGFloat = 0.5
     
