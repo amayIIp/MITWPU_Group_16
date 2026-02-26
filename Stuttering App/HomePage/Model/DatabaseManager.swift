@@ -10,12 +10,14 @@ import SQLite3
 
 class DatabaseManager {
     static let shared = DatabaseManager()
+    private(set) var isDailyGoalCompleted: Bool = false
     var db: OpaquePointer?
 
     private init() {
         openDatabase()
         createTables()
         populateInitialJourney()
+        initializeStreakIfNeeded()
     }
 
     func openDatabase() {
@@ -30,7 +32,15 @@ class DatabaseManager {
         let createJourney = "CREATE TABLE IF NOT EXISTS Journey (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, isCompleted INTEGER DEFAULT 0)"
         
         let createDaily = "CREATE TABLE IF NOT EXISTS DailyTasks (id INTEGER PRIMARY KEY, name TEXT, description TEXT, duration INTEGER, isCompleted INTEGER DEFAULT 0)"
-
+        
+        let createStreak = """
+        CREATE TABLE IF NOT EXISTS Streak (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            currentStreak INTEGER,
+            lastCompletedDate TEXT
+        )
+        """
+        sqlite3_exec(db, createStreak, nil, nil, nil)
         sqlite3_exec(db, createJourney, nil, nil, nil)
         sqlite3_exec(db, createDaily, nil, nil, nil)
     }
@@ -131,6 +141,15 @@ class DatabaseManager {
         executeNameUpdate(query: updateDaily, name: taskName)
         executeNameUpdate(query: updateJourney, name: taskName)
         
+        updateDailyGoalCompletionStatus()
+        
+        updateDailyGoalCompletionStatus()
+
+        if isDailyGoalCompleted {
+            updateStreakIfEligible()
+        }
+
+        
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
     }
     
@@ -142,4 +161,125 @@ class DatabaseManager {
         }
         sqlite3_finalize(statement)
     }
+    
+    func updateDailyGoalCompletionStatus() {
+        let query = "SELECT COUNT(*) FROM DailyTasks WHERE isCompleted = 0"
+        var statement: OpaquePointer?
+        var pendingCount = 0
+
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            if sqlite3_step(statement) == SQLITE_ROW {
+                pendingCount = Int(sqlite3_column_int(statement, 0))
+            }
+        }
+        sqlite3_finalize(statement)
+
+        // 👇 If no pending tasks → daily goal completed
+        isDailyGoalCompleted = (pendingCount == 0)
+
+        // Optional: notify UI / other listeners
+        NotificationCenter.default.post(
+            name: NSNotification.Name("dailyGoalStatusUpdated"),
+            object: isDailyGoalCompleted
+        )
+    }
+
+    func initializeStreakIfNeeded() {
+        let query = "SELECT COUNT(*) FROM Streak"
+        var stmt: OpaquePointer?
+        var count = 0
+
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+
+        if count == 0 {
+            let insert = "INSERT INTO Streak (id, currentStreak, lastCompletedDate) VALUES (1, 0, NULL)"
+            sqlite3_exec(db, insert, nil, nil, nil)
+        }
+    }
+
+    private func todayString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
+    }
+
+    private func yesterdayString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
+    }
+
+    func updateStreakIfEligible() {
+        // Only proceed if daily goal is completed
+        guard isDailyGoalCompleted else { return }
+
+        let query = "SELECT currentStreak, lastCompletedDate FROM Streak WHERE id = 1"
+        var stmt: OpaquePointer?
+
+        var currentStreak = 0
+        var lastDate: String?
+
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                currentStreak = Int(sqlite3_column_int(stmt, 0))
+                if let text = sqlite3_column_text(stmt, 1) {
+                    lastDate = String(cString: text)
+                }
+            }
+        }
+        sqlite3_finalize(stmt)
+
+        let today = todayString()
+        let yesterday = yesterdayString()
+
+        // ❌ Already counted today
+        if lastDate == today { return }
+
+        // ✅ Increment or reset
+        let newStreak: Int
+        if lastDate == yesterday {
+            newStreak = currentStreak + 1
+        } else {
+            newStreak = 1
+        }
+
+        let update = """
+        UPDATE Streak
+        SET currentStreak = ?, lastCompletedDate = ?
+        WHERE id = 1
+        """
+        var updateStmt: OpaquePointer?
+
+        if sqlite3_prepare_v2(db, update, -1, &updateStmt, nil) == SQLITE_OK {
+            sqlite3_bind_int(updateStmt, 1, Int32(newStreak))
+            sqlite3_bind_text(updateStmt, 2, (today as NSString).utf8String, -1, nil)
+            sqlite3_step(updateStmt)
+        }
+        sqlite3_finalize(updateStmt)
+
+        NotificationCenter.default.post(
+            name: NSNotification.Name("streakUpdated"),
+            object: newStreak
+        )
+    }
+
+    func fetchCurrentStreak() -> Int {
+        let query = "SELECT currentStreak FROM Streak WHERE id = 1"
+        var stmt: OpaquePointer?
+        var streak = 0
+
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                streak = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+        return streak
+    }
+
 }

@@ -14,6 +14,7 @@ class ReadingControlsViewController: UIViewController {
     
     weak var delegate: WorkoutSheetDelegate?
     
+    
     @IBOutlet weak var playPauseButton: UIButton!
     @IBOutlet weak var speedUpButton: UIButton!
     @IBOutlet weak var speedDownButton: UIButton!
@@ -77,6 +78,14 @@ class ReadingControlsViewController: UIViewController {
         playPauseButton.setImage(symbol, for: .normal)
         
         playPauseButton.tintColor = isPlaying ? .systemRed : .systemBlue
+    }
+    
+    func toggleDoneButtonVisibility(isHidden: Bool) {
+        // Wrap in an animation block for a smooth iOS-native fade effect
+        UIView.animate(withDuration: 0.25) {
+            self.endButton.alpha = isHidden ? 0.0 : 1.0
+            self.endButton.isHidden = isHidden
+        }
     }
     
     func configureMenu() {

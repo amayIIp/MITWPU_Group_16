@@ -25,6 +25,11 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     
     @IBOutlet weak var emptyStateView: UIView!
     
+    @IBOutlet weak var fluencyGrowth: UILabel!
+    @IBOutlet weak var blocks: UILabel!
+    @IBOutlet weak var averageAccuracy: UILabel!
+    @IBOutlet weak var improvement: UILabel!
+    @IBOutlet weak var insightsLabel: UILabel!
     private var allFilterButtons: [UIButton] = []
     private var currentDateFilter: Date = Date()
     
@@ -51,13 +56,16 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         print("DB Path: \(paths[0].path)")
+        
+        emptyStateView.isHidden = true
+        loadDataForCurrentDate()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        tableView.reloadData()
-        loadDataForCurrentDate()
+        loadDataForCurrentDate()   // ✅ Only this
     }
+
 
     
     @IBAction func filterButtonTapped(_ sender: UIButton) {
@@ -65,9 +73,90 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         self.activeFilter = newFilter
         updateButtonStyles()
         updateSummaryViewsVisibility()
-        self.tableView.reloadData()
+        updateEmptyState()        // ✅ First
+        tableView.reloadData()    // ✅ Then reload
+
     }
     
+    private func loadAnalyticsSummary() {
+        
+        Task {
+            let dayReport = await LogManager.shared.getDayReport(for: currentDateFilter)
+            let overall   = await LogManager.shared.getOverallProgressReport()
+
+            DispatchQueue.main.async {
+                
+                // 🔹 FLUENCY GROWTH
+                if let overall = overall {
+                    self.fluencyGrowth.text = "\(Int(overall.fluencyGrowthPercent))%"
+                } else {
+                    self.fluencyGrowth.text = "--"
+                }
+                
+                // 🔹 BLOCKS
+                if let overall = overall {
+                    self.blocks.text = "\(Int(overall.avgBlockPercent))%"
+                } else {
+                    self.blocks.text = "--"
+                }
+                
+                // 🔹 AVERAGE ACCURACY
+                if let overall = overall {
+                    self.averageAccuracy.text = "\(Int(overall.avgAccuracy))%"
+                } else {
+                    self.averageAccuracy.text = "--"
+                }
+                
+                // 🔹 IMPROVEMENT
+                if let overall = overall {
+                    self.improvement.text = "\(Int(overall.improvementPercent))%"
+                } else {
+                    self.improvement.text = "--"
+                }
+                
+                // 🔹 INSIGHT
+                if let dayReport = dayReport {
+                    self.insightsLabel.text = dayReport.insight
+                } else {
+                    self.insightsLabel.text = "All quiet so far. Let's break the silence with some progress."
+                }
+            }
+        }
+    }
+    
+    private func updateFilterButtonsVisibility() {
+        
+        if dailyTaskLogs.isEmpty {
+            dailyTasksButton.isHidden = true
+            dailyTasksButton.alpha = 0
+        }
+        
+        if exerciseLogs.isEmpty {
+            exercisesButton.isHidden = true
+            exercisesButton.alpha = 0
+        }
+        
+        if readingLogs.isEmpty {
+            readingButton.isHidden = true
+            readingButton.alpha = 0
+        }
+        
+        if conversationLogs.isEmpty {
+            conversationButton.isHidden = true
+            conversationButton.alpha = 0
+        }
+        
+        // "All" button should only appear if ANY category has data
+        let hasAnyData =
+            !dailyTaskLogs.isEmpty ||
+            !exerciseLogs.isEmpty ||
+            !readingLogs.isEmpty ||
+            !conversationLogs.isEmpty
+
+        allButton.isHidden = !hasAnyData
+    }
+
+
     func updateTableHeaderHeight() {
         guard let header = tableView.tableHeaderView else { return }
         
@@ -90,12 +179,15 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         exerciseLogs = Array(LogManager.shared.getLogs(for: .exercises, on: self.currentDateFilter).reversed())
         readingLogs = Array(LogManager.shared.getLogs(for: .reading, on: self.currentDateFilter).reversed())
         conversationLogs = Array(LogManager.shared.getLogs(for: .conversation, on: self.currentDateFilter).reversed())
-    
-        tableView.reloadData()
-        
+
         updateSummaryViewsVisibility()
-        updateEmptyStateVisibility()
+        updateFilterButtonsVisibility()
+        updateEmptyState()        // ✅ Call here
+        tableView.reloadData()    // ✅ Then reload
+        
+        loadAnalyticsSummary()
     }
+
     
     private func updateButtonStyles() {
         let activeTag = activeFilter.rawValue
@@ -105,15 +197,15 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             var textAttributes = AttributeContainer()
 
             if button.tag == activeTag {
-                config.baseBackgroundColor = .systemBlue
+                config.baseBackgroundColor = .buttonTheme
                 config.baseForegroundColor = .white
 
-                textAttributes.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+                textAttributes.font = UIFont.preferredFont(forTextStyle: .caption1)
             } else {
                 config.baseBackgroundColor = .systemBackground
                 config.baseForegroundColor = .label
                 
-                textAttributes.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+                textAttributes.font = UIFont.preferredFont(forTextStyle: .caption1)
             }
             
             if let title = config.title {
@@ -156,8 +248,31 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     }
 
     
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        switch activeFilter {
+//        case .all:
+//            switch section {
+//            case 0: return dailyTaskLogs.count
+//            case 1: return exerciseLogs.count
+//            case 2: return readingLogs.count
+//            case 3: return conversationLogs.count
+//            default: return 0
+//            }
+//        case .dailyTasks:
+//            return dailyTaskLogs.count
+//        case .exercises:
+//            return exerciseLogs.count
+//        case .reading:
+//            return readingLogs.count
+//        case .conversation:
+//            return conversationLogs.count
+//        }
+//    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
         switch activeFilter {
+
         case .all:
             switch section {
             case 0: return dailyTaskLogs.count
@@ -166,17 +281,22 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             case 3: return conversationLogs.count
             default: return 0
             }
+
         case .dailyTasks:
             return dailyTaskLogs.count
+
         case .exercises:
             return exerciseLogs.count
+
         case .reading:
             return readingLogs.count
+
         case .conversation:
             return conversationLogs.count
         }
     }
 
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "LogCell", for: indexPath) as? LogSummaryCell else {
@@ -220,75 +340,240 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
     
+//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//
+//        let headerView = UIView()
+//        headerView.backgroundColor = .bg
+//
+//        let titleLabel = UILabel()
+//        titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+//        titleLabel.textColor = .label
+//        
+//        let titleLabel1 = UILabel()
+//        titleLabel1.font = UIFont.preferredFont(forTextStyle: .headline)
+//        titleLabel1.textColor = .label
+//        titleLabel1.textAlignment = .right
+//        
+//        let titleText: String
+//        let titleText1: String
+//        
+//        switch activeFilter {
+//            
+//        case .all:
+//            switch section {
+//            case 0:
+//                if !dailyTaskLogs.isEmpty {
+//                    titleText = "Daily Tasks"
+//                    titleText1 = "\(dailyTaskLogs.count)/5"
+//                }
+//            case 1:
+//                if !exerciseLogs.isEmpty {
+//                    titleText = "Exercises"
+//                    titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
+//                    
+//                }
+//                
+//            case 2:
+//                let totalReadingMinutes = calculateTotalDuration(for: self.readingLogs)
+//                if totalReadingMinutes == 0 {
+//                    titleText = "Reading"
+//                    titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
+//                    
+//                }
+//                
+//            case 3:
+//                let totalConvoMinutes = calculateTotalDuration(for: self.conversationLogs)
+//                if totalConvoMinutes == 0 {
+//                    titleText = "Conversation"
+//                    titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
+//                }
+//            default:
+//                titleText = ""
+//                titleText1 = ""
+//            }
+//            
+//        case .dailyTasks:
+//            if !dailyTaskLogs.isEmpty {
+//                titleText = "Daily Tasks"
+//                titleText1 = "\(dailyTaskLogs.count)/5"
+//            }
+//        case .exercises:
+//            if !exerciseLogs.isEmpty {
+//                titleText = "Exercises"
+//                titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
+//                
+//            }
+//        case .reading:
+//            let totalReadingMinutes = calculateTotalDuration(for: self.readingLogs)
+//            if totalReadingMinutes == 0 {
+//                titleText = "Reading"
+//                titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
+//                
+//            }
+//        case .conversation:
+//            let totalConvoMinutes = calculateTotalDuration(for: self.conversationLogs)
+//            if totalConvoMinutes == 0 {
+//                titleText = "Conversation"
+//                titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
+//            }
+//        }
+//        
+//        titleLabel.text = titleText
+//        titleLabel1.text = titleText1
+//        
+//        headerView.addSubview(titleLabel)
+//        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+//        
+//        NSLayoutConstraint.activate([
+//            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8.0),
+//            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16.0),
+//            titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16.0),
+//            titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8.0)
+//        ])
+//        
+//        headerView.addSubview(titleLabel1)
+//        titleLabel1.translatesAutoresizingMaskIntoConstraints = false
+//        
+//        NSLayoutConstraint.activate([
+//            titleLabel1.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8.0),
+//            titleLabel1.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16.0),
+//            titleLabel1.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16.0),
+//            titleLabel1.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8.0)
+//        ])
+//        
+//        return headerView
+//    }
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+
+        var titleText: String?
+        var titleText1: String?
+
+        switch activeFilter {
+
+        case .all:
+            switch section {
+
+            case 0 where !dailyTaskLogs.isEmpty:
+                titleText = "Daily Tasks"
+                titleText1 = "\(dailyTaskLogs.count)/5"
+
+            case 1 where !exerciseLogs.isEmpty:
+                titleText = "Exercises"
+                titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
+
+            case 2 where !readingLogs.isEmpty:
+                let totalReadingMinutes = calculateTotalDuration(for: readingLogs)
+                titleText = "Reading"
+                titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
+                
+            case 3 where !conversationLogs.isEmpty:
+                let totalConvoMinutes = calculateTotalDuration(for: conversationLogs)
+                titleText = "Conversation"
+                titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
+
+            default:
+                break
+            }
+
+        case .dailyTasks:
+            guard !dailyTaskLogs.isEmpty else { return nil }
+            titleText = "Daily Tasks"
+            titleText1 = "\(dailyTaskLogs.count)/5"
+
+        case .exercises:
+            guard !exerciseLogs.isEmpty else { return nil }
+            titleText = "Exercises"
+            titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
+
+        case .reading:
+            let totalReadingMinutes = calculateTotalDuration(for: readingLogs)
+            guard !readingLogs.isEmpty else { return nil }
+            titleText = "Reading"
+            titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
+
+        case .conversation:
+            let totalConvoMinutes = calculateTotalDuration(for: conversationLogs)
+            guard !conversationLogs.isEmpty else { return nil }
+            titleText = "Conversation"
+            titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
+        }
+
+        guard let title = titleText,
+              let subtitle = titleText1 else {
+            return nil
+        }
 
         let headerView = UIView()
         headerView.backgroundColor = .bg
 
         let titleLabel = UILabel()
         titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        titleLabel.textColor = .secondaryLabel
-        
-        let titleText: String
-        
-        switch activeFilter {
-            
-        case .all:
-            switch section {
-            case 0:
-                titleText = "Daily Tasks   \(dailyTaskLogs.count)/5"
-            case 1:
-                titleText = "Exercises   \(exerciseLogs.count)/\(exerciseTarget)"
-            case 2:
-                let totalReadingMinutes = calculateTotalDuration(for: self.readingLogs)
-                titleText = "Reading   \(totalReadingMinutes)/\(readingTarget)"
-            case 3:
-                let totalConvoMinutes = calculateTotalDuration(for: self.conversationLogs)
-                titleText = "Conversation   \(totalConvoMinutes)/\(conversationTarget)"
-            default:
-                titleText = ""
-            }
-            
-        case .dailyTasks:
-            titleText = "Daily Tasks   \(dailyTaskLogs.count)/5"
-        case .exercises:
-            titleText = "Exercises   \(exerciseLogs.count)/\(exerciseTarget)"
-        case .reading:
-            let totalReadingMinutes = calculateTotalDuration(for: self.readingLogs)
-            titleText = "Reading   \(totalReadingMinutes)/\(readingTarget)"
-        case .conversation:
-            let totalConvoMinutes = calculateTotalDuration(for: self.conversationLogs)
-            titleText = "Conversation   \(totalConvoMinutes)/\(conversationTarget)"
-        }
-        
-        titleLabel.text = titleText
-        
+        titleLabel.textColor = .label
+        titleLabel.text = title
+
+        let countLabel = UILabel()
+        countLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        countLabel.textColor = .label
+        countLabel.textAlignment = .right
+        countLabel.text = subtitle
+
         headerView.addSubview(titleLabel)
+        headerView.addSubview(countLabel)
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+        countLabel.translatesAutoresizingMaskIntoConstraints = false
+
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8.0),
-            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16.0),
-            titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16.0),
-            titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8.0)
+            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8),
+
+            countLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            countLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+            countLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
         ])
-        
+
         return headerView
     }
+
+
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return UITableView.automaticDimension
     }
     
-    private func updateEmptyStateVisibility() {
-        let hasNoData = dailyTaskLogs.isEmpty &&
-                        exerciseLogs.isEmpty &&
-                        readingLogs.isEmpty &&
-                        conversationLogs.isEmpty
-        
-        self.tableView.isHidden = hasNoData
-        self.emptyStateView.isHidden = !hasNoData
+//    private func updateEmptyStateVisibility() {
+//        let hasNoData = dailyTaskLogs.isEmpty &&
+//                        exerciseLogs.isEmpty &&
+//                        readingLogs.isEmpty &&
+//                        conversationLogs.isEmpty
+//        
+//        self.tableView.isHidden = hasNoData
+//        self.emptyStateView.isHidden = !hasNoData
+//    }
+    private func updateEmptyState() {
+
+        let hasAnyData =
+            !dailyTaskLogs.isEmpty ||
+            !exerciseLogs.isEmpty ||
+            !readingLogs.isEmpty ||
+            !conversationLogs.isEmpty
+
+        // Show table only if there is data
+        tableView.isHidden = !hasAnyData
+
+        // Show empty state only if there is NO data
+        emptyStateView.isHidden = hasAnyData
+
+        // Optional: hide filter buttons when completely empty
+        for button in allFilterButtons {
+            button.isHidden = !hasAnyData
+        }
     }
+
+
+
 }
 
 extension SummaryViewController: CalendarDateDelegate {
