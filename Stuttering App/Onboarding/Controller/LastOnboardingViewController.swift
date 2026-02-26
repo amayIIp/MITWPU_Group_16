@@ -211,34 +211,32 @@ class LastOnboardingViewController: UIViewController {
 //                window.rootViewController = homeVC
 //            }, completion: nil)
 //        }
-        
-        
-//        AppState.isOnboardingCompleted = true
-//            AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
-//            
-//            // 1. Setup the new View Controller
-//        let storyboard = UIStoryboard(name: "Home", bundle: nil)
-//        let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
-//
-//        guard let window = view.window else { return }
-//
-//        // 1. Set the window's background to your target color
-//        // (e.g., .white or homeVC's background color)
-//        window.backgroundColor = .bg
-//
-//        // 2. Phase 1: Fade out the current view
-//        UIView.animate(withDuration: 0.3, animations: {
-//            window.rootViewController?.view.alpha = 0
-//        }) { _ in
-//            // 3. Switch the Root View Controller
-//            homeVC.view.alpha = 0
-//            window.rootViewController = homeVC
-//            
-//            // 4. Phase 2: Fade the new view back in
-//            UIView.animate(withDuration: 0.3) {
-//                homeVC.view.alpha = 1
-//            }
-//        }
+        AppState.isOnboardingCompleted = true
+            AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
+            
+            // 1. Setup the new View Controller
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+
+        guard let window = view.window else { return }
+
+        // 1. Set the window's background to your target color
+        // (e.g., .white or homeVC's background color)
+        window.backgroundColor = .bg
+
+        // 2. Phase 1: Fade out the current view
+        UIView.animate(withDuration: 0.3, animations: {
+            window.rootViewController?.view.alpha = 0
+        }) { _ in
+            // 3. Switch the Root View Controller
+            homeVC.view.alpha = 0
+            window.rootViewController = homeVC
+            
+            // 4. Phase 2: Fade the new view back in
+            UIView.animate(withDuration: 0.3) {
+                homeVC.view.alpha = 1
+            }
+        }
     }
     
     @objc func didTapResetButton() {
