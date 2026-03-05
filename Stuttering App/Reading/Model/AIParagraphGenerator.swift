@@ -28,7 +28,7 @@ class AIParagraphGenerator {
         
         let session = LanguageModelSession(model: model, instructions: instructions)
         
-        let prompt = "Write a 3000 word paragraph about \(topic) in simple English ."
+        let prompt = "Write a 3000 word paragraph about \(topic) in simple English start with essay directly and end with a conclusion."
         
         do {
             let response = try await session.respond(to: prompt)
