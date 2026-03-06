@@ -11,6 +11,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     var exerciseDuration: Int = 0
     var startTime: Date?
     var initialDAFDelay: Double = 0.0
+    private var currentPlaybackSpeed: Double = 1.0
 
     
     private let wordsPerHighlight = 3
@@ -73,11 +74,22 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
-
+    func updatePlaybackSpeed() {
+        
+        // Convert speed into highlight duration
+        // Higher speed = shorter duration
+        highlightDuration = max(minDuration, min(maxDuration, 1.7 / currentPlaybackSpeed))
+        
+        if isPlaying {
+            startTimer()
+        }
+    }
+    
     func setupTextView() {
         guard let textView = textView else { return }
         
-        let baseFont = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        //let baseFont = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        let baseFont = UIFont.preferredFont(forTextStyle: .body)
         defaultAttributes = [.font: baseFont, .foregroundColor: UIColor.gray]
         highlightAttributes = [.font: baseFont, .foregroundColor: UIColor.black]
         
@@ -131,7 +143,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             
             sheet.detents = [
                 .custom(identifier: .init("quarter")) { context in
-                    0.25 * context.maximumDetentValue
+                    0.15 * context.maximumDetentValue
                 },
                 .custom(identifier: .init("half")) { context in
                     0.38 * context.maximumDetentValue
@@ -378,8 +390,13 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
 
 extension DetailViewController: WorkoutSheetDelegate {
     func didTapPlayPause() { togglePlayPause() }
-    func didTapDecreaseSpeed() { decreaseSpeed() }
-    func didTapIncreaseSpeed() { increaseSpeed() }
+    //func didTapDecreaseSpeed() { decreaseSpeed() }
+    //func didTapIncreaseSpeed() { increaseSpeed() }
+    func didChangeSpeed(_ speed: Double) {
+            currentPlaybackSpeed = speed
+            updatePlaybackSpeed()
+        }
+    
     func didTapReset() { resetReading() }
     func didTapShowResult() {
         pausePlayback()

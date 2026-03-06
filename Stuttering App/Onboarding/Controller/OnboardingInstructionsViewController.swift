@@ -1,10 +1,12 @@
 import UIKit
+import Speech
+import AVFoundation
 
 class OnboardingInstructionsViewController: UIViewController {
     
     // MARK: - Outlets
     @IBOutlet weak var instructionLabel: UILabel!
-    @IBOutlet weak var pagecontrol: UIPageControl!
+    //@IBOutlet weak var pagecontrol: UIPageControl!
     @IBOutlet weak var continueButton: UIButton!
     
     // MARK: - Properties
@@ -32,7 +34,7 @@ class OnboardingInstructionsViewController: UIViewController {
 
     private func resetUI() {
         // 1. Restore visibility
-        self.pagecontrol.alpha = 1
+        //self.pagecontrol.alpha = 1
         self.continueButton.alpha = 1
         self.instructionLabel.alpha = 1
         
@@ -50,9 +52,9 @@ class OnboardingInstructionsViewController: UIViewController {
     
     // MARK: - Setup
     func setupUI() {
-        pagecontrol.numberOfPages = instructions.count
-        pagecontrol.currentPage = 0
-        pagecontrol.isUserInteractionEnabled = true
+//        pagecontrol.numberOfPages = instructions.count
+//        pagecontrol.currentPage = 0
+//        pagecontrol.isUserInteractionEnabled = true
         
         instructionLabel.text = instructions[0]
         instructionLabel.numberOfLines = 0
@@ -69,7 +71,8 @@ class OnboardingInstructionsViewController: UIViewController {
     // MARK: - Instruction Animation (Slide & Fade)
     private func animateInstructionChange() {
         // 1. Determine direction (Forward or Backward)
-        let isForward = pagecontrol.currentPage < currentPage || currentPage == 0
+        //let isForward = pagecontrol.currentPage < currentPage || currentPage == 0
+        let isForward = true
         let transitionOffset: CGFloat = isForward ? 40 : -40
         
         // 2. Animate out the old text
@@ -89,7 +92,7 @@ class OnboardingInstructionsViewController: UIViewController {
         }
         
         // Update UI components
-        pagecontrol.currentPage = currentPage
+        //pagecontrol.currentPage = currentPage
         let isLastPage = (currentPage == instructions.count - 1)
         let buttonTitle = isLastPage ? "Start the test" : "Next"
         
@@ -104,7 +107,7 @@ class OnboardingInstructionsViewController: UIViewController {
         self.navigationItem.setHidesBackButton(true, animated: true)
         // 1. Fade out navigation elements
         UIView.animate(withDuration: 0.3) {
-            self.pagecontrol.alpha = 0
+            //self.pagecontrol.alpha = 0
             self.continueButton.alpha = 0
             self.continueButton.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
         }
@@ -155,11 +158,51 @@ class OnboardingInstructionsViewController: UIViewController {
         if currentPage < instructions.count - 1 {
             currentPage += 1
         } else {
-            startCountdown()
+            checkPermissionsAndStart()
         }
     }
-    
-    @IBAction func pageControlValueChanged(_ sender: UIPageControl) {
-        currentPage = sender.currentPage
+    private func checkPermissionsAndStart() {
+        // 1. Request Speech Recognition Permission
+        SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
+            DispatchQueue.main.async {
+                switch authStatus {
+                case .authorized:
+                    // 2. If Speech is okay, request Microphone Permission
+                    self?.requestMicrophonePermission()
+                case .denied, .restricted, .notDetermined:
+                    self?.showPermissionAlert(message: "Speech recognition is required for this test.")
+                @unknown default:
+                    break
+                }
+            }
+        }
     }
+
+    private func requestMicrophonePermission() {
+        AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
+            DispatchQueue.main.async {
+                if granted {
+                    // Both permissions granted! Start the 3, 2, 1 animation
+                    self?.startCountdown()
+                } else {
+                    self?.showPermissionAlert(message: "Microphone access is required to record your voice.")
+                }
+            }
+        }
+    }
+
+    private func showPermissionAlert(message: String) {
+        let alert = UIAlertController(title: "Permissions Required", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
+            if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsURL)
+            }
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+    
+//    @IBAction func pageControlValueChanged(_ sender: UIPageControl) {
+//        currentPage = sender.currentPage
+//    }
 }

@@ -6,7 +6,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
 
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var stackView: UIStackView!
-    @IBOutlet weak var previousButton: UIButton!
+    //@IBOutlet weak var previousButton: UIButton!
     @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
     @IBOutlet weak var continueButton: UIButton!
@@ -229,29 +229,54 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
     }
     
-    @IBAction func previousButtonTapped(_ sender: UIButton) {
-        if currentIndex > 0 {
-            highlightParagraph(at: currentIndex - 1, animated: true)
-        }
-    }
+//    @IBAction func previousButtonTapped(_ sender: UIButton) {
+//        if currentIndex > 0 {
+//            highlightParagraph(at: currentIndex - 1, animated: true)
+//        }
+//    }
     
     @IBAction func resetButtonTapped(_ sender: UIButton) {
-        // 1. Reset Recording
-        stopRecording()
-        recordedTranscript = ""
-        recordedSegments = []
-        try? startRecording()
-        
-        // 2. Reset UI
-        highlightParagraph(at: 0, animated: true)
-        bottomViewConstraint.constant = 0
-        continueButton.isEnabled = false
-        continueButton.isHidden = true
-        
-        UIView.animate(withDuration: 0.4) {
-            self.view.layoutIfNeeded()
-            self.continueButton.alpha = 0
-        }
+//        // 1. Reset Recording
+//        stopRecording()
+//        recordedTranscript = ""
+//        recordedSegments = []
+//        try? startRecording()
+//        
+//        // 2. Reset UI
+//        highlightParagraph(at: 0, animated: true)
+//        bottomViewConstraint.constant = 0
+//        continueButton.isEnabled = false
+//        continueButton.isHidden = true
+//        
+//        UIView.animate(withDuration: 0.4) {
+//            self.view.layoutIfNeeded()
+//            self.continueButton.alpha = 0
+//        }
+        // 1. Create the alert controller
+                let alert = UIAlertController(
+                    title: "Restart Test?",
+                    message: "Are you sure you want to start over? Your current recording will be lost.",
+                    preferredStyle: .alert
+                )
+                
+                // 2. Create the "Cancel" action (dismisses the alert and does nothing)
+                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+                
+                // 3. Create the "Restart" action
+                let restartAction = UIAlertAction(title: "Restart", style: .destructive) { [weak self] _ in
+                    // Safely stop the audio engine
+                    self?.stopRecording()
+                    
+                    // Go back to the Onboarding/Countdown screen
+                    self?.navigationController?.popViewController(animated: true)
+                }
+                
+                // 4. Add the actions to the alert
+                alert.addAction(cancelAction)
+                alert.addAction(restartAction)
+                
+                // 5. Show the alert
+                present(alert, animated: true, completion: nil)
     }
     
     // ✅ "Submit" Button Action
@@ -341,9 +366,9 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func updateButtonStates() {
-        previousButton.isEnabled = currentIndex > 0
+        //previousButton.isEnabled = currentIndex > 0
         nextButton.isEnabled = currentIndex < paragraphs.count
-        previousButton.alpha = previousButton.isEnabled ? 1.0 : 0.5
+        //previousButton.alpha = previousButton.isEnabled ? 1.0 : 0.5
         nextButton.alpha = nextButton.isEnabled ? 1.0 : 0.5
     }
 }

@@ -24,11 +24,12 @@ class AIParagraphGenerator {
                 write a comprehension on "\(topic)".
                 this comprehension must include the following words: [\(lettersString)].
                 it must be atleast 3000 words.
+                it must change paragraphs at an interval of 50 words approx .
         """
         
         let session = LanguageModelSession(model: model, instructions: instructions)
         
-        let prompt = "Write a 3000 word paragraph about \(topic) in simple English start with essay directly and end with a conclusion."
+        let prompt = "Write a 3000 word paragraph about \(topic) in simple English ."
         
         do {
             let response = try await session.respond(to: prompt)

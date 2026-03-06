@@ -40,6 +40,7 @@ class HomePageViewController: UIViewController {
     
     @IBOutlet weak var quoteText: UILabel!
     
+    @IBOutlet weak var insightLabel: UILabel!
     @IBOutlet weak var streakCount: UILabel!
     private var exerciseLogs: [ExerciseLog] = []
     private var readingLogs: [ExerciseLog] = []
@@ -85,6 +86,7 @@ class HomePageViewController: UIViewController {
         //loadUserName()
         loadTaskName()
         AchievedAwardsUpdate()
+        loadHomeInsight()
     }
     
     @objc func handleProfileUpdate() {
@@ -105,6 +107,34 @@ class HomePageViewController: UIViewController {
             quoteText.numberOfLines = 0
             quoteText.textAlignment = .center
         }
+    private func loadHomeInsight() {
+        Task {
+            let today = Date()
+
+            // 1️⃣ Try today's report
+            if let todayReport = await LogManager.shared.getDayReport(for: today) {
+                DispatchQueue.main.async {
+                    self.insightLabel.text = todayReport.insight
+                }
+                return
+            }
+
+            // 2️⃣ No session today → fetch most recent session day
+            if let lastDate = LogManager.shared.getMostRecentReadingSessionDate(),
+               let lastReport = await LogManager.shared.getDayReport(for: lastDate) {
+
+                DispatchQueue.main.async {
+                    self.insightLabel.text = lastReport.insight
+                }
+                return
+            }
+
+            // 3️⃣ No data at all
+            DispatchQueue.main.async {
+                self.insightLabel.text = "Your speaking practice hasn't started yet today."
+            }
+        }
+    }
     
     @IBAction func profileButtonTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Profile", bundle: nil)

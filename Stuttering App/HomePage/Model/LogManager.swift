@@ -91,6 +91,31 @@ class LogManager {
     }
 
     // MARK: - Database Setup
+    
+    func getMostRecentReadingSessionDate() -> Date? {
+        guard let userId = getCurrentUserId() else { return nil }
+
+        let sql = """
+            SELECT date FROM ReadingSessions
+            WHERE userId = ?
+            ORDER BY date DESC
+            LIMIT 1;
+            """
+
+        var stmt: OpaquePointer?
+        var result: Date?
+
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                let timestamp = sqlite3_column_double(stmt, 0)
+                result = Date(timeIntervalSince1970: timestamp)
+            }
+        }
+
+        sqlite3_finalize(stmt)
+        return result
+    }
 
     private func openDatabase() {
         let fileURL = try! FileManager.default

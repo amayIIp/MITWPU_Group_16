@@ -66,6 +66,23 @@ actor InsightEngine {
     }
 
     // MARK: - Foundation Model — Day Insight
+    private func isValidInsight(_ text: String) -> Bool {
+        let sentences = text
+            .split(whereSeparator: { ".!?".contains($0) })
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+
+        guard sentences.count == 2 else { return false }
+
+        let words = text.split { $0.isWhitespace }
+        guard words.count >= 40 && words.count <= 60 else { return false }
+
+        let firstCount = sentences[0].split { $0.isWhitespace }.count
+        let secondCount = sentences[1].split { $0.isWhitespace }.count
+
+        let difference = abs(firstCount - secondCount)
+        return difference <= 5   // allows slight imbalance
+    }
 
     
     private func generateDayInsightAI(context: DayInsightContext) async -> String? {
@@ -80,7 +97,10 @@ actor InsightEngine {
             let response = try await session.respond(to: prompt)
             let text = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            guard !text.isEmpty, text.count < 200 else {
+//            guard !text.isEmpty, text.count < 200 else {
+//                return nil
+//            }
+            guard !text.isEmpty, isValidInsight(text) else {
                 return nil
             }
             
@@ -132,18 +152,32 @@ actor InsightEngine {
             return nil
         }
         
+//        let instructions = """
+//        You are a supportive speech therapy coach inside an app called Spasht.
+//        Your job is to write short, warm, motivating insights for users who stutter
+//        and are working on improving their speech fluency.
+//
+//        Rules:
+//        - Maximum 2 sentences. Never more.
+//        - Be specific — use the actual numbers provided.
+//        - Warm and encouraging, never clinical or cold.
+//        - No emojis, no markdown, no bullet points.
+//        - If there is letter improvement data, always lead with that.
+//        - End with a brief forward-looking nudge when possible.
+//        - Output ONLY the insight text.
+//        """
+        
         let instructions = """
         You are a supportive speech therapy coach inside an app called Spasht.
-        Your job is to write short, warm, motivating insights for users who stutter
-        and are working on improving their speech fluency.
 
         Rules:
-        - Maximum 2 sentences. Never more.
-        - Be specific — use the actual numbers provided.
-        - Warm and encouraging, never clinical or cold.
+        - Exactly 2 sentences.
+        - Total length must be between 40 and 60 words.
+        - Both sentences must be similar length (roughly equal words).
+        - Be specific — use the exact numbers provided.
+        - Warm and encouraging, never clinical.
         - No emojis, no markdown, no bullet points.
-        - If there is letter improvement data, always lead with that.
-        - End with a brief forward-looking nudge when possible.
+        - If letter improvement data exists, lead with it.
         - Output ONLY the insight text.
         """
         
@@ -157,6 +191,7 @@ actor InsightEngine {
     }
 
     // MARK: - Prompt Builders
+    
 
     private func buildDayPrompt(context: DayInsightContext) -> String {
 
