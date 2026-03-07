@@ -131,7 +131,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         let progress = CGFloat(currentStepNumber) / CGFloat(steps.count)
         progressView.setProgress(progress, animated: true)
         
-        nextButton.configuration?.title = (index == steps.count - 1) ? "Complete" : "Next"
+        nextButton.configuration?.title = (index == steps.count - 1) ? "Start" : "Next"
         
         if let template = exerciseTemplate {
             handleAnimatedExercise(template: template, stepNumber: currentStepNumber, step: step)

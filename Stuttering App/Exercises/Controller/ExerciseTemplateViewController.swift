@@ -16,8 +16,7 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
     
     var startingSource: ExerciseSource?
     var exerciseName: String = ""
-    
-    private let sessionTotalTime: TimeInterval = 120.0
+    var isExerciseCompleted: Bool = false
     
     @IBOutlet weak var contentStackView: UIStackView!
     @IBOutlet weak var imageContainerStackView: UIView!
@@ -33,6 +32,7 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
     var isPaused: Bool = false
     private let timeInterval: TimeInterval = 0.05
     
+    private var sessionTotalTime: TimeInterval = 120.0
     var sessionTimeRemaining: TimeInterval = 120.0
     var currentStepTimeRemaining: TimeInterval = 0.0
     var currentStepTotalTime: TimeInterval = 0.0
@@ -102,10 +102,22 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         progressBarView.progressColor = UIColor(named: "ButtonTheme") ?? .systemBlue
         progressBarView.progress = 0.0
         
-        dashboardBottomConstraint.constant = view.bounds.height * 0.19
+        dashboardBottomConstraint.constant = view.frame.height * 0.20
     }
     
     private func loadData() {
+        // 1. Fetch dynamic time using your singleton manager
+        if let dynamicTimeInt = ExerciseDataManager.shared.getDurationString(for: exerciseName) {
+            let dynamicTime = TimeInterval(dynamicTimeInt)
+            self.sessionTotalTime = dynamicTime
+            self.sessionTimeRemaining = dynamicTime
+        } else {
+            print("Template Warning: Time not found for '\(exerciseName)'. Defaulting to 120s.")
+            self.sessionTotalTime = 120.0
+            self.sessionTimeRemaining = 120.0
+        }
+        
+        // 2. Continue with the existing data load and UI setup
         if let exercise = ExerciseManager.fetchExercise(title: exerciseName) {
             self.currentExercise = exercise
             self.exerciseTemplate = ExerciseAnimationRegistry.shared.getTemplate(for: exerciseName)
@@ -412,14 +424,29 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
     private func finishSession() {
         killTimer()
         animationController.cancelAnimations()
+        isExerciseCompleted = true // Mark as completed
         sheetVC?.updateTimerLabel(text: "00:00")
         
-        let alert = UIAlertController(title: "Session Complete", message: "Great work!", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Finish", style: .default, handler: { _ in
-            self.sheetVC?.dismiss(animated: true)
-            self.didTapStop()
-        }))
-        present(alert, animated: true)
+        // Expand the sheet and disable Play/Pause
+        if let sheet = sheetVC?.sheetPresentationController {
+            sheet.animateChanges { sheet.selectedDetentIdentifier = .init("half") }
+            sheetVC?.setExpandedState(isExpanded: true)
+        }
+        sheetVC?.setPlayPauseEnabled(false)
+        
+        guard let source = startingSource else { return }
+        
+        if isExerciseCompleted {
+            LogManager.shared.addLog(
+                exerciseName: self.exerciseName,
+                source: source,
+                exerciseDuration: Int(self.sessionTotalTime)
+            )
+            
+            if source == .dailyTasks {
+                DatabaseManager.shared.markTaskComplete(taskName: self.exerciseName)
+            }
+        }
     }
 }
 
@@ -462,8 +489,8 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
         if let sheet = sheetVC.sheetPresentationController {
             sheet.delegate = self
             sheet.detents = [
-                .custom(identifier: .init("quarter")) { context in 0.20 * context.maximumDetentValue },
-                .custom(identifier: .init("half")) { context in 0.35 * context.maximumDetentValue }
+                .custom(identifier: .init("quarter")) { context in 0.18 * context.maximumDetentValue },
+                .custom(identifier: .init("half")) { context in 0.25 * context.maximumDetentValue }
             ]
             sheet.selectedDetentIdentifier = .init("quarter")
             sheet.prefersGrabberVisible = true
@@ -475,6 +502,7 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
         sheetVC.view.layer.cornerRadius = 20
         sheetVC.view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         sheetVC.view.clipsToBounds = true
+        sheetVC.screenHeight = view.frame.height * 0.18
         
         present(sheetVC, animated: true)
     }
@@ -501,32 +529,114 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
         startNewWordCycle()
     }
     
+//    func didTapStop() {
+//        killTimer()
+//        animationController.cancelAnimations()
+//        self.dismiss(animated: true, completion: nil)
+//        
+//        let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
+//        guard let ResultVC = storyboard.instantiateViewController(withIdentifier: "ExerciseResult") as? ExerciseResultViewController else { return }
+//        
+//        ResultVC.exerciseName = self.exerciseName
+//        ResultVC.durationLabelForExercise = Int(self.sessionTotalTime)
+//        
+//        let ResultNav = UINavigationController(rootViewController: ResultVC)
+//        ResultNav.modalPresentationStyle = .fullScreen
+//        self.present(ResultNav, animated: true, completion: nil)
+//    }
     func didTapStop() {
         killTimer()
         animationController.cancelAnimations()
-        self.dismiss(animated: true, completion: nil)
-        
-        guard let source = startingSource else { return }
-        
-        LogManager.shared.addLog(
-            exerciseName: self.exerciseName,
-            source: source,
-            exerciseDuration: Int(self.sessionTotalTime)
-        )
-        
-        if source == .dailyTasks {
-            DatabaseManager.shared.markTaskComplete(taskName: self.exerciseName)
+
+        // 1. Dismiss the bottom sheet FIRST
+        sheetVC?.dismiss(animated: true, completion: { [weak self] in
+            // We use weak self to avoid memory leaks, so we unwrap it here
+            guard let self = self else { return }
+            
+            // 2. Once the sheet is gone, perform the navigation
+            if self.isExerciseCompleted {
+                // Go to ResultVC
+                let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
+                guard let resultVC = storyboard.instantiateViewController(withIdentifier: "ExerciseResult") as? ExerciseResultViewController else { return }
+                
+                resultVC.exerciseName = self.exerciseName
+                resultVC.durationLabelForExercise = Int(self.sessionTotalTime)
+                
+                let resultNav = UINavigationController(rootViewController: resultVC)
+                resultNav.modalPresentationStyle = .fullScreen
+                
+                self.present(resultNav, animated: true, completion: nil)
+                
+            } else {
+//                // Explicitly present the Exercise Library
+//                let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
+//                let libraryVC = storyboard.instantiateViewController(withIdentifier: "exerciseLibrary")
+//
+//                let libraryNav = UINavigationController(rootViewController: libraryVC)
+//                libraryNav.modalPresentationStyle = .fullScreen
+//                self.present(libraryNav, animated: true, completion: nil)
+                if let initialPresenter = self.presentingViewController?.presentingViewController {
+                    // Dismissing from 2 levels deep
+                    initialPresenter.dismiss(animated: true, completion: nil)
+                } else {
+                    // Fallback for 1 level deep
+                    self.dismiss(animated: true, completion: nil)
+                }
+            }
+        })
+    }
+    
+    func didTapRepeat() {
+        let restartExercise = {
+            self.isExerciseCompleted = false
+            self.sessionTimeRemaining = self.sessionTotalTime
+            self.currentStepIndex = 0
+            self.currentCategoryIndex = 0
+            
+            // Reset Sheet UI
+            self.sheetVC?.setPlayPauseEnabled(true)
+            self.sheetVC?.setPlayPauseState(isPlaying: true)
+            
+            // Collapse Sheet
+            if let sheet = self.sheetVC?.sheetPresentationController {
+                sheet.animateChanges { sheet.selectedDetentIdentifier = .init("quarter") }
+                self.sheetVC?.setExpandedState(isExpanded: false)
+            }
+            
+            self.loadData() // Re-fetches words and restarts heartbeat
         }
         
-        let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
-        guard let ResultVC = storyboard.instantiateViewController(withIdentifier: "ExerciseResult") as? ExerciseResultViewController else { return }
-        
-        ResultVC.exerciseName = self.exerciseName
-        ResultVC.durationLabelForExercise = Int(self.sessionTotalTime)
-        
-        let ResultNav = UINavigationController(rootViewController: ResultVC)
-        ResultNav.modalPresentationStyle = .fullScreen
-        self.present(ResultNav, animated: true, completion: nil)
+        if sessionTimeRemaining > 0 && !isExerciseCompleted {
+            // 1. Capture the current state and pause the exercise to prevent timer drain
+            let wasPlaying = !self.isPaused
+            if wasPlaying {
+                self.pauseHeartbeat()
+                self.sheetVC?.setPlayPauseState(isPlaying: false)
+            }
+            
+            // 2. Setup the Alert
+            let alert = UIAlertController(title: "Restart Exercise?", message: "Are you sure you want to restart your current progress?", preferredStyle: .alert)
+            
+            // 3. Handle Cancel: Resume the exercise ONLY if it was playing before the alert
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                if wasPlaying {
+                    self.startHeartbeat()
+                    self.sheetVC?.setPlayPauseState(isPlaying: true)
+                }
+            }))
+            
+            // 4. Handle Restart: Execute the reset closure
+            alert.addAction(UIAlertAction(title: "Restart", style: .destructive, handler: { _ in
+                restartExercise()
+            }))
+            
+            // 5. Present the alert safely over the bottom sheet
+            sheetVC?.present(alert, animated: true)
+            
+        } else {
+            // Exercise was already completed, safe to restart immediately
+            restartExercise()
+        }
     }
     
     func syncDataToSheet() {

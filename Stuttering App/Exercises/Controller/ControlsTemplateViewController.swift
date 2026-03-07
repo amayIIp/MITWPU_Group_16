@@ -2,7 +2,7 @@
 //  AirFlowControlsViewController.swift
 //  Stuttering App 1
 //
-//  Updated for Dynamic Sheet State
+//  Updated for Dynamic Sheet State & Adaptive Layout
 //
 
 import UIKit
@@ -11,41 +11,45 @@ protocol AirFlowControlsDelegate: AnyObject {
     func didTapPlayPause()
     func didTapNextWord()
     func didTapStop()
+    func didTapRepeat()
 }
 
 class ControlsTemplateViewController: UIViewController {
 
     @IBOutlet weak var timerLabel: UILabel!
     @IBOutlet weak var playPauseButton: UIButton!
-    @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var stopButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
-//    @IBOutlet weak var stepProgressView: RadialProgressView!
+    
+    // MARK: - Constraint Outlets
+    // Connect these to the Width Constraints of your 1:1 buttons in Storyboard
+    @IBOutlet weak var playPauseWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var resetWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var stopHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var stackTopConstraint: NSLayoutConstraint!
 
     weak var delegate: AirFlowControlsDelegate?
     private var isPlaying: Bool = true
+    var screenHeight : CGFloat = 850
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        // Initial state: Collapsed, buttons hidden
+        // Initial state: Collapsed, secondary buttons hidden
         setExpandedState(isExpanded: false, animated: false)
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // Recalculate button sizes whenever the view layout changes (e.g., orientation change or sheet resize)
+        adjustButtonSizes()
+    }
+    
     private func setupUI() {
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 26, weight: .semibold)
-        let resetConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+        let buttonConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
         
         playPauseButton.configuration = .glass()
-        playPauseButton.setImage(UIImage(systemName: "pause", withConfiguration: largeConfig), for: .normal)
-        
-//        nextButton.configuration = .prominentGlass()
-//        nextButton.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-//            var outgoing = incoming
-//            outgoing.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
-//            return outgoing
-//        }
-//        nextButton.setTitle("Next word", for: .normal)
+        playPauseButton.setImage(UIImage(systemName: "pause", withConfiguration: buttonConfig), for: .normal)
         
         stopButton.configuration = .prominentGlass()
         stopButton.configuration?.baseBackgroundColor = .systemRed
@@ -57,26 +61,29 @@ class ControlsTemplateViewController: UIViewController {
         stopButton.setTitle("End", for: .normal)
         
         resetButton.configuration = .glass()
-        resetButton.setImage(UIImage(systemName: "repeat", withConfiguration: resetConfig), for: .normal)
-        
-        nextButton.configuration = .glass()
-        nextButton.setImage(UIImage(systemName: "forward.frame", withConfiguration: resetConfig), for: .normal)
-        
-//        setupRadialView()
+        resetButton.setImage(UIImage(systemName: "repeat", withConfiguration: buttonConfig), for: .normal)
     }
+
+    // MARK: - Adaptive Layout
     
-//    private func setupRadialView() {
-//        let radialConfig = RadialData(
-//            title: "Step Timer",
-//            color: .systemIndigo,
-//            progress: 1.0,
-//            radius: 26,
-//            lineWidth: 14,
-//            order: 0
-//        )
-//        stepProgressView.chartData = [radialConfig]
-//        stepProgressView.backgroundColor = .clear
-//    }
+    /// Dynamically scales button widths based on the current view width
+    private func adjustButtonSizes() {
+        guard playPauseWidthConstraint != nil, resetWidthConstraint != nil else { return }
+        
+        // Calculate a proportional width (e.g., 18% of the total screen/sheet width)
+        let proportionalWidth = view.bounds.width * 0.22
+        
+        // Clamp the values to maintain HIG minimum touch targets (44pt) and prevent oversized buttons
+        let optimalWidth = max(80.0, min(proportionalWidth, 110))
+        
+        playPauseWidthConstraint.constant = optimalWidth
+        resetWidthConstraint.constant = optimalWidth
+        stopHeightConstraint.constant = optimalWidth * 0.6
+        stackTopConstraint.constant = (screenHeight - optimalWidth)/2
+        
+        print("screenHeight : \(screenHeight)")
+        print("stackTop : \(stackTopConstraint.constant)")
+    }
 
     // MARK: - State Management
     
@@ -103,22 +110,25 @@ class ControlsTemplateViewController: UIViewController {
         }
     }
     
-//    func updateProgress(value: CGFloat) {
-//        DispatchQueue.main.async {
-//            self.stepProgressView.updateProgress(for: "Step Timer", to: value)
-//        }
-//    }
-    
     func setPlayPauseState(isPlaying: Bool) {
         self.isPlaying = isPlaying
         let iconName = isPlaying ? "pause" : "play"
-        let config = UIImage.SymbolConfiguration(pointSize: 26, weight: .semibold)
+        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
         
         DispatchQueue.main.async {
-            // Add a small bounce animation for feedback
+            // Add a subtle transition animation for immediate user feedback
             UIView.transition(with: self.playPauseButton, duration: 0.2, options: .transitionCrossDissolve) {
                 self.playPauseButton.setImage(UIImage(systemName: iconName, withConfiguration: config), for: .normal)
             }
+        }
+    }
+    
+    // Add this helper method to disable/enable the play button
+    func setPlayPauseEnabled(_ isEnabled: Bool) {
+        DispatchQueue.main.async {
+            self.playPauseButton.isEnabled = isEnabled
+            // Dim the button when disabled to follow HIG visual feedback rules
+            self.playPauseButton.alpha = isEnabled ? 1.0 : 0.5
         }
     }
 
@@ -128,11 +138,11 @@ class ControlsTemplateViewController: UIViewController {
         delegate?.didTapPlayPause()
     }
     
-    @IBAction func nextTapped(_ sender: UIButton) {
-        delegate?.didTapNextWord()
-    }
-    
     @IBAction func stopTapped(_ sender: UIButton) {
         delegate?.didTapStop()
+    }
+    
+    @IBAction func repeatTapped(_ sender: UIButton) {
+        delegate?.didTapRepeat()
     }
 }
