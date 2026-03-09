@@ -10,6 +10,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     var titleToDisplay: String = ""
     var exerciseDuration: Int = 0
     var startTime: Date?
+    var accumulatedDuration: TimeInterval = 0.0
     var initialDAFDelay: Double = 0.0
     private var currentPlaybackSpeed: Double = 1.0
 
@@ -112,6 +113,14 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         return ranges
     }
     
+    private var totalExerciseDuration: TimeInterval {
+        var total = accumulatedDuration
+        if isPlaying, let start = startTime {
+            total += Date().timeIntervalSince(start)
+        }
+        return total
+    }
+    
 //    private func presentWorkoutSheet() {
 //        guard let sheetVC = storyboard?.instantiateViewController(withIdentifier: "ReadingControlsViewController") as? ReadingControlsViewController else { return }
 //        sheetVC.delegate = self
@@ -142,12 +151,8 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             sheet.delegate = self // Set the delegate to track manual dragging
             
             sheet.detents = [
-                .custom(identifier: .init("quarter")) { context in
-                    0.15 * context.maximumDetentValue
-                },
-                .custom(identifier: .init("half")) { context in
-                    0.38 * context.maximumDetentValue
-                }
+                .custom(identifier: .init("quarter")) { context in 0.18 * context.maximumDetentValue },
+                .custom(identifier: .init("half")) { context in 0.40 * context.maximumDetentValue }
             ]
             sheet.selectedDetentIdentifier = .init("quarter")
             sheet.prefersGrabberVisible = true
@@ -159,6 +164,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         sheetVC.view.layer.cornerRadius = 20
         sheetVC.view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         sheetVC.view.clipsToBounds = true
+        sheetVC.screenHeight = view.frame.height * 0.18
         
         present(sheetVC, animated: true) {
             // Ensure initial state hides the Done button since we start at "quarter"
@@ -265,24 +271,33 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             currentWordBlockIndex = 0
             highlightBlock(at: -1, isFinalReset: true)
         }
+        
         isPlaying = true
+        startTime = Date() // Reset start time on every resume
+        
         startRecording()
         startTimer()
         highlightBlock(at: currentWordBlockIndex)
         currentWordBlockIndex += 1
         
         notifySheetOfStateChange()
-        animateSheet(to: .init("quarter")) // Automatically collapse on play
+        animateSheet(to: .init("quarter"))
     }
 
     func pausePlayback() {
+        // Accumulate active time before pausing
+        if let start = startTime {
+            accumulatedDuration += Date().timeIntervalSince(start)
+            startTime = nil
+        }
+        
         isPlaying = false
         stopRecording()
         highlightTimer?.invalidate()
         highlightTimer = nil
         
         notifySheetOfStateChange()
-        animateSheet(to: .init("half")) // Automatically expand on pause
+        animateSheet(to: .init("half"))
     }
     
     func decreaseSpeed() {
@@ -297,12 +312,17 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     func resetReading() {
         pausePlayback()
-        currentWordBlockIndex = 0
+        accumulatedDuration = 0.0
         startTime = nil
+        currentWordBlockIndex = 0
+        
         highlightBlock(at: -1, isFinalReset: true)
         textView.setContentOffset(.zero, animated: true)
         recordedTranscript = ""
         recordedSegments = []
+        
+        // EXPLICIT FIX: Force the sheet UI to reset its timer to 00:00
+        sheetVC?.resetTimer()
         notifySheetOfStateChange()
     }
     
@@ -318,10 +338,11 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         let isExpanded = (detentIdentifier == .init("half"))
         sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
     }
-    
+
     private func notifySheetOfStateChange() {
         let finished = currentWordBlockIndex * wordsPerHighlight >= wordRanges.count
-        sheetVC?.updatePlaybackState(isPlaying: isPlaying, hasFinished: finished)
+        // Pass the true exercise duration to keep the sheet perfectly synced
+        sheetVC?.updatePlaybackState(isPlaying: isPlaying, hasFinished: finished, currentTime: totalExerciseDuration)
     }
     
     private func highlightBlock(at blockIndex: Int, isFinalReset: Bool = false) {
@@ -354,9 +375,9 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func didTapOpenButton() {
-        let duration = Date().timeIntervalSince(startTime ?? Date())
+        // ACCURACY FIX: Use the new totalExerciseDuration property
+        let duration = totalExerciseDuration
         
-        // ACCURACY FIX: Pass the recorded data to the optimized analyzer
         let jsonResult = StutterAnalyzer.analyze(
             reference: textToDisplay,
             transcript: recordedTranscript,
@@ -382,22 +403,24 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func logReadingActivity() {
-        let duration = Date().timeIntervalSince(startTime ?? Date())
-        self.exerciseDuration = Int(duration)
+        // ACCURACY FIX: Use the new totalExerciseDuration property
+        self.exerciseDuration = Int(totalExerciseDuration)
         LogManager.shared.addLog(exerciseName: titleToDisplay, source: .reading, exerciseDuration: self.exerciseDuration)
     }
 }
 
 extension DetailViewController: WorkoutSheetDelegate {
     func didTapPlayPause() { togglePlayPause() }
-    //func didTapDecreaseSpeed() { decreaseSpeed() }
-    //func didTapIncreaseSpeed() { increaseSpeed() }
+    
     func didChangeSpeed(_ speed: Double) {
             currentPlaybackSpeed = speed
             updatePlaybackSpeed()
         }
     
-    func didTapReset() { resetReading() }
+    func didTapReset() {
+        resetReading()
+    }
+    
     func didTapShowResult() {
         pausePlayback()
         self.dismiss(animated: true) { self.didTapOpenButton() }
@@ -417,22 +440,33 @@ extension DetailViewController: WorkoutSheetDelegate {
 extension DetailViewController: UISheetPresentationControllerDelegate {
     func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheetPresentationController: UISheetPresentationController) {
         
-        // Determine if the sheet was dragged to the expanded "half" state
         let isExpanded = sheetPresentationController.selectedDetentIdentifier == .init("half")
-        
-        // 1. Update the Done button visibility based on the new size
         sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
         
-        // 2. Sync the playback state with the modal's physical position
         if isExpanded {
-            // Modal was dragged UP: Pause the exercise if it's currently running
             if isPlaying {
-                pausePlayback()
+                // Don't call pausePlayback() directly here because it triggers animateSheet()
+                // Just handle the internal state pausing
+                isPlaying = false
+                stopRecording()
+                highlightTimer?.invalidate()
+                highlightTimer = nil
+                if let start = startTime {
+                    accumulatedDuration += Date().timeIntervalSince(start)
+                    startTime = nil
+                }
+                notifySheetOfStateChange()
             }
         } else {
-            // Modal was dragged DOWN: Resume the exercise if it's currently paused
             if !isPlaying {
-                startPlayback()
+                // Similarly, start playback without triggering programmatic sheet animations
+                isPlaying = true
+                startTime = Date()
+                startRecording()
+                startTimer()
+                highlightBlock(at: currentWordBlockIndex)
+                currentWordBlockIndex += 1
+                notifySheetOfStateChange()
             }
         }
     }

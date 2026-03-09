@@ -97,9 +97,9 @@ class ReadingResultViewController: UIViewController {
         
         // 3. Set Percentages & Time
         readingTime.text = report.duration
-        blockPercentage.text = "\(Int(report.percentages.blocks))%"
-        repetitionPercentage.text = "\(Int(report.percentages.repetition))%"
-        prolongationPercentage.text = "\(Int(report.percentages.prolongation))%"
+        blockPercentage.text = "\(Int(report.percentages.blocks))"
+        repetitionPercentage.text = "\(Int(report.percentages.repetition))"
+        prolongationPercentage.text = "\(Int(report.percentages.prolongation))"
         
         // 4. Troubled Words
         loadTroubledWords(words: report.stutteredWords)
@@ -136,6 +136,8 @@ class ReadingResultViewController: UIViewController {
             label.text = "None! Great job."
             label.textColor = .secondaryLabel
             label.font = UIFont.systemFont(ofSize: 14)
+            // ✅ Centers the text within the horizontally stretched label
+            label.textAlignment = .center
             troubledWordsStackView.addArrangedSubview(label)
             return
         }

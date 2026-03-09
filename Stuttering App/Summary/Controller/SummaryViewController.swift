@@ -391,11 +391,11 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         countLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 10),
             titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
             titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8),
 
-            countLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            countLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 10),
             countLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
             countLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
         ])
@@ -406,7 +406,35 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
 
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return UITableView.automaticDimension
+        let isEmpty: Bool
+
+        // Determine if the current section has data based on the active filter
+        switch activeFilter {
+        case .all:
+            switch section {
+            case 0: isEmpty = dailyTaskLogs.isEmpty
+            case 1: isEmpty = exerciseLogs.isEmpty
+            case 2: isEmpty = readingLogs.isEmpty
+            case 3: isEmpty = conversationLogs.isEmpty
+            default: isEmpty = true
+            }
+        case .dailyTasks:
+            isEmpty = dailyTaskLogs.isEmpty
+        case .exercises:
+            isEmpty = exerciseLogs.isEmpty
+        case .reading:
+            isEmpty = readingLogs.isEmpty
+        case .conversation:
+            isEmpty = conversationLogs.isEmpty
+        }
+
+        // Return near-zero height if empty, otherwise let Auto Layout size it naturally
+        return isEmpty ? CGFloat.leastNormalMagnitude : UITableView.automaticDimension
+    }
+
+    // Optional but recommended: Also explicitly remove the footer height to prevent bottom gaps
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
     }
     
     private func updateEmptyState() {

@@ -62,10 +62,8 @@ class PhonemesSelectionViewController: UIViewController {
         let isSelected = button.isSelected
         let textColor: UIColor = isSelected ? .white : .black
         
-        // Set background color (using a light gray for unselected to match your screenshot)
         button.backgroundColor = isSelected ? .systemBlue : UIColor(red: 0.92, green: 0.92, blue: 0.95, alpha: 1.0)
         
-        // 1. Handle modern iOS 15+ Button Configurations
         if #available(iOS 15.0, *), button.configuration != nil {
             button.configuration?.baseForegroundColor = textColor
             
@@ -76,7 +74,6 @@ class PhonemesSelectionViewController: UIViewController {
             }
         }
         
-        // 2. Handle standard/legacy UIButtons
         if let attr = button.attributedTitle(for: .normal) {
             let mutable = NSMutableAttributedString(attributedString: attr)
             
@@ -86,13 +83,11 @@ class PhonemesSelectionViewController: UIViewController {
                 range: NSRange(location: 0, length: mutable.length)
             )
             
-            // Explicitly set for ALL relevant states so UIKit doesn't try to be smart
             button.setAttributedTitle(mutable, for: .normal)
             button.setAttributedTitle(mutable, for: .selected)
             button.setAttributedTitle(mutable, for: .highlighted)
         }
         
-        // 3. Force the tint color as a final fallback
         button.tintColor = textColor
     }
 
@@ -136,6 +131,7 @@ class PhonemesSelectionViewController: UIViewController {
 
     @IBAction func noneButtonTapped(_ sender: UIButton) {
         clearPhonemeButtons()
+        resetSpecialButtons()
         
         sender.isSelected = true
         updateButtonAppearance(sender)
@@ -146,6 +142,7 @@ class PhonemesSelectionViewController: UIViewController {
 
     @IBAction func notSureButtonTapped(_ sender: UIButton) {
         clearPhonemeButtons()
+        resetSpecialButtons()
         
         sender.isSelected = true
         updateButtonAppearance(sender)
@@ -158,147 +155,4 @@ class PhonemesSelectionViewController: UIViewController {
         print("Saved phonemes:", selectedPhonemes)
     }
 }
-    
-//    var selectedPhonemes: [String] = []
-//    var phonemeButtons: [UIButton] = []
-//    
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//        setupButtons()
-//        continueButton.isEnabled = false
-//        continueButton.alpha = 0.5
-//    }
-//    func updateContinueButtonState() {
-//        let hasSelection = !selectedPhonemes.isEmpty
-//        continueButton.isEnabled = hasSelection
-//        continueButton.alpha = hasSelection ? 1.0 : 0.5
-//    }
-//    func setupButtons() {
-//        phonemeButtons = [phonemeB, phonemeP, phonemeK, phonemeG, phonemeT, phonemeD,
-//                          phonemeS, phonemeSH, phonemeF, phonemeV, phonemeR, phonemeL]
-//        
-//        // Initial styling for all buttons
-//        for button in phonemeButtons {
-//            stylePhonemeButton(button)
-//        }
-//        stylePhonemeButton(noneButton)
-//        stylePhonemeButton(notSureButton)
-//    }
-//    
-////    func stylePhonemeButton(_ button: UIButton) {
-////        button.layer.cornerRadius = 12
-////        button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-////        button.layer.shadowColor = UIColor.black.cgColor
-////        button.layer.shadowOffset = CGSize(width: 0, height: 1)
-////        button.layer.shadowOpacity = 0.1
-////        button.layer.shadowRadius = 3
-////        updateButtonStyle(button) // Set initial colors
-////    }
-//    func stylePhonemeButton(_ button: UIButton) {
-//        button.layer.cornerRadius = 12
-//        button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-//        
-//        button.setTitleColor(.black, for: .normal)
-//        button.setTitleColor(.white, for: .selected)
-//        
-//        button.layer.shadowColor = UIColor.black.cgColor
-//        button.layer.shadowOffset = CGSize(width: 0, height: 1)
-//        button.layer.shadowOpacity = 0.1
-//        button.layer.shadowRadius = 3
-//        
-//        updateButtonStyle(button)
-//    }
-//
-//    // Common logic to update colors based on selected state
-////    func updateButtonStyle(_ button: UIButton) {
-////        button.backgroundColor = button.isSelected ? .systemBlue : .white
-////        button.setTitleColor(button.isSelected ? .white : .black, for: .normal)
-////    }
-////    func updateButtonStyle(_ button: UIButton) {
-////        button.backgroundColor = button.isSelected ? .systemBlue : .white
-////    }
-//    func updateButtonStyle(_ button: UIButton) {
-//        let isSelected = button.isSelected
-//        button.backgroundColor = isSelected ? .systemBlue : .white
-//        
-//        guard let title = button.currentTitle else { return }
-//        
-//        let color: UIColor = isSelected ? .white : .black
-//        
-//        let attributed = NSMutableAttributedString(string: title)
-//        
-//        attributed.addAttribute(
-//            .foregroundColor,
-//            value: color,
-//            range: NSRange(location: 0, length: attributed.length)
-//        )
-//        
-//        button.setAttributedTitle(attributed, for: .normal)
-//    }
-//
-//    // Action for the 12 specific phoneme buttons
-//    @IBAction func phonemeButtonTapped(_ sender: UIButton) {
-//        // If a specific phoneme is picked, "None" and "Not Sure" must be deselected
-//        deselectSpecialButtons()
-//        
-//        sender.isSelected.toggle()
-//        updateButtonStyle(sender)
-//        
-//        if let title = sender.currentTitle {
-//            if sender.isSelected {
-//                if !selectedPhonemes.contains(title) { selectedPhonemes.append(title) }
-//            } else {
-//                selectedPhonemes.removeAll { $0 == title }
-//            }
-//        }
-//        updateContinueButtonState()
-//    }
-//    
-//    @IBAction func noneButtonTapped(_ sender: UIButton) {
-//        clearAllPhonemeButtons()
-//        
-//        // Turn off Not Sure specifically
-//        notSureButton.isSelected = false
-//        updateButtonStyle(notSureButton)
-//        
-//        sender.isSelected = true
-//        updateButtonStyle(sender)
-//        selectedPhonemes = ["None of these"]
-//        updateContinueButtonState()
-//    }
-//    
-//    @IBAction func notSureButtonTapped(_ sender: UIButton) {
-//        clearAllPhonemeButtons()
-//        
-//        // Turn off None specifically
-//        noneButton.isSelected = false
-//        updateButtonStyle(noneButton)
-//        
-//        sender.isSelected = true
-//        updateButtonStyle(sender)
-//        selectedPhonemes = ["I'm not sure"]
-//        updateContinueButtonState()
-//    }
-//
-//    func deselectSpecialButtons() {
-//        noneButton.isSelected = false
-//        updateButtonStyle(noneButton)
-//        
-//        notSureButton.isSelected = false
-//        updateButtonStyle(notSureButton)
-//    }
-//
-//    func clearAllPhonemeButtons() {
-//        for button in phonemeButtons {
-//            button.isSelected = false
-//            updateButtonStyle(button)
-//        }
-//        selectedPhonemes.removeAll()
-//        updateContinueButtonState()
-//    }
-//    
-//    @IBAction func continueButtonTapped(_ sender: UIButton) {
-//        // StorageManager.shared.savePhonemes(selectedPhonemes)
-//        print("Saved phonemes: \(selectedPhonemes)")
-//    }
-//}
+

@@ -50,7 +50,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         setupButtons()
         configureMenu()
         
-        
         activeSection = 0
         currentSelection = .randomHeader
     }

@@ -3,8 +3,6 @@ import UIKit
 
 protocol WorkoutSheetDelegate: AnyObject {
     func didTapPlayPause()
-    //func didTapDecreaseSpeed()
-    //func didTapIncreaseSpeed()
     func didChangeSpeed(_ speed: Double)
     func didTapReset()
     func didTapShowResult()
@@ -15,10 +13,7 @@ class ReadingControlsViewController: UIViewController {
     
     weak var delegate: WorkoutSheetDelegate?
     
-    
     @IBOutlet weak var playPauseButton: UIButton!
-    //@IBOutlet weak var speedUpButton: UIButton!
-    //@IBOutlet weak var speedDownButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
     @IBOutlet weak var endButton: UIButton!
     @IBOutlet weak var dafButton: UIButton!
@@ -26,12 +21,23 @@ class ReadingControlsViewController: UIViewController {
     
     @IBOutlet weak var sliderStack: UIStackView!
     @IBOutlet weak var timer: UILabel!
+    
+    @IBOutlet weak var playPauseWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var dafWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var resetHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var endHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var stackTopConstraint: NSLayoutConstraint!
+    
     var currentPlaybackSpeed: Double = 1.0
     var currentDAFDelay: Double = 0.0
+    
+    var screenHeight : CGFloat = 850
     
     private var timerObject: Timer?
     private var startTime: Date?
     private var elapsedTime: TimeInterval = 0
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,21 +46,31 @@ class ReadingControlsViewController: UIViewController {
         setupSlider()
         timer.text = "00:00"
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // Recalculate button sizes whenever the view layout changes (e.g., orientation change or sheet resize)
+        adjustButtonSizes()
+    }
+    
     func startTimer() {
+        // This local startTime is ONLY used to tick the UI forward from the synced elapsedTime
         startTime = Date()
 
         timerObject = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateTimer()
         }
     }
+    
     func pauseTimer() {
         timerObject?.invalidate()
         timerObject = nil
         
-        if let start = startTime {
-            elapsedTime += Date().timeIntervalSince(start)
-        }
+        // REMOVE the elapsedTime addition here. DetailViewController handles this now!
+        // Just clear the startTime so it stops tracking locally.
+        startTime = nil
     }
+    
     func resetTimer() {
         timerObject?.invalidate()
         timerObject = nil
@@ -64,6 +80,7 @@ class ReadingControlsViewController: UIViewController {
         
         timer.text = "00:00"
     }
+    
     private func updateTimer() {
         guard let start = startTime else { return }
 
@@ -74,7 +91,8 @@ class ReadingControlsViewController: UIViewController {
 
         timer.text = String(format: "%02d:%02d", minutes, seconds)
     }
-    func updatePlaybackState(isPlaying: Bool, hasFinished: Bool) {
+
+    func updatePlaybackState(isPlaying: Bool, hasFinished: Bool, currentTime: TimeInterval) {
 
         let symbolName = isPlaying ? "pause.fill" : "play.fill"
         let symbol = UIImage(systemName: symbolName)
@@ -82,28 +100,24 @@ class ReadingControlsViewController: UIViewController {
         playPauseButton.setImage(symbol, for: .normal)
         playPauseButton.tintColor = .systemBlue
 
+        // 1. Sync the exact true time from the audio engine
+        self.elapsedTime = currentTime
+
         if isPlaying {
-            startTimer()
+            if timerObject == nil { startTimer() }
         } else {
             pauseTimer()
+            
+            // 2. Force the UI to immediately display the precise paused time
+            let minutes = Int(currentTime) / 60
+            let seconds = Int(currentTime) % 60
+            timer.text = String(format: "%02d:%02d", minutes, seconds)
         }
     }
     
     private func setupButtons() {
-//        let config = UIImage.SymbolConfiguration(pointSize: 36, weight: .regular, scale: .default)
-//        let playSymbol = UIImage(systemName: "microphone.slash", withConfiguration: config)
-//        playPauseButton.setImage(playSymbol, for: .normal)
-//        playPauseButton.configuration = .glass()
-////        speedUpButton.configuration = .glass()
-////        speedUpButton.setImage(UIImage(systemName: "hare"), for: .normal)
-////        speedDownButton.configuration = .glass()
-////        speedDownButton.setImage(UIImage(systemName: "tortoise"), for: .normal)
-//        resetButton.configuration = .glass()
-//        resetButton.setImage(UIImage(systemName: "arrow.trianglehead.clockwise"), for: .normal)
-//        dafButton.configuration = .glass()
-//        dafButton.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
         playPauseButton.configuration = .glass()
-            playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
 
         var config = UIButton.Configuration.prominentGlass()
         config.title = "Reset"
@@ -113,12 +127,11 @@ class ReadingControlsViewController: UIViewController {
             outgoing.font = UIFont.preferredFont(forTextStyle: .title2)
             return outgoing
         }
-
-        //resetButton.configuration = config
-
-            dafButton.configuration = .glass()
-            dafButton.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
         
+        dafButton.configuration = .glass()
+        dafButton.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
+        
+        sliderStack.isHidden = true
     }
     
     private func setupSlider() {
@@ -128,6 +141,26 @@ class ReadingControlsViewController: UIViewController {
         
         speedSlider.minimumTrackTintColor = .buttonTheme
         speedSlider.maximumTrackTintColor = .white
+        
+    }
+    
+    private func adjustButtonSizes() {
+        guard playPauseWidthConstraint != nil, dafWidthConstraint != nil else { return }
+        
+        // Calculate a proportional width (e.g., 18% of the total screen/sheet width)
+        let proportionalWidth = view.bounds.width * 0.212
+        
+        // Clamp the values to maintain HIG minimum touch targets (44pt) and prevent oversized buttons
+        let optimalWidth = max(80.0, min(proportionalWidth, 110))
+        
+        playPauseWidthConstraint.constant = optimalWidth
+        dafWidthConstraint.constant = optimalWidth
+        endHeightConstraint.constant = optimalWidth * 0.6
+        resetHeightConstraint.constant = optimalWidth * 0.6
+        stackTopConstraint.constant = (screenHeight - optimalWidth)/2
+        
+        print("screenHeight : \(screenHeight)")
+        print("stackTop : \(stackTopConstraint.constant)")
     }
     
     @IBAction func speedSliderChanged(_ sender: UISlider) {
@@ -142,16 +175,6 @@ class ReadingControlsViewController: UIViewController {
         delegate?.didTapPlayPause()
     }
     
-//    @IBAction func decreaseSpeedTapped(_ sender: UIButton) {
-//        delegate?.didTapDecreaseSpeed()
-//        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-//    }
-//    
-//    @IBAction func increaseSpeedTapped(_ sender: UIButton) {
-//        delegate?.didTapIncreaseSpeed()
-//        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-//    }
-//    
     @IBAction func resetTapped(_ sender: UIButton) {
         delegate?.didTapReset()
         UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -189,13 +212,26 @@ class ReadingControlsViewController: UIViewController {
 //        }
 //    }
     func toggleDoneButtonVisibility(isHidden: Bool) {
-        UIView.animate(withDuration: 0.25) {
-            self.sliderStack.alpha = isHidden ? 0.0 : 1.0
+        // 1. If we are showing the view, unhide it immediately before the fade begins.
+        if !isHidden {
+            self.sliderStack.isHidden = false
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            self.sliderStack.isHidden = isHidden
-        }
+        // 2. Animate the alpha change smoothly.
+        UIView.animate(
+            withDuration: 0.3,
+            delay: 0.0,
+            options: [.curveEaseInOut, .beginFromCurrentState],
+            animations: {
+                self.sliderStack.alpha = isHidden ? 0.0 : 1.0
+            },
+            completion: { _ in
+                // 3. Only safely hide the view from the layout strictly after the fade-out completes.
+                if isHidden {
+                    self.sliderStack.isHidden = true
+                }
+            }
+        )
     }
     
     func configureMenu() {

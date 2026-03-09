@@ -2,32 +2,26 @@ import UIKit
 
 class LastOnboardingViewController: UIViewController {
     
-    // MARK: - Outlets
     @IBOutlet weak var blocks: UILabel!
     @IBOutlet weak var repitition: UILabel!
     @IBOutlet weak var prolongation: UILabel!
     @IBOutlet weak var troubledWords: UIStackView!
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var getStartedButton: UIButton!
-    
-    // MARK: - Splash Animation Properties
+
     private let titleLabel = UILabel()
     private let circleLayer = CAShapeLayer()
     private let checkmarkImageView = UIImageView()
     private let completedLabel = UILabel()
     private let timeLabel = UILabel()
     private let splashContainer = UIView()
-
-    // ✅ Variable to receive data
     var report: StutterJSONReport?
-    
-    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCustomBackButton()
         setupInitialState()
         
-        // Populate Data if available
         if let report = report {
             setupResults(report: report)
         } else {
@@ -39,13 +33,10 @@ class LastOnboardingViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        // Start the ring animation as soon as the view appears
         performEntryAnimation()
     }
-    
-    // MARK: - Initial Setup
+
     private func setupInitialState() {
-        // Hide the main content initially so the splash animation can play
         scrollView.alpha = 0.0
         getStartedButton.alpha = 0.0
         navigationController?.setNavigationBarHidden(true, animated: false)
@@ -56,8 +47,7 @@ class LastOnboardingViewController: UIViewController {
         let customBackButton = UIBarButtonItem(image: UIImage(systemName: "chevron.backward"), style: .plain, target: self, action: #selector(didTapResetButton))
         self.navigationItem.leftBarButtonItem = customBackButton
     }
-    
-    // MARK: - Data Population
+
     func setupResults(report: StutterJSONReport) {
         blocks.text = "\(Int(report.percentages.blocks))%"
         repitition.text = "\(Int(report.percentages.repetition))%"
@@ -110,21 +100,17 @@ class LastOnboardingViewController: UIViewController {
         label.heightAnchor.constraint(equalToConstant: 32).isActive = true
         return label
     }
-    
-    // MARK: - Splash Ring Animations
+
     private func setupRingUI() {
-        // 🔴 FIX: Setup the container size and add it to the view hierarchy first!
         splashContainer.frame = view.bounds
-        splashContainer.backgroundColor = .bg // Matches your app background
+        splashContainer.backgroundColor = .bg
         view.addSubview(splashContainer)
 
         let centerPoint = view.center
         let brandColour = UIColor(resource: .buttonTheme).cgColor
         let radius: CGFloat = 80
         
-        // 1. "Stutter Test" Title
         titleLabel.text = "Stutter Test"
-        //titleLabel.font = UIFont.preferredFont(forTextStyle: .largeTitle)
         titleLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
         titleLabel.textColor = .black
         titleLabel.sizeToFit()
@@ -132,7 +118,6 @@ class LastOnboardingViewController: UIViewController {
         titleLabel.alpha = 1.0
         splashContainer.addSubview(titleLabel)
         
-        // 2. The Ring Layer
         let circularPath = UIBezierPath(arcCenter: centerPoint, radius: radius, startAngle: -CGFloat.pi / 2, endAngle: 3 * CGFloat.pi / 2, clockwise: true)
         circleLayer.path = circularPath.cgPath
         circleLayer.strokeColor = brandColour
@@ -142,7 +127,6 @@ class LastOnboardingViewController: UIViewController {
         circleLayer.strokeEnd = 0
         splashContainer.layer.addSublayer(circleLayer)
         
-        // 3. The Checkmark
         let config = UIImage.SymbolConfiguration(pointSize: 60, weight: .bold)
         checkmarkImageView.image = UIImage(systemName: "checkmark", withConfiguration: config)
         checkmarkImageView.tintColor = UIColor(cgColor: brandColour)
@@ -151,7 +135,6 @@ class LastOnboardingViewController: UIViewController {
         checkmarkImageView.alpha = 0
         splashContainer.addSubview(checkmarkImageView)
         
-        // 4. "Completed !!" Label
         completedLabel.text = "Completed !!"
         completedLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         completedLabel.textColor = .black
@@ -160,7 +143,6 @@ class LastOnboardingViewController: UIViewController {
         completedLabel.alpha = 0
         splashContainer.addSubview(completedLabel)
         
-        // 5. "2 mins" Label (Currently blank based on your code)
         timeLabel.text = ""
         timeLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         timeLabel.textColor = .black
@@ -173,7 +155,6 @@ class LastOnboardingViewController: UIViewController {
     private func performEntryAnimation() {
         setupRingUI()
         
-        // Animate the Ring Drawing
         let circularProgressAnimation = CABasicAnimation(keyPath: "strokeEnd")
         circularProgressAnimation.duration = 1.0
         circularProgressAnimation.toValue = 1.0
@@ -200,17 +181,13 @@ class LastOnboardingViewController: UIViewController {
     }
     
     private func dissolveSplash() {
-        // 🔴 FIX: Because everything is inside `splashContainer`, we just fade out the container.
-        // This guarantees everything disappears at the exact same time.
         UIView.animate(withDuration: 1.0, delay: 0.0, options: [.curveEaseInOut], animations: {
             self.splashContainer.alpha = 0.0
         }) { _ in
-            // Clean up and remove from memory once invisible
             self.splashContainer.removeFromSuperview()
             
             self.navigationController?.setNavigationBarHidden(false, animated: false)
             
-            // Fade in the actual results content
             UIView.animate(withDuration: 0.5) {
                 self.scrollView.alpha = 1.0
                 self.getStartedButton.alpha = 1.0
@@ -218,7 +195,6 @@ class LastOnboardingViewController: UIViewController {
         }
     }
     
-    // MARK: - Actions
     @IBAction func getStartedButtonTapped(_ sender: UIButton) {
         AppState.isOnboardingCompleted = true
         AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
@@ -228,7 +204,7 @@ class LastOnboardingViewController: UIViewController {
 
         guard let window = view.window else { return }
 
-        window.backgroundColor = .systemBackground // Or whatever your background color is
+        window.backgroundColor = .systemBackground 
 
         UIView.animate(withDuration: 0.3, animations: {
             window.rootViewController?.view.alpha = 0

@@ -39,22 +39,6 @@ class FirstPageAnimationViewController: UIViewController {
         startSequenceAnimation()
     }
     
-    
-//    private func setupInitialState() {
-//        headerLabel.alpha = 1
-//        
-//        // view.bounds.midY gives the exact vertical center of the visible screen
-//        let screenCenterY = view.bounds.midY
-//        let labelCenterY = headerLabel.center.y
-//        
-//        let distanceToCenter = screenCenterY - labelCenterY
-//        // Move it down to the center
-//        let moveDown = CGAffineTransform(translationX: 0, y: distanceToCenter)
-//        let scaleUp = CGAffineTransform(scaleX: 2.0, y: 2.0)
-//        
-//        headerLabel.transform = scaleUp.concatenating(moveDown)
-//    }
-    
     private func setupInitialState() {
         headerLabel.alpha = 1
 
@@ -70,27 +54,7 @@ class FirstPageAnimationViewController: UIViewController {
         // Move buttonView below the screen
         buttonView.transform = CGAffineTransform(translationX: 0, y: view.bounds.height)
     }
-    
-//    private func startSequenceAnimation() {
-//          // Animate Header back to Top
-//        UIView.animate(withDuration: 2.0,
-//                       delay: 0.2,
-//                       usingSpringWithDamping: 0.85,
-//                       initialSpringVelocity: 0.5,
-//                       options: .curveEaseInOut) {
-//            
-//            // This automatically moves it back to the storyboard position
-//            self.headerLabel.transform = .identity
-//            
-//        } completion: { _ in
-//            
-//            UIView.animate(withDuration: 0.5) {
-//                self.infoLabel.alpha = 1.0
-//                self.buttonView.alpha = 1.0
-//                
-//            }
-//        }
-//    }
+
     private func startSequenceAnimation() {
         
         // Step 1: Logo moves to top

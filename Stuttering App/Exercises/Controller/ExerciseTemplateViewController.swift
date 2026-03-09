@@ -102,11 +102,10 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         progressBarView.progressColor = UIColor(named: "ButtonTheme") ?? .systemBlue
         progressBarView.progress = 0.0
         
-        dashboardBottomConstraint.constant = view.frame.height * 0.20
+        dashboardBottomConstraint.constant = view.frame.height * 0.21
     }
     
     private func loadData() {
-        // 1. Fetch dynamic time using your singleton manager
         if let dynamicTimeInt = ExerciseDataManager.shared.getDurationString(for: exerciseName) {
             let dynamicTime = TimeInterval(dynamicTimeInt)
             self.sessionTotalTime = dynamicTime
@@ -117,7 +116,6 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
             self.sessionTimeRemaining = 120.0
         }
         
-        // 2. Continue with the existing data load and UI setup
         if let exercise = ExerciseManager.fetchExercise(title: exerciseName) {
             self.currentExercise = exercise
             self.exerciseTemplate = ExerciseAnimationRegistry.shared.getTemplate(for: exerciseName)
@@ -165,12 +163,8 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         }
     }
     
-    // MARK: - Word Cycle Management (FIXED)
     func startNewWordCycle() {
         guard let exercise = currentExercise else { return }
-        
-        // FIXED: Removed the logic that forced textOnly/imageBased to skip fetching.
-        // Now ALL exercises fetch from dataBank if keys exist.
         
         if !sortedCategoryKeys.isEmpty {
             let keyIndex = currentCategoryIndex % sortedCategoryKeys.count
@@ -179,19 +173,16 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
             if let words = exercise.dataBank.targets[categoryKey], let randomWord = words.randomElement() {
                 currentWord = randomWord
             } else {
-                // Fallback 1: Try first key
                 if let firstKey = sortedCategoryKeys.first,
                    let words = exercise.dataBank.targets[firstKey],
                    let randomWord = words.randomElement() {
                     currentWord = randomWord
                 } else {
-                    // Fallback 2: Use example demonstration if dataBank fails
                     currentWord = exercise.exampleDemonstration.first?.displayText ?? "Ready"
                 }
             }
             currentCategoryIndex += 1
         } else {
-            // No data bank (rare), use example
             currentWord = exercise.exampleDemonstration.first?.displayText ?? "Ready"
         }
         
@@ -270,7 +261,6 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         }
     }
     
-    // MARK: - Exercise Handlers (FIXED)
     private func handleAnimatedExercise(template: ExerciseAnimationTemplate, stepNumber: Int, step: ExerciseStep) {
         guard let exercise = currentExercise else { return }
         
@@ -290,10 +280,8 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         if let stepConfig = template.stepConfigs.first(where: { $0.stepNumber == stepNumber }) {
             
             if stepConfig.showImage {
-                // Show image
                 showImage(step.image)
                 
-                // Use currentWord instead of rawText from example
                 let textToDisplay = currentWord.isEmpty ? (exercise.exampleDemonstration.first?.displayText ?? "") : currentWord
                 
                 if textToDisplay.contains("'") || textToDisplay.contains(" ") {
@@ -312,14 +300,12 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
                 isAnimatingStep = false
                 
             } else {
-                // Show animated syllable text
                 updateStackLayout(imageViewHidden: true)
                 isAnimatingStep = true
                 animationController.startAnimation(for: stepConfig, word: currentWord)
             }
             
         } else {
-            // Fallback for steps not defined in config
             handleTraditionalExercise(step: step)
         }
     }
@@ -329,11 +315,9 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         
         updateStackLayout(imageViewHidden: true, labelHidden: false)
         
-        // FIXED: Use currentWord fetched from DataBank
         let textToDisplay = currentWord.isEmpty ? (exercise.exampleDemonstration.first?.displayText ?? "") : currentWord
         
         targetWordLabel.attributedText = formatToolkitSentence(textToDisplay)
-        
         targetWordLabel.isHidden = false
         targetWordLabel.alpha = 1.0
         
@@ -344,16 +328,12 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         guard let exercise = currentExercise else { return }
         
         showImage(step.image)
-        
-        // FIXED: Use currentWord fetched from DataBank
+    
         let textToDisplay = currentWord.isEmpty ? (exercise.exampleDemonstration.first?.displayText ?? "") : currentWord
         
-        // Check if it's a sentence (contains quotes or spaces) or a single word
         if textToDisplay.contains("'") || textToDisplay.contains(" ") {
-            // It's a sentence - format it
             targetWordLabel.attributedText = formatToolkitSentence(textToDisplay)
         } else {
-            // It's a single word - display as plain text with theme color
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: 48, weight: .bold),
                 .foregroundColor: UIColor(named: "ButtonTheme") ?? .systemBlue
@@ -400,7 +380,6 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         let fullString = NSMutableAttributedString()
         let components = text.components(separatedBy: "'")
         
-        // Reduced size slightly for long sentences
         let baseSize: CGFloat = text.count > 20 ? 23 : 30
         let highlightedSize: CGFloat = text.count > 20 ? 28 : 35
         
@@ -427,7 +406,6 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         isExerciseCompleted = true // Mark as completed
         sheetVC?.updateTimerLabel(text: "00:00")
         
-        // Expand the sheet and disable Play/Pause
         if let sheet = sheetVC?.sheetPresentationController {
             sheet.animateChanges { sheet.selectedDetentIdentifier = .init("half") }
             sheetVC?.setExpandedState(isExpanded: true)
@@ -450,7 +428,6 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
     }
 }
 
-// MARK: - Animation Delegate
 extension ExerciseTemplateViewController: AnimationControllerDelegate {
     
     func didUpdateText(_ attributedText: NSAttributedString) {
@@ -476,7 +453,6 @@ extension ExerciseTemplateViewController: AnimationControllerDelegate {
     }
 }
 
-// MARK: - Sheet Delegate
 extension ExerciseTemplateViewController: AirFlowControlsDelegate {
 
     func presentWorkoutSheet() {
@@ -529,33 +505,13 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
         startNewWordCycle()
     }
     
-//    func didTapStop() {
-//        killTimer()
-//        animationController.cancelAnimations()
-//        self.dismiss(animated: true, completion: nil)
-//        
-//        let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
-//        guard let ResultVC = storyboard.instantiateViewController(withIdentifier: "ExerciseResult") as? ExerciseResultViewController else { return }
-//        
-//        ResultVC.exerciseName = self.exerciseName
-//        ResultVC.durationLabelForExercise = Int(self.sessionTotalTime)
-//        
-//        let ResultNav = UINavigationController(rootViewController: ResultVC)
-//        ResultNav.modalPresentationStyle = .fullScreen
-//        self.present(ResultNav, animated: true, completion: nil)
-//    }
     func didTapStop() {
         killTimer()
         animationController.cancelAnimations()
 
-        // 1. Dismiss the bottom sheet FIRST
         sheetVC?.dismiss(animated: true, completion: { [weak self] in
-            // We use weak self to avoid memory leaks, so we unwrap it here
             guard let self = self else { return }
-            
-            // 2. Once the sheet is gone, perform the navigation
             if self.isExerciseCompleted {
-                // Go to ResultVC
                 let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
                 guard let resultVC = storyboard.instantiateViewController(withIdentifier: "ExerciseResult") as? ExerciseResultViewController else { return }
                 
@@ -568,18 +524,9 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
                 self.present(resultNav, animated: true, completion: nil)
                 
             } else {
-//                // Explicitly present the Exercise Library
-//                let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
-//                let libraryVC = storyboard.instantiateViewController(withIdentifier: "exerciseLibrary")
-//
-//                let libraryNav = UINavigationController(rootViewController: libraryVC)
-//                libraryNav.modalPresentationStyle = .fullScreen
-//                self.present(libraryNav, animated: true, completion: nil)
                 if let initialPresenter = self.presentingViewController?.presentingViewController {
-                    // Dismissing from 2 levels deep
                     initialPresenter.dismiss(animated: true, completion: nil)
                 } else {
-                    // Fallback for 1 level deep
                     self.dismiss(animated: true, completion: nil)
                 }
             }
@@ -593,31 +540,25 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
             self.currentStepIndex = 0
             self.currentCategoryIndex = 0
             
-            // Reset Sheet UI
             self.sheetVC?.setPlayPauseEnabled(true)
             self.sheetVC?.setPlayPauseState(isPlaying: true)
             
-            // Collapse Sheet
             if let sheet = self.sheetVC?.sheetPresentationController {
                 sheet.animateChanges { sheet.selectedDetentIdentifier = .init("quarter") }
                 self.sheetVC?.setExpandedState(isExpanded: false)
             }
             
-            self.loadData() // Re-fetches words and restarts heartbeat
+            self.loadData()
         }
         
         if sessionTimeRemaining > 0 && !isExerciseCompleted {
-            // 1. Capture the current state and pause the exercise to prevent timer drain
             let wasPlaying = !self.isPaused
             if wasPlaying {
                 self.pauseHeartbeat()
                 self.sheetVC?.setPlayPauseState(isPlaying: false)
             }
             
-            // 2. Setup the Alert
             let alert = UIAlertController(title: "Restart Exercise?", message: "Are you sure you want to restart your current progress?", preferredStyle: .alert)
-            
-            // 3. Handle Cancel: Resume the exercise ONLY if it was playing before the alert
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
                 if wasPlaying {
                     self.startHeartbeat()
@@ -625,16 +566,13 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
                 }
             }))
             
-            // 4. Handle Restart: Execute the reset closure
             alert.addAction(UIAlertAction(title: "Restart", style: .destructive, handler: { _ in
                 restartExercise()
             }))
             
-            // 5. Present the alert safely over the bottom sheet
             sheetVC?.present(alert, animated: true)
             
         } else {
-            // Exercise was already completed, safe to restart immediately
             restartExercise()
         }
     }

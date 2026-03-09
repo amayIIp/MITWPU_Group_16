@@ -11,8 +11,6 @@ class LibraryViewController: UIViewController {
     
     @IBOutlet weak var collectionView: UICollectionView!
     
-    // MARK: - Data Source Properties
-    // We isolate the groups from the first section to act as our main sections
     var standardGroups: [ExerciseGroup] = []
     
     // We keep a reference to the specific Fun section

@@ -139,9 +139,6 @@ extension AwardsManager {
             }
         }
         sqlite3_finalize(stmt)
-        
-        // Push to Supabase if the user is signed in
-        SupabaseSyncManager.shared.pushAwardUpdate(awardId: id, progress: clampedProgress, status: newStatus)
     }
     
     func completeAward(id: String) {
@@ -218,6 +215,24 @@ extension AwardsManager {
         return result
     }
     
+    func getAchievedAwardsCount() -> Int {
+        var count = 0
+        // Query to count only the awards where progress is 100% (1.0 or greater)
+        let query = "SELECT COUNT(*) FROM Awards WHERE progress >= 1.0"
+        var stmt: OpaquePointer?
+        
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        } else {
+            print("Error: Failed to prepare getAchievedAwardsCount query.")
+        }
+        
+        sqlite3_finalize(stmt)
+        return count
+    }
+    
     func getTopLockedAward() -> AwardModel? {
         var stmt: OpaquePointer?
         var result: AwardModel?
@@ -242,18 +257,5 @@ extension AwardsManager {
         }
         
         return result
-    }
-
-    func getAchievedAwardsCount() -> Int {
-        let query = "SELECT COUNT(*) FROM Awards WHERE progress >= 1.0"
-        var stmt: OpaquePointer?
-        var count = 0
-        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
-            if sqlite3_step(stmt) == SQLITE_ROW {
-                count = Int(sqlite3_column_int(stmt, 0))
-            }
-        }
-        sqlite3_finalize(stmt)
-        return count
     }
 }

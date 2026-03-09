@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24127" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="s1F-qJ-8s0">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="s1F-qJ-8s0">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -295,13 +295,7 @@
                             <constraint firstItem="Fpk-qu-MCn" firstAttribute="leading" secondItem="9U8-G8-ss2" secondAttribute="leading" id="kVf-Ki-1Hb"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Awards" largeTitleDisplayMode="never" id="EIw-5G-u39">
-                        <barButtonItem key="rightBarButtonItem" image="arrow.trianglehead.clockwise" catalog="system" id="MZm-bm-IiJ">
-                            <connections>
-                                <action selector="ab:" destination="5iO-1J-TWa" id="Rxt-rw-DPS"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Awards" largeTitleDisplayMode="never" id="EIw-5G-u39"/>
                     <connections>
                         <outlet property="achievedAwardDescription" destination="YPo-qa-ms0" id="leW-xe-0N9"/>
                         <outlet property="achievedAwardImage" destination="8hx-Rs-qcx" id="Zs8-lY-7TB"/>
@@ -552,7 +546,6 @@
         <image name="BreathControl" width="2206" height="2206"/>
         <image name="ConversationCandet" width="2160" height="2160"/>
         <image name="DayStreak" width="2138" height="2138"/>
-        <image name="arrow.trianglehead.clockwise" catalog="system" width="119" height="128"/>
         <namedColor name="bg">
             <color red="0.91764705882352937" green="0.94901960784313721" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>

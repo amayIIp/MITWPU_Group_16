@@ -10,8 +10,6 @@ import Foundation
 class StorageManager {
     static let shared = StorageManager()
     private let defaults = UserDefaults.standard
-    
-    // MARK: - Keys
     private let phonemesKey = "userSelectedPhonemes"
     private let firstNameKey = "userFirstName"
     private let lastNameKey = "userLastName"
@@ -22,8 +20,6 @@ class StorageManager {
     
     
     private init() {}
-    
-    // MARK: - Phoneme Functions
     
     func savePhonemes(_ phonemes: [String]) {
         defaults.set(phonemes, forKey: phonemesKey)
@@ -39,7 +35,6 @@ class StorageManager {
     
     func saveName(_ name: String) {
         defaults.set(name, forKey: firstNameKey)
-        // Push profile change to Supabase
         SupabaseSyncManager.shared.pushProfileUpdate(key: "first_name", value: name)
     }
     

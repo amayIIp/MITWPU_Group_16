@@ -9,11 +9,9 @@ import UIKit
 
 class ExerciseResultViewController: UIViewController {
     
-    // MARK: - Passed-in Data
     var exerciseName: String = ""
     var durationLabelForExercise: Int = 0
     
-    // MARK: - Programmatic UI
     private let splashContainer = UIView()
     private let titleLabel = UILabel()
     private let circleLayer = CAShapeLayer()
@@ -23,8 +21,6 @@ class ExerciseResultViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Kick off the animation sequence
         performEntryAnimation()
     }
     
@@ -33,7 +29,6 @@ class ExerciseResultViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
-    // MARK: - Animation & UI Setup
     private func performEntryAnimation() {
         setupRingUI()
         
@@ -46,7 +41,7 @@ class ExerciseResultViewController: UIViewController {
         
         CATransaction.begin()
         CATransaction.setCompletionBlock {
-            // Fade in checkmark and text after ring finishes
+            // Fade in checkmark and text after ring finishe
             UIView.animate(withDuration: 0.3, animations: {
                 self.checkmarkImageView.alpha = 1.0
                 self.completedLabel.alpha = 1.0
@@ -71,7 +66,6 @@ class ExerciseResultViewController: UIViewController {
         let brandColour = UIColor(resource:.buttonTheme).cgColor
         let radius: CGFloat = 80
         
-        // 1. Title
         titleLabel.text = exerciseName.isEmpty ? "Stutter Test" : exerciseName
         titleLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
         titleLabel.textColor = .black
@@ -80,7 +74,6 @@ class ExerciseResultViewController: UIViewController {
         titleLabel.alpha = 1.0
         splashContainer.addSubview(titleLabel)
         
-        // 2. The Ring
         let circularPath = UIBezierPath(arcCenter: centerPoint, radius: radius, startAngle: -CGFloat.pi / 2, endAngle: 3 * CGFloat.pi / 2, clockwise: true)
         circleLayer.path = circularPath.cgPath
         circleLayer.strokeColor = brandColour
@@ -90,7 +83,6 @@ class ExerciseResultViewController: UIViewController {
         circleLayer.strokeEnd = 0
         splashContainer.layer.addSublayer(circleLayer)
         
-        // 3. The Checkmark
         let config = UIImage.SymbolConfiguration(pointSize: 60, weight: .bold)
         checkmarkImageView.image = UIImage(systemName: "checkmark", withConfiguration: config)
         checkmarkImageView.tintColor = UIColor(cgColor: brandColour)
@@ -99,7 +91,6 @@ class ExerciseResultViewController: UIViewController {
         checkmarkImageView.alpha = 0
         splashContainer.addSubview(checkmarkImageView)
         
-        // 4. "Completed !!" Label
         completedLabel.text = "Completed !!"
         completedLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         completedLabel.textColor = .black
@@ -108,7 +99,6 @@ class ExerciseResultViewController: UIViewController {
         completedLabel.alpha = 0
         splashContainer.addSubview(completedLabel)
         
-        // 5. Time Label
         timeLabel.text = formatDuration(durationLabelForExercise)
         timeLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         timeLabel.textColor = .black
@@ -119,12 +109,9 @@ class ExerciseResultViewController: UIViewController {
     }
     
     private func dissolveSplash() {
-            // We can just call goToMainScreen directly now
-            // since the transition logic is handled there.
             self.goToMainScreen()
         }
         
-        // MARK: - Utilities
         func formatDuration(_ seconds: Int) -> String {
             if seconds < 60 {
                 return "\(seconds) Sec"
@@ -135,23 +122,18 @@ class ExerciseResultViewController: UIViewController {
         }
         
         func goToMainScreen() {
-            // 1. Create a fade transition
             let transition = CATransition()
             transition.duration = 0.4
             transition.type = .fade
             transition.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             
-            // 2. Apply the transition to the window's layer
             if let window = self.view.window {
                 window.layer.add(transition, forKey: kCATransition)
             }
             
-            // 3. Dismiss without the default animation so the fade takes over
             if let initialPresenter = self.presentingViewController?.presentingViewController {
-                // Dismissing from 2 levels deep
                 initialPresenter.dismiss(animated: false, completion: nil)
             } else {
-                // Fallback for 1 level deep
                 self.dismiss(animated: false, completion: nil)
             }
         }
