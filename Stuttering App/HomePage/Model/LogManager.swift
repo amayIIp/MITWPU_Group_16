@@ -24,11 +24,12 @@ struct OverallProgressReport {
 
     // MARK: Top Bar
     let daysPracticed: Int
+    let daysGoalsCompleted: Int
     let activeStreak: Int
     let totalHours: Double
 
     // MARK: Headline
-    let headlineInsight: String         // e.g. "You're speaking with remarkable smoothness and confidence!"
+    let headlineInsight: String
 
     // MARK: Key Metrics
     let fluencyGrowthPercent: Double
@@ -42,21 +43,24 @@ struct OverallProgressReport {
 
     // MARK: Exercise
     let exercisesCompleted: Int
+    let totalExercisesPracticed: Int
     let exercisesGoal: Int
     let totalExerciseMinutesThisWeek: Int
     let mostPracticedTechnique: String
 
     // MARK: Reading
+    let totalReadingSessions: Int
     let avgBlocksPerReading: Double
     let readingBlockTrend: TrendDirection
-    let avgReadingDuration: TimeInterval        // seconds
-    let longestSmoothParagraph: Int             // seconds
+    let avgReadingDuration: TimeInterval
+    let longestSmoothParagraph: Int
 
     // MARK: Conversation
+    let totalConversationSessions: Int
     let avgFillerWordPercent: Double
     let fillerTrend: TrendDirection
-    let avgConversationDuration: TimeInterval   // seconds
-    let longestSmoothTalk: Int                  // seconds
+    let avgConversationDuration: TimeInterval
+    let longestSmoothTalk: Int
 
     // MARK: Weekly Trend
     let weeklyTrend: [WeeklyPoint]
@@ -73,7 +77,7 @@ class LogManager {
 
     static let shared = LogManager()
 
-    private var db: OpaquePointer?
+    private(set) var db: OpaquePointer?
     private let dbName = "ExerciseDatabase.sqlite"
     private var currentUserId: String?
 
@@ -355,6 +359,9 @@ class LogManager {
             else { print("Could not insert row.") }
         }
         sqlite3_finalize(statement)
+        
+        // Push local progress to Supabase Cloud
+        SupabaseSyncManager.shared.pushExerciseLog(id: UUID().uuidString, name: exerciseName, source: source.rawValue, duration: exerciseDuration)
     }
 
     func getLogs(for source: ExerciseSource, on date: Date? = nil) -> [ExerciseLog] {
@@ -446,6 +453,9 @@ class LogManager {
         updateLetterStats(userId: userId, letterCounts: report.letterAnalysis)
         saveSessionLetterStats(userId: userId, sessionId: sessionId, letterCounts: report.letterAnalysis)
         print("Saved reading session for user: \(userId)")
+        
+        // Push reading session analytics to Supabase
+        SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId)
     }
 
     private func saveTroubledWords(report: StutterJSONReport, userId: String, sessionId: String) {
@@ -576,13 +586,22 @@ class LogManager {
             """
         var statement: OpaquePointer?
         if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1,   (UUID().uuidString as NSString).utf8String, -1, nil)
+            let sessionId = UUID().uuidString
+            sqlite3_bind_text(statement, 1,   (sessionId as NSString).utf8String, -1, nil)
             sqlite3_bind_text(statement, 2,   (userId as NSString).utf8String, -1, nil)
             sqlite3_bind_double(statement, 3, Date().timeIntervalSince1970)
             sqlite3_bind_double(statement, 4, duration)
             sqlite3_bind_double(statement, 5, fillerWordPercent)
             sqlite3_bind_int(statement, 6,    Int32(longestSmoothTalk))
             if sqlite3_step(statement) == SQLITE_DONE { print("ConversationSession inserted.") }
+            
+            // Push to Supabase
+            SupabaseSyncManager.shared.pushConversationSession(
+                sessionId: sessionId,
+                duration: duration,
+                fillerWordPercent: fillerWordPercent,
+                longestSmoothTalk: longestSmoothTalk
+            )
         }
         sqlite3_finalize(statement)
     }
@@ -626,6 +645,36 @@ class LogManager {
 
     func resetStutterStats() {
         execute(sql: "DELETE FROM StutterStats;", successMessage: "Stutter stats reset.")
+    }
+
+    // MARK: - Fluency Queries (public)
+
+    func getAverageFluency(userId: String) -> Double {
+        let sql = "SELECT AVG(fluencyScore) FROM ReadingSessions WHERE userId = ?;"
+        var stmt: OpaquePointer?
+        var val = 0.0
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                val = sqlite3_column_double(stmt, 0)
+            }
+        }
+        sqlite3_finalize(stmt)
+        return val
+    }
+
+    func getBestFluency(userId: String) -> Double {
+        let sql = "SELECT MAX(fluencyScore) FROM ReadingSessions WHERE userId = ?;"
+        var stmt: OpaquePointer?
+        var val = 0.0
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                val = sqlite3_column_double(stmt, 0)
+            }
+        }
+        sqlite3_finalize(stmt)
+        return val
     }
 
     // MARK: - Debug
@@ -837,20 +886,27 @@ extension LogManager {
         let fillerTrend       = trendInverse(current: fillerThis, previous: fillerLast)
         let readingBlockTrend = trendInverse(current: blockThisWeek, previous: blockLastWeek)
 
+        // ── Goals Completed ──────────────────────────────────────────────────
+        let daysGoalsCompleted = getDaysGoalsCompleted()
+
         // ── Exercise ─────────────────────────────────────────────────────────
-        let exercisesCompleted          = getLogs(for: .exercises).count
+        let allExerciseLogs             = getLogs(for: .exercises)
+        let exercisesCompleted          = allExerciseLogs.count
+        let totalExercisesPracticed     = getLogs(for: .dailyTasks).count + allExerciseLogs.count
         let exercisesGoal               = getGoal(name: GoalKeys.exercise)
         let totalExerciseMinutesThisWeek = getExerciseMinutesThisWeek()
         let mostPracticedTechnique      = getMostPracticedExercise()
 
         // ── Reading ──────────────────────────────────────────────────────────
-        let avgReadingDuration    = getAvgReadingDuration(userId: userId)
+        let totalReadingSessions   = getTotalReadingSessions(userId: userId)
+        let avgReadingDuration     = getAvgReadingDuration(userId: userId)
         let longestSmoothParagraph = getLongestSmoothParagraph(userId: userId)
 
         // ── Conversation ─────────────────────────────────────────────────────
-        let avgFillerWordPercent    = getAvgFillerWordPercent(userId: userId)
-        let avgConversationDuration = getAvgConversationDuration(userId: userId)
-        let longestSmoothTalk       = getLongestSmoothTalk(userId: userId)
+        let totalConversationSessions = getTotalConversationSessions(userId: userId)
+        let avgFillerWordPercent      = getAvgFillerWordPercent(userId: userId)
+        let avgConversationDuration   = getAvgConversationDuration(userId: userId)
+        let longestSmoothTalk         = getLongestSmoothTalk(userId: userId)
 
         // ── Headline ─────────────────────────────────────────────────────────
         let overallContext = OverallInsightContext(
@@ -866,6 +922,7 @@ extension LogManager {
 
         return OverallProgressReport(
             daysPracticed: daysPracticed,
+            daysGoalsCompleted: daysGoalsCompleted,
             activeStreak: activeStreak,
             totalHours: totalHours,
             headlineInsight: headline,
@@ -878,13 +935,16 @@ extension LogManager {
             improvementPercent: improvementPct,
             improvementTrend: improvementTrend,
             exercisesCompleted: exercisesCompleted,
+            totalExercisesPracticed: totalExercisesPracticed,
             exercisesGoal: exercisesGoal,
             totalExerciseMinutesThisWeek: totalExerciseMinutesThisWeek,
             mostPracticedTechnique: mostPracticedTechnique,
+            totalReadingSessions: totalReadingSessions,
             avgBlocksPerReading: avgBlock,
             readingBlockTrend: readingBlockTrend,
             avgReadingDuration: avgReadingDuration,
             longestSmoothParagraph: longestSmoothParagraph,
+            totalConversationSessions: totalConversationSessions,
             avgFillerWordPercent: avgFillerWordPercent,
             fillerTrend: fillerTrend,
             avgConversationDuration: avgConversationDuration,
@@ -900,6 +960,33 @@ extension LogManager {
             SELECT COUNT(DISTINCT CAST(date / 86400 AS INTEGER))
             FROM ReadingSessions WHERE userId = ?;
             """
+        return singleIntQuery(sql: sql, userId: userId)
+    }
+
+    private func getDaysGoalsCompleted() -> Int {
+        // Count distinct days where at least one exercise log exists from dailyTasks source
+        let sql = """
+            SELECT COUNT(DISTINCT CAST(completionDate / 86400 AS INTEGER))
+            FROM ExerciseLog WHERE source = 'dailyTasks';
+            """
+        var stmt: OpaquePointer?
+        var count = 0
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+        return count
+    }
+
+    private func getTotalReadingSessions(userId: String) -> Int {
+        let sql = "SELECT COUNT(*) FROM ReadingSessions WHERE userId = ?;"
+        return singleIntQuery(sql: sql, userId: userId)
+    }
+
+    private func getTotalConversationSessions(userId: String) -> Int {
+        let sql = "SELECT COUNT(*) FROM ConversationSessions WHERE userId = ?;"
         return singleIntQuery(sql: sql, userId: userId)
     }
 

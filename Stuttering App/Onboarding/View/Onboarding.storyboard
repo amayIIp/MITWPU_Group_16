@@ -164,8 +164,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="WuQ-fq-Cpd">
-                                <rect key="frame" x="24" y="229" width="345" height="315"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WuQ-fq-Cpd">
+                                <rect key="frame" x="24" y="229" width="345" height="330"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="YIM-f3-9k4">
                                         <rect key="frame" x="0.0" y="0.0" width="345" height="75"/>
@@ -187,10 +187,11 @@
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
+                                                    <constraint firstAttribute="height" constant="50" id="8vv-1Q-EIY"/>
                                                     <constraint firstAttribute="bottom" secondItem="eRV-pD-nuz" secondAttribute="bottom" constant="5" id="CU4-ug-BVB"/>
                                                     <constraint firstItem="eRV-pD-nuz" firstAttribute="top" secondItem="7Hl-EB-J4d" secondAttribute="top" constant="5" id="bpK-sE-irA"/>
-                                                    <constraint firstAttribute="trailing" secondItem="eRV-pD-nuz" secondAttribute="trailing" constant="5" id="iiP-Ec-hOS"/>
-                                                    <constraint firstItem="eRV-pD-nuz" firstAttribute="leading" secondItem="7Hl-EB-J4d" secondAttribute="leading" constant="5" id="zzV-Ng-gl3"/>
+                                                    <constraint firstAttribute="trailing" secondItem="eRV-pD-nuz" secondAttribute="trailing" constant="10" id="iiP-Ec-hOS"/>
+                                                    <constraint firstItem="eRV-pD-nuz" firstAttribute="leading" secondItem="7Hl-EB-J4d" secondAttribute="leading" constant="10" id="zzV-Ng-gl3"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -202,7 +203,7 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="Qg5-OR-YAt">
-                                        <rect key="frame" x="0.0" y="80" width="345" height="75"/>
+                                        <rect key="frame" x="0.0" y="85" width="345" height="75"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Email " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gNq-RJ-2ui">
                                                 <rect key="frame" x="0.0" y="0.0" width="345" height="23"/>
@@ -214,7 +215,7 @@
                                                 <rect key="frame" x="0.0" y="25" width="345" height="50"/>
                                                 <subviews>
                                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TY3-xS-mOa">
-                                                        <rect key="frame" x="5" y="5" width="335" height="40"/>
+                                                        <rect key="frame" x="10" y="5" width="325" height="40"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
@@ -222,9 +223,10 @@
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="bottom" secondItem="TY3-xS-mOa" secondAttribute="bottom" constant="5" id="4I2-EN-w6L"/>
-                                                    <constraint firstAttribute="trailing" secondItem="TY3-xS-mOa" secondAttribute="trailing" constant="5" id="SrZ-kn-nIf"/>
+                                                    <constraint firstAttribute="trailing" secondItem="TY3-xS-mOa" secondAttribute="trailing" constant="10" id="SrZ-kn-nIf"/>
+                                                    <constraint firstAttribute="height" constant="50" id="a9G-S6-1eI"/>
                                                     <constraint firstItem="TY3-xS-mOa" firstAttribute="top" secondItem="2ZT-Or-cve" secondAttribute="top" constant="5" id="vOZ-Y9-L3T"/>
-                                                    <constraint firstItem="TY3-xS-mOa" firstAttribute="leading" secondItem="2ZT-Or-cve" secondAttribute="leading" constant="5" id="ytf-OL-EW2"/>
+                                                    <constraint firstItem="TY3-xS-mOa" firstAttribute="leading" secondItem="2ZT-Or-cve" secondAttribute="leading" constant="10" id="ytf-OL-EW2"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -236,7 +238,7 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="DVH-cZ-wWi">
-                                        <rect key="frame" x="0.0" y="160" width="345" height="75"/>
+                                        <rect key="frame" x="0.0" y="170" width="345" height="75"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Password " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hgt-ZC-8Xo">
                                                 <rect key="frame" x="0.0" y="0.0" width="345" height="23"/>
@@ -248,7 +250,7 @@
                                                 <rect key="frame" x="0.0" y="25" width="345" height="50"/>
                                                 <subviews>
                                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Pab-dZ-z0D">
-                                                        <rect key="frame" x="5" y="5" width="335" height="40"/>
+                                                        <rect key="frame" x="10" y="5" width="325" height="40"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
@@ -257,8 +259,9 @@
                                                 <constraints>
                                                     <constraint firstAttribute="bottom" secondItem="Pab-dZ-z0D" secondAttribute="bottom" constant="5" id="Cei-VG-2dE"/>
                                                     <constraint firstItem="Pab-dZ-z0D" firstAttribute="top" secondItem="iJ2-z3-A8t" secondAttribute="top" constant="5" id="TDD-xJ-zM1"/>
-                                                    <constraint firstAttribute="trailing" secondItem="Pab-dZ-z0D" secondAttribute="trailing" constant="5" id="qcb-V3-xgr"/>
-                                                    <constraint firstItem="Pab-dZ-z0D" firstAttribute="leading" secondItem="iJ2-z3-A8t" secondAttribute="leading" constant="5" id="tpW-Bw-EXH"/>
+                                                    <constraint firstAttribute="trailing" secondItem="Pab-dZ-z0D" secondAttribute="trailing" constant="10" id="qcb-V3-xgr"/>
+                                                    <constraint firstAttribute="height" constant="50" id="tIF-yr-QZ5"/>
+                                                    <constraint firstItem="Pab-dZ-z0D" firstAttribute="leading" secondItem="iJ2-z3-A8t" secondAttribute="leading" constant="10" id="tpW-Bw-EXH"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -270,7 +273,7 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="lUw-lb-61g">
-                                        <rect key="frame" x="0.0" y="240" width="345" height="75"/>
+                                        <rect key="frame" x="0.0" y="255" width="345" height="75"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Re-enter password " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="msg-OC-ug5">
                                                 <rect key="frame" x="0.0" y="0.0" width="345" height="23"/>
@@ -282,17 +285,18 @@
                                                 <rect key="frame" x="0.0" y="25" width="345" height="50"/>
                                                 <subviews>
                                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="SZP-5j-TIY">
-                                                        <rect key="frame" x="5" y="5" width="335" height="40"/>
+                                                        <rect key="frame" x="10" y="5" width="325" height="40"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                         <textInputTraits key="textInputTraits" secureTextEntry="YES"/>
                                                     </textField>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
-                                                    <constraint firstItem="SZP-5j-TIY" firstAttribute="leading" secondItem="FPC-tc-aO1" secondAttribute="leading" constant="5" id="aao-5r-onf"/>
+                                                    <constraint firstItem="SZP-5j-TIY" firstAttribute="leading" secondItem="FPC-tc-aO1" secondAttribute="leading" constant="10" id="aao-5r-onf"/>
                                                     <constraint firstAttribute="bottom" secondItem="SZP-5j-TIY" secondAttribute="bottom" constant="5" id="d91-oR-bJw"/>
+                                                    <constraint firstAttribute="height" constant="50" id="hgg-GX-FAL"/>
                                                     <constraint firstItem="SZP-5j-TIY" firstAttribute="top" secondItem="FPC-tc-aO1" secondAttribute="top" constant="5" id="lrc-SJ-yGb"/>
-                                                    <constraint firstAttribute="trailing" secondItem="SZP-5j-TIY" secondAttribute="trailing" constant="5" id="vXp-Wa-O6g"/>
+                                                    <constraint firstAttribute="trailing" secondItem="SZP-5j-TIY" secondAttribute="trailing" constant="10" id="vXp-Wa-O6g"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -366,8 +370,8 @@
                                     <action selector="loginButtonTapped:" destination="f20-eP-Po3" eventType="touchUpInside" id="uzR-Uy-mVH"/>
                                 </connections>
                             </button>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="1V8-0n-hJ7">
-                                <rect key="frame" x="24" y="229" width="345" height="184.66666666666663"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="1V8-0n-hJ7">
+                                <rect key="frame" x="24" y="229" width="345" height="189.66666666666663"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="6Mi-LB-h5w">
                                         <rect key="frame" x="0.0" y="0.0" width="345" height="75"/>
@@ -382,21 +386,22 @@
                                                 <rect key="frame" x="0.0" y="25" width="345" height="50"/>
                                                 <subviews>
                                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="kWv-c2-agF">
-                                                        <rect key="frame" x="5" y="5" width="335" height="40"/>
+                                                        <rect key="frame" x="10" y="5" width="325" height="40"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="trailing" secondItem="kWv-c2-agF" secondAttribute="trailing" constant="5" id="84t-yz-wiF"/>
+                                                    <constraint firstAttribute="trailing" secondItem="kWv-c2-agF" secondAttribute="trailing" constant="10" id="84t-yz-wiF"/>
                                                     <constraint firstItem="kWv-c2-agF" firstAttribute="top" secondItem="ESr-vt-0Kc" secondAttribute="top" constant="5" id="BZR-BK-Mlb"/>
                                                     <constraint firstAttribute="bottom" secondItem="kWv-c2-agF" secondAttribute="bottom" constant="5" id="WIb-6B-NuQ"/>
-                                                    <constraint firstItem="kWv-c2-agF" firstAttribute="leading" secondItem="ESr-vt-0Kc" secondAttribute="leading" constant="5" id="pL6-dd-DNQ"/>
+                                                    <constraint firstAttribute="height" constant="50" id="eRf-7f-DlI"/>
+                                                    <constraint firstItem="kWv-c2-agF" firstAttribute="leading" secondItem="ESr-vt-0Kc" secondAttribute="leading" constant="10" id="pL6-dd-DNQ"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                                        <integer key="value" value="10"/>
+                                                        <integer key="value" value="20"/>
                                                     </userDefinedRuntimeAttribute>
                                                     <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
                                                 </userDefinedRuntimeAttributes>
@@ -404,7 +409,7 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="WH5-vz-x32">
-                                        <rect key="frame" x="0.0" y="80" width="345" height="104.66666666666669"/>
+                                        <rect key="frame" x="0.0" y="85" width="345" height="104.66666666666669"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TmR-LV-cXi">
                                                 <rect key="frame" x="0.0" y="0.0" width="345" height="23"/>
@@ -419,21 +424,22 @@
                                                         <rect key="frame" x="0.0" y="0.0" width="345" height="50"/>
                                                         <subviews>
                                                             <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2TG-U1-rUJ">
-                                                                <rect key="frame" x="5" y="5" width="335" height="40"/>
+                                                                <rect key="frame" x="10" y="5" width="325" height="40"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <textInputTraits key="textInputTraits"/>
                                                             </textField>
                                                         </subviews>
                                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                         <constraints>
-                                                            <constraint firstItem="2TG-U1-rUJ" firstAttribute="leading" secondItem="5Gr-9F-YoO" secondAttribute="leading" constant="5" id="42n-BT-Idc"/>
+                                                            <constraint firstAttribute="height" constant="50" id="1cQ-p5-BgO"/>
+                                                            <constraint firstItem="2TG-U1-rUJ" firstAttribute="leading" secondItem="5Gr-9F-YoO" secondAttribute="leading" constant="10" id="42n-BT-Idc"/>
                                                             <constraint firstAttribute="bottom" secondItem="2TG-U1-rUJ" secondAttribute="bottom" constant="5" id="F3o-oP-OtT"/>
                                                             <constraint firstItem="2TG-U1-rUJ" firstAttribute="top" secondItem="5Gr-9F-YoO" secondAttribute="top" constant="5" id="Wyl-fS-6ky"/>
-                                                            <constraint firstAttribute="trailing" secondItem="2TG-U1-rUJ" secondAttribute="trailing" constant="5" id="qmU-cv-94d"/>
+                                                            <constraint firstAttribute="trailing" secondItem="2TG-U1-rUJ" secondAttribute="trailing" constant="10" id="qmU-cv-94d"/>
                                                         </constraints>
                                                         <userDefinedRuntimeAttributes>
                                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                                                <integer key="value" value="10"/>
+                                                                <integer key="value" value="20"/>
                                                             </userDefinedRuntimeAttribute>
                                                             <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
                                                         </userDefinedRuntimeAttributes>
@@ -467,6 +473,7 @@
                     <connections>
                         <outlet property="continueButton" destination="t8F-gR-FSH" id="Omd-Jy-JPO"/>
                         <outlet property="emailTextField" destination="kWv-c2-agF" id="kaH-Dl-W7a"/>
+                        <outlet property="forgotPassword" destination="xVI-ZE-GRH" id="CDI-Vn-RRQ"/>
                         <outlet property="passwordTextField" destination="2TG-U1-rUJ" id="yJg-w6-Z55"/>
                     </connections>
                 </viewController>

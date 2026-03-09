@@ -125,35 +125,27 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     private func updateFilterButtonsVisibility() {
+        // 1. Directly toggle isHidden based on whether the log is empty.
+        // UIStackView will automatically remove padding and collapse the space.
+        dailyTasksButton.isHidden = dailyTaskLogs.isEmpty
+        exercisesButton.isHidden = exerciseLogs.isEmpty
+        readingButton.isHidden = readingLogs.isEmpty
+        conversationButton.isHidden = conversationLogs.isEmpty
         
-        if dailyTaskLogs.isEmpty {
-            dailyTasksButton.isHidden = true
-            dailyTasksButton.alpha = 0
-        }
+        // 2. Determine if the "All" button should be visible
+        let hasAnyData = !dailyTaskLogs.isEmpty ||
+                         !exerciseLogs.isEmpty ||
+                         !readingLogs.isEmpty ||
+                         !conversationLogs.isEmpty
         
-        if exerciseLogs.isEmpty {
-            exercisesButton.isHidden = true
-            exercisesButton.alpha = 0
-        }
-        
-        if readingLogs.isEmpty {
-            readingButton.isHidden = true
-            readingButton.alpha = 0
-        }
-        
-        if conversationLogs.isEmpty {
-            conversationButton.isHidden = true
-            conversationButton.alpha = 0
-        }
-        
-        // "All" button should only appear if ANY category has data
-        let hasAnyData =
-            !dailyTaskLogs.isEmpty ||
-            !exerciseLogs.isEmpty ||
-            !readingLogs.isEmpty ||
-            !conversationLogs.isEmpty
-
         allButton.isHidden = !hasAnyData
+        
+        // 3. Animate the layout recalculation for a smooth, premium iOS feel
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
+            // If these buttons are in a specific container, call layoutIfNeeded() on that container.
+            // Otherwise, calling it on the main view works perfectly.
+            self.view.layoutIfNeeded()
+        }
     }
 
 
@@ -246,29 +238,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             return 1
         }
     }
-
     
-//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        switch activeFilter {
-//        case .all:
-//            switch section {
-//            case 0: return dailyTaskLogs.count
-//            case 1: return exerciseLogs.count
-//            case 2: return readingLogs.count
-//            case 3: return conversationLogs.count
-//            default: return 0
-//            }
-//        case .dailyTasks:
-//            return dailyTaskLogs.count
-//        case .exercises:
-//            return exerciseLogs.count
-//        case .reading:
-//            return readingLogs.count
-//        case .conversation:
-//            return conversationLogs.count
-//        }
-//    }
-
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 
         switch activeFilter {
@@ -339,110 +309,6 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             return String("\(minutes) min")
         }
     }
-    
-//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//
-//        let headerView = UIView()
-//        headerView.backgroundColor = .bg
-//
-//        let titleLabel = UILabel()
-//        titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-//        titleLabel.textColor = .label
-//        
-//        let titleLabel1 = UILabel()
-//        titleLabel1.font = UIFont.preferredFont(forTextStyle: .headline)
-//        titleLabel1.textColor = .label
-//        titleLabel1.textAlignment = .right
-//        
-//        let titleText: String
-//        let titleText1: String
-//        
-//        switch activeFilter {
-//            
-//        case .all:
-//            switch section {
-//            case 0:
-//                if !dailyTaskLogs.isEmpty {
-//                    titleText = "Daily Tasks"
-//                    titleText1 = "\(dailyTaskLogs.count)/5"
-//                }
-//            case 1:
-//                if !exerciseLogs.isEmpty {
-//                    titleText = "Exercises"
-//                    titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
-//                    
-//                }
-//                
-//            case 2:
-//                let totalReadingMinutes = calculateTotalDuration(for: self.readingLogs)
-//                if totalReadingMinutes == 0 {
-//                    titleText = "Reading"
-//                    titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
-//                    
-//                }
-//                
-//            case 3:
-//                let totalConvoMinutes = calculateTotalDuration(for: self.conversationLogs)
-//                if totalConvoMinutes == 0 {
-//                    titleText = "Conversation"
-//                    titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
-//                }
-//            default:
-//                titleText = ""
-//                titleText1 = ""
-//            }
-//            
-//        case .dailyTasks:
-//            if !dailyTaskLogs.isEmpty {
-//                titleText = "Daily Tasks"
-//                titleText1 = "\(dailyTaskLogs.count)/5"
-//            }
-//        case .exercises:
-//            if !exerciseLogs.isEmpty {
-//                titleText = "Exercises"
-//                titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
-//                
-//            }
-//        case .reading:
-//            let totalReadingMinutes = calculateTotalDuration(for: self.readingLogs)
-//            if totalReadingMinutes == 0 {
-//                titleText = "Reading"
-//                titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
-//                
-//            }
-//        case .conversation:
-//            let totalConvoMinutes = calculateTotalDuration(for: self.conversationLogs)
-//            if totalConvoMinutes == 0 {
-//                titleText = "Conversation"
-//                titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
-//            }
-//        }
-//        
-//        titleLabel.text = titleText
-//        titleLabel1.text = titleText1
-//        
-//        headerView.addSubview(titleLabel)
-//        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-//        
-//        NSLayoutConstraint.activate([
-//            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8.0),
-//            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16.0),
-//            titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16.0),
-//            titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8.0)
-//        ])
-//        
-//        headerView.addSubview(titleLabel1)
-//        titleLabel1.translatesAutoresizingMaskIntoConstraints = false
-//        
-//        NSLayoutConstraint.activate([
-//            titleLabel1.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8.0),
-//            titleLabel1.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16.0),
-//            titleLabel1.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16.0),
-//            titleLabel1.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8.0)
-//        ])
-//        
-//        return headerView
-//    }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
 
@@ -543,17 +409,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         return UITableView.automaticDimension
     }
     
-//    private func updateEmptyStateVisibility() {
-//        let hasNoData = dailyTaskLogs.isEmpty &&
-//                        exerciseLogs.isEmpty &&
-//                        readingLogs.isEmpty &&
-//                        conversationLogs.isEmpty
-//        
-//        self.tableView.isHidden = hasNoData
-//        self.emptyStateView.isHidden = !hasNoData
-//    }
     private func updateEmptyState() {
-
         let hasAnyData =
             !dailyTaskLogs.isEmpty ||
             !exerciseLogs.isEmpty ||
@@ -565,14 +421,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
 
         // Show empty state only if there is NO data
         emptyStateView.isHidden = hasAnyData
-
-        // Optional: hide filter buttons when completely empty
-        for button in allFilterButtons {
-            button.isHidden = !hasAnyData
-        }
     }
-
-
 
 }
 

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Supabase
 
 class SignUpViewController: UIViewController, UITextFieldDelegate {
 
@@ -13,40 +14,39 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var confirmPasswordTextField: UITextField!
     @IBOutlet weak var SignUpButton: UIButton!
-    
     @IBOutlet weak var nameTextField: UITextField!
+    
+    private let client = SupabaseManager.shared.client
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        //setupButtons()
         setupUI()
         setupTextField()
     }
     
-    func setupButtons() {
-        SignUpButton.configuration = .prominentGlass()
-        SignUpButton.configuration?.title = "Sign Up"
-    }
     func setupTextField() {
         nameTextField.delegate = self
-        //nameTextField.placeholder = "Enter your name"
         nameTextField.returnKeyType = .done
     }
+    
     func setupUI() {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
-        
         passwordTextField.isSecureTextEntry = true
         confirmPasswordTextField.isSecureTextEntry = true
-
     }
 
-
     @IBAction func signUpButtonTapped(_ sender: UIButton) {
-        
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty,
               let confirmPassword = confirmPasswordTextField.text, !confirmPassword.isEmpty else {
             showAlert(message: "Please fill in all fields.")
+            return
+        }
+        
+        guard let name = nameTextField.text,
+              !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+            showAlert(message: "Please enter your name.")
             return
         }
         
@@ -65,19 +65,35 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-            guard let name = nameTextField.text,
-                  !name.trimmingCharacters(in: .whitespaces).isEmpty else {
-                return
-            }
-            
-            StorageManager.shared.saveName(name)
+        SignUpButton.isEnabled = false
         
-        StorageManager.shared.saveEmail(email)
-        StorageManager.shared.savePassword(password)
-        AppState.isLoginCompleted = true
-        handleNavigationLogic() // takes to homepage and sets it to be the  default vc on reopening app
+        Task {
+            do {
+                // Create Supabase cloud account
+                try await client.auth.signUp(
+                    email: email,
+                    password: password,
+                    data: ["first_name": .string(name)]
+                )
+                
+                // Also save locally for offline access
+                StorageManager.shared.saveName(name)
+                StorageManager.shared.saveEmail(email)
+                StorageManager.shared.savePassword(password)
+                AppState.isLoginCompleted = true
+                
+                DispatchQueue.main.async {
+                    self.SignUpButton.isEnabled = true
+                    self.handleNavigationLogic()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.SignUpButton.isEnabled = true
+                    self.showAlert(message: error.localizedDescription)
+                }
+            }
+        }
     }
-    
     
     func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"

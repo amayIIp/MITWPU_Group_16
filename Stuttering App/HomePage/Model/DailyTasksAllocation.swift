@@ -11,21 +11,21 @@ class LogicMaker {
     
     private let kLastRefreshDate = "lastDailyTaskRefreshDate"
      
-    func checkForNewDay() {
+    func checkForNewDay(isFromLogin: Bool = false) {
         let defaults = UserDefaults.standard
         let calendar = Calendar.current
         
         let lastDate = defaults.object(forKey: kLastRefreshDate) as? Date ?? Date.distantPast
         if !calendar.isDateInToday(lastDate) {
             print("LogicMaker: New Day Detected. Resetting tasks...")
-            resetDailyTasks()
+            resetDailyTasks(isFromLogin: isFromLogin)
             defaults.set(Date(), forKey: kLastRefreshDate)
         } else {
             print("LogicMaker: Same day. No reset needed.")
         }
     }
     
-    func resetDailyTasks() {
+    func resetDailyTasks(isFromLogin: Bool = false) {
         let db = DatabaseManager.shared
         let nextExercises = db.fetchNextFiveFromJourney()
         
@@ -48,12 +48,23 @@ class LogicMaker {
         for (index, name) in nextExercises.enumerated() {
             
             let details = allDetails.first(where: { $0.name == name })
+            let description = details?.description ?? "Exercise details loading..."
+            let duration = details?.short_time ?? 60
+            let id = index + 1
             
             db.insertDailyTask(
-                id: index + 1,
+                id: id,
                 name: name,
-                desc: details?.description ?? "Exercise details loading...",
-                duration: details?.short_time ?? 60
+                desc: description,
+                duration: duration
+            )
+            
+            SupabaseSyncManager.shared.pushDailyTaskUpdate(
+                id: id, 
+                name: name, 
+                description: description, 
+                duration: duration, 
+                isCompleted: false
             )
         }
         

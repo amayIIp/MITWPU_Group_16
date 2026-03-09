@@ -151,6 +151,32 @@ class DatabaseManager {
 
         
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
+        
+        // Push local progress to Supabase Cloud
+        SupabaseSyncManager.shared.pushJourneyUpdate(name: taskName, isCompleted: true)
+        
+        if let task = fetchDailyTasks().first(where: { $0.name == taskName }) {
+            SupabaseSyncManager.shared.pushDailyTaskUpdate(
+                id: task.id,
+                name: task.name,
+                description: task.description,
+                duration: task.duration,
+                isCompleted: true
+            )
+        }
+    }
+    
+    func syncLocalDailyTasksToCloud() {
+        let tasks = fetchDailyTasks()
+        for task in tasks {
+            SupabaseSyncManager.shared.pushDailyTaskUpdate(
+                id: task.id,
+                name: task.name,
+                description: task.description,
+                duration: task.duration,
+                isCompleted: task.isCompleted
+            )
+        }
     }
     
     private func executeNameUpdate(query: String, name: String) {
@@ -266,6 +292,9 @@ class DatabaseManager {
             name: NSNotification.Name("streakUpdated"),
             object: newStreak
         )
+        
+        // Push streak to Supabase
+        SupabaseSyncManager.shared.pushStreak(currentStreak: newStreak)
     }
 
     func fetchCurrentStreak() -> Int {

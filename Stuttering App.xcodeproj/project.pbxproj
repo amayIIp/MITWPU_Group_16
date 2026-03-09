@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 19B7F8C42F5E961600E02FB6 /* Supabase */; };
 		19EB3DD52ED71B340003B76D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 19EB3DD42ED71B340003B76D /* .gitignore */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +78,7 @@
 			);
 			name = "Stuttering App";
 			packageProductDependencies = (
+				19B7F8C42F5E961600E02FB6 /* Supabase */,
 			);
 			productName = "Stuttering App";
 			productReference = 194C02B42F21D937009DB06D /* Stuttering App.app */;
@@ -105,6 +108,9 @@
 			);
 			mainGroup = 19EB3D2A2ED6ED290003B76D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 19EB3D2A2ED6ED290003B76D;
 			projectDirPath = "";
@@ -346,6 +352,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		19B7F8C42F5E961600E02FB6 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 19EB3D2B2ED6ED290003B76D /* Project object */;
 }

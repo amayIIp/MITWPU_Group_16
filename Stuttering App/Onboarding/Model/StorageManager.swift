@@ -39,6 +39,8 @@ class StorageManager {
     
     func saveName(_ name: String) {
         defaults.set(name, forKey: firstNameKey)
+        // Push profile change to Supabase
+        SupabaseSyncManager.shared.pushProfileUpdate(key: "first_name", value: name)
     }
     
     func getName() -> String? {
