@@ -336,7 +336,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     func generateVideoDiaryTopics() {
         guard let videoDiaryExercise = ExerciseManager.fetchExercise(title: exerciseName) else { return }
         
-        let allPrompts = videoDiaryExercise.dataBank.targets.values.flatMap { $0 }\
+        let allPrompts = videoDiaryExercise.dataBank.targets.values.flatMap { $0 }
         if let randomPrompt = allPrompts.randomElement() {
             targetWord = randomPrompt
         } else {
@@ -351,19 +351,27 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         let allPrompts = voiceDiaryExercise.dataBank.targets.values.flatMap { $0 }
         
         var selectedWords: [String] = []
+        
         if allPrompts.count >= 4 {
+            // Select 4 random, unique words
+            // We shuffle the array and prefix 4 to ensure uniqueness if that's desired.
+            // If duplicates are okay, you could just append a random element 4 times.
             selectedWords = Array(allPrompts.shuffled().prefix(4))
         } else if !allPrompts.isEmpty {
+             // Fallback: If less than 4 prompts exist, just use what we have, or repeat them.
+             // Here we repeat random elements until we have 4.
              for _ in 0..<4 {
                  if let randomWord = allPrompts.randomElement() {
                      selectedWords.append(randomWord)
                  }
              }
         } else {
+            // Ultimate Fallback: Default text if the data bank is completely empty
             let fallbackWord = voiceDiaryExercise.exampleDemonstration.first?.displayText ?? "Describe something that made you smile today."
             selectedWords = Array(repeating: fallbackWord, count: 4)
         }
         
+        // Join the selected words into a single string separated by commas
         targetWord = selectedWords.joined(separator: ", ")
     }
     
@@ -424,6 +432,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     }
 }
 
+// MARK: - Animation Controller Delegate
 extension ExerciseInstructionViewController: AnimationControllerDelegate {
     
     func didUpdateText(_ attributedText: NSAttributedString) {
