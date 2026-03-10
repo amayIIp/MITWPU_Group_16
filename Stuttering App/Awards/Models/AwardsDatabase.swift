@@ -119,6 +119,11 @@ extension AwardsManager {
     }
 
     func updateAwardProgress(id: String, progress: Double, newStatus: String) {
+        // Ensure DB is open before updating
+        if db == nil {
+            openDatabase()
+            seedDatabaseIfNeeded()
+        }
         
         let query = "UPDATE Awards SET progress = ?, completionDate = ?, status = ? WHERE id = ?"
         var stmt: OpaquePointer?
@@ -134,6 +139,8 @@ extension AwardsManager {
             
             if sqlite3_step(stmt) == SQLITE_DONE {
                 print("Updated award \(id): \(newStatus)")
+                // Push to Supabase cloud
+                SupabaseSyncManager.shared.pushAwardUpdate(awardId: id, progress: clampedProgress, status: newStatus)
             } else {
                 print("Failed to update award: \(id)")
             }

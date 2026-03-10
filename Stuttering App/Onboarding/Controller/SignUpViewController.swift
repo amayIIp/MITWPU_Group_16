@@ -74,6 +74,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 StorageManager.shared.saveName(name)
                 StorageManager.shared.saveEmail(email)
                 StorageManager.shared.savePassword(password)
+                LogManager.shared.initializeUserIfNeeded()
                 AppState.isLoginCompleted = true
                 
                 DispatchQueue.main.async {
@@ -155,7 +156,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     onboardingVC.view.alpha = 1
                 }
             }
-            navigationController?.pushViewController(onboardingVC, animated: true)
         }
     }
 }

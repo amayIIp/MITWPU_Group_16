@@ -123,11 +123,12 @@ class SupabaseSyncManager {
             let last_name: String?
             let dob: String?
             let mobile: String?
+            let is_onboarding_completed: Bool?
         }
         
         let rows: [ProfileRow] = try await client.database
             .from("profiles")
-            .select("first_name, last_name, dob, mobile")
+            .select("first_name, last_name, dob, mobile, is_onboarding_completed")
             .eq("id", value: userId)
             .limit(1)
             .execute()
@@ -138,6 +139,12 @@ class SupabaseSyncManager {
             if let last = row.last_name  { StorageManager.shared.saveLastName(last) }
             if let dob  = row.dob        { StorageManager.shared.saveDob(dob) }
             if let mob  = row.mobile     { StorageManager.shared.saveMobNo(mob) }
+            
+            // Restore onboarding status from cloud
+            if let onboardingDone = row.is_onboarding_completed {
+                AppState.isOnboardingCompleted = onboardingDone
+                print("☁️ Onboarding status restored: \(onboardingDone)")
+            }
         }
         print("Profile restored.")
     }
@@ -447,6 +454,27 @@ class SupabaseSyncManager {
         }
     }
     
+    /// Syncs onboarding completion status to the profiles table
+    func pushOnboardingStatus(isCompleted: Bool) {
+        Task {
+            guard let userId = client.auth.currentUser?.id else { return }
+            do {
+                let data: [String: AnyJSON] = [
+                    "id": .string(userId.uuidString),
+                    "is_onboarding_completed": .bool(isCompleted),
+                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                ]
+                try await client.database
+                    .from("profiles")
+                    .upsert(data)
+                    .execute()
+                print("☁️ ✅ Onboarding status pushed: \(isCompleted)")
+            } catch {
+                print("☁️ ❌ Failed to push onboarding status: \(error)")
+            }
+        }
+    }
+    
     /// Syncs an award's progress
     func pushAwardUpdate(awardId: String, progress: Double, status: String) {
         Task {
@@ -538,6 +566,29 @@ class SupabaseSyncManager {
                     .execute()
             } catch {
                 print("Failed to push DailyTask update to Supabase: \(error)")
+            }
+        }
+    }
+    
+    /// Marks a specific daily task as completed in the cloud using name-based lookup
+    /// This is more reliable than upsert for completion updates
+    func markDailyTaskCompletedInCloud(name: String) {
+        Task {
+            guard let userId = client.auth.currentUser?.id else { return }
+            do {
+                let updateData: [String: AnyJSON] = [
+                    "is_completed": .bool(true),
+                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                ]
+                try await client.database
+                    .from("daily_tasks")
+                    .update(updateData)
+                    .eq("user_id", value: userId.uuidString)
+                    .eq("name", value: name)
+                    .execute()
+                print("☁️ ✅ Daily task '\(name)' marked completed in Supabase")
+            } catch {
+                print("☁️ ❌ Failed to mark daily task completed: \(error)")
             }
         }
     }

@@ -27,19 +27,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         var initialVC: UIViewController
         
-        if AppState.isLoginCompleted || AppState.isOnboardingCompleted {
-            
+        if AppState.isOnboardingCompleted {
+            // Both guest users and logged-in users who completed onboarding go to Home
             let storyboard = UIStoryboard(name: "Home", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
             
         } else if AppState.isLoginCompleted && !AppState.isOnboardingCompleted {
-            
+            // Logged in but hasn't done onboarding yet (e.g. new device login)
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
             
         }
         else {
-            
+            // Fresh install — show landing/welcome screen
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "LandingNav")
         }

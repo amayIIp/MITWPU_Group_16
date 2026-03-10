@@ -122,36 +122,68 @@ class LoginViewController: UIViewController {
     func performLoginTransition() {
         AppState.isLoginCompleted = true
         
-        if AppState.isOnboardingCompleted {
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
-            
-            if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
-               let window = sceneDelegate.window {
-                UIView.transition(with: window, duration: 0.3, options: .curveEaseInOut, animations: {
-                    window.rootViewController = homeVC
-                }, completion: nil)
-            }
-        } else {
-            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
-            
-            guard let window = view.window else { return }
+//        if AppState.isOnboardingCompleted {
+//            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+//            let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+//            
+//            if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
+//               let window = sceneDelegate.window {
+//                UIView.transition(with: window, duration: 0.3, options: .curveEaseInOut, animations: {
+//                    window.rootViewController = homeVC
+//                }, completion: nil)
+//            }
+//        } else {
+//            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+//            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+//            
+//            guard let window = view.window else { return }
+//
+//            window.backgroundColor = .systemBackground
+//
+//            UIView.animate(withDuration: 0.3, animations: {
+//                window.rootViewController?.view.alpha = 0
+//            }) { _ in
+//                onboardingVC.view.alpha = 0
+//                window.rootViewController = onboardingVC
+//                
+//                UIView.animate(withDuration: 0.3) {
+//                    onboardingVC.view.alpha = 1
+//                }
+//            }
+//        }
+//        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+//        let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+//        
+//        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
+//           let window = sceneDelegate.window {
+//            UIView.transition(with: window, duration: 0.3, options: .curveEaseInOut, animations: {
+//                window.rootViewController = homeVC
+//            }, completion: nil)
+//        }
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
 
+        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
+           let window = sceneDelegate.window {
+            
+            // Set a background color so the transition isn't harsh
             window.backgroundColor = .systemBackground
-
+            
+            // Step 1: Fade out the current root view controller
             UIView.animate(withDuration: 0.3, animations: {
                 window.rootViewController?.view.alpha = 0
             }) { _ in
-                onboardingVC.view.alpha = 0
-                window.rootViewController = onboardingVC
+                // Step 2: Swap the root view controller while it's invisible
+                homeVC.view.alpha = 0
+                window.rootViewController = homeVC
                 
+                // Step 3: Fade in the new root view controller
                 UIView.animate(withDuration: 0.3) {
-                    onboardingVC.view.alpha = 1
+                    homeVC.view.alpha = 1
                 }
             }
-            navigationController?.pushViewController(onboardingVC, animated: true)
         }
+        
     }
     
     func showAlert(title: String, message: String) {

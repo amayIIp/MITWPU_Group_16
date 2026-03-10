@@ -72,6 +72,34 @@ class HomePageViewController: UIViewController {
         AchievedAwardsUpdate()
         loadHomeInsight()
         setupRightBarButtons()
+        
+        // Background cloud sync on every home screen visit
+        syncFromCloudIfLoggedIn()
+    }
+    
+    private func syncFromCloudIfLoggedIn() {
+        guard AppState.isLoginCompleted else { return }
+        
+        SupabaseSyncManager.shared.syncAllDataFromCloud { [weak self] _ in
+            DispatchQueue.main.async {
+                // Re-apply daily task completions that checkForNewDay may have wiped
+                SupabaseSyncManager.shared.reapplyDailyTaskCompletions {
+                    DispatchQueue.main.async {
+                        // Push finalized local state back to cloud
+                        DatabaseManager.shared.syncLocalDailyTasksToCloud()
+                        
+                        // Refresh all UI elements
+                        self?.loadTaskName()
+                        self?.loadProgressView()
+                        self?.AchievedAwardsUpdate()
+                        self?.setupRightBarButtons()
+                        
+                        let streak = DatabaseManager.shared.fetchCurrentStreak()
+                        self?.streakCount.text = String(streak)
+                    }
+                }
+            }
+        }
     }
     
     func setupNotificationCentre() {
@@ -81,7 +109,7 @@ class HomePageViewController: UIViewController {
     
     @objc func handleProfileUpdate() {
         loadProgressView()
-        updateTaskStatus()
+        loadTaskName()
     }
     
     func getRadialChartDimensions(for screenWidth: CGFloat) -> (radius: CGFloat, lineWidth: CGFloat, cardWidth: CGFloat) {

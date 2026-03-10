@@ -59,13 +59,18 @@ class LogicMaker {
                 duration: duration
             )
             
-            SupabaseSyncManager.shared.pushDailyTaskUpdate(
-                id: id, 
-                name: name, 
-                description: description, 
-                duration: duration, 
-                isCompleted: false
-            )
+            // Only push to Supabase if NOT from login.
+            // During login, the flow is: resetDailyTasks → reapplyDailyTaskCompletions → syncLocalDailyTasksToCloud
+            // Pushing here during login would overwrite is_completed=true with false BEFORE reapply can run.
+            if !isFromLogin {
+                SupabaseSyncManager.shared.pushDailyTaskUpdate(
+                    id: id, 
+                    name: name, 
+                    description: description, 
+                    duration: duration, 
+                    isCompleted: false
+                )
+            }
         }
         
         print("Daily Tasks Reset Successfully.")
