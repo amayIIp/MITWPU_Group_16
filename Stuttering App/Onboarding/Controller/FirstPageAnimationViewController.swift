@@ -87,64 +87,36 @@ class FirstPageAnimationViewController: UIViewController {
 
     // MARK: - Button Actions
     
-    @IBAction func buttonATapped(_ sender: UIButton) {
-        animateOutAndPresentSheet(storyboardID: "SignUpViewController", heightMultiplier: 0.75)
-    }
-    
-    @IBAction func buttonBTapped(_ sender: UIButton) {
-        animateOutAndPresentSheet(storyboardID: "LoginViewController", heightMultiplier: 0.65)
-    }
-    
-    // MARK: - Exit Animation & Modal Presentation
-    
-    private func animateOutAndPresentSheet(storyboardID: String, heightMultiplier: CGFloat) {
-        // 1. Reverse the entry animation
-        UIView.animate(withDuration: 0.8,
-                       delay: 0,
-                       options: .curveEaseInOut,
-                       animations: {
-            
-            self.infoLabel.alpha = 0
-            self.buttonView.transform = CGAffineTransform(translationX: 0, y: self.view.bounds.height)
-            
-        }) { _ in
-            // 2. Present the modal after animation finishes
-            self.presentCustomSheet(storyboardID: storyboardID, heightMultiplier: heightMultiplier)
-        }
-    }
-    
-    private func presentCustomSheet(storyboardID: String, heightMultiplier: CGFloat) {
+    @IBAction func signUpTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        let modalVC = storyboard.instantiateViewController(withIdentifier: storyboardID)
+        let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
         
-        // 1. Prevent the modal from being dismissed via swipe or tapping outside
-        modalVC.isModalInPresentation = true
-        
-        if let sheet = modalVC.sheetPresentationController {
-            let detentID = UISheetPresentationController.Detent.Identifier("customHeight_\(storyboardID)")
-            let customDetent = UISheetPresentationController.Detent.custom(identifier: detentID) { context in
-                return context.maximumDetentValue * heightMultiplier
-            }
-            
-            sheet.detents = [customDetent]
-            sheet.prefersGrabberVisible = false
-            sheet.preferredCornerRadius = 24.0
-            
-            // 2. Remove the background dimming effect
-            sheet.largestUndimmedDetentIdentifier = detentID
+        // 4. (Optional) Apply modern iOS 26 sheet behaviors
+        nextModalVC.modalPresentationStyle = .pageSheet
+        if let sheet = nextModalVC.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
         }
         
-        // 3. Routing Logic: Pass closures to handle the smooth swapping of sheets
-        if let vcA = modalVC as? SignUpViewController {
-            vcA.onSwitchToSignin = { [weak self] in
-                self?.presentCustomSheet(storyboardID: "LoginViewController", heightMultiplier: 0.65)
-            }
-        } else if let vcB = modalVC as? LoginViewController {
-            vcB.onSwitchToSignup = { [weak self] in
-                self?.presentCustomSheet(storyboardID: "SignUpViewController", heightMultiplier: 0.75)
-            }
-        }
-        
-        present(modalVC, animated: true)
+        // 5. Present the new modal from the original underlying screen
+        present(nextModalVC, animated: true)
     }
+    
+    @IBAction func signInTapped(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+        let nextModalVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+        
+        // 4. (Optional) Apply modern iOS 26 sheet behaviors
+        nextModalVC.modalPresentationStyle = .pageSheet
+        if let sheet = nextModalVC.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        
+        // 5. Present the new modal from the original underlying screen
+        present(nextModalVC, animated: true)
+
+    }
+    
+    
 }

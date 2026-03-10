@@ -122,14 +122,35 @@ class LoginViewController: UIViewController {
     func performLoginTransition() {
         AppState.isLoginCompleted = true
         
-        let storyboard = UIStoryboard(name: "Home", bundle: nil)
-        let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
-        
-        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
-           let window = sceneDelegate.window {
-            UIView.transition(with: window, duration: 0.3, options: .curveEaseInOut, animations: {
-                window.rootViewController = homeVC
-            }, completion: nil)
+        if AppState.isOnboardingCompleted {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+            
+            if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
+               let window = sceneDelegate.window {
+                UIView.transition(with: window, duration: 0.3, options: .curveEaseInOut, animations: {
+                    window.rootViewController = homeVC
+                }, completion: nil)
+            }
+        } else {
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+            
+            guard let window = view.window else { return }
+
+            window.backgroundColor = .systemBackground
+
+            UIView.animate(withDuration: 0.3, animations: {
+                window.rootViewController?.view.alpha = 0
+            }) { _ in
+                onboardingVC.view.alpha = 0
+                window.rootViewController = onboardingVC
+                
+                UIView.animate(withDuration: 0.3) {
+                    onboardingVC.view.alpha = 1
+                }
+            }
+            navigationController?.pushViewController(onboardingVC, animated: true)
         }
     }
     
@@ -140,9 +161,26 @@ class LoginViewController: UIViewController {
     }
     
     @IBAction func switchToSignupButtonTapped(_ sender: UIButton) {
-        // Dismiss self, and trigger the presentation of A upon completion for a smooth sequence
+        guard let presentingVC = self.presentingViewController else {
+            print("Error: No presenting view controller found.")
+            return
+        }
+        
+        // 2. Dismiss the active modal
         self.dismiss(animated: true) {
-            self.onSwitchToSignup?()
+            // 3. Instantiate the next modal from your Storyboard
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
+            
+            // 4. (Optional) Apply modern iOS 26 sheet behaviors
+            nextModalVC.modalPresentationStyle = .pageSheet
+            if let sheet = nextModalVC.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.prefersGrabberVisible = true
+            }
+            
+            // 5. Present the new modal from the original underlying screen
+            presentingVC.present(nextModalVC, animated: true)
         }
     }
 }

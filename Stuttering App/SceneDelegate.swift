@@ -32,7 +32,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let storyboard = UIStoryboard(name: "Home", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
             
-        } else {
+        } else if AppState.isLoginCompleted && !AppState.isOnboardingCompleted {
+            
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+            
+        }
+        else {
             
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "LandingNav")

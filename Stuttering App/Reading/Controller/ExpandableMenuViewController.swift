@@ -297,7 +297,7 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
                 let isSelected: Bool
                 if case .specificCategory(let index) = currentSelection, index == categoryIndex { isSelected = true } else { isSelected = false }
                 
-                let imageName = isSelected ? "circle.fill" : "circle"
+                let imageName = isSelected ? "inset.filled.circle" : "circle"
                 let image = UIImage(systemName: imageName)
 
                 content.image = image
@@ -330,7 +330,7 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         if section == 0 { if case .randomHeader = currentSelection { isSelected = true } else { isSelected = false } }
         else { if case .custom = currentSelection { isSelected = true } else { isSelected = false } }
         
-        let imageName = isSelected ? "circle.fill" : "circle"
+        let imageName = isSelected ? "inset.filled.circle" : "circle"
         let image = UIImage(systemName: imageName)
 
         content.image = image
