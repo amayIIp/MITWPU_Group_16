@@ -29,8 +29,6 @@ class CalendarViewController: UIViewController, UICalendarSelectionSingleDateDel
             setupCalendar()
         }
         
-        // MARK: - Header
-        
         private func setupCustomHeader() {
             let navBar = UINavigationBar()
             navBar.translatesAutoresizingMaskIntoConstraints = false
@@ -64,8 +62,6 @@ class CalendarViewController: UIViewController, UICalendarSelectionSingleDateDel
             ])
         }
         
-        // MARK: - Calendar Setup
-        
         private func setupCalendar() {
             guard let container = calendarContainerView else { return }
             
@@ -81,7 +77,6 @@ class CalendarViewController: UIViewController, UICalendarSelectionSingleDateDel
             calendarView.fontDesign = .rounded
             calendarView.backgroundColor = .clear
             
-            // 🚫 Disable future dates
             let calendar = Calendar.current
             let today = Date()
             let startDate = calendar.date(from: DateComponents(year: 2000, month: 1, day: 1))!
@@ -114,8 +109,6 @@ class CalendarViewController: UIViewController, UICalendarSelectionSingleDateDel
             calendarView.selectionBehavior = selection
         }
         
-        // MARK: - Actions
-        
         @objc private func didTapCancel() {
             dismiss(animated: true)
         }
@@ -126,8 +119,6 @@ class CalendarViewController: UIViewController, UICalendarSelectionSingleDateDel
             }
             dismiss(animated: true)
         }
-        
-        // MARK: - UICalendarSelectionSingleDateDelegate
         
         func dateSelection(_ selection: UICalendarSelectionSingleDate,
                            didSelectDate dateComponents: DateComponents?) {

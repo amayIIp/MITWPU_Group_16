@@ -23,12 +23,10 @@ class FunExerciseCollectionViewCell: UICollectionViewCell {
     }
 
     private func setupUI() {
-        // Card Styling
         contentView.layer.cornerRadius = 20
         contentView.layer.cornerCurve = .continuous
-        contentView.backgroundColor = .secondarySystemGroupedBackground // White on Gray
+        contentView.backgroundColor = .secondarySystemGroupedBackground
         
-        // Shadow (Optional, adds depth like the screenshot)
         self.layer.shadowColor = UIColor.black.cgColor
         self.layer.shadowOpacity = 0.05
         self.layer.shadowOffset = CGSize(width: 0, height: 2)

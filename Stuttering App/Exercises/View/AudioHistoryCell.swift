@@ -16,7 +16,6 @@ class AudioHistoryCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        // Default styling
         headingLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         dateLabel.textColor = .secondaryLabel
         durationLabel.textColor = .secondaryLabel

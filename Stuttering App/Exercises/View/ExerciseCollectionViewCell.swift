@@ -9,12 +9,9 @@ import UIKit
 
 class ExerciseCollectionViewCell: UICollectionViewCell {
     
-    // MARK: - Identifiers
     static let identifier = "ExerciseCollectionViewCell"
-    static let nibName = "ExerciseCollectionViewCell" // Ensure your XIB file has this name
+    static let nibName = "ExerciseCollectionViewCell"
 
-    // MARK: - Outlets
-    // Connect these to your labels in the XIB file
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var captionLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
@@ -27,27 +24,17 @@ class ExerciseCollectionViewCell: UICollectionViewCell {
         setupUI()
     }
 
-    // MARK: - UI Setup
     private func setupUI() {
-        // iOS 16+ Aesthetic: Clean corners and smooth font rendering
         self.contentView.layer.cornerRadius = 12
         self.contentView.layer.cornerCurve = .continuous
         self.contentView.clipsToBounds = true
         self.backgroundColor = .systemBackground
-        
-        // Optional: Add a subtle background color if your XIB is transparent
-        // self.contentView.backgroundColor = .secondarySystemGroupedBackground
     }
 
-    // MARK: - Configuration
     func configure(with exercise: Exercise) {
         titleLabel.text = exercise.name
         captionLabel.text = exercise.description
-        // Formatting the time label to stand out (e.g., pills or distinct color)
         timeLabel.text = formatDuration(exercise.short_time)
-        
-        // Accessibility hints for VoiceOver users
-        
     }
     
     func formatDuration(_ seconds: Int) -> String {
@@ -60,12 +47,9 @@ class ExerciseCollectionViewCell: UICollectionViewCell {
     }
     
     @IBAction func buttonPressed(_ sender: UIButton) {
-        // Trigger the callback when pressed
         didTapButton?()
     }
     
-    // MARK: - Selection State
-    // Adds a visual touch feedback when the user taps the cell
     override var isHighlighted: Bool {
         didSet {
             UIView.animate(withDuration: 0.2) {

@@ -32,8 +32,6 @@ class HomePageViewController: UIViewController {
     @IBOutlet weak var readingStat: UILabel!
     @IBOutlet weak var convoStat: UILabel!
     
-    //@IBOutlet weak var userNameLabel: UILabel!
-    
     @IBOutlet weak var achievedAwardImage: UIImageView!
     @IBOutlet weak var achievedAwardName: UILabel!
     @IBOutlet weak var achievedAwardDescription: UILabel!
@@ -54,26 +52,12 @@ class HomePageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        displayRandomQuote()
-
-        progressBar1.progressColor = UIColor(red: 0.4, green: 0.71, blue: 0.84, alpha: 1.0)
-        progressBar2.progressColor = UIColor(red: 0.95, green: 0.77, blue: 0.24, alpha: 1.0)
-        progressBar3.progressColor = UIColor(red: 0.95, green: 0.55, blue: 0.15, alpha: 1.0)
-        
-        
         loadTaskName()
         AchievedAwardsUpdate()
         setupRadialChart()
         configureNavigationBar()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("ProfileDataUpdated"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("ProgressDataUpdated"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("dailyTasksUpdated"), object: nil)
-        
-    }
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-//        navigationController?.setNavigationBarHidden(false, animated: false)
+        displayRandomQuote()
+        setupNotificationCentre()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -88,6 +72,16 @@ class HomePageViewController: UIViewController {
         AchievedAwardsUpdate()
         loadHomeInsight()
         setupRightBarButtons()
+    }
+    
+    func setupNotificationCentre() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("ProgressDataUpdated"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("dailyTasksUpdated"), object: nil)
+    }
+    
+    @objc func handleProfileUpdate() {
+        loadProgressView()
+        updateTaskStatus()
     }
     
     func getRadialChartDimensions(for screenWidth: CGFloat) -> (radius: CGFloat, lineWidth: CGFloat, cardWidth: CGFloat) {
@@ -129,11 +123,13 @@ class HomePageViewController: UIViewController {
         ]
         
         radialChartView.chartData = initialChartData
+        
+        progressBar1.progressColor = UIColor(red: 0.4, green: 0.71, blue: 0.84, alpha: 1.0)
+        progressBar2.progressColor = UIColor(red: 0.95, green: 0.77, blue: 0.24, alpha: 1.0)
+        progressBar3.progressColor = UIColor(red: 0.95, green: 0.55, blue: 0.15, alpha: 1.0)
     }
 
     private func configureNavigationBar() {
-//        navigationController?.navigationBar.prefersLargeTitles = false
-        
         setupLeftTitle()
         setupRightBarButtons()
     }
@@ -144,11 +140,9 @@ class HomePageViewController: UIViewController {
         titleLabel.font = .systemFont(ofSize: 30, weight: .bold)
         titleLabel.textColor = .label
         
-        // 1. Create a container to act as the titleView
         let container = UIView()
         container.addSubview(titleLabel)
         
-        // 2. Use Auto Layout to pin the label to the left of the container
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -157,16 +151,13 @@ class HomePageViewController: UIViewController {
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor)
         ])
         
-        // 3. Assign the container to titleView
         navigationItem.titleView = container
     }
 
     private func setupRightBarButtons() {
-        // 1. Profile Button (Updated to use UIButton.Configuration for insets)
         let profileButton = UIButton(type: .system)
         var profileBtnConfig = UIButton.Configuration.plain()
         
-        // Add content insets similar to the streak button
         profileBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 4)
         
         let profileConfig = UIImage.SymbolConfiguration(scale: .large)
@@ -177,11 +168,9 @@ class HomePageViewController: UIViewController {
         profileButton.configuration = profileBtnConfig
         profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
         
-        // 2. Gamified Streak Button
         let streakButton = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
         config.imagePadding = 6
-        // Remove extra edge padding so it sits flush in the stack
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 2)
         
         let flameColor = UIColor(red: 1.0, green: 0.435, blue: 0.212, alpha: 1.0)
@@ -197,13 +186,11 @@ class HomePageViewController: UIViewController {
         streakButton.configuration = config
         streakButton.addTarget(self, action: #selector(streakTapped), for: .touchUpInside)
         
-        // 3. 🛠 THE FIX: Wrap both buttons in a single UIStackView
         let rightStackView = UIStackView(arrangedSubviews: [streakButton, profileButton])
         rightStackView.axis = .horizontal
-        rightStackView.spacing = 16 // Standard iOS icon spacing
+        rightStackView.spacing = 16
         rightStackView.alignment = .center
         
-        // 4. Assign the single stack view to the navigation bar
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: rightStackView)
     }
 
@@ -249,11 +236,6 @@ class HomePageViewController: UIViewController {
         present(modalVC, animated: true)
     }
     
-    @objc func handleProfileUpdate() {
-        loadProgressView()
-        updateTaskStatus()
-    }
-    
     func displayRandomQuote() {
         quoteText.text = quotes.randomElement()
         quoteText.numberOfLines = 0
@@ -263,8 +245,7 @@ class HomePageViewController: UIViewController {
     private func loadHomeInsight() {
         Task {
             let today = Date()
-
-            // 1️⃣ Try today's report
+            
             if let todayReport = await LogManager.shared.getDayReport(for: today) {
                 DispatchQueue.main.async {
                     self.insightLabel.text = todayReport.insight
@@ -272,7 +253,6 @@ class HomePageViewController: UIViewController {
                 return
             }
 
-            // 2️⃣ No session today → fetch most recent session day
             if let lastDate = LogManager.shared.getMostRecentReadingSessionDate(),
                let lastReport = await LogManager.shared.getDayReport(for: lastDate) {
 
@@ -282,7 +262,6 @@ class HomePageViewController: UIViewController {
                 return
             }
 
-            // 3️⃣ No data at all
             DispatchQueue.main.async {
                 self.insightLabel.text = "Your speaking practice hasn't started yet today."
             }

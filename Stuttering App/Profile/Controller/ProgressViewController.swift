@@ -70,7 +70,7 @@ class ProgressViewController: UIViewController {
                     self.mostPracticedLabel.text = report.mostPracticedTechnique
 
                     // Section 4: Reading
-                    self.totalReadingSectionsLabel.text = "\(report.totalReadingSessions)"
+//                    self.totalReadingSectionsLabel.text = "\(report.totalReadingSections)"
                     self.avgReadingDurationLabel.text = self.formatDuration(report.avgReadingDuration)
                     self.longestSmoothParagraphLabel.text = "\(report.longestSmoothParagraph)"
 

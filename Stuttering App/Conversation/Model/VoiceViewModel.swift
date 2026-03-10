@@ -5,6 +5,8 @@ import AVFoundation
 import Speech
 import FoundationModels
 
+// MARK: - Delegate Protocol
+
 protocol VoiceViewModelDelegate: AnyObject {
     func didUpdateState(_ state: VoiceViewModel.VoiceState)
     func didUpdateTranscript(_ text: String, isUser: Bool)
@@ -14,6 +16,8 @@ protocol VoiceViewModelDelegate: AnyObject {
 
 class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     
+    // MARK: - Types
+    
     enum VoiceState {
         case idle, speaking, listening, thinking
         
@@ -21,6 +25,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             return self != .idle
         }
     }
+    
+    // MARK: - Properties
     
     weak var delegate: VoiceViewModelDelegate?
     
@@ -40,13 +46,11 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     private var currentBufferText: String = ""
     private var conversationHistory: [(speaker: String, text: String)] = []
     
-    private var allUserSegments: [SFTranscriptionSegment] = []
-    private var fullUserTranscript: String = ""
-    private var conversationStartTime: Date?
-    
     private var silenceTimer: Timer?
     private let silenceThreshold: TimeInterval = 2.5
     private var hasDetectedSpeech = false
+    
+    // MARK: - Init
     
     override init() {
         super.init()
@@ -54,7 +58,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         configureAudioSession()
     }
     
-    // MARK: - Public Properties
+    // MARK: - Public Interface
     
     var isConversationActive: Bool {
         return state.isActive
@@ -68,39 +72,12 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         return session != nil
     }
     
-    func getTotalWordCount() -> Int {
-        return conversationHistory
-            .filter { $0.speaker == "User" }
-            .map { $0.text.components(separatedBy: .whitespaces).filter { !$0.isEmpty }.count }
-            .reduce(0, +)
+    func resetConversationHistory() {
+        conversationHistory.removeAll()
+        hasDetectedSpeech = false
     }
     
-    func getStutterAnalysisJSON() -> String {
-        guard !fullUserTranscript.isEmpty else {
-            return """
-            {
-              "fluencyScore": 0,
-              "duration": "0 sec",
-              "stutteredWords": [],
-              "blocks": [],
-              "breakdown": { "repetition": [], "prolongation": [], "blocks": 0 },
-              "percentages": { "repetition": 0, "prolongation": 0, "blocks": 0, "correct": 0 },
-              "letterAnalysis": {}
-            }
-            """
-        }
-        
-        let duration = conversationStartTime.map { Date().timeIntervalSince($0) } ?? 0
-        
-        return StutterAnalyzer.analyze(
-            reference: fullUserTranscript,
-            transcript: fullUserTranscript,
-            segments: allUserSegments,
-            duration: duration
-        )
-    }
-    
-    // MARK: - Lifecycle Management
+    // MARK: - Session Lifecycle
     
     func stopSession() {
         silenceTimer?.invalidate()
@@ -113,11 +90,23 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         stopListening()
         state = .idle
         currentBufferText = ""
+    }
+    
+    func resetConversation() {
+        stopSession()
+        conversationHistory.removeAll()
+        hasDetectedSpeech = false
         
         do {
-            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            delegate?.didEncounterError("Failed to deactivate audio session")
+            delegate?.didEncounterError("Failed to restart audio session")
+        }
+        
+        Task { @MainActor in
+            await self.prepareModel()
+            self.state = .idle
+            self.speak("Okay, let's start fresh. What would you like to talk about?")
         }
     }
     
@@ -131,7 +120,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         }
     }
     
-    // MARK: - AI Initialization
+    // MARK: - AI / Language Model
     
     @MainActor
     func prepareModel() async {
@@ -156,8 +145,6 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             delegate?.didEncounterError("AI is not ready yet")
             return
         }
-        
-        conversationStartTime = Date()
         speak("Hi there! I'm ready to chat. How are you doing today?")
     }
     
@@ -203,6 +190,9 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     func startListening() {
         guard !audioEngine.isRunning else { return }
         
+        // Ensure audio session is active (may have been interrupted)
+        configureAudioSession()
+        
         SFSpeechRecognizer.requestAuthorization { status in
             if status != .authorized {
                 DispatchQueue.main.async {
@@ -235,11 +225,6 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                     
                     self.currentBufferText = newText
                     self.delegate?.didUpdateTranscript(self.currentBufferText, isUser: true)
-                    
-                    if !res.bestTranscription.segments.isEmpty {
-                        self.allUserSegments.append(contentsOf: res.bestTranscription.segments)
-                    }
-                    
                     self.resetSilenceTimer()
                 }
                 
@@ -270,6 +255,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             return
         }
         
+        // Remove any existing tap before installing a new one
+        inputNode.removeTap(onBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak req] buffer, _ in
             guard buffer.frameLength > 0 else { return }
             req?.append(buffer)
@@ -301,6 +288,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         }
     }
     
+    // MARK: - Silence Detection
+    
     private func resetSilenceTimer() {
         silenceTimer?.invalidate()
         silenceTimer = Timer.scheduledTimer(withTimeInterval: silenceThreshold, repeats: false) { [weak self] _ in
@@ -321,23 +310,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         silenceTimer = nil
     }
     
-    func resetConversation() {
-        stopSession()
-        conversationHistory.removeAll()
-        allUserSegments.removeAll()
-        fullUserTranscript = ""
-        conversationStartTime = nil
-        hasDetectedSpeech = false
-        
-        do {
-            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
-        } catch {
-            delegate?.didEncounterError("Failed to restart audio session")
-        }
-        
-        state = .idle
-        speak("Okay, let's start fresh. What would you like to talk about?")
-    }
+    // MARK: - Conversation Management
     
     func commitUserBuffer() {
         if state == .speaking {
@@ -361,11 +334,6 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         
         let userInput = currentBufferText
         conversationHistory.append((speaker: "User", text: userInput))
-        
-        if !fullUserTranscript.isEmpty {
-            fullUserTranscript += " "
-        }
-        fullUserTranscript += userInput
         
         delegate?.addMessageToConversation(speaker: "User", text: userInput)
         state = .thinking

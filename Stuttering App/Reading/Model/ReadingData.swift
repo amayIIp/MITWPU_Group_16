@@ -7,7 +7,7 @@
 
 import Foundation
 
-let presetTitles = [ //Indexing Sections
+let presetTitles = [
 
     "Science",
     "Space",

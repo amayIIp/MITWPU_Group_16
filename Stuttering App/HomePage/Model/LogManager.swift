@@ -1,13 +1,9 @@
 import Foundation
 import SQLite3
 
-// MARK: - Enums
-
 enum TrendDirection {
     case up, down, neutral
 }
-
-// MARK: - Analytics Models
 
 struct DayReport {
     let date: Date
@@ -17,21 +13,18 @@ struct DayReport {
     let avgAccuracy: Double
     let fluencyGrowth: Double
     let improvementPercent: Double
-    let insight: String                 // e.g. "Your 'r' and 's' sounds have improved 12% today!!"
+    let insight: String
 }
 
 struct OverallProgressReport {
 
-    // MARK: Top Bar
     let daysPracticed: Int
     let daysGoalsCompleted: Int
     let activeStreak: Int
     let totalHours: Double
 
-    // MARK: Headline
     let headlineInsight: String
 
-    // MARK: Key Metrics
     let fluencyGrowthPercent: Double
     let fluencyTrend: TrendDirection
     let avgBlockPercent: Double
@@ -41,28 +34,24 @@ struct OverallProgressReport {
     let improvementPercent: Double
     let improvementTrend: TrendDirection
 
-    // MARK: Exercise
     let exercisesCompleted: Int
     let totalExercisesPracticed: Int
     let exercisesGoal: Int
     let totalExerciseMinutesThisWeek: Int
     let mostPracticedTechnique: String
 
-    // MARK: Reading
     let totalReadingSessions: Int
     let avgBlocksPerReading: Double
     let readingBlockTrend: TrendDirection
     let avgReadingDuration: TimeInterval
     let longestSmoothParagraph: Int
 
-    // MARK: Conversation
     let totalConversationSessions: Int
     let avgFillerWordPercent: Double
     let fillerTrend: TrendDirection
     let avgConversationDuration: TimeInterval
     let longestSmoothTalk: Int
 
-    // MARK: Weekly Trend
     let weeklyTrend: [WeeklyPoint]
 }
 
@@ -71,7 +60,6 @@ struct WeeklyPoint {
     let avgFluency: Double
 }
 
-// MARK: - LogManager
 
 class LogManager {
 
@@ -94,7 +82,6 @@ class LogManager {
         initializeDefaultGoals()
     }
 
-    // MARK: - Database Setup
     
     func getMostRecentReadingSessionDate() -> Date? {
         guard let userId = getCurrentUserId() else { return nil }
@@ -165,7 +152,6 @@ class LogManager {
             );
             """, successMessage: "Users table ready.")
 
-        // ReadingSessions — duration and longestSmoothParagraph included from the start
         execute(sql: """
             CREATE TABLE IF NOT EXISTS ReadingSessions(
                 id TEXT PRIMARY KEY,
@@ -205,7 +191,6 @@ class LogManager {
             );
             """, successMessage: "LetterStats table ready.")
 
-        // Per-session letter counts — enables day-level letter improvement insight
         execute(sql: """
             CREATE TABLE IF NOT EXISTS SessionLetterStats(
                 sessionId TEXT,
@@ -231,7 +216,6 @@ class LogManager {
             """, successMessage: "ConversationSessions table ready.")
     }
 
-    /// Safe ALTER TABLE migrations for users upgrading from older schema versions.
     private func runMigrations() {
         let migrations = [
             "ALTER TABLE ReadingSessions ADD COLUMN longestSmoothParagraph INTEGER DEFAULT 0;"
@@ -254,7 +238,6 @@ class LogManager {
         sqlite3_finalize(statement)
     }
 
-    // MARK: - User Management
 
     func initializeUserIfNeeded() {
         guard let email = StorageManager.shared.getEmail() else {
@@ -298,7 +281,6 @@ class LogManager {
         return newId
     }
 
-    // MARK: - Goals
 
     private func initializeDefaultGoals() {
         let defaults: [(String, Int)] = [
@@ -344,7 +326,6 @@ class LogManager {
         return result
     }
 
-    // MARK: - Exercise Log
 
     func addLog(exerciseName: String, source: ExerciseSource, exerciseDuration: Int) {
         let sql = "INSERT INTO ExerciseLog (id, exerciseName, completionDate, source, exerciseDuration) VALUES (?, ?, ?, ?, ?);"
@@ -360,7 +341,6 @@ class LogManager {
         }
         sqlite3_finalize(statement)
         
-        // Push local progress to Supabase Cloud
         SupabaseSyncManager.shared.pushExerciseLog(id: UUID().uuidString, name: exerciseName, source: source.rawValue, duration: exerciseDuration)
     }
 
@@ -406,9 +386,7 @@ class LogManager {
         return resultLogs
     }
 
-    // MARK: - Reading Sessions
 
-    /// Pass `duration` in seconds and `longestSmoothParagraph` in seconds.
     func saveReadingSession(report: StutterJSONReport,
                             duration: TimeInterval = 0,
                             longestSmoothParagraph: Int = 0) {
@@ -454,7 +432,6 @@ class LogManager {
         saveSessionLetterStats(userId: userId, sessionId: sessionId, letterCounts: report.letterAnalysis)
         print("Saved reading session for user: \(userId)")
         
-        // Push reading session analytics to Supabase
         SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId)
     }
 
@@ -489,7 +466,6 @@ class LogManager {
         sqlite3_finalize(statement)
     }
 
-    /// Saves per-session letter stutter counts for the letter-improvement insight engine.
     private func saveSessionLetterStats(userId: String, sessionId: String, letterCounts: [String: Int]) {
         let sql = """
             INSERT OR REPLACE INTO SessionLetterStats (sessionId, userId, letter, stutterCount)
@@ -569,9 +545,7 @@ class LogManager {
         return letters
     }
 
-    // MARK: - Conversation Sessions
 
-    /// Call this at the end of every conversation session.
     func saveConversationSession(duration: TimeInterval,
                                  fillerWordPercent: Double,
                                  longestSmoothTalk: Int) {
@@ -595,7 +569,6 @@ class LogManager {
             sqlite3_bind_int(statement, 6,    Int32(longestSmoothTalk))
             if sqlite3_step(statement) == SQLITE_DONE { print("ConversationSession inserted.") }
             
-            // Push to Supabase
             SupabaseSyncManager.shared.pushConversationSession(
                 sessionId: sessionId,
                 duration: duration,
@@ -606,7 +579,6 @@ class LogManager {
         sqlite3_finalize(statement)
     }
 
-    // MARK: - Stutter Stats (global/legacy)
 
     func updateStutterStats(letterCounts: [String: Int]) {
         let sql = """
@@ -647,7 +619,6 @@ class LogManager {
         execute(sql: "DELETE FROM StutterStats;", successMessage: "Stutter stats reset.")
     }
 
-    // MARK: - Fluency Queries (public)
 
     func getAverageFluency(userId: String) -> Double {
         let sql = "SELECT AVG(fluencyScore) FROM ReadingSessions WHERE userId = ?;"
@@ -677,7 +648,6 @@ class LogManager {
         return val
     }
 
-    // MARK: - Debug
 
     func debugPrintAllReadingSessions() {
         let sql = "SELECT id, userId, fluencyScore, date FROM ReadingSessions;"
@@ -697,11 +667,9 @@ class LogManager {
     }
 }
 
-// MARK: - Day Analytics
 
 extension LogManager {
 
-    /// All session rows for a given calendar day (current user).
     func getSessionsForDay(_ date: Date) -> [[String: Any]] {
         guard let userId = getCurrentUserId() else { return [] }
 
@@ -740,8 +708,6 @@ extension LogManager {
         return rows
     }
 
-    /// Full DayReport including a personalized insight.
-    /// Foundation model is tried first; rule-based chain is the fallback.
     func getDayReport(for date: Date) async -> DayReport? {
         let sessions = getSessionsForDay(date)
         guard !sessions.isEmpty else { return nil }
@@ -786,11 +752,7 @@ extension LogManager {
             insight: insight
         )
     }
-
-    // MARK: - Letter Data Builder
-
-    /// Computes top improved letters for today vs prior 7 days.
-    /// Passed as context to InsightEngine so both AI and fallback have the same data.
+    
     private func buildTopImprovedLetters(for date: Date) -> [(letter: String, improvementPct: Double)] {
         guard let userId = getCurrentUserId() else { return [] }
 
@@ -844,8 +806,6 @@ extension LogManager {
         return result
     }
 }
-
-// MARK: - Overall Progress Report
 
 extension LogManager {
 
@@ -952,9 +912,7 @@ extension LogManager {
             weeklyTrend: getWeeklyTrend(userId: userId)
         )
     }
-
-    // MARK: - Top Bar
-
+    
     private func getDaysPracticed(userId: String) -> Int {
         let sql = """
             SELECT COUNT(DISTINCT CAST(date / 86400 AS INTEGER))
@@ -964,7 +922,6 @@ extension LogManager {
     }
 
     private func getDaysGoalsCompleted() -> Int {
-        // Count distinct days where at least one exercise log exists from dailyTasks source
         let sql = """
             SELECT COUNT(DISTINCT CAST(completionDate / 86400 AS INTEGER))
             FROM ExerciseLog WHERE source = 'dailyTasks';
@@ -1138,7 +1095,7 @@ extension LogManager {
             if sqlite3_step(stmt) == SQLITE_ROW { total = Int(sqlite3_column_int(stmt, 0)) }
         }
         sqlite3_finalize(stmt)
-        return total / 60   // seconds → minutes
+        return total / 60
     }
 
     private func getMostPracticedExercise() -> String {
@@ -1175,8 +1132,6 @@ extension LogManager {
         sqlite3_finalize(stmt); return result
     }
 
-    // MARK: - Streak
-
     private func calculateStreak(userId: String) -> Int {
         let sql = """
             SELECT DISTINCT CAST(date / 86400 AS INTEGER) as day
@@ -1203,8 +1158,6 @@ extension LogManager {
         return streak
     }
 
-    // MARK: - Weekly Trend
-
     private func getWeeklyTrend(userId: String) -> [WeeklyPoint] {
         let sql = """
             SELECT CAST(date / 86400 AS INTEGER) as day, AVG(fluencyScore)
@@ -1227,8 +1180,6 @@ extension LogManager {
         sqlite3_finalize(stmt); return points
     }
 
-    // MARK: - Generic Query Helpers
-
     private func singleIntQuery(sql: String, userId: String) -> Int {
         var stmt: OpaquePointer?; var val = 0
         if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
@@ -1249,9 +1200,6 @@ extension LogManager {
         sqlite3_finalize(stmt); return val
     }
 
-    // MARK: - Trend Helpers
-
-    /// Higher = better (fluency, accuracy, improvement).
     private func trend(current: Double, previous: Double) -> TrendDirection {
         let d = current - previous
         if d > 1 { return .up }
@@ -1259,7 +1207,6 @@ extension LogManager {
         return .neutral
     }
 
-    /// Lower = better (blocks, filler words). Down arrow in data → shown as up (improvement).
     private func trendInverse(current: Double, previous: Double) -> TrendDirection {
         let d = current - previous
         if d < -1 { return .up }
@@ -1267,8 +1214,6 @@ extension LogManager {
         return .neutral
     }
 }
-
-// MARK: - Helpers
 
 private extension Int {
     var asDouble: Double { Double(self) }

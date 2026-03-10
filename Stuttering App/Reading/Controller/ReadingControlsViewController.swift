@@ -49,14 +49,11 @@ class ReadingControlsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Recalculate button sizes whenever the view layout changes (e.g., orientation change or sheet resize)
         adjustButtonSizes()
     }
     
     func startTimer() {
-        // This local startTime is ONLY used to tick the UI forward from the synced elapsedTime
         startTime = Date()
-
         timerObject = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateTimer()
         }
@@ -65,9 +62,6 @@ class ReadingControlsViewController: UIViewController {
     func pauseTimer() {
         timerObject?.invalidate()
         timerObject = nil
-        
-        // REMOVE the elapsedTime addition here. DetailViewController handles this now!
-        // Just clear the startTime so it stops tracking locally.
         startTime = nil
     }
     
@@ -99,16 +93,14 @@ class ReadingControlsViewController: UIViewController {
 
         playPauseButton.setImage(symbol, for: .normal)
         playPauseButton.tintColor = .systemBlue
-
-        // 1. Sync the exact true time from the audio engine
+        
         self.elapsedTime = currentTime
 
         if isPlaying {
             if timerObject == nil { startTimer() }
         } else {
             pauseTimer()
-            
-            // 2. Force the UI to immediately display the precise paused time
+        
             let minutes = Int(currentTime) / 60
             let seconds = Int(currentTime) % 60
             timer.text = String(format: "%02d:%02d", minutes, seconds)
@@ -147,10 +139,7 @@ class ReadingControlsViewController: UIViewController {
     private func adjustButtonSizes() {
         guard playPauseWidthConstraint != nil, dafWidthConstraint != nil else { return }
         
-        // Calculate a proportional width (e.g., 18% of the total screen/sheet width)
         let proportionalWidth = view.bounds.width * 0.212
-        
-        // Clamp the values to maintain HIG minimum touch targets (44pt) and prevent oversized buttons
         let optimalWidth = max(80.0, min(proportionalWidth, 110))
         
         playPauseWidthConstraint.constant = optimalWidth
@@ -165,11 +154,10 @@ class ReadingControlsViewController: UIViewController {
     
     @IBAction func speedSliderChanged(_ sender: UISlider) {
         let speed = Double(sender.value)
-            currentPlaybackSpeed = speed
-            
-            delegate?.didChangeSpeed(speed)
-            
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        currentPlaybackSpeed = speed
+        
+        delegate?.didChangeSpeed(speed)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     @IBAction func playPauseTapped(_ sender: UIButton) {
         delegate?.didTapPlayPause()
@@ -184,40 +172,12 @@ class ReadingControlsViewController: UIViewController {
         delegate?.didTapShowResult()
     }
     
-    
-//    func updatePlaybackState(isPlaying: Bool, hasFinished: Bool) {
-//        let config = UIImage.SymbolConfiguration(pointSize: 42, weight: .regular, scale: .default)
-//        let symbolName = isPlaying ? "microphone" : "microphone.slash"
-//        let symbol = UIImage(systemName: symbolName, withConfiguration: config)
-//        playPauseButton.setImage(symbol, for: .normal)
-//        
-//        playPauseButton.tintColor = isPlaying ? .systemRed : .systemBlue
-//    }
-//
-    
-//    func updatePlaybackState(isPlaying: Bool, hasFinished: Bool) {
-//        
-//        let symbolName = isPlaying ? "pause.fill" : "play.fill"
-//        let symbol = UIImage(systemName: symbolName)
-//        
-//        playPauseButton.setImage(symbol, for: .normal)
-//        playPauseButton.tintColor = .systemBlue
-//    }
-    
-//    func toggleDoneButtonVisibility(isHidden: Bool) {
-//        // Wrap in an animation block for a smooth iOS-native fade effect
-//        UIView.animate(withDuration: 0.25) {
-//            self.endButton.alpha = isHidden ? 0.0 : 1.0
-//            self.endButton.isHidden = isHidden
-//        }
-//    }
     func toggleDoneButtonVisibility(isHidden: Bool) {
-        // 1. If we are showing the view, unhide it immediately before the fade begins.
+        
         if !isHidden {
             self.sliderStack.isHidden = false
         }
         
-        // 2. Animate the alpha change smoothly.
         UIView.animate(
             withDuration: 0.3,
             delay: 0.0,
@@ -226,7 +186,6 @@ class ReadingControlsViewController: UIViewController {
                 self.sliderStack.alpha = isHidden ? 0.0 : 1.0
             },
             completion: { _ in
-                // 3. Only safely hide the view from the layout strictly after the fade-out completes.
                 if isHidden {
                     self.sliderStack.isHidden = true
                 }

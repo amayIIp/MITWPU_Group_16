@@ -263,7 +263,7 @@ class DatabaseManager {
         let today = todayString()
         let yesterday = yesterdayString()
 
-        // ❌ Already counted today
+        // Already counted today
         if lastDate == today { return }
 
         // ✅ Increment or reset
@@ -293,7 +293,6 @@ class DatabaseManager {
             object: newStreak
         )
         
-        // Push streak to Supabase
         SupabaseSyncManager.shared.pushStreak(currentStreak: newStreak)
     }
 
@@ -310,8 +309,6 @@ class DatabaseManager {
         sqlite3_finalize(stmt)
         return streak
     }
-
-    // MARK: - Journey Progress
 
     func getCompletedJourneyCount() -> Int {
         let query = "SELECT COUNT(*) FROM Journey WHERE isCompleted = 1"

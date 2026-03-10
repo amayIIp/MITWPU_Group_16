@@ -19,7 +19,6 @@ class AIParagraphGenerator {
         let targetLetters = letters.isEmpty ? ["S", "R"] : letters
         let lettersString = targetLetters.joined(separator: ", ")
         
-        // Persona and Prompt Construction
         let instructions = """
                 write a comprehension on "\(topic)".
                 this comprehension must include the following words: [\(lettersString)].
@@ -33,9 +32,6 @@ class AIParagraphGenerator {
         
         do {
             let response = try await session.respond(to: prompt)
-            
-            // Post-process: Force double spacing between paragraphs
-            // Replace single newlines that aren't already double with double newlines
             let rawContent = response.content
             let spacedContent = rawContent.replacingOccurrences(of: "\n", with: "\n\n")
                                           .replacingOccurrences(of: "\n\n\n", with: "\n\n") // Normalize massive gaps

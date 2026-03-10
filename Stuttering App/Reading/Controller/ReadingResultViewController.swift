@@ -38,51 +38,15 @@ class ReadingResultViewController: UIViewController {
         }
     }
     
-//    func setupUIWithReport(_ report: StutterJSONReport) {
-//        // 1. Score
-//        setupFluencyCircle(score: CGFloat(report.fluencyScore))
-//        
-//        // 2. Insight Message
-//        insightsLabel.text = "Your /r/ and /s/ sounds have improved 12% today !!"
-//        
-//        // 3. Set Percentages & Time
-//        readingTime.text = report.duration
-//        blockPercentage.text = "\(Int(report.percentages.blocks))%"
-//        repetitionPercentage.text = "\(Int(report.percentages.repetition))%"
-//        prolongationPercentage.text = "\(Int(report.percentages.prolongation))%"
-//        
-//        // 4. Troubled Words
-//        loadTroubledWords(words: report.stutteredWords)
-//        
-//        // 5. Exercises
-//        var recommended: [String] = []
-//        if report.percentages.blocks > 5.0 { recommended.append("Easy Onset") }
-//        if report.percentages.repetition > 5.0 { recommended.append("Pull-outs") }
-//        if report.percentages.prolongation > 5.0 { recommended.append("Light Contact") }
-//        
-//        if recommended.isEmpty {
-//            recommended.append("Breathing Control")
-//            recommended.append("Slow Reading")
-//        }
-//        
-//        loadExercises(exercises: recommended)
-//    }
-
     func setupUIWithReport(_ report: StutterJSONReport) {
         
-        // ✅ SAVE SESSION (only once)
         if !hasSavedSession {
             LogManager.shared.saveReadingSession(report: report)
             hasSavedSession = true
         }
-        
-        // 1. Score
+            
         setupFluencyCircle(score: CGFloat(report.fluencyScore))
         
-        // 2. Insight Message
-        //insightsLabel.text = "Your /r/ and /s/ sounds have improved 12% today !!"
-        
-        // 2. Insight Message (Dynamic)
         Task {
             if let dayReport = await LogManager.shared.getDayReport(for: Date()) {
                 await MainActor.run {
@@ -95,16 +59,13 @@ class ReadingResultViewController: UIViewController {
             }
         }
         
-        // 3. Set Percentages & Time
         readingTime.text = report.duration
         blockPercentage.text = "\(Int(report.percentages.blocks))"
         repetitionPercentage.text = "\(Int(report.percentages.repetition))"
         prolongationPercentage.text = "\(Int(report.percentages.prolongation))"
         
-        // 4. Troubled Words
         loadTroubledWords(words: report.stutteredWords)
         
-        // 5. Exercises
         var recommended: [String] = []
         if report.percentages.blocks > 5.0 { recommended.append("Easy Onset") }
         if report.percentages.repetition > 5.0 { recommended.append("Pull-outs") }
@@ -136,7 +97,6 @@ class ReadingResultViewController: UIViewController {
             label.text = "None! Great job."
             label.textColor = .secondaryLabel
             label.font = UIFont.systemFont(ofSize: 14)
-            // ✅ Centers the text within the horizontally stretched label
             label.textAlignment = .center
             troubledWordsStackView.addArrangedSubview(label)
             return

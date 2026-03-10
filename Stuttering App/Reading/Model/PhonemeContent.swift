@@ -2,7 +2,6 @@ import Foundation
 
 struct PhonemeContent {
     
-    // A dictionary mapping a letter (as a string) to a list of practice sentences.
     static let practiceSentences: [String: [String]] = [
         "A": [
             "An apple a day keeps the doctor away.",
@@ -368,9 +367,7 @@ struct PhonemeContent {
         return combinedSentences.joined(separator: " ")
     }
     
-    // NEW: Inject phoneme sentences into an existing meaningful story
     static func injectPhonemePractice(into content: String, for letters: [String]) -> String {
-        // 1. Get pool of practice sentences for these letters
         var practicePool: [String] = []
         let targetLetters = letters.isEmpty ? ["S", "R"] : letters
         
@@ -383,8 +380,6 @@ struct PhonemeContent {
         
         if practicePool.isEmpty { return content }
         
-        // 2. Split content into paragraphs
-        // Detect paragraphs by double newline or simple newline
         var paragraphs = content.components(separatedBy: "\n\n")
         if paragraphs.count <= 1 {
             paragraphs = content.components(separatedBy: "\n")
@@ -399,12 +394,10 @@ struct PhonemeContent {
             
             enrichedParagraphs.append(trimmed)
             
-            // Inject 1-2 sentences after every paragraph (or every other)
             if poolIndex < practicePool.count {
                 let injection = practicePool[poolIndex]
-                // Format distinctly? Or blend in? Let's blend in but maybe append.
-                // Adding a newline makes it a "Challenge" line.
-                enrichedParagraphs.append("Challenge: \(injection)") 
+                
+                enrichedParagraphs.append("Challenge: \(injection)")
                 poolIndex = (poolIndex + 1) % practicePool.count
             }
         }

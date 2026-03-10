@@ -16,6 +16,7 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var forgotPassword: UIButton!
     
     private let client = SupabaseManager.shared.client
+    var onSwitchToSignup: (() -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -136,5 +137,12 @@ class LoginViewController: UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+    
+    @IBAction func switchToSignupButtonTapped(_ sender: UIButton) {
+        // Dismiss self, and trigger the presentation of A upon completion for a smooth sequence
+        self.dismiss(animated: true) {
+            self.onSwitchToSignup?()
+        }
     }
 }

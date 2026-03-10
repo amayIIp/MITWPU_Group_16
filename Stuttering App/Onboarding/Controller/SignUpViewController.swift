@@ -12,11 +12,11 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
 
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
-    @IBOutlet weak var confirmPasswordTextField: UITextField!
     @IBOutlet weak var SignUpButton: UIButton!
     @IBOutlet weak var nameTextField: UITextField!
     
     private let client = SupabaseManager.shared.client
+    var onSwitchToSignin: (() -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,13 +33,12 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
         passwordTextField.isSecureTextEntry = true
-        confirmPasswordTextField.isSecureTextEntry = true
     }
 
     @IBAction func signUpButtonTapped(_ sender: UIButton) {
         guard let email = emailTextField.text, !email.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty,
-              let confirmPassword = confirmPasswordTextField.text, !confirmPassword.isEmpty else {
+              let password = passwordTextField.text, !password.isEmpty
+               else {
             showAlert(message: "Please fill in all fields.")
             return
         }
@@ -52,11 +51,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         
         if !isValidEmail(email) {
             showAlert(message: "Please enter a valid email address.")
-            return
-        }
-    
-        if password != confirmPassword {
-            showAlert(message: "Passwords do not match. Please try again.")
             return
         }
         
@@ -92,6 +86,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     self.showAlert(message: error.localizedDescription)
                 }
             }
+        }
+    }
+        
+    @IBAction func switchToSigninButtonTapped(_ sender: UIButton) {
+        // Dismiss self, and trigger the presentation of B upon completion for a smooth sequence
+        self.dismiss(animated: true) {
+            self.onSwitchToSignin?()
         }
     }
     

@@ -14,12 +14,9 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var startButton: UIButton!
     @IBOutlet weak var DafButton: UIButton!
-
-    // MARK: - Data Models
     
     let categories = ["Science", "Space", "Astronomy", "Mindset", "Sports"]
     
-    // Placeholder content matching the categories order
     let categoryContent = [
         "Science is the systematic study of the structure and behavior of the physical and natural world.",
         "Space is the boundless three-dimensional extent in which objects and events have relative position and direction.",
@@ -36,12 +33,8 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         case custom
     }
     
-    // MARK: - State Properties
-    
     var activeSection: Int = 0
     var currentSelection: AppSelection = .randomHeader
-
-    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,9 +48,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func setupButtons() {
-        //startButton.configuration = .prominentGlass()
-        //startButton.setTitle("Start", for: .normal)
-        
         DafButton.configuration = .glass()
         DafButton.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
         
@@ -89,43 +79,28 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        // 1. Handle Header Taps (Expansion & Main Selection)
         if indexPath.row == 0 {
-            
-            // Since there are exactly two sections and one MUST always be open:
-            // Tapping ANY header simply forces a toggle to the opposite section.
             let newActiveSection = (activeSection == 0) ? 1 : 0
             
-            // Trigger Animation (Expands the new one, collapses the old one)
             toggleSection(to: newActiveSection)
             
-            // Auto-Select Logic:
-            // The newly opened section automatically becomes the selected radio button,
-            // deselecting whatever was previously selected.
             if newActiveSection == 0 {
                 currentSelection = .randomHeader
             } else {
                 currentSelection = .custom
             }
             
-            // Reload data to visually update the radio button checkmarks
             tableView.reloadData()
         }
         
-        // 2. Handle Inner Option Taps (Categories)
         else if indexPath.section == 0 {
-            // User selected a specific category inside the Random list
             let categoryIndex = indexPath.row - 1
             currentSelection = .specificCategory(categoryIndex)
             tableView.reloadData()
         }
     }
     
-    // MARK: - PRIMARY ACTION: Continue Button
-    
     @IBAction func didTapContinueButton(_ sender: UIButton) {
-        
-        // Dismiss keyboard immediately for better UX
         view.endEditing(true)
         
         var topicToGenerate = ""
@@ -133,7 +108,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         switch currentSelection {
             
         case .randomHeader:
-            // Pick a random topic from presets (excluding Custom if present in presetTitles, though presetTitles usually has it at end)
              let validPresets = presetTitles.filter { $0 != "Custom" }
              topicToGenerate = validPresets.randomElement() ?? "General"
             
@@ -152,14 +126,12 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
                let text = cell.inputTextView.text {
                 
                 let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                
-                // 🔴 If empty OR too short → show same alert
+    
                 if trimmedText.isEmpty || trimmedText.count < 50 {
                     showEmptyInputAlert()
                     return
                 }
                 
-                // ✅ Valid long custom story
                 showDetailScreen(title: "Custom Story", text: trimmedText)
                 return
             } else {
@@ -167,41 +139,14 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
                 return
             }
 
-//            // 1. Locate the cell
-//            let customIndexPath = IndexPath(row: 1, section: 1)
-//            
-//            // 2. Access the cell to get the text
-//            if let cell = tableView.cellForRow(at: customIndexPath) as? CustomWorkspaceCell,
-//               let text = cell.inputTextView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-//                
-//                let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
-//                
-//                // Check if it's already a long story
-//                if trimmedText.count > 50 {
-//                     showDetailScreen(title: "Custom Story", text: trimmedText)
-//                     return
-//                }
-//                
-//                topicToGenerate = trimmedText
-//                
-//            } else {
-//                // Handle Empty Input
-//                showEmptyInputAlert()
-//                return
-//            }
-        }
-        
-        // Generate Content
+       }
         generateAIStory(topic: topicToGenerate)
     }
-
-    // MARK: - AI Generation Logic
-
+    
     func generateAIStory(topic: String) {
         print("DEBUG: Generating AI Story for topic: \(topic)")
         let troubledLetters = LogManager.shared.getTopStruggledLetters(limit: 5)
         
-        // Add Loading Indicator
         let activityIndicator = UIActivityIndicatorView(style: .large)
         activityIndicator.center = self.view.center
         activityIndicator.color = .gray
@@ -220,8 +165,7 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
                     }
                     
                     group.addTask {
-                        // Timeout Task
-                        try await Task.sleep(nanoseconds: 30 * 1_000_000_000) // 30 seconds timeout
+                        try await Task.sleep(nanoseconds: 30 * 1_000_000_000)
                         throw NSError(domain: "Timeout", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI Generation Timed Out"])
                     }
                     
@@ -248,46 +192,22 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
                     activityIndicator.removeFromSuperview()
                     self.view.isUserInteractionEnabled = true
                     
-                    // Fallback: Dynamic Random Paragraph Generator
-                    // First try to find specific content for the topic, or generate generic
                     let fallbackContent = self.getFallbackContent(for: topic)
-                    // If fallback is just the generic definition, maybe try PhonemeContent too?
-                    // ReadingViewController used PhonemeContent.generateLongFormContent(for: troubledLetters) as the primary fallback in the catch block.
-                    // Let's replicate that exactly as it was the requested behavior.
                     
                     let phonemeFallback = PhonemeContent.generateLongFormContent(for: troubledLetters)
-                    // But wait, getFallbackContent logic in ReadingVC was used inside generateAIStory?
-                    // Looking at ReadingVC:
-                    // In catch block:
-                    // let fallbackContent = PhonemeContent.generateLongFormContent(for: troubledLetters)
-                    // It IGNORED getFallbackContent in the catch block of generateAIStory!
-                    // getFallbackContent was a helper method but wasn't actually used in the catch block in the code I saw earlier?
-                    // Wait, let me re-read ReadingVC step 16.
-                    // Lines 262-263: let fallbackContent = PhonemeContent.generateLongFormContent(for: troubledLetters)
-                    // So getFallbackContent method (lines 273-302) was defined but NOT USED in the catch block?
-                    // Ah, it might have been used elsewhere or I missed it.
-                    // Wait, "Smart Fallback" logic in getFallbackContent is valuable.
-                    // But if the user wants "same code", I should use PhonemeContent.generateLongFormContent as the primary fallback for errors.
-                    // However, if the topic is specific, getFallbackContent might be better?
-                    // I will stick to the EXPLICIT code found in ReadingViewControllers catch block: PhonemeContent.generateLongFormContent.
-                    
                     self.showDetailScreen(title: topic, text: phonemeFallback)
                 }
             }
         }
     }
     
-    // Helper to find pre-written content matching the topic (Ported just in case, though currently unused in the main flow, might be useful)
     func getFallbackContent(for topic: String) -> String {
-        // Normalize
         let normalized = topic.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         
-        // 1. Exact Match in presets
         if let index = presetTitles.firstIndex(where: { $0.lowercased() == normalized }) {
             if index < presetContent.count { return presetContent[index] }
         }
         
-        // 2. Keyword Mapping (Smart Fallback)
         if normalized.contains("space") || normalized.contains("moon") || normalized.contains("star") || normalized.contains("planet") {
              if let index = presetTitles.firstIndex(of: "Science"), index < presetContent.count { return presetContent[index] }
         }
@@ -300,7 +220,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
              if let index = presetTitles.firstIndex(of: "Mindset"), index < presetContent.count { return presetContent[index] }
         }
 
-        // 3. Fallback Random
         if let randomContent = presetContent.filter({ !$0.isEmpty }).randomElement() {
             return randomContent
         }
@@ -308,9 +227,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         return "Science is a systematic enterprise that builds and organizes knowledge in the form of testable explanations and predictions about the universe."
     }
 
-    // MARK: - Navigation & Modal Logic
-    
-    /// Presents the Detail Screen (Final Destination)
     func showDetailScreen(title: String, text: String) {
         guard let detailVC = storyboard?.instantiateViewController(withIdentifier: "DetailVC") as? DetailViewController else { return }
         
@@ -329,8 +245,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
-
-    // MARK: - TableView Helpers (Boilerplate)
     
     private func animateChevron(at indexPath: IndexPath, isExpanding: Bool) {
         guard let cell = tableView.cellForRow(at: indexPath),
@@ -359,8 +273,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         
         tableView.reloadRows(at: [IndexPath(row: 0, section: 0), IndexPath(row: 0, section: 1)], with: .none)
     }
-    
-    // MARK: - TableView Data Source
 
     func numberOfSections(in tableView: UITableView) -> Int { return 2 }
 
@@ -385,7 +297,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
                 let isSelected: Bool
                 if case .specificCategory(let index) = currentSelection, index == categoryIndex { isSelected = true } else { isSelected = false }
                 
-                //content.image = UIImage(systemName: isSelected ? "circle.fill" : "circle")
                 let imageName = isSelected ? "circle.fill" : "circle"
                 let image = UIImage(systemName: imageName)
 
@@ -398,17 +309,14 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
             }
         } else {
             if indexPath.row == 0 {
-                // ... (Header logic remains the same) ...
                 let cell = tableView.dequeueReusableCell(withIdentifier: "HeaderCell", for: indexPath)
                 configureHeaderCell(cell, title: "Custom", section: 1)
                 return cell
             } else {
-                // UPDATE THIS PART:
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: "CustomWorkspaceCell", for: indexPath) as? CustomWorkspaceCell else {
                     return UITableViewCell()
                 }
-                // Determine if we should allow editing based on selection
-                // Optional: cell.inputTextView.isEditable = (activeSection == 1)
+                
                 return cell
             }
         }
@@ -422,7 +330,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         if section == 0 { if case .randomHeader = currentSelection { isSelected = true } else { isSelected = false } }
         else { if case .custom = currentSelection { isSelected = true } else { isSelected = false } }
         
-        //content.image = UIImage(systemName: isSelected ? "circle.fill" : "circle")
         let imageName = isSelected ? "circle.fill" : "circle"
         let image = UIImage(systemName: imageName)
 
@@ -471,7 +378,6 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         DafButton.showsMenuAsPrimaryAction = true
     }
     
-    // MARK: - Spacing Layout
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat { return 8 }
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? { let v = UIView(); v.backgroundColor = .clear; return v }
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat { return .leastNonzeroMagnitude }

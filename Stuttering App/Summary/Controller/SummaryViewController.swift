@@ -63,7 +63,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadDataForCurrentDate()   // ✅ Only this
+        loadDataForCurrentDate()
     }
 
 
@@ -73,8 +73,8 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         self.activeFilter = newFilter
         updateButtonStyles()
         updateSummaryViewsVisibility()
-        updateEmptyState()        // ✅ First
-        tableView.reloadData()    // ✅ Then reload
+        updateEmptyState()
+        tableView.reloadData()
 
     }
     
@@ -86,35 +86,30 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
 
             DispatchQueue.main.async {
                 
-                // 🔹 FLUENCY GROWTH
                 if let overall = overall {
                     self.fluencyGrowth.text = "\(Int(overall.fluencyGrowthPercent))%"
                 } else {
                     self.fluencyGrowth.text = "--"
                 }
                 
-                // 🔹 BLOCKS
                 if let overall = overall {
                     self.blocks.text = "\(Int(overall.avgBlockPercent))%"
                 } else {
                     self.blocks.text = "--"
                 }
                 
-                // 🔹 AVERAGE ACCURACY
                 if let overall = overall {
                     self.averageAccuracy.text = "\(Int(overall.avgAccuracy))%"
                 } else {
                     self.averageAccuracy.text = "--"
                 }
                 
-                // 🔹 IMPROVEMENT
                 if let overall = overall {
                     self.improvement.text = "\(Int(overall.improvementPercent))%"
                 } else {
                     self.improvement.text = "--"
                 }
                 
-                // 🔹 INSIGHT
                 if let dayReport = dayReport {
                     self.insightsLabel.text = dayReport.insight
                 } else {
@@ -125,14 +120,11 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     private func updateFilterButtonsVisibility() {
-        // 1. Directly toggle isHidden based on whether the log is empty.
-        // UIStackView will automatically remove padding and collapse the space.
         dailyTasksButton.isHidden = dailyTaskLogs.isEmpty
         exercisesButton.isHidden = exerciseLogs.isEmpty
         readingButton.isHidden = readingLogs.isEmpty
         conversationButton.isHidden = conversationLogs.isEmpty
         
-        // 2. Determine if the "All" button should be visible
         let hasAnyData = !dailyTaskLogs.isEmpty ||
                          !exerciseLogs.isEmpty ||
                          !readingLogs.isEmpty ||
@@ -140,10 +132,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         
         allButton.isHidden = !hasAnyData
         
-        // 3. Animate the layout recalculation for a smooth, premium iOS feel
         UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
-            // If these buttons are in a specific container, call layoutIfNeeded() on that container.
-            // Otherwise, calling it on the main view works perfectly.
             self.view.layoutIfNeeded()
         }
     }
@@ -151,18 +140,11 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
 
     func updateTableHeaderHeight() {
         guard let header = tableView.tableHeaderView else { return }
-        
-        // 1. Ask the header to calculate its own size based on the stack view's current state
         let newSize = header.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
         
-        // 2. Only update if the height effectively changed to avoid loops
         if header.frame.height != newSize.height {
             header.frame.size.height = newSize.height
-            
-        // 3. Re-assigning the header tells the TableView to refresh the layout
-        tableView.tableHeaderView = header
-            
-            
+            tableView.tableHeaderView = header
         }
     }
     
@@ -174,8 +156,8 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
 
         updateSummaryViewsVisibility()
         updateFilterButtonsVisibility()
-        updateEmptyState()        // ✅ Call here
-        tableView.reloadData()    // ✅ Then reload
+        updateEmptyState()
+        tableView.reloadData()
         
         loadAnalyticsSummary()
     }
@@ -221,8 +203,6 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     private func calculateTotalDuration(for logs: [ExerciseLog]) -> Int {
-        // Reduce the array to a single sum integer
-        // We start at 0, and for every log, add its duration to the running total.
         let totalSeconds = logs.reduce(0) { (runningTotal, log) -> Int in
             return runningTotal + log.exerciseDuration
         }
@@ -408,7 +388,6 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let isEmpty: Bool
 
-        // Determine if the current section has data based on the active filter
         switch activeFilter {
         case .all:
             switch section {
@@ -428,11 +407,9 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             isEmpty = conversationLogs.isEmpty
         }
 
-        // Return near-zero height if empty, otherwise let Auto Layout size it naturally
         return isEmpty ? CGFloat.leastNormalMagnitude : UITableView.automaticDimension
     }
 
-    // Optional but recommended: Also explicitly remove the footer height to prevent bottom gaps
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return CGFloat.leastNormalMagnitude
     }
@@ -444,10 +421,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             !readingLogs.isEmpty ||
             !conversationLogs.isEmpty
 
-        // Show table only if there is data
         tableView.isHidden = !hasAnyData
-
-        // Show empty state only if there is NO data
         emptyStateView.isHidden = hasAnyData
     }
 

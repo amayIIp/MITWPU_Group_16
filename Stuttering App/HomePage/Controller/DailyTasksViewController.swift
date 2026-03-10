@@ -48,19 +48,15 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
             let firstIncompleteIndex = firstIncompleteTaskIndex()
             let isPlayable = (indexPath.row == firstIncompleteIndex)
             
-            // Disable button if not playable
         if task.isCompleted {
-            // COMPLETED STATE
             cell.playButton.isEnabled = true
-            cell.playButton.alpha = 1.0   // keep full color (green tick)
+            cell.playButton.alpha = 1.0
         }
         else if indexPath.row == firstIncompleteIndex {
-            // CURRENT PLAYABLE TASK
             cell.playButton.isEnabled = true
             cell.playButton.alpha = 1.0
         }
         else {
-            // LOCKED TASK
             cell.playButton.isEnabled = false
             cell.playButton.alpha = 0.4
         }
@@ -72,13 +68,12 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
             
             return cell
     }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
-    
     func navigateToExercise(with exerciseName: String) {
-        
         let storyboard = UIStoryboard(name: "Exercise", bundle: nil)
     
         guard let vc = storyboard.instantiateViewController(withIdentifier: "AirFlowInstruction") as? ExerciseInstructionViewController else {

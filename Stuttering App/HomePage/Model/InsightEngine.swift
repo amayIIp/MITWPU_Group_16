@@ -2,62 +2,43 @@
 //  InsightEngine.swift
 //  Spasht
 //
-//  Generates personalized insights using Apple's on-device Foundation model.
-//  Falls back to rule-based generation if the model is unavailable or fails.
-//
-//  Requirements: iOS 18.0+ (Apple Intelligence device or simulator)
-//  Import: FoundationModels (add to target — no API key needed, fully on-device)
-//
 
 import Foundation
 import FoundationModels
 
-// MARK: - Input Context
-
-/// Everything the engine needs to generate a Day insight.
 struct DayInsightContext {
     let avgFluency: Double
     let avgBlock: Double
     let avgAccuracy: Double
-    let fluencyGrowth: Double           // vs yesterday, in score points
-    let improvementPercent: Double      // vs yesterday, as %
+    let fluencyGrowth: Double
+    let improvementPercent: Double
     let sessionCount: Int
-    let topImprovedLetters: [(letter: String, improvementPct: Double)]   // top 2 max, already filtered ≥10%
+    let topImprovedLetters: [(letter: String, improvementPct: Double)]
 }
 
-/// Everything the engine needs to generate an Overall Progress headline.
 struct OverallInsightContext {
-    let fluencyGrowthPercent: Double    // first session → latest session
+    let fluencyGrowthPercent: Double
     let avgAccuracy: Double
     let avgBlock: Double
     let streak: Int
     let weekOverWeekImprovementPct: Double
     let daysPracticed: Int
-    let mostCommonStutterType: String   // "repetition" | "prolongation" | "block"
+    let mostCommonStutterType: String
 }
-
-// MARK: - InsightEngine
 
 actor InsightEngine {
 
     static let shared = InsightEngine()
-
-    // Reuse a single session — creating one per call is wasteful
     private var session: LanguageModelSession?
 
     private init() {}
-
-    // MARK: - Public API
-
-    /// Generates a Day insight. Foundation model first, rule-based fallback.
     func dayInsight(context: DayInsightContext) async -> String {
         if let aiInsight = await generateDayInsightAI(context: context) {
             return aiInsight
         }
         return generateDayInsightRuleBased(context: context)
     }
-
-    /// Generates an Overall Progress headline. Foundation model first, rule-based fallback.
+    
     func overallHeadline(context: OverallInsightContext) async -> String {
         if let aiHeadline = await generateOverallHeadlineAI(context: context) {
             return aiHeadline
@@ -65,7 +46,6 @@ actor InsightEngine {
         return generateOverallHeadlineRuleBased(context: context)
     }
 
-    // MARK: - Foundation Model — Day Insight
     private func isValidInsight(_ text: String) -> Bool {
         let sentences = text
             .split(whereSeparator: { ".!?".contains($0) })
@@ -81,7 +61,7 @@ actor InsightEngine {
         let secondCount = sentences[1].split { $0.isWhitespace }.count
 
         let difference = abs(firstCount - secondCount)
-        return difference <= 5   // allows slight imbalance
+        return difference <= 5
     }
 
     
@@ -96,10 +76,7 @@ actor InsightEngine {
         do {
             let response = try await session.respond(to: prompt)
             let text = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-//            guard !text.isEmpty, text.count < 200 else {
-//                return nil
-//            }
+
             guard !text.isEmpty, isValidInsight(text) else {
                 return nil
             }
@@ -110,8 +87,6 @@ actor InsightEngine {
             return nil
         }
     }
-
-    // MARK: - Foundation Model — Overall Headline
 
     private func generateOverallHeadlineAI(context: OverallInsightContext) async -> String? {
         
@@ -136,9 +111,6 @@ actor InsightEngine {
         }
     }
 
-    // MARK: - Session Management
-
-    
     private func getOrCreateSession() -> LanguageModelSession? {
         
         if let existing = session {
@@ -151,21 +123,6 @@ actor InsightEngine {
             print("InsightEngine: Model not available")
             return nil
         }
-        
-//        let instructions = """
-//        You are a supportive speech therapy coach inside an app called Spasht.
-//        Your job is to write short, warm, motivating insights for users who stutter
-//        and are working on improving their speech fluency.
-//
-//        Rules:
-//        - Maximum 2 sentences. Never more.
-//        - Be specific — use the actual numbers provided.
-//        - Warm and encouraging, never clinical or cold.
-//        - No emojis, no markdown, no bullet points.
-//        - If there is letter improvement data, always lead with that.
-//        - End with a brief forward-looking nudge when possible.
-//        - Output ONLY the insight text.
-//        """
         
         let instructions = """
         You are a supportive speech therapy coach inside an app called Spasht.
@@ -190,14 +147,10 @@ actor InsightEngine {
         return newSession
     }
 
-    // MARK: - Prompt Builders
-    
-
     private func buildDayPrompt(context: DayInsightContext) -> String {
 
         var parts: [String] = []
 
-        // Letter improvement (most personal — always include if present)
         if !context.topImprovedLetters.isEmpty {
             let letterDesc = context.topImprovedLetters
                 .prefix(2)
@@ -253,9 +206,7 @@ actor InsightEngine {
             Output only the sentence — no quotes, no label.
             """
     }
-
-    // MARK: - Rule-Based Fallback — Day Insight
-
+    
     func generateDayInsightRuleBased(context: DayInsightContext) -> String {
 
         // 1. Letter improvement — most personal
