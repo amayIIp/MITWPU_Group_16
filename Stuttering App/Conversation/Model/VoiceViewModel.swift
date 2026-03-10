@@ -12,6 +12,7 @@ protocol VoiceViewModelDelegate: AnyObject {
     func didUpdateTranscript(_ text: String, isUser: Bool)
     func didEncounterError(_ message: String)
     func addMessageToConversation(speaker: String, text: String)
+    func didUpdateAudioLevel(_ level: Float)
 }
 
 class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
@@ -185,12 +186,11 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         }
     }
     
-    // MARK: - Speech Recognition
+    // MARK: - Speech Recognition & Audio Metering
     
     func startListening() {
         guard !audioEngine.isRunning else { return }
         
-        // Ensure audio session is active (may have been interrupted)
         configureAudioSession()
         
         SFSpeechRecognizer.requestAuthorization { status in
@@ -255,11 +255,29 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             return
         }
         
-        // Remove any existing tap before installing a new one
         inputNode.removeTap(onBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak req] buffer, _ in
+        
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak req, weak self] buffer, _ in
             guard buffer.frameLength > 0 else { return }
             req?.append(buffer)
+            
+            guard let channelData = buffer.floatChannelData?[0] else { return }
+            let frames = Int(buffer.frameLength)
+            
+            var sumSquares: Float = 0.0
+            for i in 0..<frames {
+                let sample = channelData[i]
+                sumSquares += sample * sample
+            }
+            let rms = sqrt(sumSquares / Float(frames))
+            let power = rms > 0 ? 20.0 * log10(rms) : -160.0
+            
+            let minDb: Float = -65.0
+            let normalizedLevel = max(0.0, min(1.0, (power - minDb) / (0.0 - minDb)))
+            
+            DispatchQueue.main.async {
+                self?.delegate?.didUpdateAudioLevel(normalizedLevel)
+            }
         }
         
         do {
@@ -280,6 +298,15 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         }
         
         recognitionRequest?.endAudio()
+        
+        // Ensure state updates to idle if we manually hit stop (mute)
+        if state == .listening {
+            state = .idle
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.delegate?.didUpdateAudioLevel(0.0)
+        }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.recognitionTask?.cancel()

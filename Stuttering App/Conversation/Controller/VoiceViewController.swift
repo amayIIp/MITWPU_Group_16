@@ -2,12 +2,86 @@
 
 import UIKit
 
+// MARK: - AudioWaveformView
+
+class AudioWaveformView: UIView {
+    private let stackView = UIStackView()
+    private var bars: [UIView] = []
+    private let numberOfBars = 15 // Reduced for better spacing
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupView()
+    }
+    
+    private func setupView() {
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+        stackView.spacing = 4
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor)
+        ])
+        
+        // Create the bars
+        for _ in 0..<numberOfBars {
+            let bar = UIView()
+            bar.backgroundColor = UIColor(resource: .buttonTheme)
+            bar.layer.cornerRadius = 2
+            bar.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Set base width and height (flat state)
+            bar.widthAnchor.constraint(equalToConstant: 4).isActive = true
+            let heightConstraint = bar.heightAnchor.constraint(equalToConstant: 4)
+            heightConstraint.isActive = true
+            
+            stackView.addArrangedSubview(bar)
+            bars.append(bar)
+        }
+    }
+    
+    func update(with level: CGFloat) {
+        UIView.animate(withDuration: 0.1, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
+            for (index, bar) in self.bars.enumerated() {
+                guard let heightConstraint = bar.constraints.first(where: { $0.firstAttribute == .height }) else { continue }
+                
+                if level <= 0.05 {
+                    heightConstraint.constant = 4
+                } else {
+                    let center = CGFloat(self.numberOfBars / 2)
+                    let distanceToCenter = abs(CGFloat(index) - center)
+                    let normalizedDistance = max(0, 1.0 - (distanceToCenter / center))
+                    
+                    let flutter = CGFloat.random(in: 0.6...1.0)
+                    let maxHeight: CGFloat = 80.0
+                    
+                    let newHeight = max(4, maxHeight * level * normalizedDistance * flutter)
+                    heightConstraint.constant = newHeight
+                }
+                self.layoutIfNeeded()
+            }
+        }
+    }
+}
+
+// MARK: - VoiceViewController
+
 class VoiceViewController: UIViewController {
     
     // MARK: - Outlets
     
     @IBOutlet weak var aiTextView: UITextView!
-    @IBOutlet weak var userLabel: UILabel!
     @IBOutlet weak var recordButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
     
@@ -17,9 +91,11 @@ class VoiceViewController: UIViewController {
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     private var pendingTabViewController: UIViewController?
     
-    // Chat display
+    // Programmatic UI Elements
     private var aiMessageLabel: UILabel!
     private var userMessageLabel: UILabel!
+    private var waveformView: AudioWaveformView!
+    private let startPromptLabel = UILabel()
     
     // MARK: - Lifecycle
     
@@ -33,12 +109,6 @@ class VoiceViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        // Restore label when returning to this screen
-        if !viewModel.isConversationActive {
-            userLabel.text = "Tap the mic to start the conversation"
-            userLabel.textColor = UIColor(resource: .buttonTheme)
-        }
         
         if !viewModel.isModelReady {
             Task {
@@ -64,17 +134,13 @@ class VoiceViewController: UIViewController {
     // MARK: - UI Configuration
     
     private func configureUI() {
-        // Hide the storyboard text view — we use our own labels
         aiTextView.isHidden = true
-        
-        userLabel.text = "Tap the mic to start the conversation"
-        userLabel.textColor = UIColor(resource: .buttonTheme)
-        userLabel.font = .systemFont(ofSize: 15, weight: .medium)
-        userLabel.textAlignment = .center
-        userLabel.numberOfLines = 2
         
         configureButtons()
         setupChatLabels()
+        setupWaveformView()
+        setupStartPromptLabel()
+        setupTouchFix() // 🛠️ Fixes the untappable button bug
     }
     
     private func configureButtons() {
@@ -91,10 +157,40 @@ class VoiceViewController: UIViewController {
         recordButton.setTitle("", for: .normal)
     }
     
+    private func setupWaveformView() {
+        waveformView = AudioWaveformView()
+        waveformView.translatesAutoresizingMaskIntoConstraints = false
+        waveformView.alpha = 0
+        waveformView.isUserInteractionEnabled = false // Let taps pass through
+        view.addSubview(waveformView)
+        
+        NSLayoutConstraint.activate([
+            waveformView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            waveformView.centerYAnchor.constraint(equalTo: recordButton.centerYAnchor),
+            waveformView.heightAnchor.constraint(equalToConstant: 100)
+        ])
+    }
+    
+    private func setupStartPromptLabel() {
+            startPromptLabel.translatesAutoresizingMaskIntoConstraints = false
+            startPromptLabel.text = "Tap mic to start"
+            startPromptLabel.textColor = .secondaryLabel
+            startPromptLabel.font = .systemFont(ofSize: 16, weight: .medium)
+            startPromptLabel.textAlignment = .center
+            startPromptLabel.alpha = 1.0
+            startPromptLabel.isUserInteractionEnabled = false
+            view.addSubview(startPromptLabel)
+            
+            NSLayoutConstraint.activate([
+                // Perfectly centered horizontally
+                startPromptLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                // Perfectly centered vertically in the middle of the screen
+                startPromptLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            ])
+        }
     private func setupChatLabels() {
         guard let container = aiTextView.superview else { return }
         
-        // AI message label — left aligned
         aiMessageLabel = UILabel()
         aiMessageLabel.translatesAutoresizingMaskIntoConstraints = false
         aiMessageLabel.numberOfLines = 0
@@ -105,7 +201,6 @@ class VoiceViewController: UIViewController {
         aiMessageLabel.alpha = 0
         container.addSubview(aiMessageLabel)
         
-        // User message label — right aligned
         userMessageLabel = UILabel()
         userMessageLabel.translatesAutoresizingMaskIntoConstraints = false
         userMessageLabel.numberOfLines = 0
@@ -119,48 +214,112 @@ class VoiceViewController: UIViewController {
         let padding: CGFloat = 20
         
         NSLayoutConstraint.activate([
-            // AI label — top area, left side
             aiMessageLabel.topAnchor.constraint(equalTo: aiTextView.topAnchor, constant: 16),
             aiMessageLabel.leadingAnchor.constraint(equalTo: aiTextView.leadingAnchor, constant: padding),
             aiMessageLabel.trailingAnchor.constraint(equalTo: aiTextView.trailingAnchor, constant: -padding),
             
-            // User label — below AI label, right side
             userMessageLabel.topAnchor.constraint(equalTo: aiMessageLabel.bottomAnchor, constant: 24),
             userMessageLabel.leadingAnchor.constraint(equalTo: aiTextView.leadingAnchor, constant: padding),
             userMessageLabel.trailingAnchor.constraint(equalTo: aiTextView.trailingAnchor, constant: -padding),
         ])
     }
     
-    // MARK: - Display Helpers
+    // MARK: - 🛠️ Touch Fix Hack
+    
+    private func setupTouchFix() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleScreenTap(_:)))
+        tap.cancelsTouchesInView = false
+        tap.delegate = self
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc private func handleScreenTap(_ gesture: UITapGestureRecognizer) {
+        let location = gesture.location(in: view)
+        
+        let recordRect = recordButton.convert(recordButton.bounds, to: view)
+        let resetRect = resetButton.convert(resetButton.bounds, to: view)
+        
+        if recordRect.contains(location) && recordButton.isEnabled {
+            UIView.animate(withDuration: 0.1, animations: { self.recordButton.alpha = 0.5 }) { _ in
+                UIView.animate(withDuration: 0.1) { self.recordButton.alpha = 1.0 }
+            }
+            didTapRecord(recordButton)
+        } else if resetRect.contains(location) && resetButton.isEnabled {
+            UIView.animate(withDuration: 0.1, animations: { self.resetButton.alpha = 0.5 }) { _ in
+                UIView.animate(withDuration: 0.1) { self.resetButton.alpha = 1.0 }
+            }
+            didTapReset(resetButton)
+        }
+    }
+    
+    // MARK: - Display Helpers (Updated AI anchoring logic)
     
     private func showAIMessage(_ text: String) {
-        // Clear previous user message when AI speaks again
-        UIView.animate(withDuration: 0.2) {
-            self.userMessageLabel.alpha = 0
-        } completion: { _ in
-            self.userMessageLabel.text = ""
+        // Fly user message UP and fade out when the AI responds
+        if self.userMessageLabel.alpha > 0 {
+            UIView.animate(withDuration: 0.3, animations: {
+                self.userMessageLabel.transform = CGAffineTransform(translationX: 0, y: -30)
+                self.userMessageLabel.alpha = 0
+            }) { _ in
+                self.userMessageLabel.text = ""
+                self.userMessageLabel.transform = .identity
+            }
         }
         
-        aiMessageLabel.text = text
-        UIView.animate(withDuration: 0.3) {
-            self.aiMessageLabel.alpha = 1
+        // Update the AI message text smoothly
+        if self.aiMessageLabel.alpha > 0 {
+            // If the AI message is already on screen, cross-fade to the new text
+            UIView.transition(with: self.aiMessageLabel, duration: 0.3, options: .transitionCrossDissolve) {
+                self.aiMessageLabel.text = text
+            }
+        } else {
+            // For the very first AI message, slide it up into place
+            self.aiMessageLabel.text = text
+            self.aiMessageLabel.transform = CGAffineTransform(translationX: 0, y: 20)
+            UIView.animate(withDuration: 0.4, delay: 0.1, options: .curveEaseOut) {
+                self.aiMessageLabel.transform = .identity
+                self.aiMessageLabel.alpha = 1
+            }
         }
     }
     
     private func showUserMessage(_ text: String) {
-        userMessageLabel.text = text
-        UIView.animate(withDuration: 0.2) {
-            self.userMessageLabel.alpha = 1
+        // NOTE: We no longer hide the AI message here! It stays anchored at the top.
+        
+        // If the user label was hidden, slide it up into place beneath the AI message
+        if userMessageLabel.alpha == 0 {
+            userMessageLabel.transform = CGAffineTransform(translationX: 0, y: 20)
+            UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseOut) {
+                self.userMessageLabel.alpha = 1
+                self.userMessageLabel.transform = .identity
+            }
         }
+        
+        // Update the live transcription text
+        userMessageLabel.text = text
     }
     
     private func resetDisplay() {
-        aiMessageLabel?.text = ""
-        aiMessageLabel?.alpha = 0
-        userMessageLabel?.text = ""
-        userMessageLabel?.alpha = 0
-        userLabel.text = "Tap the mic to start the conversation"
-        userLabel.textColor = UIColor(resource: .buttonTheme)
+        UIView.animate(withDuration: 0.4, delay: 0, options: [.curveEaseIn]) {
+            // Fly labels UP and out when clearing
+            self.aiMessageLabel?.transform = CGAffineTransform(translationX: 0, y: -40)
+            self.aiMessageLabel?.alpha = 0
+            
+            self.userMessageLabel?.transform = CGAffineTransform(translationX: 0, y: -40)
+            self.userMessageLabel?.alpha = 0
+            
+            self.recordButton.transform = .identity
+            self.resetButton.transform = .identity
+            self.waveformView.alpha = 0
+            self.startPromptLabel.alpha = 1.0
+        } completion: { _ in
+            self.aiMessageLabel?.text = ""
+            self.userMessageLabel?.text = ""
+            
+            // Reset their position so they don't stay hidden off-screen
+            self.aiMessageLabel?.transform = .identity
+            self.userMessageLabel?.transform = .identity
+        }
     }
     
     // MARK: - Actions
@@ -178,10 +337,14 @@ class VoiceViewController: UIViewController {
     @IBAction func didTapRecord(_ sender: UIButton) {
         feedbackGenerator.impactOccurred()
         
-        if !viewModel.isConversationActive {
-            viewModel.startConversation()
+        if viewModel.state == .listening {
+            viewModel.stopListening()
         } else {
-            viewModel.commitUserBuffer()
+            if !viewModel.isConversationActive && !viewModel.hasConversationHistory {
+                viewModel.startConversation()
+            } else {
+                viewModel.startListening()
+            }
         }
     }
     
@@ -205,28 +368,21 @@ class VoiceViewController: UIViewController {
     
     private func updateVisuals(for state: VoiceViewModel.VoiceState) {
         var symbol: String
-        var statusText: String
         var isEnabled = true
         
         switch state {
         case .idle:
+            symbol = viewModel.hasConversationHistory ? "mic.slash" : "mic"
+        case .speaking, .listening:
             symbol = "mic"
-            statusText = viewModel.hasConversationHistory ? "" : "Tap the mic to start the conversation"
-        case .speaking:
-            symbol = "mic"
-            statusText = "AI is speaking"
-        case .listening:
-            symbol = "waveform"
-            statusText = "Listening..."
         case .thinking:
-            symbol = "brain"
-            statusText = "Thinking..."
+            symbol = "mic"
             isEnabled = false
         }
         
-        UIView.animate(withDuration: 0.25) {
-            self.userLabel.text = statusText
-            self.userLabel.textColor = state == .idle ? .secondaryLabel : UIColor(resource: .buttonTheme)
+        let isSessionActive = viewModel.isConversationActive || viewModel.hasConversationHistory
+        
+        UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: .curveEaseInOut) {
             
             var config = UIButton.Configuration.glass()
             config.image = UIImage(systemName: symbol)
@@ -237,23 +393,35 @@ class VoiceViewController: UIViewController {
             self.recordButton.isEnabled = isEnabled
             self.recordButton.alpha = isEnabled ? 1.0 : 0.6
             
-            if state == .listening {
-                self.addPulseAnimation()
+            if isSessionActive {
+                self.resetButton.transform = CGAffineTransform(translationX: -75, y: 0)
+                self.recordButton.transform = CGAffineTransform(translationX: 75, y: 0)
+                
+                self.waveformView.alpha = 1.0
+                self.startPromptLabel.alpha = 0.0
             } else {
-                self.recordButton.layer.removeAnimation(forKey: "pulse")
+                self.recordButton.transform = .identity
+                self.resetButton.transform = .identity
+                
+                self.waveformView.alpha = 0.0
+                self.startPromptLabel.alpha = 1.0
+            }
+            
+            if state != .listening {
+                self.waveformView.update(with: 0.0)
             }
         }
     }
-    
-    private func addPulseAnimation() {
-        let pulse = CABasicAnimation(keyPath: "transform.scale")
-        pulse.fromValue = 1.0
-        pulse.toValue = 1.1
-        pulse.duration = 0.8
-        pulse.autoreverses = true
-        pulse.repeatCount = .infinity
-        pulse.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        recordButton.layer.add(pulse, forKey: "pulse")
+}
+
+// MARK: - UIGestureRecognizerDelegate
+
+extension VoiceViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if let view = touch.view, view.isDescendant(of: recordButton) || view.isDescendant(of: resetButton) {
+            return false
+        }
+        return true
     }
 }
 
@@ -269,14 +437,8 @@ extension VoiceViewController: VoiceViewModelDelegate {
     
     func didUpdateTranscript(_ text: String, isUser: Bool) {
         Task { @MainActor in
-            if isUser {
-                if text == "Listening..." {
-                    self.userLabel.text = "Listening..."
-                } else {
-                    self.userLabel.text = "You're speaking..."
-                    self.showUserMessage(text)
-                }
-                self.userLabel.textColor = UIColor(resource: .buttonTheme)
+            if isUser && text != "Listening..." {
+                self.showUserMessage(text)
             }
         }
     }
@@ -293,19 +455,14 @@ extension VoiceViewController: VoiceViewModelDelegate {
     
     func didEncounterError(_ message: String) {
         Task { @MainActor in
-            self.userLabel.text = "⚠️ \(message)"
-            self.userLabel.textColor = .systemRed
-            
             let errorFeedback = UINotificationFeedbackGenerator()
             errorFeedback.notificationOccurred(.error)
-            
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 3_000_000_000)
-                if self.userLabel.text?.contains("⚠️") == true {
-                    self.userLabel.text = "Tap mic to speak"
-                    self.userLabel.textColor = .secondaryLabel
-                }
-            }
+        }
+    }
+    
+    func didUpdateAudioLevel(_ level: Float) {
+        Task { @MainActor in
+            self.waveformView.update(with: CGFloat(level))
         }
     }
 }

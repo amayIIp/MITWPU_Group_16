@@ -21,22 +21,13 @@
                                 <rect key="frame" x="20" y="172" width="353" height="592"/>
                                 <subviews>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="kbj-ja-bf9">
-                                        <rect key="frame" x="8" y="64" width="337" height="512"/>
+                                        <rect key="frame" x="8" y="8" width="337" height="568"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
                                         <color key="textColor" systemColor="labelColor"/>
                                         <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap mic to start..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gii-Km-9uf">
-                                        <rect key="frame" x="8" y="8" width="337" height="48"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="48" id="tSO-8T-RXG"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="aBo-9p-fIQ">
                                         <rect key="frame" x="86.666666666666686" y="492" width="180" height="80"/>
                                         <subviews>
@@ -72,12 +63,9 @@
                                     <constraint firstAttribute="bottom" secondItem="kbj-ja-bf9" secondAttribute="bottom" constant="16" id="4OK-bL-mvP"/>
                                     <constraint firstItem="kbj-ja-bf9" firstAttribute="leading" secondItem="M4T-nc-Tek" secondAttribute="leading" constant="8" id="4uk-ka-r0Z"/>
                                     <constraint firstItem="aBo-9p-fIQ" firstAttribute="centerX" secondItem="M4T-nc-Tek" secondAttribute="centerX" id="BxB-5x-I83"/>
-                                    <constraint firstItem="gii-Km-9uf" firstAttribute="top" secondItem="M4T-nc-Tek" secondAttribute="top" constant="8" id="FVJ-Bj-8X4"/>
-                                    <constraint firstItem="kbj-ja-bf9" firstAttribute="top" secondItem="gii-Km-9uf" secondAttribute="bottom" constant="8" symbolic="YES" id="O4n-Ai-ijB"/>
-                                    <constraint firstItem="gii-Km-9uf" firstAttribute="leading" secondItem="M4T-nc-Tek" secondAttribute="leading" constant="8" id="TEx-X7-7kF"/>
                                     <constraint firstAttribute="trailing" secondItem="kbj-ja-bf9" secondAttribute="trailing" constant="8" id="VUf-Ac-OIn"/>
                                     <constraint firstAttribute="bottom" secondItem="aBo-9p-fIQ" secondAttribute="bottom" constant="20" id="Y64-6c-Fyd"/>
-                                    <constraint firstAttribute="trailing" secondItem="gii-Km-9uf" secondAttribute="trailing" constant="8" id="b5x-oS-tlU"/>
+                                    <constraint firstItem="kbj-ja-bf9" firstAttribute="top" secondItem="M4T-nc-Tek" secondAttribute="top" constant="8" id="qxZ-Av-DzO"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -101,7 +89,6 @@
                         <outlet property="aiTextView" destination="kbj-ja-bf9" id="QjS-Yv-wLk"/>
                         <outlet property="recordButton" destination="sl8-LR-ROz" id="rec-Bt-001"/>
                         <outlet property="resetButton" destination="Pki-j3-fUi" id="rst-Bt-002"/>
-                        <outlet property="userLabel" destination="gii-Km-9uf" id="emt-nF-m7O"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8Ex-fJ-nsA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -127,7 +114,6 @@
             </objects>
             <point key="canvasLocation" x="2906.1068702290077" y="124.64788732394366"/>
         </scene>
-
     </scenes>
     <resources>
         <image name="bubble.left.and.text.bubble.right" catalog="system" width="128" height="96"/>

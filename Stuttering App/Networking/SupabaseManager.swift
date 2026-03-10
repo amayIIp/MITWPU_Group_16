@@ -10,8 +10,8 @@ class SupabaseManager {
     static let shared = SupabaseManager()
     
     // TODO: Replace with actual Supabase URL and Anon Key
-    private let supabaseURL = URL(string: "https://vmvsfyvcqsptxfvokvkh.supabase.co")!
-    private let supabaseKey = "sb_publishable_fj5YHHkWcD7BOCRk4kvBkQ_1iRfFmFk"
+    private let supabaseURL = URL(string: "https://zolaxhyjzkvupkmogdpo.supabase.co")!
+    private let supabaseKey = "sb_publishable_kqZYPg1jnKQEXEYn0OS1Lw_m8Z3aYKP"
     
     let client: SupabaseClient
     
