@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24127" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="UPJ-sX-5LM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="UPJ-sX-5LM">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -37,7 +37,8 @@
                                                     <constraint firstAttribute="height" constant="50" id="YJH-Ub-eGe"/>
                                                 </constraints>
                                                 <state key="normal" title="Button"/>
-                                                <buttonConfiguration key="configuration" style="filled" title=" Sign in with Apple" cornerStyle="capsule">
+                                                <buttonConfiguration key="configuration" style="filled" image="google-5" title="Continue with Google" imagePadding="18" cornerStyle="capsule">
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="8"/>
                                                     <fontDescription key="titleFontDescription" type="system" pointSize="16"/>
                                                     <color key="baseBackgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 </buttonConfiguration>
@@ -54,7 +55,7 @@
                                                     <color key="baseBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </buttonConfiguration>
                                                 <connections>
-                                                    <action selector="buttonATapped:" destination="QqP-2e-2ML" eventType="touchUpInside" id="Aac-Mp-Vgr"/>
+                                                    <action selector="signUpTapped:" destination="QqP-2e-2ML" eventType="touchUpInside" id="1hK-Nx-Dyp"/>
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bZ6-NB-0Tu">
@@ -69,7 +70,7 @@
                                                     <color key="baseBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </buttonConfiguration>
                                                 <connections>
-                                                    <action selector="buttonBTapped:" destination="QqP-2e-2ML" eventType="touchUpInside" id="qst-5V-Oty"/>
+                                                    <action selector="signInTapped:" destination="QqP-2e-2ML" eventType="touchUpInside" id="0TU-bD-bbJ"/>
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DXj-eO-WXL">
@@ -287,6 +288,7 @@
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x6M-94-lHv">
                                         <rect key="frame" x="178" y="0.0" width="72" height="32"/>
+                                        <color key="tintColor" name="ButtonTheme"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="Sign In">
                                             <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="15"/>
@@ -324,7 +326,7 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="50" translatesAutoresizingMaskIntoConstraints="NO" id="7Bk-Oc-boS">
-                                <rect key="frame" x="62.666666666666657" y="586.66666666666663" width="268" height="56"/>
+                                <rect key="frame" x="115.66666666666669" y="586.66666666666663" width="162" height="56"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sy9-1f-Ug4">
                                         <rect key="frame" x="0.0" y="0.0" width="56" height="56"/>
@@ -340,6 +342,7 @@
                                         <rect key="frame" x="106" y="0.0" width="56" height="56"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="6hR-I6-SuK" secondAttribute="height" multiplier="1:1" id="4tO-YD-EUT"/>
+                                            <constraint firstAttribute="width" secondItem="6hR-I6-SuK" secondAttribute="height" multiplier="1:1" id="ISs-Zz-fRK"/>
                                             <constraint firstAttribute="width" constant="56" id="L5o-xC-fXR"/>
                                         </constraints>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -349,25 +352,7 @@
                                             <color key="baseBackgroundColor" systemColor="systemGray2Color"/>
                                         </buttonConfiguration>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bIT-ON-VK7">
-                                        <rect key="frame" x="212.00000000000003" y="0.0" width="55.999999999999972" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" secondItem="bIT-ON-VK7" secondAttribute="height" multiplier="1:1" id="a35-se-Coh"/>
-                                            <constraint firstAttribute="width" constant="56" id="a7i-Fi-ccv"/>
-                                        </constraints>
-                                        <color key="tintColor" red="0.84661994460000001" green="0.72910584079999996" blue="0.12863557110000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="tinted" image="person.3.fill" catalog="system" title="">
-                                            <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage"/>
-                                            <color key="baseBackgroundColor" systemColor="systemGray2Color"/>
-                                        </buttonConfiguration>
-                                    </button>
                                 </subviews>
-                                <constraints>
-                                    <constraint firstItem="bIT-ON-VK7" firstAttribute="width" secondItem="bIT-ON-VK7" secondAttribute="height" multiplier="1:1" id="DM0-4N-Bn8"/>
-                                    <constraint firstItem="6hR-I6-SuK" firstAttribute="width" secondItem="6hR-I6-SuK" secondAttribute="height" multiplier="1:1" id="ISs-Zz-fRK"/>
-                                    <constraint firstItem="bIT-ON-VK7" firstAttribute="width" secondItem="bIT-ON-VK7" secondAttribute="height" multiplier="1:1" id="nuY-I0-L7T"/>
-                                </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="ABU-C0-xzx"/>
@@ -585,7 +570,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GCv-xZ-tmW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-7016.0305343511445" y="2213.3802816901411"/>
+            <point key="canvasLocation" x="-6830" y="2213"/>
         </scene>
         <!--Welcome back !-->
         <scene sceneID="9E4-yP-eCZ">
@@ -748,14 +733,14 @@
                                 </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="continueButtonTapped:" destination="wNi-qZ-XqS" eventType="touchUpInside" id="5ly-9l-M6y"/>
-                                    <segue destination="GcJ-lZ-6Xr" kind="show" id="fp2-v8-OXn"/>
+                                    <segue destination="GcJ-lZ-6Xr" kind="show" id="rKG-9q-ukn"/>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7nx-mV-dY7">
                                 <rect key="frame" x="20" y="244" width="353" height="41"/>
                                 <subviews>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2L5-mU-yu2">
-                                        <rect key="frame" x="8" y="11.333333333333345" width="337" height="18.666666666666671"/>
+                                        <rect key="frame" x="8" y="9.6666666666666572" width="337" height="22"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
@@ -846,7 +831,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NXx-di-doU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-3491" y="1477"/>
+            <point key="canvasLocation" x="-2565.6488549618321" y="1476.7605633802818"/>
         </scene>
         <!--Result-->
         <scene sceneID="nT6-vX-2xs">
@@ -1095,7 +1080,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="leb-8D-aaO" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1958" y="1477"/>
+            <point key="canvasLocation" x="-1031.2977099236641" y="1476.7605633802818"/>
         </scene>
         <!--About Speech Patterns-->
         <scene sceneID="LLa-eb-DSM">
@@ -1208,7 +1193,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qGK-oT-K1D" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-126" y="1489"/>
+            <point key="canvasLocation" x="799.23664122137404" y="1488.7323943661972"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="NhZ-Cz-F2g">
@@ -1375,12 +1360,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6Wq-65-QUd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2739.6946564885493" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="-1812.9770992366412" y="1476.7605633802818"/>
         </scene>
         <!--Phonemes Selection View Controller-->
         <scene sceneID="vDw-kt-QEp">
             <objects>
-                <viewController storyboardIdentifier="onboardingPg2" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GcJ-lZ-6Xr" customClass="PhonemesSelectionViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController useStoryboardIdentifierAsRestorationIdentifier="YES" id="GcJ-lZ-6Xr" customClass="PhonemesSelectionViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="et2-5h-7sB">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1909,7 +1894,7 @@ to say?</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="TT0-7k-Rrc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-4252.6717557251905" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="-3325.9541984732823" y="1476.7605633802818"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="or6-pc-YL2">
@@ -1932,7 +1917,7 @@ to say?</string>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tSA-ry-Pjf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1060" y="1489"/>
+            <point key="canvasLocation" x="-133.58778625954199" y="1488.7323943661972"/>
         </scene>
         <!--Login View Controller-->
         <scene sceneID="Mgd-6X-12b">
@@ -1963,7 +1948,7 @@ to say?</string>
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
                                                 </subviews>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <color key="backgroundColor" name="bg"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="60" id="OV7-xC-Qrp"/>
                                                     <constraint firstItem="yhH-kr-BDG" firstAttribute="leading" secondItem="X4f-HA-SMH" secondAttribute="leading" constant="16" id="Ucx-jW-aug"/>
@@ -1998,7 +1983,7 @@ to say?</string>
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
                                                 </subviews>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <color key="backgroundColor" name="bg"/>
                                                 <constraints>
                                                     <constraint firstItem="lTj-Rb-dww" firstAttribute="top" secondItem="z0B-5G-3Wn" secondAttribute="top" constant="10" id="0o9-Z3-97n"/>
                                                     <constraint firstAttribute="height" constant="60" id="LXh-1q-cV5"/>
@@ -2028,6 +2013,7 @@ to say?</string>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vGn-AO-e6W">
                                         <rect key="frame" x="162.33333333333331" y="0.0" width="79.333333333333314" height="32"/>
+                                        <color key="tintColor" name="ButtonTheme"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="Sign Up">
                                             <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="15"/>
@@ -2040,6 +2026,7 @@ to say?</string>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YO5-kD-JJB">
                                 <rect key="frame" x="238.66666666666663" y="345.66666666666669" width="142.33333333333337" height="31"/>
+                                <color key="tintColor" name="ButtonTheme"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Forgot Password?">
                                     <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="14"/>
@@ -2072,7 +2059,7 @@ to say?</string>
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="50" translatesAutoresizingMaskIntoConstraints="NO" id="QRE-QF-icQ">
-                                <rect key="frame" x="62.666666666666657" y="513.33333333333337" width="268" height="56"/>
+                                <rect key="frame" x="115.66666666666669" y="513.33333333333337" width="162" height="56"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GaK-bv-Efw">
                                         <rect key="frame" x="0.0" y="0.0" width="56" height="56"/>
@@ -2087,6 +2074,7 @@ to say?</string>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="I8g-yH-tKA">
                                         <rect key="frame" x="106" y="0.0" width="56" height="56"/>
                                         <constraints>
+                                            <constraint firstAttribute="width" secondItem="I8g-yH-tKA" secondAttribute="height" multiplier="1:1" id="9xf-YH-0e6"/>
                                             <constraint firstAttribute="width" constant="56" id="kca-SF-hxA"/>
                                             <constraint firstAttribute="width" secondItem="I8g-yH-tKA" secondAttribute="height" multiplier="1:1" id="sXq-jz-mF2"/>
                                         </constraints>
@@ -2097,29 +2085,11 @@ to say?</string>
                                             <color key="baseBackgroundColor" systemColor="systemGray2Color"/>
                                         </buttonConfiguration>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gdl-p2-9gi">
-                                        <rect key="frame" x="212.00000000000003" y="0.0" width="55.999999999999972" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" secondItem="gdl-p2-9gi" secondAttribute="height" multiplier="1:1" id="5fs-ec-qe7"/>
-                                            <constraint firstAttribute="width" constant="56" id="a8U-K3-wSj"/>
-                                        </constraints>
-                                        <color key="tintColor" red="0.84661994460000001" green="0.72910584079999996" blue="0.12863557110000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="tinted" image="person.3.fill" catalog="system" title="">
-                                            <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage"/>
-                                            <color key="baseBackgroundColor" systemColor="systemGray2Color"/>
-                                        </buttonConfiguration>
-                                    </button>
                                 </subviews>
-                                <constraints>
-                                    <constraint firstItem="gdl-p2-9gi" firstAttribute="width" secondItem="gdl-p2-9gi" secondAttribute="height" multiplier="1:1" id="21M-pi-tsS"/>
-                                    <constraint firstItem="gdl-p2-9gi" firstAttribute="width" secondItem="gdl-p2-9gi" secondAttribute="height" multiplier="1:1" id="5GW-SS-gY9"/>
-                                    <constraint firstItem="I8g-yH-tKA" firstAttribute="width" secondItem="I8g-yH-tKA" secondAttribute="height" multiplier="1:1" id="9xf-YH-0e6"/>
-                                </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="KuQ-2Z-AUA"/>
-                        <color key="backgroundColor" name="bg"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="bB3-oU-ch1" firstAttribute="top" secondItem="YO5-kD-JJB" secondAttribute="bottom" constant="24" id="6fQ-E5-dSn"/>
                             <constraint firstItem="KuQ-2Z-AUA" firstAttribute="trailing" secondItem="YO5-kD-JJB" secondAttribute="trailing" constant="12" id="GEu-Gy-lHk"/>
@@ -2146,7 +2116,29 @@ to say?</string>
             </objects>
             <point key="canvasLocation" x="-8625" y="2303"/>
         </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="3Dy-wB-oop">
+            <objects>
+                <navigationController storyboardIdentifier="PhonemesSelectionViewController" automaticallyAdjustsScrollViewInsets="NO" id="C8o-8P-lZQ" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationItem key="navigationItem" id="E2E-A8-3mG"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="eUd-9O-Vp3">
+                        <rect key="frame" x="0.0" y="118" width="393" height="54"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="GcJ-lZ-6Xr" kind="relationship" relationship="rootViewController" id="AMt-h6-B06"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ysq-fR-IK8" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-4184" y="1477"/>
+        </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="rKG-9q-ukn"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <image name="3ulzw5ywiitmi6643fo" width="253" height="99"/>
         <image name="apple.logo" catalog="system" width="105" height="128"/>
@@ -2154,7 +2146,6 @@ to say?</string>
         <image name="chevron.right" catalog="system" width="97" height="128"/>
         <image name="google-5" width="32" height="32"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
-        <image name="person.3.fill" catalog="system" width="128" height="66"/>
         <image name="repeat" catalog="system" width="128" height="98"/>
         <namedColor name="AccentColor">
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
