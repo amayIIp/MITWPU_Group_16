@@ -151,7 +151,7 @@ class VoiceViewController: UIViewController {
         resetButton.setTitle("", for: .normal)
         
         var recordConfig = UIButton.Configuration.glass()
-        recordConfig.image = UIImage(systemName: "mic")
+        recordConfig.image = UIImage(systemName: "mic.slash")
         recordConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 24, weight: .semibold)
         recordButton.configuration = recordConfig
         recordButton.setTitle("", for: .normal)
@@ -299,7 +299,7 @@ class VoiceViewController: UIViewController {
         userMessageLabel.text = text
     }
     
-    private func resetDisplay() {
+    private func resetDisplay(completion: (() -> Void)? = nil) {
         UIView.animate(withDuration: 0.4, delay: 0, options: [.curveEaseIn]) {
             // Fly labels UP and out when clearing
             self.aiMessageLabel?.transform = CGAffineTransform(translationX: 0, y: -40)
@@ -319,6 +319,8 @@ class VoiceViewController: UIViewController {
             // Reset their position so they don't stay hidden off-screen
             self.aiMessageLabel?.transform = .identity
             self.userMessageLabel?.transform = .identity
+            
+            completion?()
         }
     }
     
@@ -330,7 +332,7 @@ class VoiceViewController: UIViewController {
         if viewModel.isConversationActive || viewModel.hasConversationHistory {
             showResetConfirmation()
         } else {
-            viewModel.resetConversation()
+            showMicPromptAlert()
         }
     }
     
@@ -357,10 +359,21 @@ class VoiceViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Restart", style: .destructive) { [weak self] _ in
-            self?.resetDisplay()
-            self?.viewModel.resetConversation()
+            self?.resetDisplay {
+                self?.viewModel.resetConversation()
+            }
         })
         
+        present(alert, animated: true)
+    }
+    
+    private func showMicPromptAlert() {
+        let alert = UIAlertController(
+            title: "No Active Conversation",
+            message: "Tap the mic button to unmute the microphone and start the conversation.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
     
@@ -372,7 +385,7 @@ class VoiceViewController: UIViewController {
         
         switch state {
         case .idle:
-            symbol = viewModel.hasConversationHistory ? "mic.slash" : "mic"
+            symbol = "mic.slash"
         case .speaking, .listening:
             symbol = "mic"
         case .thinking:
@@ -472,7 +485,7 @@ extension VoiceViewController: VoiceViewModelDelegate {
 extension VoiceViewController: UITabBarControllerDelegate {
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        if viewModel.isConversationActive {
+        if viewModel.isConversationActive || viewModel.hasConversationHistory {
             pendingTabViewController = viewController
             showExitConversationAlert()
             return false

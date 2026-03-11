@@ -931,7 +931,7 @@
                                     </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="fRO-vN-NvU" firstAttribute="bottom" secondItem="ZnF-ga-kAH" secondAttribute="bottom" id="0n8-87-F7t"/>
+                                    <constraint firstItem="fRO-vN-NvU" firstAttribute="bottom" secondItem="ZnF-ga-kAH" secondAttribute="bottom" constant="9" id="0n8-87-F7t"/>
                                     <constraint firstItem="fRO-vN-NvU" firstAttribute="trailing" secondItem="ZnF-ga-kAH" secondAttribute="trailing" id="2kU-Sg-VXu"/>
                                     <constraint firstItem="fRO-vN-NvU" firstAttribute="leading" secondItem="ZnF-ga-kAH" secondAttribute="leading" constant="20" id="Bhw-aE-Y5Y"/>
                                     <constraint firstItem="fRO-vN-NvU" firstAttribute="width" secondItem="eWd-ZA-rV6" secondAttribute="width" constant="-40" id="d6g-XD-u0E"/>
