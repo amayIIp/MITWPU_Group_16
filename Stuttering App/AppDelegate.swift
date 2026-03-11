@@ -17,6 +17,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AwardsManager.shared.openDatabase()
         AwardsManager.shared.seedDatabaseIfNeeded()
         
+        Task { @MainActor in
+            BackgroundParagraphManager.shared.startInitialBatch()
+        }
+        
         return true
     }
 

@@ -147,6 +147,12 @@ class ExpandableMenuViewController: UIViewController, UITableViewDelegate, UITab
         print("DEBUG: Generating AI Story for topic: \(topic)")
         let troubledLetters = LogManager.shared.getTopStruggledLetters(limit: 5)
         
+        if let preGeneratedText = BackgroundParagraphManager.shared.consumeParagraph(for: topic, troubledLetters: troubledLetters) {
+            print("DEBUG: Using pre-generated AI Story.")
+            self.showDetailScreen(title: topic, text: preGeneratedText)
+            return
+        }
+        
         let activityIndicator = UIActivityIndicatorView(style: .large)
         activityIndicator.center = self.view.center
         activityIndicator.color = .gray
