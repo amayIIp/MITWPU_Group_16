@@ -87,25 +87,25 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             DispatchQueue.main.async {
                 
                 if let overall = overall {
-                    self.fluencyGrowth.text = "\(Int(overall.fluencyGrowthPercent))%"
+                    self.fluencyGrowth.text = "\(Int(overall.fluencyGrowthPercent))"
                 } else {
                     self.fluencyGrowth.text = "--"
                 }
                 
                 if let overall = overall {
-                    self.blocks.text = "\(Int(overall.avgBlockPercent))%"
+                    self.blocks.text = "\(Int(overall.avgBlockPercent))"
                 } else {
                     self.blocks.text = "--"
                 }
                 
                 if let overall = overall {
-                    self.averageAccuracy.text = "\(Int(overall.avgAccuracy))%"
+                    self.averageAccuracy.text = "\(Int(overall.avgAccuracy))"
                 } else {
                     self.averageAccuracy.text = "--"
                 }
                 
                 if let overall = overall {
-                    self.improvement.text = "\(Int(overall.improvementPercent))%"
+                    self.improvement.text = "\(Int(overall.improvementPercent))"
                 } else {
                     self.improvement.text = "--"
                 }
@@ -311,12 +311,12 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             case 2 where !readingLogs.isEmpty:
                 let totalReadingMinutes = calculateTotalDuration(for: readingLogs)
                 titleText = "Reading"
-                titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
+                titleText1 = "\(totalReadingMinutes)/\(readingTarget) mins"
                 
             case 3 where !conversationLogs.isEmpty:
                 let totalConvoMinutes = calculateTotalDuration(for: conversationLogs)
                 titleText = "Conversation"
-                titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
+                titleText1 = "\(totalConvoMinutes)/\(conversationTarget) mins"
 
             default:
                 break
@@ -336,13 +336,13 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             let totalReadingMinutes = calculateTotalDuration(for: readingLogs)
             guard !readingLogs.isEmpty else { return nil }
             titleText = "Reading"
-            titleText1 = "\(totalReadingMinutes)/\(readingTarget)"
+            titleText1 = "\(totalReadingMinutes)/\(readingTarget) mins"
 
         case .conversation:
             let totalConvoMinutes = calculateTotalDuration(for: conversationLogs)
             guard !conversationLogs.isEmpty else { return nil }
             titleText = "Conversation"
-            titleText1 = "\(totalConvoMinutes)/\(conversationTarget)"
+            titleText1 = "\(totalConvoMinutes)/\(conversationTarget) mins"
         }
 
         guard let title = titleText,
@@ -371,11 +371,11 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         countLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 10),
+            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 14),
             titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
             titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8),
 
-            countLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 10),
+            countLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 14),
             countLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
             countLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
         ])

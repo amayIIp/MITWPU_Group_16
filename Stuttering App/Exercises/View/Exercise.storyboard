@@ -724,16 +724,16 @@
                                 <rect key="frame" x="20" y="182.00000000000003" width="353" height="470.66666666666674"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="knr-et-AD8">
-                                        <rect key="frame" x="84.666666666666671" y="208.66666666666669" width="183.66666666666663" height="53.666666666666686"/>
+                                        <rect key="frame" x="20" y="208.66666666666669" width="313" height="53.666666666666686"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cues :" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aBa-wx-bE4">
-                                                <rect key="frame" x="66.999999999999986" y="0.0" width="50" height="20.333333333333332"/>
+                                                <rect key="frame" x="131.66666666666666" y="0.0" width="50" height="20.333333333333332"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="How was your day?" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yeU-62-eTP">
-                                                <rect key="frame" x="0.0" y="27.333333333333314" width="183.66666666666666" height="26.333333333333329"/>
+                                                <rect key="frame" x="64.666666666666671" y="27.333333333333314" width="183.66666666666663" height="26.333333333333329"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
@@ -743,8 +743,10 @@
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
+                                    <constraint firstItem="knr-et-AD8" firstAttribute="leading" secondItem="kuf-8s-STq" secondAttribute="leading" constant="20" id="CPq-Cx-BoT"/>
                                     <constraint firstItem="knr-et-AD8" firstAttribute="centerX" secondItem="kuf-8s-STq" secondAttribute="centerX" id="SRV-RT-eSZ"/>
                                     <constraint firstItem="knr-et-AD8" firstAttribute="centerY" secondItem="kuf-8s-STq" secondAttribute="centerY" id="ndc-DV-biN"/>
+                                    <constraint firstAttribute="trailing" secondItem="knr-et-AD8" secondAttribute="trailing" constant="20" id="zHI-Vk-biQ"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">

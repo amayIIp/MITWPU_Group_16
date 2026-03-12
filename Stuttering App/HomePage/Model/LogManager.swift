@@ -1147,14 +1147,34 @@ extension LogManager {
         }
         sqlite3_finalize(stmt)
 
+//        guard !days.isEmpty else { return 0 }
+//        let todayDay = Int(Date().timeIntervalSince1970 / 86400)
+//        guard days[0] == todayDay || days[0] == todayDay - 1 else { return 0 }
+//
+//        var streak = 1
+//        for i in 1 ..< days.count {
+//            if days[i - 1] - days[i] == 1 { streak += 1 } else { break }
+//        }
+//        return streak
+        
         guard !days.isEmpty else { return 0 }
+
         let todayDay = Int(Date().timeIntervalSince1970 / 86400)
+
         guard days[0] == todayDay || days[0] == todayDay - 1 else { return 0 }
 
         var streak = 1
-        for i in 1 ..< days.count {
-            if days[i - 1] - days[i] == 1 { streak += 1 } else { break }
+
+        if days.count > 1 {
+            for i in 1..<days.count {
+                if days[i - 1] - days[i] == 1 {
+                    streak += 1
+                } else {
+                    break
+                }
+            }
         }
+
         return streak
     }
 

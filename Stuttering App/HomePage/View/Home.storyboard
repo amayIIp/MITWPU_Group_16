@@ -914,6 +914,7 @@
                                                     <constraint firstItem="Dqs-sR-mWl" firstAttribute="top" secondItem="AU3-es-7RF" secondAttribute="top" constant="12" id="7Kj-MG-BKy"/>
                                                     <constraint firstAttribute="trailing" secondItem="Dqs-sR-mWl" secondAttribute="trailing" constant="12" id="HJA-0R-CJp"/>
                                                     <constraint firstItem="Dqs-sR-mWl" firstAttribute="leading" secondItem="AU3-es-7RF" secondAttribute="leading" constant="12" id="Hmz-gT-Cph"/>
+                                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="100" id="ruW-1y-pGL"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -931,7 +932,7 @@
                                     </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="fRO-vN-NvU" firstAttribute="bottom" secondItem="ZnF-ga-kAH" secondAttribute="bottom" constant="9" id="0n8-87-F7t"/>
+                                    <constraint firstItem="fRO-vN-NvU" firstAttribute="bottom" secondItem="ZnF-ga-kAH" secondAttribute="bottom" constant="-9" id="0n8-87-F7t"/>
                                     <constraint firstItem="fRO-vN-NvU" firstAttribute="trailing" secondItem="ZnF-ga-kAH" secondAttribute="trailing" id="2kU-Sg-VXu"/>
                                     <constraint firstItem="fRO-vN-NvU" firstAttribute="leading" secondItem="ZnF-ga-kAH" secondAttribute="leading" constant="20" id="Bhw-aE-Y5Y"/>
                                     <constraint firstItem="fRO-vN-NvU" firstAttribute="width" secondItem="eWd-ZA-rV6" secondAttribute="width" constant="-40" id="d6g-XD-u0E"/>
