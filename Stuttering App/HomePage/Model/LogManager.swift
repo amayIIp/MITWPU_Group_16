@@ -1213,6 +1213,37 @@ extension LogManager {
         if d > 1  { return .down }
         return .neutral
     }
+    
+    func resetDatabaseForNewUser() {
+        // 1. Safely close the existing SQLite connection in memory
+        if db != nil {
+            if sqlite3_close(db) != SQLITE_OK {
+                print("Warning: Could not close database perfectly.")
+            }
+            db = nil
+        }
+        
+        currentUserId = nil
+        
+        do {
+            let fileURL = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent(dbName)
+            
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                try FileManager.default.removeItem(at: fileURL)
+                print("Old database file permanently deleted.")
+            }
+        } catch {
+            print("Error deleting database file: \(error)")
+        }
+        
+        // 4. Re-initialize for the next user/guest session
+        openDatabase()
+        createTables()
+        initializeDefaultGoals()
+        print("Database engine rebooted and ready for Guest.")
+    }
 }
 
 private extension Int {

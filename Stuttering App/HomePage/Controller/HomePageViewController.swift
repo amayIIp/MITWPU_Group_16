@@ -236,14 +236,16 @@ class HomePageViewController: UIViewController {
             present(profileNav, animated: true)
             
         } else {
-            guard let guestNav = storyboard.instantiateViewController(withIdentifier: "GuestAuthNav") as? UINavigationController else { return }
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
             
-            guestNav.modalPresentationStyle = .pageSheet
-            if let sheet = guestNav.sheetPresentationController {
+            nextModalVC.modalPresentationStyle = .pageSheet
+            if let sheet = nextModalVC.sheetPresentationController {
+                sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
             
-            present(guestNav, animated: true)
+            present(nextModalVC, animated: true)
         }
     }
 

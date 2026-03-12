@@ -53,6 +53,25 @@ class ProfileTableViewController: UITableViewController {
                 window.rootViewController = landingNav
             }, completion: nil)
         }
+        
+        clearAllAppData()
     }
     
+    private func clearAllAppData() {
+        print("--- Initiating Complete Session Teardown ---")
+        
+        // 1. Clear UserDefaults
+        if let bundleID = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+        }
+        
+        // 2. Clear secure storage if applicable (e.g., Keychain)
+        StorageManager.shared.clearEmail() // Assuming this exists based on your LogManager code
+        
+        // 3. Wipe and reboot all SQLite databases
+        LogManager.shared.resetDatabaseForNewUser()
+        DatabaseManager.shared.resetDatabaseForNewUser()
+        AwardsManager.shared.resetDatabaseForNewUser()
+        
+        print("--- Teardown Complete. Ready for next session. ---")    }
 }

@@ -196,6 +196,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             UIView.animate(withDuration: 0.4) {
                 self.view.layoutIfNeeded()
                 self.continueButton.alpha = 1.0
+                self.nextButton.isEnabled = false
             }
         }
     }

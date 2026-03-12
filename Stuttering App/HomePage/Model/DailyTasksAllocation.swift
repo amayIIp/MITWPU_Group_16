@@ -15,10 +15,21 @@ class LogicMaker {
         let defaults = UserDefaults.standard
         let calendar = Calendar.current
         
+        // 1. Detect if this is a fresh install (UserDefaults is completely empty)
+        let isFirstLaunchAfterInstall = defaults.object(forKey: kLastRefreshDate) == nil
+        
         let lastDate = defaults.object(forKey: kLastRefreshDate) as? Date ?? Date.distantPast
+        
         if !calendar.isDateInToday(lastDate) {
             print("LogicMaker: New Day Detected. Resetting tasks...")
-            resetDailyTasks(isFromLogin: isFromLogin)
+            
+            // 2. Protect the cloud: Treat a fresh install with the same safety as a login.
+            // This prevents overwriting the cloud state before the sync engine can download it.
+            let safeToBypassCloud = isFromLogin || isFirstLaunchAfterInstall
+            
+            resetDailyTasks(isFromLogin: safeToBypassCloud)
+            
+            // 3. Set the anchor date for tomorrow
             defaults.set(Date(), forKey: kLastRefreshDate)
         } else {
             print("LogicMaker: Same day. No reset needed.")

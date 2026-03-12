@@ -265,4 +265,35 @@ extension AwardsManager {
         
         return result
     }
+    
+    func resetDatabaseForNewUser() {
+        // 1. Safely close the existing SQLite connection in memory
+        if db != nil {
+            if sqlite3_close(db) != SQLITE_OK {
+                print("Warning: Could not close Awards database perfectly.")
+            }
+            db = nil
+        }
+        
+        // 2. Delete the physical SQLite file from the Documents directory
+        do {
+            let fileUrl = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent("AwardsDB.sqlite")
+            
+            if FileManager.default.fileExists(atPath: fileUrl.path) {
+                try FileManager.default.removeItem(at: fileUrl)
+                print("Old Awards database file permanently deleted.")
+            }
+        } catch {
+            print("Error deleting Awards database file: \(error)")
+        }
+        
+        // 3. Re-initialize and re-seed from JSON for the new user
+        openDatabase()
+        seedDatabaseIfNeeded()
+        
+        print("Awards Database engine rebooted and ready for Guest.")
+    }
+    
 }

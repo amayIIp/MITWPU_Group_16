@@ -323,5 +323,40 @@ class DatabaseManager {
         sqlite3_finalize(stmt)
         return count
     }
+    
+    func resetDatabaseForNewUser() {
+        // 1. Safely close the existing SQLite connection in memory
+        if db != nil {
+            if sqlite3_close(db) != SQLITE_OK {
+                print("Warning: Could not close Spasht database perfectly.")
+            }
+            db = nil
+        }
+        
+        // 2. Clear cached memory variables
+        isDailyGoalCompleted = false
+        
+        // 3. Delete the physical SQLite file from the Documents directory
+        do {
+            let fileUrl = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent("Spasht.sqlite")
+            
+            if FileManager.default.fileExists(atPath: fileUrl.path) {
+                try FileManager.default.removeItem(at: fileUrl)
+                print("Old Spasht database file permanently deleted.")
+            }
+        } catch {
+            print("Error deleting Spasht database file: \(error)")
+        }
+        
+        // 4. Re-initialize the tables and default data for the new user
+        openDatabase()
+        createTables()
+        populateInitialJourney()
+        initializeStreakIfNeeded()
+        
+        print("Spasht Database engine rebooted and ready for Guest.")
+    }
 
 }
