@@ -36,6 +36,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupButtons()
         createParagraphLabels()
         highlightParagraph(at: currentIndex, animated: false)

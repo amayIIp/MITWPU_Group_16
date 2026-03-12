@@ -26,25 +26,13 @@
                                 </constraints>
                             </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IBB-4Q-b5v">
-                                <rect key="frame" x="0.0" y="592" width="393" height="260"/>
+                                <rect key="frame" x="0.0" y="650" width="393" height="202"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="sTZ-M9-jL0">
-                                        <rect key="frame" x="24" y="24" width="345" height="204"/>
+                                        <rect key="frame" x="24" y="24" width="345" height="146"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="U7H-OF-EJj">
-                                                <rect key="frame" x="0.0" y="0.0" width="345" height="50"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="50" id="YJH-Ub-eGe"/>
-                                                </constraints>
-                                                <state key="normal" title="Button"/>
-                                                <buttonConfiguration key="configuration" style="filled" image="google-5" title="Continue with Google" imagePadding="18" cornerStyle="capsule">
-                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="8"/>
-                                                    <fontDescription key="titleFontDescription" type="system" pointSize="16"/>
-                                                    <color key="baseBackgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                                </buttonConfiguration>
-                                            </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0mP-7F-HIq">
-                                                <rect key="frame" x="0.0" y="58" width="345" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="345" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="zxF-6I-5vk"/>
                                                 </constraints>
@@ -59,7 +47,7 @@
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bZ6-NB-0Tu">
-                                                <rect key="frame" x="0.0" y="116" width="345" height="50"/>
+                                                <rect key="frame" x="0.0" y="58" width="345" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="9SK-Df-ofM"/>
                                                 </constraints>
@@ -74,7 +62,7 @@
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DXj-eO-WXL">
-                                                <rect key="frame" x="0.0" y="174" width="345" height="30"/>
+                                                <rect key="frame" x="0.0" y="116" width="345" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="30" id="A4N-Pt-CS9"/>
                                                 </constraints>
@@ -105,10 +93,10 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="snV-ik-Att">
-                                <rect key="frame" x="0.0" y="181" width="393" height="411"/>
+                                <rect key="frame" x="0.0" y="181" width="393" height="469"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="Mls-Qx-OPB">
-                                        <rect key="frame" x="28" y="132" width="337" height="147.33333333333337"/>
+                                        <rect key="frame" x="28" y="161" width="337" height="147.33333333333337"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fluency starts here." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="O1h-MG-fF4">
                                                 <rect key="frame" x="0.0" y="0.0" width="337" height="114.66666666666667"/>
