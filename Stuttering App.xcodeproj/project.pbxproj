@@ -153,6 +153,7 @@
 				DEVELOPMENT_TEAM = S7XX4YW67N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow microphone usage for audio input ";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow speech recognition for speech test ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -188,6 +189,7 @@
 				DEVELOPMENT_TEAM = S7XX4YW67N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow microphone usage for audio input ";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow speech recognition for speech test ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
