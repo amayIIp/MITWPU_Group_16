@@ -91,6 +91,9 @@ class VoiceViewController: UIViewController {
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     private var pendingTabViewController: UIViewController?
     
+    private var sessionTimer: Timer?
+    private var sessionDuration: TimeInterval = 0
+    
     // Programmatic UI Elements
     private var aiMessageLabel: UILabel!
     private var userMessageLabel: UILabel!
@@ -170,24 +173,39 @@ class VoiceViewController: UIViewController {
             waveformView.heightAnchor.constraint(equalToConstant: 100)
         ])
     }
+        
+    private func startSessionTimer() {
+        // Prevent multiple timers from spawning
+        guard sessionTimer == nil else { return }
+        sessionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.sessionDuration += 1
+        }
+    }
+    
+    private func stopAndResetSessionTimer() {
+        sessionTimer?.invalidate()
+        sessionTimer = nil
+        sessionDuration = 0
+    }
     
     private func setupStartPromptLabel() {
-            startPromptLabel.translatesAutoresizingMaskIntoConstraints = false
-            startPromptLabel.text = "Tap mic to start"
-            startPromptLabel.textColor = .secondaryLabel
-            startPromptLabel.font = .systemFont(ofSize: 16, weight: .medium)
-            startPromptLabel.textAlignment = .center
-            startPromptLabel.alpha = 1.0
-            startPromptLabel.isUserInteractionEnabled = false
-            view.addSubview(startPromptLabel)
-            
-            NSLayoutConstraint.activate([
-                // Perfectly centered horizontally
-                startPromptLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                // Perfectly centered vertically in the middle of the screen
-                startPromptLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-            ])
-        }
+        startPromptLabel.translatesAutoresizingMaskIntoConstraints = false
+        startPromptLabel.text = "Tap mic to start"
+        startPromptLabel.textColor = .secondaryLabel
+        startPromptLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        startPromptLabel.textAlignment = .center
+        startPromptLabel.alpha = 1.0
+        startPromptLabel.isUserInteractionEnabled = false
+        view.addSubview(startPromptLabel)
+        
+        NSLayoutConstraint.activate([
+            // Perfectly centered horizontally
+            startPromptLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            // Perfectly centered vertically in the middle of the screen
+            startPromptLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
     private func setupChatLabels() {
         guard let container = aiTextView.superview else { return }
         
@@ -338,6 +356,7 @@ class VoiceViewController: UIViewController {
     
     @IBAction func didTapRecord(_ sender: UIButton) {
         feedbackGenerator.impactOccurred()
+        startSessionTimer()
         
         if viewModel.state == .listening {
             viewModel.stopListening()
@@ -359,6 +378,7 @@ class VoiceViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Restart", style: .destructive) { [weak self] _ in
+            self?.stopAndResetSessionTimer() // 🛠️ Reset the timer
             self?.resetDisplay {
                 self?.viewModel.resetConversation()
             }
@@ -506,11 +526,23 @@ extension VoiceViewController: UITabBarControllerDelegate {
         
         alert.addAction(UIAlertAction(title: "Exit", style: .destructive) { [weak self] _ in
             guard let self = self else { return }
+            
+            // 🛠️ Capture the duration before resetting
+            let finalDuration = Int(self.sessionDuration)
+            
             self.viewModel.stopSession()
             self.viewModel.resetConversationHistory()
             self.resetDisplay()
             self.switchToPendingTab()
+            self.stopAndResetSessionTimer() // 🛠️ Stop and clear the timer
             self.pendingTabViewController = nil
+            
+            // 🛠️ Pass the captured duration to LogManager
+            LogManager.shared.addLog(
+                exerciseName: "Conversation",
+                source: .conversation,
+                exerciseDuration: finalDuration
+            )
         })
         
         present(alert, animated: true) {
