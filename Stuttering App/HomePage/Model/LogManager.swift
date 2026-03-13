@@ -328,20 +328,35 @@ class LogManager {
 
 
     func addLog(exerciseName: String, source: ExerciseSource, exerciseDuration: Int) {
+        // 1. Generate a single, unified ID for this specific log
+        let logId = UUID().uuidString
+        
         let sql = "INSERT INTO ExerciseLog (id, exerciseName, completionDate, source, exerciseDuration) VALUES (?, ?, ?, ?, ?);"
         var statement: OpaquePointer?
+        
         if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1,   (UUID().uuidString as NSString).utf8String, -1, nil)
-            sqlite3_bind_text(statement, 2,   (exerciseName as NSString).utf8String, -1, nil)
+            // 2. Use the unified ID for local storage
+            sqlite3_bind_text(statement, 1, (logId as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 2, (exerciseName as NSString).utf8String, -1, nil)
             sqlite3_bind_double(statement, 3, Date().timeIntervalSince1970)
-            sqlite3_bind_text(statement, 4,   (source.rawValue as NSString).utf8String, -1, nil)
-            sqlite3_bind_int(statement, 5,    Int32(exerciseDuration))
-            if sqlite3_step(statement) == SQLITE_DONE { print("Log inserted.") }
-            else { print("Could not insert row.") }
+            sqlite3_bind_text(statement, 4, (source.rawValue as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(statement, 5, Int32(exerciseDuration))
+            
+            if sqlite3_step(statement) == SQLITE_DONE {
+                print("✅ Log inserted locally with ID: \(logId)")
+            } else {
+                print("❌ Could not insert row locally.")
+            }
         }
         sqlite3_finalize(statement)
         
-        SupabaseSyncManager.shared.pushExerciseLog(id: UUID().uuidString, name: exerciseName, source: source.rawValue, duration: exerciseDuration)
+        // 3. Push the EXACT SAME ID to Supabase
+        SupabaseSyncManager.shared.pushExerciseLog(
+            id: logId,
+            name: exerciseName,
+            source: source.rawValue,
+            duration: exerciseDuration
+        )
     }
 
     func getLogs(for source: ExerciseSource, on date: Date? = nil) -> [ExerciseLog] {

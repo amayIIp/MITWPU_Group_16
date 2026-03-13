@@ -78,24 +78,26 @@ class SupabaseSyncManager {
             }
             
             do {
-                let tasks: [DailyTaskRow] = try await client.database
+                // Fetch from Supabase directly via client.from()
+                let tasks: [DailyTaskRow] = try await client
                     .from("daily_tasks")
                     .select("name, is_completed")
                     .eq("user_id", value: userId)
                     .eq("is_completed", value: true)
                     .execute()
                     .value
-                
+                            
                 print("☁️ Reapplying \(tasks.count) completed daily tasks")
-                
+                            
                 for t in tasks {
-                    // Mark in DailyTasks table
                     let sql = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
                     var stmt: OpaquePointer?
+                    
                     if sqlite3_prepare_v2(DatabaseManager.shared.db, sql, -1, &stmt, nil) == SQLITE_OK {
                         sqlite3_bind_text(stmt, 1, (t.name as NSString).utf8String, -1, nil)
                         let result = sqlite3_step(stmt)
                         let changes = sqlite3_changes(DatabaseManager.shared.db)
+                        
                         print("☁️   Task '\(t.name)': \(changes) rows updated")
                         if result != SQLITE_DONE {
                             print("☁️   ⚠️ Step failed for '\(t.name)'")
@@ -103,7 +105,6 @@ class SupabaseSyncManager {
                     }
                     sqlite3_finalize(stmt)
                 }
-                
                 // Also update the daily goal status
                 DatabaseManager.shared.updateDailyGoalCompletionStatus()
                 
@@ -126,7 +127,7 @@ class SupabaseSyncManager {
             let is_onboarding_completed: Bool?
         }
         
-        let rows: [ProfileRow] = try await client.database
+        let rows: [ProfileRow] = try await client
             .from("profiles")
             .select("first_name, last_name, dob, mobile, is_onboarding_completed")
             .eq("id", value: userId)
@@ -155,7 +156,7 @@ class SupabaseSyncManager {
             let name: String
             let is_completed: Bool
         }
-        let journeys: [JourneyRow] = try await client.database
+        let journeys: [JourneyRow] = try await client
             .from("journeys")
             .select("name, is_completed")
             .eq("user_id", value: userId)
@@ -180,7 +181,7 @@ class SupabaseSyncManager {
             let duration: Int?
             let is_completed: Bool
         }
-        let tasks: [DailyTaskRow] = try await client.database
+        let tasks: [DailyTaskRow] = try await client
             .from("daily_tasks")
             .select("id, name, description, duration, is_completed")
             .eq("user_id", value: userId)
@@ -188,7 +189,6 @@ class SupabaseSyncManager {
             .value
         
         for t in tasks where t.is_completed {
-            // Match by name — the cloud ID is a hash and won't match local SQLite row IDs
             let updateTask = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
             var stmt: OpaquePointer?
             if sqlite3_prepare_v2(DatabaseManager.shared.db, updateTask, -1, &stmt, nil) == SQLITE_OK {
@@ -203,7 +203,7 @@ class SupabaseSyncManager {
             let current_streak: Int
             let last_completed_date: String?
         }
-        let streaks: [StreakRow] = try await client.database
+        let streaks: [StreakRow] = try await client
             .from("streaks")
             .select("current_streak, last_completed_date")
             .eq("user_id", value: userId)
@@ -228,7 +228,6 @@ class SupabaseSyncManager {
     private func fetchAndRestoreAnalytics(userId: String) async throws {
         let logDB = LogManager.shared.db
         
-        // Make sure local user exists so queries can reference it
         LogManager.shared.initializeUserIfNeeded()
         let localUserId = LogManager.shared.getCurrentUserId() ?? userId
         
@@ -240,7 +239,7 @@ class SupabaseSyncManager {
             let source: String
             let duration: Int
         }
-        let exercises: [ExerciseRow] = try await client.database
+        let exercises: [ExerciseRow] = try await client
             .from("exercise_logs")
             .select("id, exercise_name, completion_date, source, duration")
             .eq("user_id", value: userId)
@@ -253,7 +252,6 @@ class SupabaseSyncManager {
             if sqlite3_prepare_v2(logDB, exInsert, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_text(stmt, 1, (ex.id as NSString).utf8String, -1, nil)
                 sqlite3_bind_text(stmt, 2, (ex.exercise_name as NSString).utf8String, -1, nil)
-                // Parse ISO date to epoch
                 let formatter = ISO8601DateFormatter()
                 let epoch = formatter.date(from: ex.completion_date)?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
                 sqlite3_bind_double(stmt, 3, epoch)
@@ -272,7 +270,7 @@ class SupabaseSyncManager {
             let duration: Double
             let fluency_score: Int
         }
-        let readings: [ReadingRow] = try await client.database
+        let readings: [ReadingRow] = try await client
             .from("reading_sessions")
             .select("id, date, duration, fluency_score")
             .eq("user_id", value: userId)
@@ -282,8 +280,8 @@ class SupabaseSyncManager {
         let rsInsert = """
             INSERT OR IGNORE INTO ReadingSessions
             (id, userId, date, duration, fluencyScore,
-             repetitionPercent, prolongationPercent,
-             blockPercent, correctPercent, longestSmoothParagraph)
+            repetitionPercent, prolongationPercent,
+            blockPercent, correctPercent, longestSmoothParagraph)
             VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0, 0);
             """
         for rs in readings {
@@ -308,7 +306,7 @@ class SupabaseSyncManager {
             let filler_word_percent: Double?
             let longest_smooth_talk: Int?
         }
-        let convos: [ConvoRow] = try await client.database
+        let convos: [ConvoRow] = try await client
             .from("conversation_sessions")
             .select("id, date, duration, filler_word_percent, longest_smooth_talk")
             .eq("user_id", value: userId)
@@ -342,27 +340,24 @@ class SupabaseSyncManager {
             let progress: Double
             let status: String
         }
-        let awards: [AwardRow] = try await client.database
+        let awards: [AwardRow] = try await client
             .from("user_awards")
             .select("award_id, progress, status")
             .eq("user_id", value: userId)
             .execute()
             .value
         
-        // Ensure AwardsDB is open before writing
         if AwardsManager.shared.db == nil {
             AwardsManager.shared.openDatabase()
             AwardsManager.shared.seedDatabaseIfNeeded()
         }
         
         for award in awards {
-            // Update the local AwardsDB directly (without re-triggering a cloud push)
             let query = "UPDATE Awards SET progress = ?, status = ?, completionDate = ? WHERE id = ?"
             var stmt: OpaquePointer?
             if sqlite3_prepare_v2(AwardsManager.shared.db, query, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_double(stmt, 1, award.progress)
                 sqlite3_bind_text(stmt, 2, (award.status as NSString).utf8String, -1, nil)
-                // Set completion date if fully complete
                 let completionDate = award.progress >= 1.0 ? Date().timeIntervalSince1970 : 0.0
                 sqlite3_bind_double(stmt, 3, completionDate)
                 sqlite3_bind_text(stmt, 4, (award.award_id as NSString).utf8String, -1, nil)
@@ -383,13 +378,10 @@ class SupabaseSyncManager {
     
     // MARK: - Push Local Changes to Cloud (Local-First Sync)
     
-    /// Syncs a completed reading session up to the cloud
     func pushReadingSession(_ report: StutterJSONReport, duration: TimeInterval, sessionId: String) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
-            
             do {
-                // Prepare dictionary mapping mapping to "reading_sessions" table
                 let sessionData: [String: AnyJSON] = [
                     "id": .string(sessionId),
                     "user_id": .string(userId.uuidString),
@@ -398,43 +390,36 @@ class SupabaseSyncManager {
                     "fluency_score": .integer(report.fluencyScore)
                 ]
                 
-                try await client.database
+                try await client
                     .from("reading_sessions")
                     .upsert(sessionData)
                     .execute()
-                    
                 print("Successfully pushed ReadingSession to Supabase")
-                
             } catch {
                 print("Failed to push ReadingSession to Supabase: \(error)")
             }
         }
     }
     
-    /// Syncs streak data
     func pushStreak(currentStreak: Int) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
-            
             do {
                 let streakData: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),
                     "current_streak": .integer(currentStreak),
                     "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                
-                try await client.database
+                try await client
                     .from("streaks")
                     .upsert(streakData)
                     .execute()
-                    
             } catch {
                 print("Failed to push Streak to Supabase: \(error)")
             }
         }
     }
     
-    /// Syncs specific profile fields
     func pushProfileUpdate(key: String, value: String) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -444,7 +429,7 @@ class SupabaseSyncManager {
                     key: .string(value),
                     "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                try await client.database
+                try await client
                     .from("profiles")
                     .upsert(profileData)
                     .execute()
@@ -454,7 +439,6 @@ class SupabaseSyncManager {
         }
     }
     
-    /// Syncs onboarding completion status to the profiles table
     func pushOnboardingStatus(isCompleted: Bool) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -464,7 +448,7 @@ class SupabaseSyncManager {
                     "is_onboarding_completed": .bool(isCompleted),
                     "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                try await client.database
+                try await client
                     .from("profiles")
                     .upsert(data)
                     .execute()
@@ -475,7 +459,6 @@ class SupabaseSyncManager {
         }
     }
     
-    /// Syncs an award's progress
     func pushAwardUpdate(awardId: String, progress: Double, status: String) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -488,7 +471,7 @@ class SupabaseSyncManager {
                     "status": .string(status),
                     "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                try await client.database
+                try await client
                     .from("user_awards")
                     .upsert(awardData, onConflict: "user_id, award_id")
                     .execute()
@@ -500,7 +483,6 @@ class SupabaseSyncManager {
     
     // MARK: - Exercise & Journey Sync
     
-    /// Syncs an exercise log to the cloud
     func pushExerciseLog(id: String, name: String, source: String, duration: Int) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -513,7 +495,7 @@ class SupabaseSyncManager {
                     "duration": .integer(duration),
                     "completion_date": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                try await client.database
+                try await client
                     .from("exercise_logs")
                     .upsert(logData)
                     .execute()
@@ -523,7 +505,6 @@ class SupabaseSyncManager {
         }
     }
     
-    /// Syncs journey progress
     func pushJourneyUpdate(name: String, isCompleted: Bool) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -534,8 +515,7 @@ class SupabaseSyncManager {
                     "is_completed": .bool(isCompleted),
                     "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                // Note: Requires a unique constaint on (user_id, name) in Postgres to upsert properly
-                try await client.database
+                try await client
                     .from("journeys")
                     .upsert(journeyData, onConflict: "user_id, name")
                     .execute()
@@ -545,7 +525,6 @@ class SupabaseSyncManager {
         }
     }
     
-    /// Syncs dynamic daily task progress
     func pushDailyTaskUpdate(id: Int, name: String, description: String, duration: Int, isCompleted: Bool) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -559,8 +538,7 @@ class SupabaseSyncManager {
                     "is_completed": .bool(isCompleted),
                     "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                // Note: Requires a composite unique constraint on (id, user_id) or similar
-                try await client.database
+                try await client
                     .from("daily_tasks")
                     .upsert(taskData, onConflict: "id, user_id")
                     .execute()
@@ -570,8 +548,6 @@ class SupabaseSyncManager {
         }
     }
     
-    /// Marks a specific daily task as completed in the cloud using name-based lookup
-    /// This is more reliable than upsert for completion updates
     func markDailyTaskCompletedInCloud(name: String) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -580,7 +556,7 @@ class SupabaseSyncManager {
                     "is_completed": .bool(true),
                     "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
                 ]
-                try await client.database
+                try await client
                     .from("daily_tasks")
                     .update(updateData)
                     .eq("user_id", value: userId.uuidString)
@@ -593,7 +569,6 @@ class SupabaseSyncManager {
         }
     }
     
-    /// Syncs a conversation session to the cloud
     func pushConversationSession(sessionId: String, duration: TimeInterval, fillerWordPercent: Double, longestSmoothTalk: Int) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
@@ -606,7 +581,7 @@ class SupabaseSyncManager {
                     "filler_word_percent": .double(fillerWordPercent),
                     "longest_smooth_talk": .integer(longestSmoothTalk)
                 ]
-                try await client.database
+                try await client
                     .from("conversation_sessions")
                     .upsert(data)
                     .execute()

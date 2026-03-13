@@ -13,7 +13,7 @@
                 "id": "ex_diaph_breathing",
                 "name": "Airflow Practice",
                 "description": "Improves breath control when starting vowel sounds",
-                "short_time": 100
+                "short_time": 31
               },
               {
                 "id": "ex_pmr",
@@ -44,7 +44,7 @@
                 "id": "ex_light_contact",
                 "name": "Prolongation",
                 "description": "Keeps airflow steady in S, F, SH, TH sounds",
-                "short_time": 60
+                "short_time": 31
               }
             ]
         },

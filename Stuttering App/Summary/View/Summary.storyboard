@@ -426,7 +426,6 @@
                                                         <constraint firstItem="U0O-jB-njg" firstAttribute="top" secondItem="alX-Rr-pkH" secondAttribute="top" id="ifV-NV-6qY"/>
                                                         <constraint firstItem="Fot-oe-Zox" firstAttribute="top" secondItem="U0O-jB-njg" secondAttribute="bottom" constant="8" id="nWx-RN-PhC"/>
                                                         <constraint firstAttribute="trailing" secondItem="Fot-oe-Zox" secondAttribute="trailing" constant="20" id="qLv-LX-0ir"/>
-                                                        <constraint firstItem="Fot-oe-Zox" firstAttribute="centerX" secondItem="alX-Rr-pkH" secondAttribute="centerX" id="uBT-qh-5v5"/>
                                                     </constraints>
                                                 </view>
                                             </subviews>
@@ -593,10 +592,10 @@
             <color red="0.91764705882352937" green="0.94901960784313721" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
