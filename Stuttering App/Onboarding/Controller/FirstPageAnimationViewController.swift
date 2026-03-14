@@ -13,7 +13,6 @@ class FirstPageAnimationViewController: UIViewController {
     @IBOutlet weak var infoLabel: UIStackView!
     @IBOutlet weak var buttonView: UIView!
     
-    // MARK: - New Button Outlets
     @IBOutlet weak var SignUpButton: UIButton!
     @IBOutlet weak var SigninButton: UIButton!
     

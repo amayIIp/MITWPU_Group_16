@@ -16,7 +16,7 @@ class SupabaseSyncManager {
     
     // MARK: - Auth Sync triggered on Login
     
-    /// Called immediately after a successful login to pull down all historic user data
+    // Called immediately after a successful login to pull down all historic user data
     func syncAllDataFromCloud(completion: @escaping (Result<Void, Error>) -> Void) {
         Task {
             do {
@@ -63,8 +63,8 @@ class SupabaseSyncManager {
         }
     }
     
-    /// Call this AFTER checkForNewDay() to re-apply daily task completions
-    /// that the reset would have wiped.
+    // Call this AFTER checkForNewDay() to re-apply daily task completions
+    // that the reset would have wiped.
     func reapplyDailyTaskCompletions(completion: @escaping () -> Void) {
         Task {
             guard let userId = client.auth.currentUser?.id.uuidString else {

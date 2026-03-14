@@ -61,7 +61,7 @@ class LoginViewController: UIViewController {
                         //         (because resetDailyTasks wiped them)
                         SupabaseSyncManager.shared.reapplyDailyTaskCompletions {
                             DispatchQueue.main.async {
-                                
+
                                 // Step 5: Push finalized SQLite state back to cloud,
                                 //         ensuring cloud accurately reflects today's set of 5 tasks.
                                 DatabaseManager.shared.syncLocalDailyTasksToCloud()
