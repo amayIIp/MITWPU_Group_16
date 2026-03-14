@@ -20,8 +20,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(windowScene: windowScene)
         
-        // ✅ ALWAYS initialize user if email exists
-        if let _ = StorageManager.shared.getEmail() {
+        // ✅ ALWAYS initialize user if signed in to Supabase
+        if let _ = SupabaseManager.shared.currentUser {
             LogManager.shared.initializeUserIfNeeded()
         }
         

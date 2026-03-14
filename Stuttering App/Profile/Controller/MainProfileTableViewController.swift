@@ -1,4 +1,5 @@
 import UIKit
+import Supabase
 
 class MainProfileTableViewController: UITableViewController {
 
@@ -53,15 +54,20 @@ class MainProfileTableViewController: UITableViewController {
     }
 
     private func loadData() {
-        firstNameField.text = StorageManager.shared.getName()
-        lastNameField.text  = StorageManager.shared.getLastName()
-        mobileField.text    = StorageManager.shared.getMobNo()
-        emailField.text     = StorageManager.shared.getEmail()
-        dobField.text       = StorageManager.shared.getDob()
+        if let userId = LogManager.shared.getCurrentUserId(),
+           let profile = LogManager.shared.getProfile(userId: userId) {
+            firstNameField.text = profile.firstName
+            lastNameField.text  = profile.lastName
+            mobileField.text    = profile.mobile
+            dobField.text       = profile.dob
+        }
+        emailField.text = SupabaseManager.shared.client.auth.currentUser?.email
     }
     
     private func loadUserName() {
-        if let name = StorageManager.shared.getName() {
+        if let userId = LogManager.shared.getCurrentUserId(),
+           let profile = LogManager.shared.getProfile(userId: userId),
+           let name = profile.firstName {
             nameLabel.text = "\(name)"
         } else {
             nameLabel.text = "User"
@@ -69,11 +75,24 @@ class MainProfileTableViewController: UITableViewController {
     }
     
     private func saveData() {
-        StorageManager.shared.saveName(firstNameField.text ?? "")
-        StorageManager.shared.saveLastName(lastNameField.text ?? "")
-        StorageManager.shared.saveMobNo(mobileField.text ?? "")
-        StorageManager.shared.saveEmail(emailField.text ?? "")
-        StorageManager.shared.saveDob(dobField.text ?? "")
+        if let userId = LogManager.shared.getCurrentUserId() {
+            var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: true)
+            
+            profile.firstName = firstNameField.text
+            profile.lastName = lastNameField.text
+            profile.mobile = mobileField.text
+            profile.dob = dobField.text
+            
+            LogManager.shared.saveProfile(profile)
+            
+            SupabaseSyncManager.shared.pushProfileUpdate(key: "first_name", value: profile.firstName ?? "")
+            SupabaseSyncManager.shared.pushProfileUpdate(key: "last_name", value: profile.lastName ?? "")
+            SupabaseSyncManager.shared.pushProfileUpdate(key: "mobile", value: profile.mobile ?? "")
+            SupabaseSyncManager.shared.pushProfileUpdate(key: "dob", value: profile.dob ?? "")
+        }
+        
+        // Note: Updating email via Supabase Auth requires a separate API call (updateUser)
+        // which sends a confirmation email. It is omitted here for simplicity unless requested.
         
         loadUserName()
         NotificationCenter.default.post(name: NSNotification.Name("ProfileDataUpdated"), object: nil)

@@ -7,10 +7,21 @@ import Foundation
 import Supabase
 import SQLite3
 
+
+
 class SupabaseSyncManager {
     static let shared = SupabaseSyncManager()
     
     private let client = SupabaseManager.shared.client
+    
+    private var lastSyncDateString: String {
+        get {
+            return UserDefaults.standard.string(forKey: "LastDeltaSyncDate") ?? "1970-01-01T00:00:00Z"
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "LastDeltaSyncDate")
+        }
+    }
     
     private init() {}
     
@@ -24,6 +35,7 @@ class SupabaseSyncManager {
                     throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
                 }
                 
+                let syncStartTime = ISO8601DateFormatter().string(from: Date())
                 print("☁️ Starting cloud sync for user: \(userId)")
                 
                 // Ensure AwardsDB is open and seeded before any restore
@@ -49,6 +61,8 @@ class SupabaseSyncManager {
                 try await fetchAndRestoreAwards(userId: userId)
                 print("☁️ ✅ Awards restored")
                 
+                // Update delta sync time
+                lastSyncDateString = syncStartTime
                 print("☁️ ✅ ALL DATA SYNCED SUCCESSFULLY")
                 
                 DispatchQueue.main.async {
@@ -61,6 +75,23 @@ class SupabaseSyncManager {
                 }
             }
         }
+    }
+    
+    // Evaluates if any rows have been updated past the local `lastSyncDateString`
+    // Evaluates if any rows have been updated past the local `lastSyncDateString`
+    func hasPendingCloudChanges() async throws -> Bool {
+        guard let userId = client.auth.currentUser?.id.uuidString else {
+            throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
+        }
+        
+        let params: [String: AnyJSON] = [
+            "last_sync": .string(lastSyncDateString),
+            "user_uuid": .string(userId)
+        ]
+        
+        let hasUpdates: Bool = try await client.rpc("has_pending_sync", params: params).execute().value
+        return hasUpdates
+        
     }
     
     // Call this AFTER checkForNewDay() to re-apply daily task completions
@@ -136,10 +167,15 @@ class SupabaseSyncManager {
             .value
         
         if let row = rows.first {
-            if let name = row.first_name { StorageManager.shared.saveName(name) }
-            if let last = row.last_name  { StorageManager.shared.saveLastName(last) }
-            if let dob  = row.dob        { StorageManager.shared.saveDob(dob) }
-            if let mob  = row.mobile     { StorageManager.shared.saveMobNo(mob) }
+            let profile = UserProfile(
+                id: userId,
+                firstName: row.first_name,
+                lastName: row.last_name,
+                dob: row.dob,
+                mobile: row.mobile,
+                isOnboardingCompleted: row.is_onboarding_completed ?? false
+            )
+            LogManager.shared.saveProfile(profile, fromSync: true)
             
             // Restore onboarding status from cloud
             if let onboardingDone = row.is_onboarding_completed {
@@ -185,6 +221,7 @@ class SupabaseSyncManager {
             .from("daily_tasks")
             .select("id, name, description, duration, is_completed")
             .eq("user_id", value: userId)
+            .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
         
@@ -222,6 +259,25 @@ class SupabaseSyncManager {
             }
             sqlite3_finalize(stmt)
         }
+        
+        // --- User Goals ---
+        struct UserGoalRow: Decodable {
+            let goal_name: String
+            let goal_value: Int
+        }
+        let goals: [UserGoalRow]? = try? await client
+            .from("user_goals")
+            .select("goal_name, goal_value")
+            .eq("user_id", value: userId)
+            .execute()
+            .value
+        
+        if let goals = goals {
+            for g in goals {
+                LogManager.shared.updateGoal(name: g.goal_name, value: g.goal_value, fromSync: true)
+            }
+        }
+        
         print("Goals & streak restored.")
     }
     
@@ -243,10 +299,11 @@ class SupabaseSyncManager {
             .from("exercise_logs")
             .select("id, exercise_name, completion_date, source, duration")
             .eq("user_id", value: userId)
+            .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
         
-        let exInsert = "INSERT OR IGNORE INTO ExerciseLog (id, exerciseName, completionDate, source, exerciseDuration) VALUES (?, ?, ?, ?, ?);"
+        let exInsert = "INSERT OR REPLACE INTO ExerciseLog (id, exerciseName, completionDate, source, exerciseDuration) VALUES (?, ?, ?, ?, ?);"
         for ex in exercises {
             var stmt: OpaquePointer?
             if sqlite3_prepare_v2(logDB, exInsert, -1, &stmt, nil) == SQLITE_OK {
@@ -269,20 +326,26 @@ class SupabaseSyncManager {
             let date: Double
             let duration: Double
             let fluency_score: Int
+            let repetition_percent: Double?
+            let prolongation_percent: Double?
+            let block_percent: Double?
+            let correct_percent: Double?
+            let longest_smooth_paragraph: Int?
         }
         let readings: [ReadingRow] = try await client
             .from("reading_sessions")
-            .select("id, date, duration, fluency_score")
+            .select("id, date, duration, fluency_score, repetition_percent, prolongation_percent, block_percent, correct_percent, longest_smooth_paragraph")
             .eq("user_id", value: userId)
+            .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
         
         let rsInsert = """
-            INSERT OR IGNORE INTO ReadingSessions
+            INSERT OR REPLACE INTO ReadingSessions
             (id, userId, date, duration, fluencyScore,
             repetitionPercent, prolongationPercent,
             blockPercent, correctPercent, longestSmoothParagraph)
-            VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0, 0);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
         for rs in readings {
             var stmt: OpaquePointer?
@@ -292,11 +355,105 @@ class SupabaseSyncManager {
                 sqlite3_bind_double(stmt, 3, rs.date)
                 sqlite3_bind_double(stmt, 4, rs.duration)
                 sqlite3_bind_int(stmt, 5, Int32(rs.fluency_score))
+                sqlite3_bind_double(stmt, 6, rs.repetition_percent ?? 0.0)
+                sqlite3_bind_double(stmt, 7, rs.prolongation_percent ?? 0.0)
+                sqlite3_bind_double(stmt, 8, rs.block_percent ?? 0.0)
+                sqlite3_bind_double(stmt, 9, rs.correct_percent ?? 0.0)
+                sqlite3_bind_int(stmt, 10, Int32(rs.longest_smooth_paragraph ?? 0))
                 sqlite3_step(stmt)
             }
             sqlite3_finalize(stmt)
         }
         print("Reading sessions restored: \(readings.count) records.")
+        
+        // --- Troubled Words ---
+        struct TroubledWordRow: Decodable {
+            let id: String
+            let session_id: String
+            let word: String
+            let type: String
+            let first_letter: String?
+        }
+        let troubledWords: [TroubledWordRow]? = try? await client
+            .from("troubled_words")
+            .select("id, session_id, word, type, first_letter")
+            .eq("user_id", value: userId)
+            .execute()
+            .value
+        
+        if let tws = troubledWords {
+            let twInsert = "INSERT OR IGNORE INTO TroubledWords (id, sessionId, userId, word, type, firstLetter) VALUES (?, ?, ?, ?, ?, ?)"
+            for tw in tws {
+                var stmt: OpaquePointer?
+                if sqlite3_prepare_v2(logDB, twInsert, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (tw.id as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 2, (tw.session_id as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 3, (localUserId as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 4, (tw.word as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 5, (tw.type as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 6, ((tw.first_letter ?? "") as NSString).utf8String, -1, nil)
+                    sqlite3_step(stmt)
+                }
+                sqlite3_finalize(stmt)
+            }
+            print("Troubled words restored: \(tws.count) records.")
+        }
+
+        // --- Session Letter Stats ---
+        struct SessionLetterStatRow: Decodable {
+            let session_id: String
+            let letter: String
+            let stutter_count: Int
+        }
+        let sls: [SessionLetterStatRow]? = try? await client
+            .from("session_letter_stats")
+            .select("session_id, letter, stutter_count")
+            .eq("user_id", value: userId)
+            .execute()
+            .value
+        
+        if let sls = sls {
+            let slsInsert = "INSERT OR IGNORE INTO SessionLetterStats (sessionId, userId, letter, stutterCount) VALUES (?, ?, ?, ?)"
+            for s in sls {
+                var stmt: OpaquePointer?
+                if sqlite3_prepare_v2(logDB, slsInsert, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (s.session_id as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 2, (localUserId as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 3, (s.letter as NSString).utf8String, -1, nil)
+                    sqlite3_bind_int(stmt, 4, Int32(s.stutter_count))
+                    sqlite3_step(stmt)
+                }
+                sqlite3_finalize(stmt)
+            }
+            print("Session letter stats restored: \(sls.count) records.")
+        }
+
+        // --- Letter Stats ---
+        struct LetterStatRow: Decodable {
+            let letter: String
+            let count: Int
+        }
+        let ls: [LetterStatRow]? = try? await client
+            .from("letter_stats")
+            .select("letter, count")
+            .eq("user_id", value: userId)
+            .execute()
+            .value
+        
+        if let ls = ls {
+            let lsInsert = "INSERT OR REPLACE INTO LetterStats (userId, letter, count) VALUES (?, ?, ?)"
+            for l in ls {
+                var stmt: OpaquePointer?
+                if sqlite3_prepare_v2(logDB, lsInsert, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (localUserId as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 2, (l.letter as NSString).utf8String, -1, nil)
+                    sqlite3_bind_int(stmt, 3, Int32(l.count))
+                    sqlite3_step(stmt)
+                }
+                sqlite3_finalize(stmt)
+            }
+            print("Letter stats restored: \(ls.count) records.")
+        }
         
         // --- Conversation Sessions ---
         struct ConvoRow: Decodable {
@@ -310,11 +467,12 @@ class SupabaseSyncManager {
             .from("conversation_sessions")
             .select("id, date, duration, filler_word_percent, longest_smooth_talk")
             .eq("user_id", value: userId)
+            .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
         
         let csInsert = """
-            INSERT OR IGNORE INTO ConversationSessions
+            INSERT OR REPLACE INTO ConversationSessions
             (id, userId, date, duration, fillerWordPercent, longestSmoothTalk)
             VALUES (?, ?, ?, ?, ?, ?);
             """
@@ -344,6 +502,7 @@ class SupabaseSyncManager {
             .from("user_awards")
             .select("award_id, progress, status")
             .eq("user_id", value: userId)
+            .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
         
@@ -378,7 +537,7 @@ class SupabaseSyncManager {
     
     // MARK: - Push Local Changes to Cloud (Local-First Sync)
     
-    func pushReadingSession(_ report: StutterJSONReport, duration: TimeInterval, sessionId: String) {
+    func pushReadingSession(_ report: StutterJSONReport, duration: TimeInterval, sessionId: String, longestSmoothParagraph: Int = 0) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -387,14 +546,49 @@ class SupabaseSyncManager {
                     "user_id": .string(userId.uuidString),
                     "date": .double(Date().timeIntervalSince1970),
                     "duration": .double(duration),
-                    "fluency_score": .integer(report.fluencyScore)
+                    "fluency_score": .integer(report.fluencyScore),
+                    "repetition_percent": .double(report.percentages.repetition),
+                    "prolongation_percent": .double(report.percentages.prolongation),
+                    "block_percent": .double(report.percentages.blocks),
+                    "correct_percent": .double(report.percentages.correct),
+                    "longest_smooth_paragraph": .integer(longestSmoothParagraph)
                 ]
                 
                 try await client
                     .from("reading_sessions")
                     .upsert(sessionData)
                     .execute()
-                print("Successfully pushed ReadingSession to Supabase")
+                
+                // Push troubled words
+                for word in report.stutteredWords {
+                    let type: String
+                    let lowerWord = word.lowercased()
+                    if report.breakdown.repetition.contains(where: { $0.lowercased() == lowerWord }) { type = "repetition" }
+                    else if report.breakdown.prolongation.contains(where: { $0.lowercased() == lowerWord }) { type = "prolongation" }
+                    else { type = "block" }
+                    
+                    let wordData: [String: AnyJSON] = [
+                        "id": .string(UUID().uuidString),
+                        "session_id": .string(sessionId),
+                        "user_id": .string(userId.uuidString),
+                        "word": .string(word),
+                        "type": .string(type),
+                        "first_letter": .string(String(word.prefix(1)).uppercased())
+                    ]
+                    try await client.from("troubled_words").upsert(wordData).execute()
+                }
+                
+                // Push session letter stats
+                for (letter, count) in report.letterAnalysis {
+                    let letterData: [String: AnyJSON] = [
+                        "session_id": .string(sessionId),
+                        "user_id": .string(userId.uuidString),
+                        "letter": .string(letter),
+                        "stutter_count": .integer(count)
+                    ]
+                    try await client.from("session_letter_stats").upsert(letterData).execute()
+                }
+                print("Successfully pushed ReadingSession and its stats to Supabase")
             } catch {
                 print("Failed to push ReadingSession to Supabase: \(error)")
             }
@@ -591,4 +785,41 @@ class SupabaseSyncManager {
             }
         }
     }
+    
+    func pushLetterStats(userId: String) {
+        Task {
+            do {
+                let stats = LogManager.shared.getAllLetterStats(for: userId)
+                guard !stats.isEmpty else { return }
+                for (letter, count) in stats {
+                    let data: [String: AnyJSON] = [
+                        "user_id": .string(userId),
+                        "letter": .string(letter),
+                        "count": .integer(count)
+                    ]
+                    try await client.from("letter_stats").upsert(data, onConflict: "user_id, letter").execute()
+                }
+                print("Successfully pushed LetterStats to Supabase")
+            } catch {
+                print("Failed to push letter stats: \(error)")
+            }
+        }
+    }
+
+    func pushUserGoal(goalName: String, goalValue: Int) {
+        Task {
+            guard let userId = client.auth.currentUser?.id else { return }
+            do {
+                let data: [String: AnyJSON] = [
+                    "user_id": .string(userId.uuidString),
+                    "goal_name": .string(goalName),
+                    "goal_value": .integer(goalValue)
+                ]
+                try await client.from("user_goals").upsert(data, onConflict: "user_id, goal_name").execute()
+            } catch {
+                print("Failed to push UserGoal: \(error)")
+            }
+        }
+    }
 }
+

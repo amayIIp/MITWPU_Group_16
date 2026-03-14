@@ -429,16 +429,12 @@
                                                     </constraints>
                                                 </view>
                                             </subviews>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="393" id="Z1I-3R-nhz"/>
-                                            </constraints>
                                         </stackView>
                                     </subviews>
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="HbB-go-0KZ" secondAttribute="trailing" id="AjR-Cp-MYE"/>
                                         <constraint firstAttribute="bottom" secondItem="HbB-go-0KZ" secondAttribute="bottom" priority="999" id="Ky7-ge-oNq"/>
                                         <constraint firstItem="HbB-go-0KZ" firstAttribute="top" secondItem="L45-1c-zlo" secondAttribute="top" id="cGJ-KZ-4zj"/>
-                                        <constraint firstItem="HbB-go-0KZ" firstAttribute="centerX" secondItem="L45-1c-zlo" secondAttribute="centerX" id="eIb-vg-IgD"/>
                                         <constraint firstItem="HbB-go-0KZ" firstAttribute="leading" secondItem="L45-1c-zlo" secondAttribute="leading" id="jNv-nf-a5w"/>
                                     </constraints>
                                 </view>
@@ -451,7 +447,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Breathing Balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Eap-5y-1wd">
-                                                    <rect key="frame" x="24" y="20" width="135" height="19.333333333333329"/>
+                                                    <rect key="frame" x="24" y="21" width="135" height="17"/>
                                                     <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -478,6 +474,8 @@
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="Eap-5y-1wd" firstAttribute="leading" secondItem="uPs-gh-WRY" secondAttribute="leadingMargin" constant="8" id="5GV-aB-l1q"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="Eap-5y-1wd" secondAttribute="bottom" constant="6" id="GXh-7C-ok7"/>
+                                                <constraint firstItem="Eap-5y-1wd" firstAttribute="top" secondItem="uPs-gh-WRY" secondAttribute="topMargin" constant="6" id="Lyl-83-SN5"/>
                                                 <constraint firstItem="R2n-ME-GPv" firstAttribute="centerY" secondItem="uPs-gh-WRY" secondAttribute="centerY" id="QIV-3M-MXA"/>
                                                 <constraint firstItem="Eap-5y-1wd" firstAttribute="centerY" secondItem="uPs-gh-WRY" secondAttribute="centerY" id="QSB-5A-LvO"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="R2n-ME-GPv" secondAttribute="trailing" constant="9" id="ZZc-qE-ZhR"/>
@@ -506,13 +504,16 @@
                             <constraint firstItem="F66-o7-EcY" firstAttribute="trailing" secondItem="6sh-le-eJj" secondAttribute="trailing" constant="20" id="nfw-Qk-jK5"/>
                         </constraints>
                     </view>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" title="Summary" id="iyr-Mp-xaC">
-                        <barButtonItem key="rightBarButtonItem" image="calendar" catalog="system" id="2FY-rO-ymh">
+                        <barButtonItem key="rightBarButtonItem" style="plain" id="5UV-mT-XFO">
+                            <imageReference key="image" image="calendar" catalog="system" symbolScale="default"/>
                             <connections>
-                                <segue destination="Yap-og-Jmz" kind="presentation" identifier="showCalendar" id="uvX-8p-7kv"/>
+                                <segue destination="1v9-ZU-HbB" kind="presentation" identifier="showCalendar" id="gwe-dR-MBm"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="allButton" destination="LLy-b6-Aqi" id="97r-st-fP1"/>
                         <outlet property="averageAccuracy" destination="kYj-9u-SPK" id="9EU-FD-ZR8"/>
@@ -534,33 +535,49 @@
             </objects>
             <point key="canvasLocation" x="1788.5496183206105" y="91.549295774647888"/>
         </scene>
-        <!--Calendar View Controller-->
-        <scene sceneID="R39-As-CCk">
+        <!--Select Date-->
+        <scene sceneID="ftA-f8-fnY">
             <objects>
-                <viewController id="Yap-og-Jmz" customClass="CalendarViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="qaZ-kE-buV">
+                <viewController id="iw1-1c-lOO" customClass="CalendarViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="SOb-Zy-q1i">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Y2i-kk-m0v">
-                                <rect key="frame" x="0.0" y="119" width="393" height="674"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="weI-4I-I8c">
+                                <rect key="frame" x="16" y="86" width="361" height="400"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="400" id="9NQ-AF-bx8"/>
+                                </constraints>
                             </view>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="6xV-xK-7yg"/>
-                        <color key="backgroundColor" name="bg"/>
+                        <viewLayoutGuide key="safeArea" id="FEA-i7-gBS"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="6xV-xK-7yg" firstAttribute="trailing" secondItem="Y2i-kk-m0v" secondAttribute="trailing" id="Mnq-xB-Khk"/>
-                            <constraint firstItem="Y2i-kk-m0v" firstAttribute="top" secondItem="6xV-xK-7yg" secondAttribute="top" constant="60" id="pR8-cY-OwK"/>
-                            <constraint firstItem="Y2i-kk-m0v" firstAttribute="leading" secondItem="6xV-xK-7yg" secondAttribute="leading" id="yA6-Vd-qek"/>
+                            <constraint firstItem="weI-4I-I8c" firstAttribute="top" secondItem="FEA-i7-gBS" secondAttribute="top" constant="16" id="D6o-cc-rLL"/>
+                            <constraint firstItem="weI-4I-I8c" firstAttribute="leading" secondItem="FEA-i7-gBS" secondAttribute="leading" constant="16" id="PD4-dL-bBR"/>
+                            <constraint firstItem="FEA-i7-gBS" firstAttribute="trailing" secondItem="weI-4I-I8c" secondAttribute="trailing" constant="16" id="oIS-4V-INq"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" title="Select Date" id="Qay-x8-Kdf">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="1ML-Vm-pD1">
+                            <connections>
+                                <action selector="didTapCancel:" destination="iw1-1c-lOO" id="hXy-AF-8t1"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="bEc-Hn-yk0">
+                            <connections>
+                                <action selector="didTapDone:" destination="iw1-1c-lOO" id="cP6-hk-0Hb"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
-                        <outlet property="calendarContainerView" destination="Y2i-kk-m0v" id="K6r-ih-JYn"/>
+                        <outlet property="calendarContainerView" destination="weI-4I-I8c" id="58b-0L-VIi"/>
                     </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Qga-2A-Ylx" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="zUW-O2-bYg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2628.2442748091603" y="91.549295774647888"/>
+            <point key="canvasLocation" x="3635.8778625954196" y="91.549295774647888"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="EYX-Ri-yOK">
@@ -580,6 +597,24 @@
             </objects>
             <point key="canvasLocation" x="861.83206106870227" y="91.549295774647888"/>
         </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="80J-7f-uod">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="1v9-ZU-HbB" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="fMJ-sT-E0h">
+                        <rect key="frame" x="0.0" y="16" width="393" height="54"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="iw1-1c-lOO" kind="relationship" relationship="rootViewController" id="yt2-Ge-dGK"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fXy-h9-Nde" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2711" y="92"/>
+        </scene>
     </scenes>
     <resources>
         <image name="calendar" catalog="system" width="128" height="107"/>
@@ -593,6 +628,9 @@
         </namedColor>
         <systemColor name="secondaryLabelColor">
             <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
             <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>

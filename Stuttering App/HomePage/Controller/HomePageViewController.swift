@@ -80,24 +80,34 @@ class HomePageViewController: UIViewController {
     private func syncFromCloudIfLoggedIn() {
         guard AppState.isLoginCompleted else { return }
         
-        SupabaseSyncManager.shared.syncAllDataFromCloud { [weak self] _ in
-            DispatchQueue.main.async {
-                // Re-apply daily task completions that checkForNewDay may have wiped
-                SupabaseSyncManager.shared.reapplyDailyTaskCompletions {
+        Task {
+            do {
+                let hasChanges = try await SupabaseSyncManager.shared.hasPendingCloudChanges()
+                guard hasChanges else {
+                    print("☁️ Skipping full sync — no new cloud updates detected.")
+                    return
+                }
+                
+                SupabaseSyncManager.shared.syncAllDataFromCloud { [weak self] _ in
                     DispatchQueue.main.async {
-                        // Push finalized local state back to cloud
-                        DatabaseManager.shared.syncLocalDailyTasksToCloud()
-                        
-                        // Refresh all UI elements
-                        self?.loadTaskName()
-                        self?.loadProgressView()
-                        self?.AchievedAwardsUpdate()
-                        self?.setupRightBarButtons()
-                        
-                        let streak = DatabaseManager.shared.fetchCurrentStreak()
-                        self?.streakCount.text = String(streak)
+                        // Re-apply daily task completions that checkForNewDay may have wiped
+                        SupabaseSyncManager.shared.reapplyDailyTaskCompletions {
+                            DispatchQueue.main.async {
+                                // Refresh all UI elements
+                                self?.loadTaskName()
+                                self?.loadProgressView()
+                                self?.AchievedAwardsUpdate()
+                                self?.setupRightBarButtons()
+                                
+                                let streak = DatabaseManager.shared.fetchCurrentStreak()
+                                self?.streakCount.text = String(streak)
+                            }
+                        }
                     }
                 }
+                
+            } catch {
+                print("☁️ ❌ Failed to evaluate cloud changes: \(error)")
             }
         }
     }
@@ -183,9 +193,9 @@ class HomePageViewController: UIViewController {
     }
 
     private func setupRightBarButtons() {
+        // 1. Profile Button Setup
         let profileButton = UIButton(type: .system)
         var profileBtnConfig = UIButton.Configuration.plain()
-        
         profileBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 4)
         
         let profileConfig = UIImage.SymbolConfiguration(scale: .large)
@@ -195,7 +205,9 @@ class HomePageViewController: UIViewController {
         profileBtnConfig.image = profileImage
         profileButton.configuration = profileBtnConfig
         profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
+        let profileItem = UIBarButtonItem(customView: profileButton)
         
+        // 2. Streak Button Setup
         let streakButton = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
         config.imagePadding = 6
@@ -213,13 +225,10 @@ class HomePageViewController: UIViewController {
         
         streakButton.configuration = config
         streakButton.addTarget(self, action: #selector(streakTapped), for: .touchUpInside)
+        let streakItem = UIBarButtonItem(customView: streakButton)
         
-        let rightStackView = UIStackView(arrangedSubviews: [streakButton, profileButton])
-        rightStackView.axis = .horizontal
-        rightStackView.spacing = 16
-        rightStackView.alignment = .center
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: rightStackView)
+        // 3. The Fix: Assign as an array (Order is Right-to-Left)
+        navigationItem.rightBarButtonItems = [profileItem, streakItem]
     }
 
     @objc private func profileTapped() {

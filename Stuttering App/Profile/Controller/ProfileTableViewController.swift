@@ -13,7 +13,9 @@ class ProfileTableViewController: UITableViewController {
     }
     
     private func loadUserName() {
-        if let name = StorageManager.shared.getName() {
+        if let userId = LogManager.shared.getCurrentUserId(),
+           let profile = LogManager.shared.getProfile(userId: userId),
+           let name = profile.firstName {
             nameLabel.text = "\(name)"
         } else {
             nameLabel.text = "User"
@@ -66,7 +68,7 @@ class ProfileTableViewController: UITableViewController {
         }
         
         // 2. Clear secure storage if applicable (e.g., Keychain)
-        StorageManager.shared.clearEmail() // Assuming this exists based on your LogManager code
+        // (StorageManager email cleared step removed)
         
         // 3. Wipe and reboot all SQLite databases
         LogManager.shared.resetDatabaseForNewUser()

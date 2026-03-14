@@ -20,7 +20,9 @@ class GuestGateViewController: UIViewController {
     }
     
     private func loadUserName() {
-        if let name = StorageManager.shared.getName() {
+        if let userId = LogManager.shared.getCurrentUserId(),
+           let profile = LogManager.shared.getProfile(userId: userId),
+           let name = profile.firstName {
             nameLabel.text = "\(name)"
         } else {
             nameLabel.text = "User"

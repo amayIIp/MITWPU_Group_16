@@ -55,18 +55,19 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         updateSummaryViewsVisibility()
         
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        print("DB Path: \(paths[0].path)")
         
         emptyStateView.isHidden = true
-        loadDataForCurrentDate()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadDataForCurrentDate()
     }
-
-
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateTableHeaderHeight()
+    }
     
     @IBAction func filterButtonTapped(_ sender: UIButton) {
         let newFilter = SummaryFilter(rawValue: sender.tag) ?? .all
@@ -132,8 +133,10 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         
         allButton.isHidden = !hasAnyData
         
-        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
-            self.view.layoutIfNeeded()
+        if self.view.window != nil {
+            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
+                self.view.layoutIfNeeded()
+            }
         }
     }
 
@@ -198,8 +201,6 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             self.summaryView1.isHidden = true
             self.summaryView2.isHidden = true
         }
-        updateTableHeaderHeight()
-            
     }
     
     private func calculateTotalDuration(for logs: [ExerciseLog]) -> Int {
@@ -428,9 +429,18 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
 }
 
 extension SummaryViewController: CalendarDateDelegate {
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showCalendar" {
-            guard let calendarVC = segue.destination as? CalendarViewController else { return }
+            
+            // 1. Safely unwrap the Navigation Controller as the primary destination
+            guard let navController = segue.destination as? UINavigationController,
+                  // 2. Extract the CalendarViewController from inside the Navigation Controller
+                  let calendarVC = navController.topViewController as? CalendarViewController else {
+                return
+            }
+            
+            // 3. Inject dependencies
             calendarVC.delegate = self
             calendarVC.selectedDate = self.currentDateFilter
         }
@@ -438,6 +448,8 @@ extension SummaryViewController: CalendarDateDelegate {
     
     func didSelectDate(_ date: Date) {
         self.currentDateFilter = date
+        
+        // Modern iOS date formatting
         self.title = date.formatted(date: .abbreviated, time: .omitted)
         loadDataForCurrentDate()
     }

@@ -1,5 +1,6 @@
 import Foundation
 import SQLite3
+import Supabase
 
 enum TrendDirection {
     case up, down, neutral
@@ -14,6 +15,15 @@ struct DayReport {
     let fluencyGrowth: Double
     let improvementPercent: Double
     let insight: String
+}
+
+struct UserProfile {
+    let id: String
+    var firstName: String?
+    var lastName: String?
+    var dob: String?
+    var mobile: String?
+    var isOnboardingCompleted: Bool
 }
 
 struct OverallProgressReport {
@@ -151,6 +161,18 @@ class LogManager {
                 createdAt REAL
             );
             """, successMessage: "Users table ready.")
+            
+        execute(sql: """
+            CREATE TABLE IF NOT EXISTS Profiles(
+                id TEXT PRIMARY KEY,
+                firstName TEXT,
+                lastName TEXT,
+                dob TEXT,
+                mobile TEXT,
+                isOnboardingCompleted INTEGER DEFAULT 0,
+                FOREIGN KEY(id) REFERENCES Users(id)
+            );
+            """, successMessage: "Profiles table ready.")
 
         execute(sql: """
             CREATE TABLE IF NOT EXISTS ReadingSessions(
@@ -239,46 +261,105 @@ class LogManager {
     }
 
 
-    func initializeUserIfNeeded() {
-        guard let email = StorageManager.shared.getEmail() else {
-            print("No email found in storage.")
-            return
-        }
-        currentUserId = createOrGetUser(email: email)
-    }
-
     func getCurrentUserId() -> String? {
         if currentUserId == nil { initializeUserIfNeeded() }
         return currentUserId
     }
+    
+    func initializeUserIfNeeded() {
+        guard let user = SupabaseManager.shared.client.auth.currentUser,
+              let email = user.email else {
+            print("No logged in user found in Supabase.")
+            return
+        }
+        currentUserId = createOrGetUser(email: email, userId: user.id.uuidString)
+    }
 
-    func createOrGetUser(email: String) -> String {
-        let checkSQL = "SELECT id FROM Users WHERE email = ?;"
+    func createOrGetUser(email: String, userId: String) -> String {
+        let checkSQL = "SELECT id FROM Users WHERE id = ?;"
         var statement: OpaquePointer?
 
         if sqlite3_prepare_v2(db, checkSQL, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1, (email as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
             if sqlite3_step(statement) == SQLITE_ROW,
                let idCStr = sqlite3_column_text(statement, 0) {
-                let userId = String(cString: idCStr)
+                let existingUserId = String(cString: idCStr)
                 sqlite3_finalize(statement)
-                return userId
+                return existingUserId
             }
         }
         sqlite3_finalize(statement)
 
         let insertSQL = "INSERT INTO Users (id, email, createdAt) VALUES (?, ?, ?);"
-        let newId = UUID().uuidString
         let now   = Date().timeIntervalSince1970
 
         if sqlite3_prepare_v2(db, insertSQL, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1, (newId as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
             sqlite3_bind_text(statement, 2, (email as NSString).utf8String, -1, nil)
             sqlite3_bind_double(statement, 3, now)
             sqlite3_step(statement)
         }
         sqlite3_finalize(statement)
-        return newId
+        
+        // Initialize an empty profile for the new user
+        let profileSQL = "INSERT OR IGNORE INTO Profiles (id, isOnboardingCompleted) VALUES (?, 0);"
+        if sqlite3_prepare_v2(db, profileSQL, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            sqlite3_step(statement)
+        }
+        sqlite3_finalize(statement)
+        
+        return userId
+    }
+    
+    func saveProfile(_ profile: UserProfile, fromSync: Bool = false) {
+        let sql = """
+            INSERT OR REPLACE INTO Profiles (id, firstName, lastName, dob, mobile, isOnboardingCompleted)
+            VALUES (?, ?, ?, ?, ?, ?);
+            """
+        var statement: OpaquePointer?
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (profile.id as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 2, ((profile.firstName ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 3, ((profile.lastName ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 4, ((profile.dob ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 5, ((profile.mobile ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(statement, 6, profile.isOnboardingCompleted ? 1 : 0)
+            
+            if sqlite3_step(statement) == SQLITE_DONE {
+                print("Local Profile saved for \(profile.id)")
+            }
+        }
+        sqlite3_finalize(statement)
+        
+        if !fromSync {
+            print("Local Profile saved, but wait! We actually push fields individually from callers, ignoring full profile push here for safety")
+        }
+    }
+
+    func getProfile(userId: String) -> UserProfile? {
+        let sql = "SELECT firstName, lastName, dob, mobile, isOnboardingCompleted FROM Profiles WHERE id = ?;"
+        var statement: OpaquePointer?
+        var profile: UserProfile?
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(statement) == SQLITE_ROW {
+                let first = sqlite3_column_text(statement, 0).map { String(cString: $0) }
+                let last = sqlite3_column_text(statement, 1).map { String(cString: $0) }
+                let dob = sqlite3_column_text(statement, 2).map { String(cString: $0) }
+                let mob = sqlite3_column_text(statement, 3).map { String(cString: $0) }
+                let isComplete = sqlite3_column_int(statement, 4) == 1
+                
+                profile = UserProfile(id: userId, firstName: first?.isEmpty == false ? first : nil,
+                                      lastName: last?.isEmpty == false ? last : nil,
+                                      dob: dob?.isEmpty == false ? dob : nil,
+                                      mobile: mob?.isEmpty == false ? mob : nil,
+                                      isOnboardingCompleted: isComplete)
+            }
+        }
+        sqlite3_finalize(statement)
+        return profile
     }
 
 
@@ -300,7 +381,7 @@ class LogManager {
         }
     }
 
-    func updateGoal(name: String, value: Int) {
+    func updateGoal(name: String, value: Int, fromSync: Bool = false) {
         let sql = "INSERT OR REPLACE INTO Goals (goalName, goalValue) VALUES (?, ?);"
         var statement: OpaquePointer?
         if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
@@ -310,6 +391,10 @@ class LogManager {
             else { print("Failed to update goal.") }
         }
         sqlite3_finalize(statement)
+        
+        if !fromSync {
+            SupabaseSyncManager.shared.pushUserGoal(goalName: name, goalValue: value)
+        }
     }
 
     func getGoal(name: String) -> Int {
@@ -447,7 +532,8 @@ class LogManager {
         saveSessionLetterStats(userId: userId, sessionId: sessionId, letterCounts: report.letterAnalysis)
         print("Saved reading session for user: \(userId)")
         
-        SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId)
+        SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId, longestSmoothParagraph: longestSmoothParagraph)
+        SupabaseSyncManager.shared.pushLetterStats(userId: userId)
     }
 
     private func saveTroubledWords(report: StutterJSONReport, userId: String, sessionId: String) {
@@ -536,6 +622,24 @@ class LogManager {
         }
         sqlite3_finalize(statement)
         return words
+    }
+
+    func getAllLetterStats(for userId: String) -> [String: Int] {
+        let sql = "SELECT letter, count FROM LetterStats WHERE userId = ?;"
+        var statement: OpaquePointer?
+        var stats: [String: Int] = [:]
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            while sqlite3_step(statement) == SQLITE_ROW {
+                if let letterCStr = sqlite3_column_text(statement, 0) {
+                    let letter = String(cString: letterCStr)
+                    let count = Int(sqlite3_column_int(statement, 1))
+                    stats[letter] = count
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+        return stats
     }
 
     func getTopLetters(for userId: String, limit: Int) -> [String] {

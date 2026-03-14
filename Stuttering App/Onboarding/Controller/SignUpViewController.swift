@@ -71,10 +71,14 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 )
                 
                 // Also save locally for offline access
-                StorageManager.shared.saveName(name)
-                StorageManager.shared.saveEmail(email)
-                StorageManager.shared.savePassword(password)
                 LogManager.shared.initializeUserIfNeeded()
+                
+                if let userId = LogManager.shared.getCurrentUserId() {
+                    var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
+                    profile.firstName = name
+                    LogManager.shared.saveProfile(profile)
+                }
+                
                 AppState.isLoginCompleted = true
                 
                 DispatchQueue.main.async {

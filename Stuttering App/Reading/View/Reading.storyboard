@@ -13,7 +13,7 @@
         <!--DetailView-->
         <scene sceneID="ccQ-3X-Ewc">
             <objects>
-                <viewController storyboardIdentifier="DetailVC" title="DetailView" id="Pv7-H7-pPf" customClass="DetailViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="DetailVC" title="DetailView" id="Pv7-H7-pPf" customClass="DetailViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ldl-7r-oxa">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -47,7 +47,7 @@
         <!--ReadingControls-->
         <scene sceneID="8zr-Q0-UNL">
             <objects>
-                <viewController storyboardIdentifier="ReadingControlsViewController" title="ReadingControls" id="YwE-aX-56O" customClass="ReadingControlsViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ReadingControlsViewController" title="ReadingControls" id="YwE-aX-56O" customClass="ReadingControlsViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="V4M-cH-sUm">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -183,7 +183,7 @@
         <!--Read Aloud-->
         <scene sceneID="Mkn-TR-ZTa">
             <objects>
-                <viewController id="6zw-SZ-nam" customClass="ExpandableMenuViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="6zw-SZ-nam" customClass="ExpandableMenuViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Nrc-RK-Xn2">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -192,7 +192,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <color key="backgroundColor" name="bg"/>
                                 <view key="tableFooterView" contentMode="scaleToFill" id="d9V-nf-Q3A">
-                                    <rect key="frame" x="0.0" y="478" width="393" height="63"/>
+                                    <rect key="frame" x="0.0" y="477.99999999999994" width="393" height="63.000000000000057"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Topics are just for reference. We generate texts based on your specific speech triggers." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNx-sh-UuH">
@@ -261,7 +261,7 @@
                                             <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
                                         </userDefinedRuntimeAttributes>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="CustomWorkspaceCell" rowHeight="320" id="Id5-mT-IQ5" customClass="CustomWorkspaceCell" customModule="Stuttering_Final" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="CustomWorkspaceCell" rowHeight="320" id="Id5-mT-IQ5" customClass="CustomWorkspaceCell" customModule="Stuttering_App" customModuleProvider="target">
                                         <rect key="frame" x="20" y="140" width="353" height="320"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Id5-mT-IQ5" id="H0s-Tz-rdx">
@@ -271,7 +271,7 @@
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PeJ-KY-GVj">
                                                     <rect key="frame" x="0.0" y="0.0" width="353" height="320"/>
                                                     <subviews>
-                                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8dw-9g-dvO" customClass="PlaceholderTextView" customModule="Stuttering_Final" customModuleProvider="target">
+                                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8dw-9g-dvO" customClass="PlaceholderTextView" customModule="Stuttering_App" customModuleProvider="target">
                                                             <rect key="frame" x="10" y="10" width="333" height="300"/>
                                                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                             <color key="textColor" systemColor="labelColor"/>
@@ -369,15 +369,15 @@
         <!--Result-->
         <scene sceneID="Bbp-OB-UB3">
             <objects>
-                <viewController storyboardIdentifier="ReadingResultViewController" id="eXV-Ud-9wg" customClass="ReadingResultViewController" customModule="Stuttering_Final" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ReadingResultViewController" id="eXV-Ud-9wg" customClass="ReadingResultViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="d1L-ky-mcO">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rUw-q1-Deg">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rUw-q1-Deg">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="DsB-1p-GAi">
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="DsB-1p-GAi">
                                         <rect key="frame" x="20" y="0.0" width="353" height="891"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7iJ-3z-EIt">
@@ -559,7 +559,7 @@
                                                     <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
                                                 </userDefinedRuntimeAttributes>
                                             </view>
-                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g7K-9r-KnW">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g7K-9r-KnW">
                                                 <rect key="frame" x="0.0" y="521" width="353" height="180"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Troubled Words" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ImP-0t-lT4">
@@ -568,8 +568,8 @@
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" distribution="fillProportionally" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="jnB-fL-tw7">
-                                                        <rect key="frame" x="20" y="47.666666666666629" width="313" height="112.33333333333331"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="jnB-fL-tw7">
+                                                        <rect key="frame" x="20" y="47.666666666666622" width="313" height="112.33333333333331"/>
                                                     </stackView>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -589,7 +589,7 @@
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                             </view>
-                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OGd-Vu-Npa">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OGd-Vu-Npa">
                                                 <rect key="frame" x="0.0" y="711" width="353" height="180"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Recommended Exercises" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ngy-k2-Sne">
@@ -598,8 +598,8 @@
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="g60-Co-XIc">
-                                                        <rect key="frame" x="20" y="47" width="313" height="105"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="g60-Co-XIc">
+                                                        <rect key="frame" x="20" y="61.666666666666622" width="313" height="98.333333333333314"/>
                                                     </stackView>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -619,6 +619,11 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstItem="g7K-9r-KnW" firstAttribute="top" secondItem="DsB-1p-GAi" secondAttribute="top" constant="521" id="TGn-6p-Zsc"/>
+                                            <constraint firstItem="OGd-Vu-Npa" firstAttribute="top" secondItem="DsB-1p-GAi" secondAttribute="top" constant="711" id="TIm-pB-dDA"/>
+                                            <constraint firstAttribute="height" constant="891" id="qm8-vE-LcA"/>
+                                        </constraints>
                                     </stackView>
                                 </subviews>
                                 <constraints>
@@ -636,8 +641,8 @@
                         <color key="backgroundColor" name="bg"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="rUw-q1-Deg" secondAttribute="bottom" id="eQn-s7-e8j"/>
-                            <constraint firstItem="rUw-q1-Deg" firstAttribute="leading" secondItem="bRT-u8-igN" secondAttribute="leading" id="j94-6G-bpi"/>
-                            <constraint firstItem="rUw-q1-Deg" firstAttribute="trailing" secondItem="bRT-u8-igN" secondAttribute="trailing" id="sl9-jU-O1M"/>
+                            <constraint firstItem="rUw-q1-Deg" firstAttribute="leading" secondItem="d1L-ky-mcO" secondAttribute="leading" id="j94-6G-bpi"/>
+                            <constraint firstItem="rUw-q1-Deg" firstAttribute="trailing" secondItem="d1L-ky-mcO" secondAttribute="trailing" id="sl9-jU-O1M"/>
                             <constraint firstItem="rUw-q1-Deg" firstAttribute="top" secondItem="d1L-ky-mcO" secondAttribute="top" id="tLF-65-5Ew"/>
                         </constraints>
                     </view>

@@ -9,15 +9,17 @@ import UIKit
 
 class WarmUpListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
-    @IBOutlet weak var tableView1: UITableView!
+    @IBOutlet weak var tableView: UITableView!
     
     var exercises: [Exercise] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView1.dataSource = self
-        tableView1.delegate = self
+        tableView.dataSource = self
+        tableView.delegate = self
+        let customNib = UINib(nibName: "TableViewCell", bundle: nil)
+        tableView.register(customNib, forCellReuseIdentifier: "TableViewCell")
         
         loadExercises()
     }
@@ -36,7 +38,7 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
             let decoder = JSONDecoder()
             self.exercises = try decoder.decode([Exercise].self, from: data)
             DispatchQueue.main.async {
-                self.tableView1.reloadData()
+                self.tableView.reloadData()
             }
         } catch {
             print("Error decoding JSON: \(error)")
@@ -49,12 +51,12 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ExerciseCell", for: indexPath) as? ExerciseCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TableViewCell", for: indexPath) as? TableViewCell else {
             return UITableViewCell()
         }
         
         let exercise = exercises[indexPath.row]
-        cell.configure(with: exercise)
+        cell.configureForWarmUp(with: exercise)
         
         cell.playButtonAction = { [weak self] in
             self?.navigateToExercise(with: exercise.name)

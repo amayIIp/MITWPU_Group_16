@@ -18,6 +18,9 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
         tableView.dataSource = self
         tableView.delegate = self
         
+        let customNib = UINib(nibName: "TableViewCell", bundle: nil)
+        tableView.register(customNib, forCellReuseIdentifier: "TableViewCell")
+        
         loadFromDatabase()
         
         NotificationCenter.default.addObserver(self, selector: #selector(loadFromDatabase), name: NSNotification.Name("DailyTasksUpdated"), object: nil)
@@ -38,7 +41,7 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "DailyTasksCell", for: indexPath) as? DailyTasksCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TableViewCell", for: indexPath) as? TableViewCell else {
                 return UITableViewCell()
             }
             

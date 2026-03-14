@@ -90,4 +90,16 @@ class AwardMainViewController: UIViewController {
             lockedAwardDescription.textColor = .secondaryLabel
         }
     }
+    
+    @IBAction func topAchievedAwarsTapped(_ sender: UIButton) {
+        let selectedAward = AwardsManager.shared.getTopAchievedAward()
+    
+        let storyboard = UIStoryboard(name: "Awards", bundle: nil)
+        guard let detailVC = storyboard.instantiateViewController(withIdentifier: "AwardDetailViewController") as? AwardDetailViewController else {
+            return
+        }
+        
+        detailVC.award = selectedAward
+        self.navigationController?.pushViewController(detailVC, animated: true)
+    }
 }

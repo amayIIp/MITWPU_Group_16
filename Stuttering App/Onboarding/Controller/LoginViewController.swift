@@ -43,8 +43,7 @@ class LoginViewController: UIViewController {
             do {
                 try await client.auth.signIn(email: email, password: password)
                 
-                // Step 1: Save email locally so LogManager can init
-                StorageManager.shared.saveEmail(email)
+                // Step 1: Init LogManager 
                 LogManager.shared.initializeUserIfNeeded()
                 
                 // Step 2: Sync cloud data — restores Journey completions,

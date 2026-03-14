@@ -147,9 +147,6 @@ class ReadingControlsViewController: UIViewController {
         endHeightConstraint.constant = optimalWidth * 0.6
         resetHeightConstraint.constant = optimalWidth * 0.6
         stackTopConstraint.constant = (screenHeight - optimalWidth)/2
-        
-        print("screenHeight : \(screenHeight)")
-        print("stackTop : \(stackTopConstraint.constant)")
     }
     
     @IBAction func speedSliderChanged(_ sender: UISlider) {

@@ -74,8 +74,6 @@ class ControlsTemplateViewController: UIViewController {
         stopHeightConstraint.constant = optimalWidth * 0.6
         stackTopConstraint.constant = (screenHeight - optimalWidth)/2
         
-        print("screenHeight : \(screenHeight)")
-        print("stackTop : \(stackTopConstraint.constant)")
     }
     
     // Controls the visibility of secondary buttons based on sheet expansion
