@@ -239,15 +239,44 @@ class LogManager {
     }
 
     private func runMigrations() {
-        let migrations = [
-            "ALTER TABLE ReadingSessions ADD COLUMN longestSmoothParagraph INTEGER DEFAULT 0;"
-        ]
-        for sql in migrations {
+        // 1. Check if the column exists BEFORE attempting to alter the table
+        if !columnExists(tableName: "ReadingSessions", columnName: "longestSmoothParagraph") {
+            let sql = "ALTER TABLE ReadingSessions ADD COLUMN longestSmoothParagraph INTEGER DEFAULT 0;"
             var stmt: OpaquePointer?
-            sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
-            sqlite3_step(stmt)  // silently fails if column already exists — that's fine
+            
+            if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_step(stmt)
+                print("Migration successful: Added longestSmoothParagraph.")
+            } else {
+                print("Migration failed to compile.")
+            }
             sqlite3_finalize(stmt)
+        } else {
+            print("Migration skipped: longestSmoothParagraph already exists. Console remains clean.")
         }
+    }
+
+    // 2. Helper function to inspect the SQLite table schema
+    private func columnExists(tableName: String, columnName: String) -> Bool {
+        let sql = "PRAGMA table_info(\(tableName));"
+        var stmt: OpaquePointer?
+        var exists = false
+        
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            // Step through every column in the table
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                // Index 1 in PRAGMA table_info is the column name
+                if let nameCStr = sqlite3_column_text(stmt, 1) {
+                    let name = String(cString: nameCStr)
+                    if name == columnName {
+                        exists = true
+                        break
+                    }
+                }
+            }
+        }
+        sqlite3_finalize(stmt)
+        return exists
     }
 
     private func execute(sql: String, successMessage: String) {

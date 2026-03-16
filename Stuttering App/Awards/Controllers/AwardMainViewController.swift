@@ -2,104 +2,150 @@
 //  AwardMainViewController.swift
 //  Stuttering App 1
 //
-//  Created by Prathamesh Patil on 16/12/25.
-//
 
 import UIKit
 
+protocol AwardCellDelegate: AnyObject {
+    func didTapAwardImage(with award: AwardModel?)
+}
+
 class AwardMainViewController: UIViewController {
     
-    @IBOutlet weak var weeklyChallengeImage: UIImageView!
-    @IBOutlet weak var weeklyChallengeName: UILabel!
-    @IBOutlet weak var weeklyChallengeDescription: UILabel!
+    // MARK: - Outlets
+    @IBOutlet weak var collectionView: UICollectionView!
     
-    @IBOutlet weak var achievedAwardImage: UIImageView!
-    @IBOutlet weak var achievedAwardName: UILabel!
-    @IBOutlet weak var achievedAwardDescription: UILabel!
+    // MARK: - Data Models
+    private var weeklyAward: AwardModel?
+    private var achievedAward: AwardModel?
+    private var lockedAward: AwardModel?
     
-    @IBOutlet weak var lockedAwardImage: UIImageView!
-    @IBOutlet weak var lockedAwardName: UILabel!
-    @IBOutlet weak var lockedAwardDescription: UILabel!
-    
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        WeeklyChallangeUpdate()
-        AchievedAwardsUpdate()
-        LockedAwardsUpdate()
+
+        fetchData()
+        setupCollectionView()
     }
     
-    func WeeklyChallangeUpdate() {
-        if let award = AwardsManager.shared.getTopWeeklyChallenge() {
+    // MARK: - Data Setup
+    private func fetchData() {
+        weeklyAward = AwardsManager.shared.getTopWeeklyChallenge()
+        achievedAward = AwardsManager.shared.getTopAchievedAward()
+        lockedAward = AwardsManager.shared.getTopLockedAward()
+    }
+    
+    // MARK: - Collection View Setup
+    private func setupCollectionView() {
+        // Register XIBs - Ensure these strings match your exact .xib file names
+        collectionView.register(UINib(nibName: "WeeklyChallengeCell", bundle: nil), forCellWithReuseIdentifier: "WeeklyChallengeCell")
+        collectionView.register(UINib(nibName: "AwardStandardCell", bundle: nil), forCellWithReuseIdentifier: "AwardStandardCell")
+        
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.backgroundColor = .clear
+        collectionView.collectionViewLayout = createCompositionalLayout()
+    }
+    
+    // MARK: - iOS 26 Compositional Layout
+    private func createCompositionalLayout() -> UICollectionViewLayout {
+        return UICollectionViewCompositionalLayout { (sectionIndex, layoutEnvironment) -> NSCollectionLayoutSection? in
             
-            weeklyChallengeImage.image = UIImage(named: award.id)
-            weeklyChallengeName.text = award.name
-            
-            if award.isCompleted {
-                if let date = award.completionDate {
-                    let formatter = DateFormatter()
-                    formatter.dateFormat = "MMM d, yyyy"
-                    weeklyChallengeDescription.text = "\(formatter.string(from: date))"
-                }
-                weeklyChallengeDescription.textColor = .systemGreen
+            if sectionIndex == 0 {
+                // Section 0: Weekly Challenge (Full Width)
+                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(320))
+                let item = NSCollectionLayoutItem(layoutSize: itemSize)
+                
+                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(320))
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                
+                let section = NSCollectionLayoutSection(group: group)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+                return section
+                
             } else {
-                weeklyChallengeDescription.text = award.status
-                weeklyChallengeDescription.textColor = .secondaryLabel
+                // Section 1: Achieved & Locked (2 Columns)
+                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .estimated(240))
+                let item = NSCollectionLayoutItem(layoutSize: itemSize)
+                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 6)
+                
+                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(240))
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                
+                let section = NSCollectionLayoutSection(group: group)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 16, trailing: 10)
+                return section
             }
         }
     }
+}
+
+// MARK: - UICollectionViewDataSource & Delegate
+extension AwardMainViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     
-    func AchievedAwardsUpdate() {
-        if let award = AwardsManager.shared.getTopAchievedAward() {
-            achievedAwardImage.image = UIImage(named: award.id)
-            achievedAwardName.text = award.name
-            achievedAwardImage.tintColor = .clear
-            
-            if let date = award.completionDate {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "MMM d, yyyy"
-                achievedAwardDescription.text = "\(formatter.string(from: date))"
-            }
-            achievedAwardDescription.textColor = .secondaryLabel
-            
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 2
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return section == 0 ? 1 : 2
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if indexPath.section == 0 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "WeeklyChallengeCell", for: indexPath) as! WeeklyChallengeCell
+            cell.delegate = self // Set the delegate
+            cell.configure(with: weeklyAward)
+            return cell
         } else {
-            achievedAwardImage.image = UIImage(systemName: "figure.run.circle.fill")
-            achievedAwardImage.tintColor = .systemOrange
-            achievedAwardName.text = "Start doing exercises!"
-            achievedAwardDescription.text = "Your first award awaits"
-            achievedAwardDescription.textColor = .secondaryLabel
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AwardStandardCell", for: indexPath) as! AwardStandardCell
+            cell.delegate = self // Set the delegate
+            if indexPath.item == 0 {
+                cell.configureAsAchieved(with: achievedAward)
+            } else {
+                cell.configureAsLocked(with: lockedAward)
+            }
+            return cell
         }
     }
     
-    func LockedAwardsUpdate() {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let storyboard = UIStoryboard(name: "Awards", bundle: nil) // Update bundle name if needed
         
-        if let award = AwardsManager.shared.getTopLockedAward() {
-            lockedAwardImage.image = UIImage(named: award.id)
-            lockedAwardName.text = award.name
-            lockedAwardDescription.text = award.status
-            lockedAwardDescription.textColor = .secondaryLabel
-            lockedAwardImage.alpha = 0.5
-            lockedAwardImage.tintColor = .clear
+        if indexPath.section == 0 {
+            // Weekly Challenge Card Tapped
+            let vcA = storyboard.instantiateViewController(withIdentifier: "WeeklyChallengesViewController")
+            navigationController?.pushViewController(vcA, animated: true)
             
-        } else {
-            lockedAwardImage.image = UIImage(systemName: "lock.open.fill")
-            lockedAwardImage.tintColor = .systemGreen
-            lockedAwardImage.alpha = 1.0
-            lockedAwardName.text = "All Unlocked!"
-            lockedAwardDescription.text = "You have collected every badge."
-            lockedAwardDescription.textColor = .secondaryLabel
+        } else if indexPath.section == 1 {
+            if indexPath.item == 0 {
+                // Achieved Card Tapped
+                let vcB = storyboard.instantiateViewController(withIdentifier: "AchievedViewController")
+                navigationController?.pushViewController(vcB, animated: true)
+                
+            } else if indexPath.item == 1 {
+                // Locked Card Tapped
+                let vcC = storyboard.instantiateViewController(withIdentifier: "LockedViewController")
+                navigationController?.pushViewController(vcC, animated: true)
+            }
         }
     }
+}
+
+extension AwardMainViewController: AwardCellDelegate {
     
-    @IBAction func topAchievedAwarsTapped(_ sender: UIButton) {
-        let selectedAward = AwardsManager.shared.getTopAchievedAward()
-    
-        let storyboard = UIStoryboard(name: "Awards", bundle: nil)
+    // Handle tapping the IMAGE specifically
+    func didTapAwardImage(with award: AwardModel?) {
+        guard let selectedAward = award else { return }
+        
+        let storyboard = UIStoryboard(name: "Awards", bundle: nil) // Ensure this matches your Storyboard name
         guard let detailVC = storyboard.instantiateViewController(withIdentifier: "AwardDetailViewController") as? AwardDetailViewController else {
             return
         }
         
+        // Pass the correct data model
         detailVC.award = selectedAward
-        self.navigationController?.pushViewController(detailVC, animated: true)
+        
+        // Push the Detail View Controller
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 }

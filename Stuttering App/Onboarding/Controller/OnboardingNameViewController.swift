@@ -7,7 +7,8 @@
 
 import UIKit
 
-class OnboardingNameViewController: UIViewController, UITextFieldDelegate {
+// 1. Add UIGestureRecognizerDelegate
+class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var continueButton: UIButton!
@@ -18,19 +19,26 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate {
         setupDismissKeyboardGesture()
     }
     
-    func setupButton() {
-        continueButton.configuration = .prominentGlass()
-        continueButton.configuration?.title = "Continue"
-    }
-    
     func setupTextField() {
         nameTextField.delegate = self
         nameTextField.returnKeyType = .done
+        
+        nameTextField.autocorrectionType = .no
+        nameTextField.spellCheckingType = .no
+        nameTextField.smartDashesType = .no
+        nameTextField.smartQuotesType = .no
+        nameTextField.smartInsertDeleteType = .no
     }
     
     func setupDismissKeyboardGesture() {
-        let tapGesture = UITapGestureRecognizer(target: view,
-                                               action: #selector(UIView.endEditing))
+        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
+        
+        // 2. Prevent the gesture from swallowing touches
+        tapGesture.cancelsTouchesInView = false
+        
+        // 3. Set the delegate so we can filter touches
+        tapGesture.delegate = self
+        
         view.addGestureRecognizer(tapGesture)
     }
 
@@ -51,5 +59,15 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate {
         profile.firstName = name
         LogManager.shared.saveProfile(profile)
         SupabaseSyncManager.shared.pushProfileUpdate(key: "first_name", value: name)
+    }
+    
+    // MARK: - UIGestureRecognizerDelegate
+    
+    // 4. Ignore the tap gesture if the user is tapping the text field or button
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if touch.view is UITextField || touch.view is UIButton {
+            return false
+        }
+        return true
     }
 }

@@ -46,6 +46,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         setupDesign()
         loadExerciseData()
         setupInitialState()
+        
     }
     
     private func setupAnimationController() {
@@ -90,6 +91,10 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     private func setupInitialState() {
         prevButton.isHidden = true
         prevButton.alpha = 0
+        
+        if exerciseName == "Story Cubes" {
+            AudioSessionManager.shared.prewarmRecordSession()
+        }
     }
 
     private func loadExerciseData() {

@@ -48,7 +48,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         
         tableView.dataSource = self
         tableView.delegate = self
-        
+        self.navigationItem.largeTitleDisplayMode = .never
         allFilterButtons = [allButton, dailyTasksButton, exercisesButton, readingButton, conversationButton]
         
         updateButtonStyles()

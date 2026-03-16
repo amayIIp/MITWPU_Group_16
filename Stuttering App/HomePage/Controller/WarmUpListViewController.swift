@@ -16,6 +16,7 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.navigationItem.largeTitleDisplayMode = .always
         tableView.dataSource = self
         tableView.delegate = self
         let customNib = UINib(nibName: "TableViewCell", bundle: nil)

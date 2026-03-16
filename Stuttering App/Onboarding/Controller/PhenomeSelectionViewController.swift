@@ -43,9 +43,6 @@ class PhonemesSelectionViewController: UIViewController {
         
         styleButton(noneButton)
         styleButton(notSureButton)
-        
-        continueButton.isEnabled = false
-        continueButton.alpha = 0.5
     }
 
     func styleButton(_ button: UIButton) {
@@ -91,12 +88,6 @@ class PhonemesSelectionViewController: UIViewController {
         button.tintColor = textColor
     }
 
-    func updateContinueState() {
-        let enabled = !selectedPhonemes.isEmpty
-        continueButton.isEnabled = enabled
-        continueButton.alpha = enabled ? 1 : 0.5
-    }
-
     func resetSpecialButtons() {
         [noneButton, notSureButton].forEach {
             $0?.isSelected = false
@@ -125,8 +116,6 @@ class PhonemesSelectionViewController: UIViewController {
                 selectedPhonemes.remove(phoneme)
             }
         }
-        
-        updateContinueState()
     }
 
     @IBAction func noneButtonTapped(_ sender: UIButton) {
@@ -135,9 +124,6 @@ class PhonemesSelectionViewController: UIViewController {
         
         sender.isSelected = true
         updateButtonAppearance(sender)
-        
-        selectedPhonemes = ["None"]
-        updateContinueState()
     }
 
     @IBAction func notSureButtonTapped(_ sender: UIButton) {
@@ -146,9 +132,6 @@ class PhonemesSelectionViewController: UIViewController {
         
         sender.isSelected = true
         updateButtonAppearance(sender)
-        
-        selectedPhonemes = ["Not sure"]
-        updateContinueState()
     }
 
     @IBAction func continueButtonTapped(_ sender: UIButton) {

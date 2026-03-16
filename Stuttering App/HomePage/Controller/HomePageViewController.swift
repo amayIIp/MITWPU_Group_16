@@ -401,7 +401,7 @@ class HomePageViewController: UIViewController {
         convoStat.text = "\(convoCount)/\(convoGoal) min"
     }
     
-    @IBAction func DailySummaryTapped(_ sender: UIButton) {
+    @IBAction func dailySummaryTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Summary", bundle: nil)
         
         if let detailVC = storyboard.instantiateViewController(withIdentifier: "SummaryViewController") as? SummaryViewController {
@@ -409,13 +409,37 @@ class HomePageViewController: UIViewController {
         }
     }
     
-    @IBAction func AwardsTapped(_ sender: UIButton) {
+    @IBAction func awardsTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Awards", bundle: nil)
         
         if let detailVC = storyboard.instantiateViewController(withIdentifier: "AwardMainViewController") as? AwardMainViewController {
+            
+            detailVC.title = "Awards"
+            detailVC.loadViewIfNeeded()
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
+    
+    @IBAction func dailyTaskTapped(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        
+        if let detailVC = storyboard.instantiateViewController(withIdentifier: "DailyTasksViewController") as? DailyTasksViewController {
+            
+            detailVC.title = "Daily Tasks"
+            self.navigationController?.pushViewController(detailVC, animated: true)
+        }
+    }
+
+    @IBAction func warmUpTapped(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        
+        if let detailVC = storyboard.instantiateViewController(withIdentifier: "WarmUpListViewController") as? WarmUpListViewController {
+            
+            detailVC.title = "WarmUp"
+            self.navigationController?.pushViewController(detailVC, animated: true)
+        }
+    }
+
 }
 
 extension HomePageViewController {

@@ -13,13 +13,13 @@
         <!--Warm Up-->
         <scene sceneID="3Q9-VE-JoU">
             <objects>
-                <viewController id="nN5-Zq-oHy" customClass="WarmUpListViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WarmUpListViewController" id="nN5-Zq-oHy" customClass="WarmUpListViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IZc-eb-M0Y">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="xGO-2d-mM1">
-                                <rect key="frame" x="0.0" y="224" width="393" height="628"/>
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <color key="backgroundColor" name="bg"/>
                                 <connections>
                                     <outlet property="dataSource" destination="nN5-Zq-oHy" id="lCS-UP-xV9"/>
@@ -30,7 +30,7 @@
                         <viewLayoutGuide key="safeArea" id="uVY-Yf-IjB"/>
                         <color key="backgroundColor" name="bg"/>
                         <constraints>
-                            <constraint firstItem="xGO-2d-mM1" firstAttribute="top" secondItem="uVY-Yf-IjB" secondAttribute="top" id="47z-6b-XkC"/>
+                            <constraint firstItem="xGO-2d-mM1" firstAttribute="top" secondItem="IZc-eb-M0Y" secondAttribute="top" id="NdG-Hj-fce"/>
                             <constraint firstItem="xGO-2d-mM1" firstAttribute="leading" secondItem="uVY-Yf-IjB" secondAttribute="leading" id="Rf8-Cv-akl"/>
                             <constraint firstAttribute="bottom" secondItem="xGO-2d-mM1" secondAttribute="bottom" id="dAJ-IY-4qt"/>
                             <constraint firstItem="xGO-2d-mM1" firstAttribute="trailing" secondItem="uVY-Yf-IjB" secondAttribute="trailing" id="eNb-qe-JLp"/>
@@ -48,13 +48,13 @@
         <!--Daily Tasks-->
         <scene sceneID="20K-K0-BxH">
             <objects>
-                <viewController id="6DB-5V-Brq" customClass="DailyTasksViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="DailyTasksViewController" id="6DB-5V-Brq" customClass="DailyTasksViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Qaf-EY-Q8B">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="1WP-KL-wP3">
-                                <rect key="frame" x="0.0" y="224" width="393" height="628"/>
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <color key="backgroundColor" name="bg"/>
                                 <connections>
                                     <outlet property="dataSource" destination="6DB-5V-Brq" id="FME-oq-4yK"/>
@@ -65,8 +65,8 @@
                         <viewLayoutGuide key="safeArea" id="Dak-G7-CdF"/>
                         <color key="backgroundColor" name="bg"/>
                         <constraints>
-                            <constraint firstItem="1WP-KL-wP3" firstAttribute="top" secondItem="Dak-G7-CdF" secondAttribute="top" id="CrQ-uH-8TY"/>
                             <constraint firstItem="1WP-KL-wP3" firstAttribute="leading" secondItem="Dak-G7-CdF" secondAttribute="leading" id="Da5-FT-ICc"/>
+                            <constraint firstItem="1WP-KL-wP3" firstAttribute="top" secondItem="Qaf-EY-Q8B" secondAttribute="top" id="JMz-TE-hGS"/>
                             <constraint firstItem="1WP-KL-wP3" firstAttribute="trailing" secondItem="Dak-G7-CdF" secondAttribute="trailing" id="VKV-L1-MLN"/>
                             <constraint firstAttribute="bottom" secondItem="1WP-KL-wP3" secondAttribute="bottom" id="exL-tb-dGg"/>
                         </constraints>
@@ -89,7 +89,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2yV-fe-8lN">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                <rect key="frame" x="0.0" y="-50" width="393" height="902"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="9" translatesAutoresizingMaskIntoConstraints="NO" id="fRO-vN-NvU">
                                         <rect key="frame" x="20" y="0.0" width="353" height="968"/>
@@ -131,9 +131,6 @@
                                                                             </imageReference>
                                                                             <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="18"/>
                                                                         </buttonConfiguration>
-                                                                        <connections>
-                                                                            <action selector="StreakTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="tYX-WB-dPf"/>
-                                                                        </connections>
                                                                     </button>
                                                                 </subviews>
                                                             </stackView>
@@ -175,9 +172,6 @@
                                                             <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="26" weight="semibold"/>
                                                             <color key="baseForegroundColor" red="0.20784313730000001" green="0.31372549020000001" blue="0.63137254899999995" alpha="0.93999999999999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                         </buttonConfiguration>
-                                                        <connections>
-                                                            <action selector="ProfileTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="wjW-Jq-NvC"/>
-                                                        </connections>
                                                     </button>
                                                 </subviews>
                                                 <constraints>
@@ -233,7 +227,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lcW-Jd-TWx">
-                                                <rect key="frame" x="0.0" y="89.666666666666671" width="353" height="44.000000000000014"/>
+                                                <rect key="frame" x="0.0" y="89.666666666666657" width="353" height="44"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Tasks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dWx-QE-e3J">
                                                         <rect key="frame" x="16.000000000000007" y="24" width="98.666666666666686" height="24"/>
@@ -277,7 +271,7 @@
                                                                 <rect key="frame" x="0.0" y="20" width="140" height="140"/>
                                                                 <subviews>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="mrX-kH-ATl">
-                                                                        <rect key="frame" x="47.666666666666671" y="45.999999999999972" width="44.666666666666671" height="48"/>
+                                                                        <rect key="frame" x="47.666666666666671" y="46" width="44.666666666666671" height="48"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MTs-IE-S5X">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="25.333333333333332" height="48"/>
@@ -343,7 +337,7 @@
                                                                         </subviews>
                                                                     </stackView>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="23r-3Z-Ohw">
-                                                                        <rect key="frame" x="0.0" y="56.666666666666664" width="142.66666666666666" height="20.333333333333336"/>
+                                                                        <rect key="frame" x="0.0" y="56.666666666666693" width="142.66666666666666" height="20.333333333333336"/>
                                                                         <subviews>
                                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="checkmark.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Bge-Kj-fJ4">
                                                                                 <rect key="frame" x="0.0" y="0.66666666666666607" width="20" height="19"/>
@@ -360,7 +354,7 @@
                                                                         </subviews>
                                                                     </stackView>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="QQl-CF-cgJ">
-                                                                        <rect key="frame" x="0.0" y="85.000000000000028" width="142.66666666666666" height="20.333333333333329"/>
+                                                                        <rect key="frame" x="0.0" y="85" width="142.66666666666666" height="20.333333333333329"/>
                                                                         <subviews>
                                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="checkmark.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="TLh-NS-Ohn">
                                                                                 <rect key="frame" x="0.0" y="0.66666666666666607" width="20" height="19"/>
@@ -405,7 +399,7 @@
                                                         <state key="normal" title="Button"/>
                                                         <buttonConfiguration key="configuration" style="plain" title=""/>
                                                         <connections>
-                                                            <segue destination="6DB-5V-Brq" kind="show" id="al9-qb-LSL"/>
+                                                            <action selector="dailyTaskTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="Qbr-45-o9j"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
@@ -543,7 +537,7 @@
                                                         <state key="normal" title="Button"/>
                                                         <buttonConfiguration key="configuration" style="plain" title=""/>
                                                         <connections>
-                                                            <action selector="DailySummaryTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="N5Y-7v-iPE"/>
+                                                            <action selector="dailySummaryTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="Dfo-lO-tzq"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
@@ -626,7 +620,7 @@
                                                                 <state key="normal" title="Button"/>
                                                                 <buttonConfiguration key="configuration" style="plain" title=""/>
                                                                 <connections>
-                                                                    <segue destination="nN5-Zq-oHy" kind="show" id="Dpd-qf-R6w"/>
+                                                                    <action selector="warmUpTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="vCT-Pi-WNd"/>
                                                                 </connections>
                                                             </button>
                                                         </subviews>
@@ -700,7 +694,7 @@
                                                                 <state key="normal" title="Button"/>
                                                                 <buttonConfiguration key="configuration" style="plain" title=""/>
                                                                 <connections>
-                                                                    <action selector="AwardsTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="mEf-6E-bL7"/>
+                                                                    <action selector="awardsTapped:" destination="mT6-n7-IrL" eventType="touchUpInside" id="r0e-vf-yH3"/>
                                                                 </connections>
                                                             </button>
                                                         </subviews>
@@ -782,11 +776,11 @@
                         <constraints>
                             <constraint firstItem="2yV-fe-8lN" firstAttribute="leading" secondItem="4Hr-Td-thd" secondAttribute="leading" id="9mY-To-IZH"/>
                             <constraint firstAttribute="bottom" secondItem="2yV-fe-8lN" secondAttribute="bottom" id="HXQ-2i-co2"/>
-                            <constraint firstItem="2yV-fe-8lN" firstAttribute="top" secondItem="qpD-5Y-tI0" secondAttribute="top" id="fko-qk-Xkg"/>
+                            <constraint firstItem="2yV-fe-8lN" firstAttribute="top" secondItem="qpD-5Y-tI0" secondAttribute="top" constant="-50" id="fko-qk-Xkg"/>
                             <constraint firstItem="2yV-fe-8lN" firstAttribute="trailing" secondItem="4Hr-Td-thd" secondAttribute="trailing" id="jI4-6k-SpX"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" largeTitleDisplayMode="never" id="SOD-In-6gs"/>
+                    <navigationItem key="navigationItem" id="SOD-In-6gs"/>
                     <connections>
                         <outlet property="RadialCardWidthConstraint" destination="pjx-ZP-j4F" id="ua6-Po-lJG"/>
                         <outlet property="achievedAwardDescription" destination="8cX-ej-wjK" id="1dk-ta-ybB"/>

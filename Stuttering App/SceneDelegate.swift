@@ -6,11 +6,11 @@
 //
 
 import UIKit
+import Supabase
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
 
     func scene(_ scene: UIScene,
                willConnectTo session: UISceneSession,
@@ -18,47 +18,72 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        window = UIWindow(windowScene: windowScene)
+        let window = UIWindow(windowScene: windowScene)
+        self.window = window
         
-        // ✅ ALWAYS initialize user if signed in to Supabase
-        if let _ = SupabaseManager.shared.currentUser {
-            LogManager.shared.initializeUserIfNeeded()
+        // 1. Show a temporary blank screen or LaunchScreen while checking auth state
+        let launchStoryboard = UIStoryboard(name: "LaunchScreen", bundle: nil)
+        window.rootViewController = launchStoryboard.instantiateInitialViewController() ?? UIViewController()
+        window.makeKeyAndVisible()
+        
+        // 2. Check the session asynchronously
+        Task {
+            let isSessionValid = await checkSessionValidity()
+            
+            if isSessionValid {
+                LogManager.shared.initializeUserIfNeeded()
+            }
+            
+            // 3. Route to the correct Storyboard on the Main Thread
+            await MainActor.run {
+                self.routeUser(isSessionValid: isSessionValid)
+            }
         }
-        
+    }
+    
+    // MARK: - Auth State Verification
+    private func checkSessionValidity() async -> Bool {
+        do {
+            let session = try await SupabaseManager.shared.client.auth.session
+            return !session.isExpired
+        } catch {
+            return false // No session or failed to fetch
+        }
+    }
+
+    // MARK: - iOS 26 Navigation Routing
+    private func routeUser(isSessionValid: Bool) {
         var initialVC: UIViewController
         
-        if AppState.isOnboardingCompleted {
-            // Both guest users and logged-in users who completed onboarding go to Home
+        if isSessionValid && AppState.isOnboardingCompleted {
             let storyboard = UIStoryboard(name: "Home", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
             
-        } else if AppState.isLoginCompleted && !AppState.isOnboardingCompleted {
-            // Logged in but hasn't done onboarding yet (e.g. new device login)
+        } else if isSessionValid && AppState.isLoginCompleted && !AppState.isOnboardingCompleted {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
             
-        }
-        else {
-            // Fresh install — show landing/welcome screen
+        } else {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "LandingNav")
         }
         
-        window?.rootViewController = initialVC
-        window?.makeKeyAndVisible()
+        // Smoothly swap the root view controller
+        guard let window = self.window else { return }
+        window.rootViewController = initialVC
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
     }
 
-
+    // MARK: - Scene Lifecycle
     func sceneDidDisconnect(_ scene: UIScene) {}
-
     func sceneDidBecomeActive(_ scene: UIScene) {}
-
     func sceneWillResignActive(_ scene: UIScene) {}
-
+    
     func sceneWillEnterForeground(_ scene: UIScene) {
+        // Ensure you have LogicMaker defined in your project
         let logic = LogicMaker()
         logic.checkForNewDay()
     }
-
+    
     func sceneDidEnterBackground(_ scene: UIScene) {}
 }

@@ -552,7 +552,7 @@
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="FEA-i7-gBS"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" name="bg"/>
                         <constraints>
                             <constraint firstItem="weI-4I-I8c" firstAttribute="top" secondItem="FEA-i7-gBS" secondAttribute="top" constant="16" id="D6o-cc-rLL"/>
                             <constraint firstItem="weI-4I-I8c" firstAttribute="leading" secondItem="FEA-i7-gBS" secondAttribute="leading" constant="16" id="PD4-dL-bBR"/>

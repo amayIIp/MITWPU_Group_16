@@ -245,8 +245,8 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             print("❌ Error decoding report")
             return
         }
-        
-        if let resultVC = storyboard?.instantiateViewController(withIdentifier: "LastOnboardingViewController") as? LastOnboardingViewController {
+        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+        if let resultVC = storyboard.instantiateViewController(withIdentifier: "LastOnboardingViewController") as? LastOnboardingViewController {
             resultVC.report = report // Pass data
             navigationController?.pushViewController(resultVC, animated: true)
         }

@@ -132,7 +132,7 @@ class ReadingControlsViewController: UIViewController {
         speedSlider.value = Float(currentPlaybackSpeed)
         
         speedSlider.minimumTrackTintColor = .buttonTheme
-        speedSlider.maximumTrackTintColor = .white
+        speedSlider.maximumTrackTintColor = .systemGray3
         
     }
     

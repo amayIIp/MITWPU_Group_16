@@ -24,6 +24,7 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
         loadFromDatabase()
         
         NotificationCenter.default.addObserver(self, selector: #selector(loadFromDatabase), name: NSNotification.Name("DailyTasksUpdated"), object: nil)
+        self.navigationItem.largeTitleDisplayMode = .always
     }
     
     override func viewWillAppear(_ animated: Bool) {

@@ -20,6 +20,8 @@ class LastOnboardingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .always
+        
         setupCustomBackButton()
         setupInitialState()
         
@@ -45,8 +47,26 @@ class LastOnboardingViewController: UIViewController {
     
     private func setupCustomBackButton() {
         self.navigationItem.hidesBackButton = true
-        let customBackButton = UIBarButtonItem(image: UIImage(systemName: "chevron.backward"), style: .plain, target: self, action: #selector(didTapResetButton))
-        self.navigationItem.leftBarButtonItem = customBackButton
+        
+        // 1. Use modern UIButton Configuration for a native look without background artifacts
+        var config = UIButton.Configuration.plain()
+        
+        let imageConfig = UIImage.SymbolConfiguration(weight: .semibold)
+        config.image = UIImage(systemName: "chevron.backward", withConfiguration: imageConfig)
+        
+        // Optional: Shift the image slightly left to perfectly align with Apple's default back button
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        // 2. Initialize the button with the configuration
+        let backButton = UIButton(configuration: config)
+        backButton.addTarget(self, action: #selector(didTapResetButton), for: .touchUpInside)
+        
+        // Notice: We do NOT set explicit width/height constraints here.
+        // We let the Navigation Bar's wrapper view handle the intrinsic sizing.
+        
+        // 3. Wrap and set
+        let customBarButtonItem = UIBarButtonItem(customView: backButton)
+        self.navigationItem.leftBarButtonItem = customBarButtonItem
     }
 
     func setupResults(report: StutterJSONReport) {
@@ -225,6 +245,8 @@ class LastOnboardingViewController: UIViewController {
     }
     
     @objc func didTapResetButton() {
+        self.view.endEditing(true)
+        
         let alert = UIAlertController(title: "Reset Test", message: "This will reset your current progress. Continue?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Reset", style: .destructive) { [weak self] _ in
             self?.navigateHere()
@@ -234,6 +256,17 @@ class LastOnboardingViewController: UIViewController {
     }
 
     func navigateHere() {
-        navigationController?.popViewController(animated: true)
+        guard let nav = navigationController else { return }
+        let stack = nav.viewControllers
+        
+        // Check if we have at least 3 view controllers in the stack
+        // (Current VC is index count-1. One back is count-2. Two back is count-3.)
+        if stack.count >= 3 {
+            let targetVC = stack[stack.count - 3]
+            nav.popToViewController(targetVC, animated: true)
+        } else {
+            // Failsafe: If there aren't enough screens, just pop to the very first screen
+            nav.popToRootViewController(animated: true)
+        }
     }
 }
