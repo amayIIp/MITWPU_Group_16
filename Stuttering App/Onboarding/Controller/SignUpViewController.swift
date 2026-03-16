@@ -63,12 +63,25 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         
         Task {
             do {
-                // Create Supabase cloud account
-                try await client.auth.signUp(
-                    email: email,
-                    password: password,
-                    data: ["first_name": .string(name)]
-                )
+                // Create or upgrade Supabase cloud account
+                if let currentUser = client.auth.currentUser, currentUser.isAnonymous {
+                    try await client.auth.update(
+                        user: UserAttributes(
+                            email: email,
+                            password: password,
+                            data: ["first_name": .string(name)]
+                        )
+                    )
+                    
+                    // Update the local database to use the real email instead of the fallback dummy one
+                    LogManager.shared.updateUserEmail(userId: currentUser.id.uuidString, newEmail: email)
+                } else {
+                    try await client.auth.signUp(
+                        email: email,
+                        password: password,
+                        data: ["first_name": .string(name)]
+                    )
+                }
                 
                 // Also save locally for offline access
                 LogManager.shared.initializeUserIfNeeded()
@@ -81,10 +94,24 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 
                 AppState.isLoginCompleted = true
                 
-                DispatchQueue.main.async {
-                    self.SignUpButton.isEnabled = true
-                    self.handleNavigationLogic()
+                // --- STEP 1: BULK SYNC ALL OFFLINE/GUEST DATA TO CLOUD ---
+                SupabaseSyncManager.shared.pushAllLocalDataToCloud { [weak self] result in
+                    guard let self = self else { return }
+                    DispatchQueue.main.async {
+                        self.SignUpButton.isEnabled = true
+                        
+                        switch result {
+                        case .success:
+                            print("✅ Successfully pushed all guest data to permanent cloud account.")
+                        case .failure(let error):
+                            print("❌ Warning: Some offline data failed to sync during upgrade: \(error)")
+                            // We still let them through, the delta syncs will try to catch up normally.
+                        }
+                        
+                        self.handleNavigationLogic()
+                    }
                 }
+                
             } catch {
                 DispatchQueue.main.async {
                     self.SignUpButton.isEnabled = true

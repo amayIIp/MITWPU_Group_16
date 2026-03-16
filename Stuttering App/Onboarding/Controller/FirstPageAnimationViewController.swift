@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import Supabase
+import Auth
 
 class FirstPageAnimationViewController: UIViewController {
 
@@ -117,5 +119,22 @@ class FirstPageAnimationViewController: UIViewController {
 
     }
     
-    
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let _ = segue.destination as? OnboardingNameViewController {
+            Task {
+                do {
+                    // Create an anonymous session in Supabase
+                    try await SupabaseManager.shared.client.auth.signInAnonymously()
+                    
+                    await MainActor.run {
+                        LogManager.shared.initializeUserIfNeeded()
+                        AppState.isLoginCompleted = true
+                    }
+                } catch {
+                    print("Guest sign-in failed: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
 }

@@ -39,12 +39,19 @@ class LoginViewController: UIViewController {
         
         continueButton.isEnabled = false
         
+        // --- STEP 0: Wipe local database to replace guest data with cloud data ---
+        // These are completely synchronous filesystem wipes and SQLite resets. 
+        // We do this immediately before async network calls!
+        LogManager.shared.resetDatabaseForNewUser()
+        DatabaseManager.shared.resetDatabaseForNewUser()
+        AwardsManager.shared.resetDatabaseForNewUser()
+        
+        // Step 1: Init LogManager 
+        LogManager.shared.initializeUserIfNeeded()
+        
         Task {
             do {
                 try await client.auth.signIn(email: email, password: password)
-                
-                // Step 1: Init LogManager 
-                LogManager.shared.initializeUserIfNeeded()
                 
                 // Step 2: Sync cloud data — restores Journey completions,
                 //         awards, exercise logs, streaks, etc.

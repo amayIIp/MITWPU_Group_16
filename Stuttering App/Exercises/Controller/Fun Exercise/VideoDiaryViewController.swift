@@ -130,7 +130,7 @@ class VideoDiaryViewController: UIViewController, AVCaptureFileOutputRecordingDe
     }
 
     func styleUI() {
-        cameraCardView.layer.cornerRadius = 32
+        cameraCardView.layer.cornerRadius = 24
         cameraCardView.layer.cornerCurve = .continuous
         cameraCardView.clipsToBounds = true
         

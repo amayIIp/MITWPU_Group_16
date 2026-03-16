@@ -296,11 +296,14 @@ class LogManager {
     }
     
     func initializeUserIfNeeded() {
-        guard let user = SupabaseManager.shared.client.auth.currentUser,
-              let email = user.email else {
+        guard let user = SupabaseManager.shared.client.auth.currentUser else {
             print("No logged in user found in Supabase.")
             return
         }
+        
+        // If the user is anonymous, they won't have an email. Use a fallback dummy email.
+        let email = user.email ?? "guest_\(user.id.uuidString)@anonymous.local"
+        
         currentUserId = createOrGetUser(email: email, userId: user.id.uuidString)
     }
 
@@ -339,6 +342,17 @@ class LogManager {
         sqlite3_finalize(statement)
         
         return userId
+    }
+    
+    func updateUserEmail(userId: String, newEmail: String) {
+        let updateSQL = "UPDATE Users SET email = ? WHERE id = ?;"
+        var statement: OpaquePointer?
+        if sqlite3_prepare_v2(db, updateSQL, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (newEmail as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 2, (userId as NSString).utf8String, -1, nil)
+            sqlite3_step(statement)
+        }
+        sqlite3_finalize(statement)
     }
     
     func saveProfile(_ profile: UserProfile, fromSync: Bool = false) {
