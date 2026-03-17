@@ -25,67 +25,6 @@ class SupabaseSyncManager {
     
     private init() {}
     
-    // MARK: - Bulk Push Local to Cloud
-    func pushAllLocalDataToCloud(completion: @escaping (Result<Void, Error>) -> Void) {
-        Task {
-            do {
-                guard let userId = client.auth.currentUser?.id.uuidString else {
-                    throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
-                }
-                
-                print("☁️ Starting bulk push of local data to cloud for user: \(userId)")
-                
-                // 1. Profile
-                if let profile = LogManager.shared.getProfile(userId: userId) {
-                    pushProfileUpdate(key: "first_name", value: profile.firstName ?? "")
-                }
-                
-                // 2. Exercise Logs
-                let sources: [ExerciseSource] = [.dailyTasks, .exercises, .warmup, .reading, .conversation]
-                for source in sources {
-                    let logs = LogManager.shared.getLogs(for: source)
-                    for log in logs {
-                        pushExerciseLog(id: log.id.uuidString, name: log.exerciseName, source: log.source.rawValue, duration: log.exerciseDuration)
-                    }
-                }
-                
-                // 3. Daily Tasks & Journey & Goals & Streak
-                DatabaseManager.shared.syncLocalDailyTasksToCloud()
-                
-                let streak = DatabaseManager.shared.fetchCurrentStreak()
-                pushStreak(currentStreak: streak)
-                
-                let goalNames = [LogManager.GoalKeys.exercise, LogManager.GoalKeys.reading, LogManager.GoalKeys.conversation]
-                for name in goalNames {
-                    let val = LogManager.shared.getGoal(name: name)
-                    pushUserGoal(goalName: name, goalValue: val)
-                }
-                
-                // 4. Awards
-                if AwardsManager.shared.db == nil {
-                    AwardsManager.shared.openDatabase()
-                    AwardsManager.shared.seedDatabaseIfNeeded()
-                }
-                let allAwards = AwardsManager.shared.fetchAwards(query: "SELECT * FROM Awards")
-                for award in allAwards {
-                    if award.progress > 0 {
-                        pushAwardUpdate(awardId: award.id, progress: award.progress, status: award.status)
-                    }
-                }
-                
-                print("☁️ ✅ BULK PUSH COMPLETED SUCCESSFULLY")
-                DispatchQueue.main.async {
-                    completion(.success(()))
-                }
-            } catch {
-                print("☁️ ❌ Bulk push FAILED: \(error)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-            }
-        }
-    }
-    
     // MARK: - Auth Sync triggered on Login
     
     // Called immediately after a successful login to pull down all historic user data
@@ -600,8 +539,7 @@ class SupabaseSyncManager {
     
     func pushReadingSession(_ report: StutterJSONReport, duration: TimeInterval, sessionId: String, longestSmoothParagraph: Int = 0) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let sessionData: [String: AnyJSON] = [
                     "id": .string(sessionId),
@@ -659,8 +597,7 @@ class SupabaseSyncManager {
     
     func pushStreak(currentStreak: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let streakData: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),
@@ -679,8 +616,7 @@ class SupabaseSyncManager {
     
     func pushProfileUpdate(key: String, value: String) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let profileData: [String: AnyJSON] = [
                     "id": .string(userId.uuidString),
@@ -699,8 +635,7 @@ class SupabaseSyncManager {
     
     func pushOnboardingStatus(isCompleted: Bool) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let data: [String: AnyJSON] = [
                     "id": .string(userId.uuidString),
@@ -720,8 +655,7 @@ class SupabaseSyncManager {
     
     func pushAwardUpdate(awardId: String, progress: Double, status: String) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let awardData: [String: AnyJSON] = [
                     "id": .string(UUID().uuidString),
@@ -745,8 +679,7 @@ class SupabaseSyncManager {
     
     func pushExerciseLog(id: String, name: String, source: String, duration: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let logData: [String: AnyJSON] = [
                     "id": .string(id),
@@ -768,8 +701,7 @@ class SupabaseSyncManager {
     
     func pushJourneyUpdate(name: String, isCompleted: Bool) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let journeyData: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),
@@ -789,8 +721,7 @@ class SupabaseSyncManager {
     
     func pushDailyTaskUpdate(id: Int, name: String, description: String, duration: Int, isCompleted: Bool) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let taskData: [String: AnyJSON] = [
                     "id": .integer(id),
@@ -813,8 +744,7 @@ class SupabaseSyncManager {
     
     func markDailyTaskCompletedInCloud(name: String) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let updateData: [String: AnyJSON] = [
                     "is_completed": .bool(true),
@@ -835,8 +765,7 @@ class SupabaseSyncManager {
     
     func pushConversationSession(sessionId: String, duration: TimeInterval, fillerWordPercent: Double, longestSmoothTalk: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let data: [String: AnyJSON] = [
                     "id": .string(sessionId),
@@ -879,8 +808,7 @@ class SupabaseSyncManager {
 
     func pushUserGoal(goalName: String, goalValue: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let data: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),

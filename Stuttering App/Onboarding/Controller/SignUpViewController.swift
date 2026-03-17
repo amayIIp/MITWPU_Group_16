@@ -7,6 +7,8 @@
 
 import UIKit
 import Supabase
+import GoogleSignIn
+import CryptoKit
 
 class SignUpViewController: UIViewController, UITextFieldDelegate {
 
@@ -14,6 +16,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var SignUpButton: UIButton!
     @IBOutlet weak var nameTextField: UITextField!
+    @IBOutlet weak var googleSignIn: UIButton!
     
     private let client = SupabaseManager.shared.client
     var onSwitchToSignin: (() -> Void)?
@@ -22,6 +25,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
         setupUI()
         setupTextField()
+        googleSignIn.addTarget(self, action: #selector(googleSignInTapped), for: .touchUpInside)
     }
     
     func setupTextField() {
@@ -63,25 +67,12 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         
         Task {
             do {
-                // Create or upgrade Supabase cloud account
-                if let currentUser = client.auth.currentUser, currentUser.isAnonymous {
-                    try await client.auth.update(
-                        user: UserAttributes(
-                            email: email,
-                            password: password,
-                            data: ["first_name": .string(name)]
-                        )
-                    )
-                    
-                    // Update the local database to use the real email instead of the fallback dummy one
-                    LogManager.shared.updateUserEmail(userId: currentUser.id.uuidString, newEmail: email)
-                } else {
-                    try await client.auth.signUp(
-                        email: email,
-                        password: password,
-                        data: ["first_name": .string(name)]
-                    )
-                }
+                // Create Supabase cloud account
+                try await client.auth.signUp(
+                    email: email,
+                    password: password,
+                    data: ["first_name": .string(name)]
+                )
                 
                 // Also save locally for offline access
                 LogManager.shared.initializeUserIfNeeded()
@@ -94,24 +85,10 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 
                 AppState.isLoginCompleted = true
                 
-                // --- STEP 1: BULK SYNC ALL OFFLINE/GUEST DATA TO CLOUD ---
-                SupabaseSyncManager.shared.pushAllLocalDataToCloud { [weak self] result in
-                    guard let self = self else { return }
-                    DispatchQueue.main.async {
-                        self.SignUpButton.isEnabled = true
-                        
-                        switch result {
-                        case .success:
-                            print("✅ Successfully pushed all guest data to permanent cloud account.")
-                        case .failure(let error):
-                            print("❌ Warning: Some offline data failed to sync during upgrade: \(error)")
-                            // We still let them through, the delta syncs will try to catch up normally.
-                        }
-                        
-                        self.handleNavigationLogic()
-                    }
+                DispatchQueue.main.async {
+                    self.SignUpButton.isEnabled = true
+                    self.handleNavigationLogic()
                 }
-                
             } catch {
                 DispatchQueue.main.async {
                     self.SignUpButton.isEnabled = true
@@ -155,6 +132,104 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+    
+    // MARK: - Nonce Helpers
+    private func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        var result = ""
+        var remainingLength = length
+        
+        while remainingLength > 0 {
+            let randoms: [UInt8] = (0 ..< 16).map { _ in
+                var random: UInt8 = 0
+                let errorCode = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
+                if errorCode != errSecSuccess {
+                    fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+                }
+                return random
+            }
+            
+            randoms.forEach { random in
+                if remainingLength == 0 { return }
+                
+                if random < charset.count {
+                    result.append(charset[Int(random)])
+                    remainingLength -= 1
+                }
+            }
+        }
+        return result
+    }
+    
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            return String(format: "%02x", $0)
+        }.joined()
+        return hashString
+    }
+    
+    @objc private func googleSignInTapped() {
+        // You MUST configure Google Sign-in with your iOS Client ID somewhere in the app (like AppDelegate or here).
+        // e.g. GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: "YOUR_IOS_CLIENT_ID")
+        
+        let rawNonce = randomNonceString()
+        let hashedNonce = sha256(rawNonce)
+        
+        Task {
+            do {
+                let result = try await GIDSignIn.sharedInstance.signIn(
+                    withPresenting: self,
+                    hint: nil,
+                    additionalScopes: nil,
+                    nonce: hashedNonce
+                )
+                let user = result.user
+                
+                guard let idToken = user.idToken?.tokenString else {
+                    showAlert(message: "Failed to get ID token")
+                    return
+                }
+                
+                let accessToken = user.accessToken.tokenString
+                
+                // Authenticate with Supabase using the Google ID Token
+                let session = try await client.auth.signInWithIdToken(
+                    credentials: .init(
+                        provider: .google,
+                        idToken: idToken,
+                        accessToken: accessToken,
+                        nonce: rawNonce
+                    )
+                )
+                
+                // Save locally for offline access
+                LogManager.shared.initializeUserIfNeeded()
+                
+                if let userId = LogManager.shared.getCurrentUserId() {
+                    var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
+                    // You can optionally extract name from result.user.profile?.name
+                    if let displayName = result.user.profile?.name {
+                        profile.firstName = displayName
+                    }
+                    LogManager.shared.saveProfile(profile)
+                }
+                
+                AppState.isLoginCompleted = true
+                
+                DispatchQueue.main.async {
+                    self.handleNavigationLogic()
+                }
+                
+            } catch {
+                DispatchQueue.main.async {
+                    self.showAlert(message: error.localizedDescription)
+                }
+            }
+        }
     }
     
     func handleNavigationLogic() {

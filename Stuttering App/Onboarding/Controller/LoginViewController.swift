@@ -7,6 +7,8 @@
 
 import UIKit
 import Supabase
+import GoogleSignIn
+import CryptoKit
 
 class LoginViewController: UIViewController {
 
@@ -15,6 +17,7 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var continueButton: UIButton!
     @IBOutlet weak var forgotPassword: UIButton!
     
+    @IBOutlet weak var googleSignIn: UIButton!
     private let client = SupabaseManager.shared.client
     var onSwitchToSignup: (() -> Void)?
 
@@ -22,6 +25,7 @@ class LoginViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         forgotPassword.addTarget(self, action: #selector(forgotPasswordTapped), for: .touchUpInside)
+        googleSignIn.addTarget(self, action: #selector(googleSignInTapped), for: .touchUpInside)
     }
     
     func setupUI() {
@@ -39,19 +43,12 @@ class LoginViewController: UIViewController {
         
         continueButton.isEnabled = false
         
-        // --- STEP 0: Wipe local database to replace guest data with cloud data ---
-        // These are completely synchronous filesystem wipes and SQLite resets. 
-        // We do this immediately before async network calls!
-        LogManager.shared.resetDatabaseForNewUser()
-        DatabaseManager.shared.resetDatabaseForNewUser()
-        AwardsManager.shared.resetDatabaseForNewUser()
-        
-        // Step 1: Init LogManager 
-        LogManager.shared.initializeUserIfNeeded()
-        
         Task {
             do {
                 try await client.auth.signIn(email: email, password: password)
+                
+                // Step 1: Init LogManager 
+                LogManager.shared.initializeUserIfNeeded()
                 
                 // Step 2: Sync cloud data — restores Journey completions,
                 //         awards, exercise logs, streaks, etc.
@@ -120,6 +117,102 @@ class LoginViewController: UIViewController {
             } catch {
                 DispatchQueue.main.async {
                     self.showAlert(title: "Error", message: error.localizedDescription)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Nonce Helpers
+    private func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        var result = ""
+        var remainingLength = length
+        
+        while remainingLength > 0 {
+            let randoms: [UInt8] = (0 ..< 16).map { _ in
+                var random: UInt8 = 0
+                let errorCode = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
+                if errorCode != errSecSuccess {
+                    fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+                }
+                return random
+            }
+            
+            randoms.forEach { random in
+                if remainingLength == 0 { return }
+                
+                if random < charset.count {
+                    result.append(charset[Int(random)])
+                    remainingLength -= 1
+                }
+            }
+        }
+        return result
+    }
+    
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            return String(format: "%02x", $0)
+        }.joined()
+        return hashString
+    }
+    
+    @objc private func googleSignInTapped() {
+        // You MUST configure Google Sign-in with your iOS Client ID somewhere in the app (like AppDelegate or here).
+        // e.g. GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: "YOUR_IOS_CLIENT_ID")
+        
+        let rawNonce = randomNonceString()
+        let hashedNonce = sha256(rawNonce)
+        
+        Task {
+            do {
+                let result = try await GIDSignIn.sharedInstance.signIn(
+                    withPresenting: self,
+                    hint: nil,
+                    additionalScopes: nil,
+                    nonce: hashedNonce
+                )
+                let user = result.user
+                
+                guard let idToken = user.idToken?.tokenString else {
+                    showAlert(title: "Google Sign-In Error", message: "Failed to get ID token")
+                    return
+                }
+                
+                let accessToken = user.accessToken.tokenString
+                
+                // Authenticate with Supabase using the Google ID Token
+                let session = try await client.auth.signInWithIdToken(
+                    credentials: .init(
+                        provider: .google,
+                        idToken: idToken,
+                        accessToken: accessToken,
+                        nonce: rawNonce
+                    )
+                )
+                
+                // Sync data post-login
+                LogManager.shared.initializeUserIfNeeded()
+                SupabaseSyncManager.shared.syncAllDataFromCloud { [weak self] _ in
+                    DispatchQueue.main.async {
+                        let logic = LogicMaker()
+                        logic.checkForNewDay(isFromLogin: true)
+                        
+                        SupabaseSyncManager.shared.reapplyDailyTaskCompletions {
+                            DispatchQueue.main.async {
+                                DatabaseManager.shared.syncLocalDailyTasksToCloud()
+                                self?.performLoginTransition()
+                            }
+                        }
+                    }
+                }
+                
+            } catch {
+                DispatchQueue.main.async {
+                    self.showAlert(title: "Google Sign-In Failed", message: error.localizedDescription)
                 }
             }
         }
