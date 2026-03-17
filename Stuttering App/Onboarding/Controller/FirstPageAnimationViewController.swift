@@ -129,7 +129,6 @@ class FirstPageAnimationViewController: UIViewController {
                     
                     await MainActor.run {
                         LogManager.shared.initializeUserIfNeeded()
-                        AppState.isLoginCompleted = true
                     }
                 } catch {
                     print("Guest sign-in failed: \(error.localizedDescription)")
