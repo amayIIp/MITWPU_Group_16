@@ -1,0 +1,105 @@
+###############################
+# Xcode
+###############################
+# User-specific files
+*.xcuserstate
+*.xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# User interface state
+*.xcuserdatad
+*.xcsettings
+UserInterfaceState.xcuserstate
+
+###############################
+# Derived data & build
+###############################
+DerivedData/
+build/
+Build/
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+
+###############################
+# Swift Package Manager
+###############################
+.swiftpm/
+.packages/
+.build/
+
+###############################
+# CocoaPods
+###############################
+Pods/
+Podfile.lock
+workspace.xcworkspace/
+
+###############################
+# Carthage
+###############################
+Carthage/Build/
+
+###############################
+# Fastlane
+###############################
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/README.md
+
+###############################
+# SPM Artifacts
+###############################
+.artifacts/
+
+###############################
+# Misc
+###############################
+*.generated.swift
+*.orig
+*.rej
+*.xcmetrics
+*.plist~
+*.swp
+*.tmp
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+
+###############################
+# Xcode Playground
+###############################
+timeline.xctimeline
+playground.xcworkspace
+
+###############################
+# Package Manager Lock Files
+###############################
+Package.resolved
+
+###############################
+# SwiftUI Previews
+###############################
+*.preview-thumbnails
+*.preview-thumbnails/
+.previews/
+
+###############################
+# Simulator files
+###############################
+*.simstate
+
+# Ignore only the target-specific plist
+**/Info.plist
+
+

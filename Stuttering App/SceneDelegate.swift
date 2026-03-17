@@ -1,52 +1,89 @@
 //
 //  SceneDelegate.swift
-//  Stuttering App
+//  Stuttering App 1
 //
-//  Created by sdc - user on 26/11/25.
+//  Created by Prathamesh Patil on 09/12/25.
 //
 
 import UIKit
+import Supabase
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+    func scene(_ scene: UIScene,
+               willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
+        
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        
+        let window = UIWindow(windowScene: windowScene)
+        self.window = window
+        
+        // 1. Show a temporary blank screen or LaunchScreen while checking auth state
+        let launchStoryboard = UIStoryboard(name: "LaunchScreen", bundle: nil)
+        window.rootViewController = launchStoryboard.instantiateInitialViewController() ?? UIViewController()
+        window.makeKeyAndVisible()
+        
+        // 2. Check the session asynchronously
+        Task {
+            let isSessionValid = await checkSessionValidity()
+            
+            if isSessionValid {
+                LogManager.shared.initializeUserIfNeeded()
+            }
+            
+            // 3. Route to the correct Storyboard on the Main Thread
+            await MainActor.run {
+                self.routeUser(isSessionValid: isSessionValid)
+            }
+        }
+    }
+    
+    // MARK: - Auth State Verification
+    private func checkSessionValidity() async -> Bool {
+        do {
+            let session = try await SupabaseManager.shared.client.auth.session
+            return !session.isExpired
+        } catch {
+            return false // No session or failed to fetch
+        }
     }
 
-    func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-        // This occurs shortly after the scene enters the background, or when its session is discarded.
-        // Release any resources associated with this scene that can be re-created the next time the scene connects.
-        // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
+    // MARK: - iOS 26 Navigation Routing
+    private func routeUser(isSessionValid: Bool) {
+        var initialVC: UIViewController
+        
+        if isSessionValid && AppState.isOnboardingCompleted {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+            
+        } else if isSessionValid && AppState.isLoginCompleted && !AppState.isOnboardingCompleted {
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+            
+        } else {
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            initialVC = storyboard.instantiateViewController(withIdentifier: "LandingNav")
+        }
+        
+        // Smoothly swap the root view controller
+        guard let window = self.window else { return }
+        window.rootViewController = initialVC
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
     }
 
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-    }
-
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
-        // This may occur due to temporary interruptions (ex. an incoming phone call).
-    }
-
+    // MARK: - Scene Lifecycle
+    func sceneDidDisconnect(_ scene: UIScene) {}
+    func sceneDidBecomeActive(_ scene: UIScene) {}
+    func sceneWillResignActive(_ scene: UIScene) {}
+    
     func sceneWillEnterForeground(_ scene: UIScene) {
-        // Called as the scene transitions from the background to the foreground.
-        // Use this method to undo the changes made on entering the background.
+        // Ensure you have LogicMaker defined in your project
+        let logic = LogicMaker()
+        logic.checkForNewDay()
     }
-
-    func sceneDidEnterBackground(_ scene: UIScene) {
-        // Called as the scene transitions from the foreground to the background.
-        // Use this method to save data, release shared resources, and store enough scene-specific state information
-        // to restore the scene back to its current state.
-    }
-
-
+    
+    func sceneDidEnterBackground(_ scene: UIScene) {}
 }
-

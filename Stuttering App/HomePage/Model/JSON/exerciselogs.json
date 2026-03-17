@@ -1,0 +1,197 @@
+{
+  "sections": [
+    {
+      "id": "section_speech_foundations",
+      "name": "Speech Foundations",
+      "groups": [
+        {
+          "id": "group_breathing_relaxation",
+          "name": "Speech Foundations",
+          "description": "Prepare the body and build core speech mechanics.",
+          "exercises": [
+              {
+                "id": "ex_diaph_breathing",
+                "name": "Airflow Practice",
+                "description": "Improves breath control when starting vowel sounds",
+                "short_time": 31
+              },
+              {
+                "id": "ex_pmr",
+                "name": "Flexible Pacing",
+                "description": "Helps you start long words more slowly",
+                "short_time": 85
+              }
+            ]
+        },
+        {
+          "id": "group_motor_speech_coordination",
+          "name": "Targeted Practice",
+          "description": "Prepare the body and build core speech mechanics.",
+          "exercises": [
+              {
+                "id": "ex_artic_precision",
+                "name": "Gentle Onset",
+                "description": "Helps start vowels and M, N, L sounds gently",
+                "short_time": 115
+              },
+              {
+                "id": "ex_coarticulation",
+                "name": "Light Contacts",
+                "description": "Reduces tension in P, B, T, D, K, G sounds",
+                "short_time": 95
+              },
+              {
+                "id": "ex_light_contact",
+                "name": "Prolongation",
+                "description": "Keeps airflow steady in S, F, SH, TH sounds",
+                "short_time": 31
+              }
+            ]
+        },
+        {
+          "id": "group_fluency_shaping_techniques",
+          "name": "Correction & Refinement",
+          "description": "Prepare the body and build core speech mechanics.",
+          "exercises": [
+              {
+                "id": "ex_rate_control",
+                "name": "Preparatory Set",
+                "description": "Plan smooth starts for feared words",
+                "short_time": 85
+              },
+              {
+                "id": "ex_coord_speech",
+                "name": "Pull-Out",
+                "description": "CRelease tension while stuck on a word",
+                "short_time": 135
+              },
+              {
+                "id": "ex_prolonged_speech",
+                "name": "Block Correction",
+                "description": "Calm down and redo the word smoothly",
+                "short_time": 105
+              }
+            ]
+        }
+      ]
+    },
+    {
+      "id": "section_fun_exercises",
+      "name": "Fun Exercises",
+      "groups": [
+        {
+          "id": "group_fun",
+          "name": "Fun",
+          "description": "Light, playful exercises to make speech practice enjoyable.",
+          "exercises": [
+              {
+                "id": "ex_video_diary",
+                "name": "Video Diary",
+                "description": "Record short reflections to track progress and improve awareness.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_story_cubes",
+                "name": "Story Cubes",
+                "description": "Create quick stories from prompts to build confident speech.",
+                "short_time": 120
+              },
+              {
+                "id": "ex_tongue_twisters",
+                "name": "Tongue Twisters",
+                "description": "Practice playful twists to boost articulation and speech control.",
+                "short_time": 120
+              }
+            ]
+        }
+      ]
+    },
+    {
+      "id": "section_reading_convo",
+      "name": "Reading and Convo",
+      "groups": [
+        {
+          "id": "reading",
+          "name": "Reading",
+          "description": "Light, playful exercises to make speech practice enjoyable.",
+          "exercises": [
+              {
+                "id": "topic_festivals",
+                "name": "Festivals",
+                "description": "Explore different celebrations and learn their cultural meaning.",
+                "short_time": 10
+              },
+              {
+                "id": "topic_science",
+                "name": "Science",
+                "description": "Discover new ideas and concepts through simple scientific topics.",
+                "short_time": 12
+              },
+              {
+                "id": "topic_culture",
+                "name": "Culture",
+                "description": "Understand traditions, lifestyles, and stories from around the world.",
+                "short_time": 8
+              },
+              {
+                "id": "topic_travel",
+                "name": "Travel",
+                "description": "Experience new places and learn about global destinations.",
+                "short_time": 56
+              },
+              {
+                "id": "topic_mindset",
+                "name": "Mindset",
+                "description": "Build positive thinking and develop a calm, focused outlook.",
+                "short_time": 98
+              },
+              {
+                "id": "topic_stories",
+                "name": "Stories",
+                "description": "Read engaging narratives that inspire imagination and clarity.",
+                "short_time": 45
+              },
+              {
+                "id": "topic_technology",
+                "name": "Technology",
+                "description": "Learn about modern tools, innovations, and digital advancements.",
+                "short_time": 435
+              },
+              {
+                "id": "topic_nature",
+                "name": "Nature",
+                "description": "Explore plants, animals, and the beauty of natural environments.",
+                "short_time": 435
+              },
+              {
+                "id": "topic_history",
+                "name": "History",
+                "description": "Discover important events and influential stories from the past.",
+                "short_time": 453
+              },
+              {
+                "id": "topic_custom",
+                "name": "Custom",
+                "description": "Choose your own topic and tailor the reading to your interest.",
+                "short_time": 120
+              }
+            ]
+        },
+        {
+          "id": "convo",
+          "name": "Conversation",
+          "description": "Light, playful exercises to make speech practice enjoyable.",
+          "exercises": [
+              {
+                "id": "topic_conversation",
+                "name": "Conversation",
+                "description": "Choose your own topic and tailor the reading to your interest.",
+                "short_time": 120
+              }
+            ]
+        }
+      ]
+    }
+  ]
+}
+

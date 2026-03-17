@@ -6,12 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 19B7F8C42F5E961600E02FB6 /* Supabase */; };
+		19EB3DD52ED71B340003B76D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 19EB3DD42ED71B340003B76D /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		19EB3D332ED6ED290003B76D /* Stuttering App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stuttering App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		194C02B42F21D937009DB06D /* Stuttering App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stuttering App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		19EB3DD42ED71B340003B76D /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		19EB3D452ED6ED2A0003B76D /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
+		19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -24,7 +30,7 @@
 		19EB3D352ED6ED290003B76D /* Stuttering App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				19EB3D452ED6ED2A0003B76D /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
+				19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
 			);
 			path = "Stuttering App";
 			sourceTree = "<group>";
@@ -36,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,17 +52,10 @@
 		19EB3D2A2ED6ED290003B76D = {
 			isa = PBXGroup;
 			children = (
+				19EB3DD42ED71B340003B76D /* .gitignore */,
 				19EB3D352ED6ED290003B76D /* Stuttering App */,
-				19EB3D342ED6ED290003B76D /* Products */,
+				194C02B42F21D937009DB06D /* Stuttering App.app */,
 			);
-			sourceTree = "<group>";
-		};
-		19EB3D342ED6ED290003B76D /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				19EB3D332ED6ED290003B76D /* Stuttering App.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -78,9 +78,10 @@
 			);
 			name = "Stuttering App";
 			packageProductDependencies = (
+				19B7F8C42F5E961600E02FB6 /* Supabase */,
 			);
 			productName = "Stuttering App";
-			productReference = 19EB3D332ED6ED290003B76D /* Stuttering App.app */;
+			productReference = 194C02B42F21D937009DB06D /* Stuttering App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -107,8 +108,11 @@
 			);
 			mainGroup = 19EB3D2A2ED6ED290003B76D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 19EB3D342ED6ED290003B76D /* Products */;
+			productRefGroup = 19EB3D2A2ED6ED290003B76D;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -122,6 +126,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19EB3DD52ED71B340003B76D /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,19 +150,24 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C2N3Q4846H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow microphone usage for audio input ";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow speech recognition for speech test ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Stuttering-App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.Stuttering.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -176,19 +186,24 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C2N3Q4846H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow microphone usage for audio input ";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow speech recognition for speech test ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Stuttering-App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.Stuttering.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -341,6 +356,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		19B7F8C42F5E961600E02FB6 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 19EB3D2B2ED6ED290003B76D /* Project object */;
 }

@@ -1,0 +1,134 @@
+{
+  "groups": [
+    {
+      "type": "normal",
+      "awards": [
+        {
+          "id": "nm_001",
+          "name": "First Step",
+          "description": "Completed your very first daily task session.",
+          "status": "0 of 1 completed"
+        },
+        {
+          "id": "nm_002",
+          "name": "Steady speaker ",
+          "description": "Completed your first(15) ever Conversation Mode session.",
+          "status": "0 of 1 completed"
+        },
+        {
+          "id": "nm_003",
+          "name": "Steady Reader",
+          "description": "Completed your first (15)ever Read Aloud session.",
+          "status": "0 of 1 completed"
+        },
+        {
+          "id": "nm_004",
+          "name": "High Five",
+          "description": "Completed at least one session of all 5 exercises.",
+          "status": "0 of 8 exercises"
+        },
+        {
+          "id": "nm_005",
+          "name": "Iron Will",
+          "description": "Completed 30 total timed exercise sessions.",
+          "status": "0 of 50 sessions"
+        },
+        {
+          "id": "nm_006",
+          "name": "Page Turner",
+          "description": "Accumulated 60 minutes total across Read Aloud sessions.",
+          "status": "0 of 60 minutes"
+        },
+        {
+          "id": "nm_007",
+          "name": "Chatterbox",
+          "description": "Accumulated 100 minutes total across Conversation Mode sessions.",
+          "status": "0 of 100 minutes"
+        },
+        {
+          "id": "nm_008",
+          "name": "Welcome Back",
+          "description": "Resumed your streak after a gap of 3 or more days.",
+          "status": "0 of 1 completed"
+        },
+        {
+          "id": "nm_009",
+          "name": "Iron Discipline",
+          "description": "Achieved a 14-day streak by completing all 5 daily tasks every day.",
+          "status": "0 of 14 days"
+        },
+        {
+          "id": "nm_010",
+          "name": "God Mode",
+          "description": "Achieved a 30-day streak by completing all 5 daily tasks every day.",
+          "status": "0 of 30 days"
+        }
+      ]
+    },
+    {
+      "type": "weekly",
+      "awards": [
+        {
+          "id": "wk_001",
+          "name": "Week Warrior",
+          "description": "Achieved a 7-day streak by completing all 5 daily tasks every day this week.",
+          "status": "0 of 7 days"
+        },
+        {
+          "id": "wk_002",
+          "name": "Flawless Week",
+          "description": "Completed all 5 daily tasks every single day for 7 consecutive days.",
+          "status": "0 of 7 days"
+        },
+        {
+          "id": "wk_003",
+          "name": "Goal Crusher",
+          "description": "Hit all 3 daily goals — Exercise, Reading, and Conversation — in a single day.",
+          "status": "0 of 1 day"
+        },
+        {
+          "id": "wk_004",
+          "name": "The Invincible",
+          "description": "Hit all 3 daily goals — Exercise, Reading, and Conversation — for 7 consecutive days.",
+          "status": "0 of 7 days"
+        },
+        {
+          "id": "wk_005",
+          "name": "Early Bird",
+          "description": "Completed all 5 daily tasks before 9 AM.",
+          "status": "0 of 1 completed"
+        },
+        {
+          "id": "wk_006",
+          "name": "First Strike",
+          "description": "Kicked off the week by completing your first practice session on Monday.",
+          "status": "0 of 1 session"
+        },
+        {
+          "id": "wk_007",
+          "name": "Breath Control",
+          "description": "Completed 5 breathing or airflow exercises in a single week.",
+          "status": "0 of 5 sessions"
+        },
+        {
+          "id": "wk_008",
+          "name": "Speech Grinder",
+          "description": "Completed 10 or more speech exercises within a single week.",
+          "status": "0 of 10 exercises"
+        },
+        {
+          "id": "wk_009",
+          "name": "Reading Champ",
+          "description": "Completed a Read Aloud session for 5 days in a week.",
+          "status": "0 of 5 days"
+        },
+        {
+          "id": "wk_010",
+          "name": "Speaking Champ",
+          "description": "Completed a Conversation Mode session for 5 days in a week.",
+          "status": "0 of 5 days"
+        }
+      ]
+    }
+  ]
+}

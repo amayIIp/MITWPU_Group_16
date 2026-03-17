@@ -1,0 +1,32 @@
+[
+   {
+      "id":"ex_coarticulation",
+      "name":"Light Contacts",
+      "description":"Reduces tension in P, B, T, D, K, G sounds",
+      "short_time":95
+   },
+   {
+      "id":"ex_diaph_breathing",
+      "name":"Airflow Practice",
+      "description":"Improves breath control when starting vowel sounds",
+      "short_time":100
+   },
+   {
+      "id":"ex_pmr",
+      "name":"Flexible Pacing",
+      "description":"Helps you start long words more slowly",
+      "short_time":85
+   },
+   {
+      "id":"ex_rate_control",
+      "name":"Preparatory Set",
+      "description":"Plan smooth starts for feared words",
+      "short_time":85
+   },
+   {
+      "id":"ex_coord_speech",
+      "name":"Pull-Out",
+      "description":"CRelease tension while stuck on a word",
+      "short_time":135
+   }
+]
