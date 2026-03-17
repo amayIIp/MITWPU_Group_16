@@ -604,8 +604,7 @@ class SupabaseSyncManager {
     
     func pushReadingSession(_ report: StutterJSONReport, duration: TimeInterval, sessionId: String, longestSmoothParagraph: Int = 0) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let sessionData: [String: AnyJSON] = [
                     "id": .string(sessionId),
@@ -661,8 +660,7 @@ class SupabaseSyncManager {
     
     func pushStreak(currentStreak: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let streakData: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),
@@ -681,8 +679,7 @@ class SupabaseSyncManager {
     
     func pushProfile(_ profile: UserProfile) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let profileData: [String: AnyJSON] = [
                     "id": .string(userId.uuidString),
@@ -699,15 +696,34 @@ class SupabaseSyncManager {
                     .execute()
                 print("☁️ ✅ Profile pushed to Supabase")
             } catch {
-                print("☁️ ❌ Failed to push Profile to Supabase: \(error)")
+                print("Failed to push Profile update to Supabase: \(error)")
+            }
+        }
+    }
+    
+    func pushOnboardingStatus(isCompleted: Bool) {
+        Task {
+            guard let userId = client.auth.currentUser?.id else { return }
+            do {
+                let data: [String: AnyJSON] = [
+                    "id": .string(userId.uuidString),
+                    "is_onboarding_completed": .bool(isCompleted),
+                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                ]
+                try await client
+                    .from("profiles")
+                    .upsert(data)
+                    .execute()
+                print("☁️ ✅ Onboarding status pushed: \(isCompleted)")
+            } catch {
+                print("☁️ ❌ Failed to push onboarding status: \(error)")
             }
         }
     }
     
     func pushAwardUpdate(awardId: String, progress: Double, status: String) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let awardData: [String: AnyJSON] = [
                     "id": .string(UUID().uuidString),
@@ -731,8 +747,7 @@ class SupabaseSyncManager {
     
     func pushExerciseLog(id: String, name: String, source: String, duration: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let logData: [String: AnyJSON] = [
                     "id": .string(id),
@@ -754,8 +769,7 @@ class SupabaseSyncManager {
     
     func pushJourneyUpdate(name: String, isCompleted: Bool) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let journeyData: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),
@@ -775,8 +789,7 @@ class SupabaseSyncManager {
     
     func pushDailyTaskUpdate(id: Int, name: String, description: String, duration: Int, isCompleted: Bool) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let taskData: [String: AnyJSON] = [
                     "id": .integer(id),
@@ -799,8 +812,7 @@ class SupabaseSyncManager {
     
     func markDailyTaskCompletedInCloud(name: String) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let updateData: [String: AnyJSON] = [
                     "is_completed": .bool(true),
@@ -821,8 +833,7 @@ class SupabaseSyncManager {
     
     func pushConversationSession(sessionId: String, duration: TimeInterval, fillerWordPercent: Double, longestSmoothTalk: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let data: [String: AnyJSON] = [
                     "id": .string(sessionId),
@@ -865,8 +876,7 @@ class SupabaseSyncManager {
 
     func pushUserGoal(goalName: String, goalValue: Int) {
         Task {
-            guard let user = client.auth.currentUser, !user.isAnonymous else { return }
-            let userId = user.id
+            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let data: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),

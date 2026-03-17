@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import GoogleSignIn
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,10 +15,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-//        Task { @MainActor in
-//            BackgroundParagraphManager.shared.startInitialBatch()
-//        }
-//        
+        // Google Sign-In Setup (Replace YOUR_IOS_CLIENT_ID_HERE with the ID from Google Cloud Console)
+         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: "630158194253-8nfr47iertgg9gku2bfgtn080e6nd1qj.apps.googleusercontent.com")
+        
+        AwardsManager.shared.openDatabase()
+        AwardsManager.shared.seedDatabaseIfNeeded()
+        
+        Task { @MainActor in
+            BackgroundParagraphManager.shared.startInitialBatch()
+        }
+        
         return true
     }
 
@@ -34,7 +41,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
-
+    
+    func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        if GIDSignIn.sharedInstance.handle(url) {
+            return true
+        }
+        return false
+    }
 
 }
 
