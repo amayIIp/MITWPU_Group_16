@@ -14,13 +14,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        AwardsManager.shared.openDatabase()
-        AwardsManager.shared.seedDatabaseIfNeeded()
-        
-        Task { @MainActor in
-            BackgroundParagraphManager.shared.startInitialBatch()
-        }
-        
+//        Task { @MainActor in
+//            BackgroundParagraphManager.shared.startInitialBatch()
+//        }
+//        
         return true
     }
 

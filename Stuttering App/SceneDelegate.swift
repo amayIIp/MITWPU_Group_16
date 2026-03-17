@@ -80,9 +80,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillResignActive(_ scene: UIScene) {}
     
     func sceneWillEnterForeground(_ scene: UIScene) {
-        // Ensure you have LogicMaker defined in your project
+        AwardsManager.shared.seedDatabaseIfNeeded()
+        
         let logic = LogicMaker()
         logic.checkForNewDay()
+        
     }
     
     func sceneDidEnterBackground(_ scene: UIScene) {}

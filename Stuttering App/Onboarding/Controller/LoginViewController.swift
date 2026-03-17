@@ -46,12 +46,13 @@ class LoginViewController: UIViewController {
         DatabaseManager.shared.resetDatabaseForNewUser()
         AwardsManager.shared.resetDatabaseForNewUser()
         
-        // Step 1: Init LogManager 
-        LogManager.shared.initializeUserIfNeeded()
-        
         Task {
             do {
                 try await client.auth.signIn(email: email, password: password)
+                
+                // Step 1: Init LogManager AFTER sign-in so it creates the
+                // local user/profile for the correct (signed-in) user ID.
+                LogManager.shared.initializeUserIfNeeded()
                 
                 // Step 2: Sync cloud data — restores Journey completions,
                 //         awards, exercise logs, streaks, etc.

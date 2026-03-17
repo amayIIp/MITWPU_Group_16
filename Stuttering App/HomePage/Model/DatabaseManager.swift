@@ -22,7 +22,7 @@ class DatabaseManager {
 
     func openDatabase() {
         let fileUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("Spasht.sqlite")
-        print("| Database URL: \(fileUrl.path)")
+        print("Spasht Database Created")
         if sqlite3_open(fileUrl.path, &db) != SQLITE_OK {
             print("Error opening database")
         }
@@ -33,13 +33,8 @@ class DatabaseManager {
         
         let createDaily = "CREATE TABLE IF NOT EXISTS DailyTasks (id INTEGER PRIMARY KEY, name TEXT, description TEXT, duration INTEGER, isCompleted INTEGER DEFAULT 0)"
         
-        let createStreak = """
-        CREATE TABLE IF NOT EXISTS Streak (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            currentStreak INTEGER,
-            lastCompletedDate TEXT
-        )
-        """
+        let createStreak = "CREATE TABLE IF NOT EXISTS Streak (id INTEGER PRIMARY KEY CHECK (id = 1), currentStreak INTEGER,lastCompletedDate TEXT)"
+        
         sqlite3_exec(db, createStreak, nil, nil, nil)
         sqlite3_exec(db, createJourney, nil, nil, nil)
         sqlite3_exec(db, createDaily, nil, nil, nil)
@@ -58,7 +53,7 @@ class DatabaseManager {
         sqlite3_finalize(countStmt)
         
         if count == 0 {
-            print("Database: Journey table empty. Populating initial sequence...")
+            print("Journey table empty. Populating initial sequence...")
             let exercises = [
                 "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction", "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction"
             ]
@@ -76,6 +71,8 @@ class DatabaseManager {
                 }
             }
             sqlite3_finalize(insertStmt)
+            
+            print("Journey table Initialized\n")
         }
     }
     

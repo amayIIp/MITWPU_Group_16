@@ -218,10 +218,13 @@ class LastOnboardingViewController: UIViewController {
     
     @IBAction func getStartedButtonTapped(_ sender: UIButton) {
         AppState.isOnboardingCompleted = true
-        SupabaseSyncManager.shared.pushOnboardingStatus(isCompleted: true)
         AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
         
-        // Generate daily tasks before going to Home so the task cards aren't empty
+        guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
+        var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
+        profile.isOnboardingCompleted = true
+        LogManager.shared.saveProfile(profile)
+        
         let logic = LogicMaker()
         logic.checkForNewDay()
             

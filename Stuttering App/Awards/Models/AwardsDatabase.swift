@@ -15,7 +15,8 @@ class AwardsManager {
     func openDatabase() {
         let fileUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("AwardsDB.sqlite")
         
-        print("Database Path: \(fileUrl.path)")
+        print("Awards Database Created \n Database Path: \(fileUrl.path)")
+
         if sqlite3_open(fileUrl.path, &db) != SQLITE_OK {
             print("Error opening database")
             return
@@ -56,12 +57,12 @@ class AwardsManager {
 extension AwardsManager {
     
     func seedDatabaseIfNeeded() {
+        openDatabase()
+        
         if getAwardsCount() > 0 {
             print("Database already seeded. Skipping.")
             return
         }
-        
-        print("Database empty. Starting seed process...")
         
         guard let url = Bundle.main.url(forResource: "Awards", withExtension: "json") else {
             print("Error: Awards.json file not found in bundle.")
@@ -77,7 +78,7 @@ extension AwardsManager {
                     insertInitialAward(award, groupType: group.type)
                 }
             }
-            print("Database successfully seeded.")
+            print("Database successfully seeded.\n")
             
         } catch {
             print("Error parsing JSON: \(error)")
