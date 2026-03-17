@@ -84,11 +84,6 @@ class MainProfileTableViewController: UITableViewController {
             profile.dob = dobField.text
             
             LogManager.shared.saveProfile(profile)
-            
-            SupabaseSyncManager.shared.pushProfileUpdate(key: "first_name", value: profile.firstName ?? "")
-            SupabaseSyncManager.shared.pushProfileUpdate(key: "last_name", value: profile.lastName ?? "")
-            SupabaseSyncManager.shared.pushProfileUpdate(key: "mobile", value: profile.mobile ?? "")
-            SupabaseSyncManager.shared.pushProfileUpdate(key: "dob", value: profile.dob ?? "")
         }
         
         // Note: Updating email via Supabase Auth requires a separate API call (updateUser)

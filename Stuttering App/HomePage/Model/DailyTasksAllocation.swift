@@ -20,7 +20,7 @@ class LogicMaker {
         
         let lastDate = defaults.object(forKey: kLastRefreshDate) as? Date ?? Date.distantPast
         
-        if !calendar.isDateInToday(lastDate) {
+        if !calendar.isDateInToday(lastDate) || isFromLogin {
             print("LogicMaker: New Day Detected. Resetting tasks...")
             
             // 2. Protect the cloud: Treat a fresh install with the same safety as a login.
@@ -84,7 +84,7 @@ class LogicMaker {
             }
         }
         
-        print("Daily Tasks Reset Successfully.")
+        print("Daily Tasks Reset Successfully.\n")
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
     }
 }

@@ -7,12 +7,18 @@ import Foundation
 import Supabase
 import SQLite3
 
-
-
 class SupabaseSyncManager {
+    
     static let shared = SupabaseSyncManager()
     
     private let client = SupabaseManager.shared.client
+    
+    // MARK: - IST Date Formatter
+    private var istFormatter: ISO8601DateFormatter {
+        let formatter = ISO8601DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Asia/Kolkata")
+        return formatter
+    }
     
     private var lastSyncDateString: String {
         get {
@@ -25,9 +31,68 @@ class SupabaseSyncManager {
     
     private init() {}
     
-    // MARK: - Auth Sync triggered on Login
+    // MARK: - Bulk Push Local to Cloud
+    func pushAllLocalDataToCloud(completion: @escaping (Result<Void, Error>) -> Void) {
+        Task {
+            do {
+                guard let userId = client.auth.currentUser?.id.uuidString else {
+                    throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
+                }
+                
+                print("☁️ Starting bulk push of local data to cloud for user: \(userId)")
+                
+                // 1. Profile
+                if let profile = LogManager.shared.getProfile(userId: userId) {
+                    pushProfile(profile)
+                }
+                
+                // 2. Exercise Logs
+                let sources: [ExerciseSource] = [.dailyTasks, .exercises, .warmup, .reading, .conversation]
+                for source in sources {
+                    let logs = LogManager.shared.getLogs(for: source)
+                    for log in logs {
+                        pushExerciseLog(id: log.id.uuidString, name: log.exerciseName, source: log.source.rawValue, duration: log.exerciseDuration)
+                    }
+                }
+                
+                // 3. Daily Tasks & Journey & Goals & Streak
+                DatabaseManager.shared.syncLocalDailyTasksToCloud()
+                
+                let streak = DatabaseManager.shared.fetchCurrentStreak()
+                pushStreak(currentStreak: streak)
+                
+                let goalNames = [LogManager.GoalKeys.exercise, LogManager.GoalKeys.reading, LogManager.GoalKeys.conversation]
+                for name in goalNames {
+                    let val = LogManager.shared.getGoal(name: name)
+                    pushUserGoal(goalName: name, goalValue: val)
+                }
+                
+                // 4. Awards
+                if AwardsManager.shared.db == nil {
+                    AwardsManager.shared.openDatabase()
+                    AwardsManager.shared.seedDatabaseIfNeeded()
+                }
+                let allAwards = AwardsManager.shared.fetchAwards(query: "SELECT * FROM Awards")
+                for award in allAwards {
+                    if award.progress > 0 {
+                        pushAwardUpdate(awardId: award.id, progress: award.progress, status: award.status)
+                    }
+                }
+                
+                print("☁️ ✅ BULK PUSH COMPLETED SUCCESSFULLY")
+                DispatchQueue.main.async {
+                    completion(.success(()))
+                }
+            } catch {
+                print("☁️ ❌ Bulk push FAILED: \(error)")
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
     
-    // Called immediately after a successful login to pull down all historic user data
+    // MARK: - Auth Sync triggered on Login
     func syncAllDataFromCloud(completion: @escaping (Result<Void, Error>) -> Void) {
         Task {
             do {
@@ -35,33 +100,27 @@ class SupabaseSyncManager {
                     throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
                 }
                 
-                let syncStartTime = ISO8601DateFormatter().string(from: Date())
+                let syncStartTime = istFormatter.string(from: Date())
                 print("☁️ Starting cloud sync for user: \(userId)")
                 
-                // Ensure AwardsDB is open and seeded before any restore
                 if AwardsManager.shared.db == nil {
                     AwardsManager.shared.openDatabase()
                     AwardsManager.shared.seedDatabaseIfNeeded()
                     print("☁️ AwardsDB initialized")
                 }
                 
-                // 1. Fetch Profile
                 try await fetchAndRestoreProfile(userId: userId)
                 print("☁️ ✅ Profile restored")
                 
-                // 2. Fetch Daily Tasks & Journey
                 try await fetchAndRestoreGoals(userId: userId)
                 print("☁️ ✅ Goals/Journey/Streak restored")
                 
-                // 3. Fetch Analytics (Exercise Logs, Reading Sessions, Conversations)
                 try await fetchAndRestoreAnalytics(userId: userId)
                 print("☁️ ✅ Analytics restored")
                 
-                // 4. Fetch Awards
                 try await fetchAndRestoreAwards(userId: userId)
                 print("☁️ ✅ Awards restored")
                 
-                // Update delta sync time
                 lastSyncDateString = syncStartTime
                 print("☁️ ✅ ALL DATA SYNCED SUCCESSFULLY")
                 
@@ -77,8 +136,6 @@ class SupabaseSyncManager {
         }
     }
     
-    // Evaluates if any rows have been updated past the local `lastSyncDateString`
-    // Evaluates if any rows have been updated past the local `lastSyncDateString`
     func hasPendingCloudChanges() async throws -> Bool {
         guard let userId = client.auth.currentUser?.id.uuidString else {
             throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
@@ -91,11 +148,8 @@ class SupabaseSyncManager {
         
         let hasUpdates: Bool = try await client.rpc("has_pending_sync", params: params).execute().value
         return hasUpdates
-        
     }
     
-    // Call this AFTER checkForNewDay() to re-apply daily task completions
-    // that the reset would have wiped.
     func reapplyDailyTaskCompletions(completion: @escaping () -> Void) {
         Task {
             guard let userId = client.auth.currentUser?.id.uuidString else {
@@ -109,10 +163,9 @@ class SupabaseSyncManager {
             }
             
             do {
-                // Fetch from Supabase directly via client.from()
                 let tasks: [DailyTaskRow] = try await client
                     .from("daily_tasks")
-                    .select("name, is_completed")
+                    .select("id, name, is_completed")
                     .eq("user_id", value: userId)
                     .eq("is_completed", value: true)
                     .execute()
@@ -129,14 +182,16 @@ class SupabaseSyncManager {
                         let result = sqlite3_step(stmt)
                         let changes = sqlite3_changes(DatabaseManager.shared.db)
                         
-                        print("☁️   Task '\(t.name)': \(changes) rows updated")
-                        if result != SQLITE_DONE {
+                        if result == SQLITE_DONE {
+                            print("☁️   Task '\(t.name)': \(changes) rows updated to completed")
+                        } else {
                             print("☁️   ⚠️ Step failed for '\(t.name)'")
                         }
+                    } else {
+                        print("☁️   ⚠️ Failed to prepare statement for '\(t.name)'")
                     }
                     sqlite3_finalize(stmt)
                 }
-                // Also update the daily goal status
                 DatabaseManager.shared.updateDailyGoalCompletionStatus()
                 
             } catch {
@@ -167,20 +222,28 @@ class SupabaseSyncManager {
             .value
         
         if let row = rows.first {
+            // If the cloud has a definitive value, use it.
+            // If the cloud has null (e.g. the old string push was rejected),
+            // fall back to whatever the device already knows from AppState.
+            let resolvedOnboarding = row.is_onboarding_completed ?? AppState.isOnboardingCompleted
+            
             let profile = UserProfile(
                 id: userId,
                 firstName: row.first_name,
                 lastName: row.last_name,
                 dob: row.dob,
                 mobile: row.mobile,
-                isOnboardingCompleted: row.is_onboarding_completed ?? false
+                isOnboardingCompleted: resolvedOnboarding
             )
             LogManager.shared.saveProfile(profile, fromSync: true)
             
-            // Restore onboarding status from cloud
-            if let onboardingDone = row.is_onboarding_completed {
-                AppState.isOnboardingCompleted = onboardingDone
-                print("☁️ Onboarding status restored: \(onboardingDone)")
+            AppState.isOnboardingCompleted = resolvedOnboarding
+            print("☁️ Onboarding status restored: \(resolvedOnboarding) (cloud=\(String(describing: row.is_onboarding_completed)))")
+            
+            // If we used the local fallback, push the corrected boolean to cloud
+            if row.is_onboarding_completed == nil && resolvedOnboarding {
+                pushProfile(profile)
+                print("☁️ Pushed corrected onboarding status to cloud")
             }
         }
         print("Profile restored.")
@@ -309,9 +372,11 @@ class SupabaseSyncManager {
             if sqlite3_prepare_v2(logDB, exInsert, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_text(stmt, 1, (ex.id as NSString).utf8String, -1, nil)
                 sqlite3_bind_text(stmt, 2, (ex.exercise_name as NSString).utf8String, -1, nil)
-                let formatter = ISO8601DateFormatter()
-                let epoch = formatter.date(from: ex.completion_date)?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
+                
+                // Parses using the centralized IST Formatter
+                let epoch = istFormatter.date(from: ex.completion_date)?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
                 sqlite3_bind_double(stmt, 3, epoch)
+                
                 sqlite3_bind_text(stmt, 4, (ex.source as NSString).utf8String, -1, nil)
                 sqlite3_bind_int(stmt, 5, Int32(ex.duration))
                 sqlite3_step(stmt)
@@ -352,7 +417,7 @@ class SupabaseSyncManager {
             if sqlite3_prepare_v2(logDB, rsInsert, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_text(stmt, 1, (rs.id as NSString).utf8String, -1, nil)
                 sqlite3_bind_text(stmt, 2, (localUserId as NSString).utf8String, -1, nil)
-                sqlite3_bind_double(stmt, 3, rs.date)
+                sqlite3_bind_double(stmt, 3, rs.date) // Note: epoch time remains time-zone agnostic
                 sqlite3_bind_double(stmt, 4, rs.duration)
                 sqlite3_bind_int(stmt, 5, Int32(rs.fluency_score))
                 sqlite3_bind_double(stmt, 6, rs.repetition_percent ?? 0.0)
@@ -544,7 +609,7 @@ class SupabaseSyncManager {
                 let sessionData: [String: AnyJSON] = [
                     "id": .string(sessionId),
                     "user_id": .string(userId.uuidString),
-                    "date": .double(Date().timeIntervalSince1970),
+                    "date": .double(Date().timeIntervalSince1970), // Epochs remain universal
                     "duration": .double(duration),
                     "fluency_score": .integer(report.fluencyScore),
                     "repetition_percent": .double(report.percentages.repetition),
@@ -559,7 +624,6 @@ class SupabaseSyncManager {
                     .upsert(sessionData)
                     .execute()
                 
-                // Push troubled words
                 for word in report.stutteredWords {
                     let type: String
                     let lowerWord = word.lowercased()
@@ -578,7 +642,6 @@ class SupabaseSyncManager {
                     try await client.from("troubled_words").upsert(wordData).execute()
                 }
                 
-                // Push session letter stats
                 for (letter, count) in report.letterAnalysis {
                     let letterData: [String: AnyJSON] = [
                         "session_id": .string(sessionId),
@@ -602,7 +665,7 @@ class SupabaseSyncManager {
                 let streakData: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),
                     "current_streak": .integer(currentStreak),
-                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("streaks")
@@ -614,19 +677,24 @@ class SupabaseSyncManager {
         }
     }
     
-    func pushProfileUpdate(key: String, value: String) {
+    func pushProfile(_ profile: UserProfile) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let profileData: [String: AnyJSON] = [
                     "id": .string(userId.uuidString),
-                    key: .string(value),
-                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                    "first_name": .string(profile.firstName ?? ""),
+                    "last_name": .string(profile.lastName ?? ""),
+                    "dob": .string(profile.dob ?? ""),
+                    "mobile": .string(profile.mobile ?? ""),
+                    "is_onboarding_completed": .bool(profile.isOnboardingCompleted),
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("profiles")
                     .upsert(profileData)
                     .execute()
+                print("☁️ ✅ Profile pushed to Supabase")
             } catch {
                 print("Failed to push Profile update to Supabase: \(error)")
             }
@@ -663,7 +731,7 @@ class SupabaseSyncManager {
                     "award_id": .string(awardId),
                     "progress": .double(progress),
                     "status": .string(status),
-                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("user_awards")
@@ -687,7 +755,7 @@ class SupabaseSyncManager {
                     "exercise_name": .string(name),
                     "source": .string(source),
                     "duration": .integer(duration),
-                    "completion_date": .string(ISO8601DateFormatter().string(from: Date()))
+                    "completion_date": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("exercise_logs")
@@ -707,7 +775,7 @@ class SupabaseSyncManager {
                     "user_id": .string(userId.uuidString),
                     "name": .string(name),
                     "is_completed": .bool(isCompleted),
-                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("journeys")
@@ -730,7 +798,7 @@ class SupabaseSyncManager {
                     "description": .string(description),
                     "duration": .integer(duration),
                     "is_completed": .bool(isCompleted),
-                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("daily_tasks")
@@ -748,7 +816,7 @@ class SupabaseSyncManager {
             do {
                 let updateData: [String: AnyJSON] = [
                     "is_completed": .bool(true),
-                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("daily_tasks")
@@ -770,7 +838,7 @@ class SupabaseSyncManager {
                 let data: [String: AnyJSON] = [
                     "id": .string(sessionId),
                     "user_id": .string(userId.uuidString),
-                    "date": .double(Date().timeIntervalSince1970),
+                    "date": .double(Date().timeIntervalSince1970), // Epochs remain universal
                     "duration": .double(duration),
                     "filler_word_percent": .double(fillerWordPercent),
                     "longest_smooth_talk": .integer(longestSmoothTalk)
@@ -822,4 +890,3 @@ class SupabaseSyncManager {
         }
     }
 }
-

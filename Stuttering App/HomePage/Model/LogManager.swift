@@ -88,7 +88,6 @@ class LogManager {
     private init() {
         openDatabase()
         createTables()
-        runMigrations()
         initializeDefaultGoals()
     }
 
@@ -122,138 +121,37 @@ class LogManager {
         let fileURL = try! FileManager.default
             .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
             .appendingPathComponent(dbName)
-        print("Database Path: \(fileURL.path)")
+        print("ExerciseLog Database Created")
         if sqlite3_open(fileURL.path, &db) != SQLITE_OK {
             print("Error: Unable to open database.")
         }
     }
 
     private func createTables() {
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS ExerciseLog(
-                id TEXT PRIMARY KEY,
-                exerciseName TEXT,
-                completionDate REAL,
-                source TEXT,
-                exerciseDuration INTEGER
-            );
-            """, successMessage: "ExerciseLog table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS Goals(
-                goalName TEXT PRIMARY KEY,
-                goalValue INTEGER
-            );
-            """, successMessage: "Goals table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS StutterStats(
-                letter TEXT PRIMARY KEY,
-                count INTEGER
-            );
-            """, successMessage: "StutterStats table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS Users(
-                id TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                createdAt REAL
-            );
-            """, successMessage: "Users table ready.")
-            
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS Profiles(
-                id TEXT PRIMARY KEY,
-                firstName TEXT,
-                lastName TEXT,
-                dob TEXT,
-                mobile TEXT,
-                isOnboardingCompleted INTEGER DEFAULT 0,
-                FOREIGN KEY(id) REFERENCES Users(id)
-            );
-            """, successMessage: "Profiles table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS ReadingSessions(
-                id TEXT PRIMARY KEY,
-                userId TEXT,
-                date REAL,
-                duration REAL,
-                fluencyScore INTEGER,
-                repetitionPercent REAL,
-                prolongationPercent REAL,
-                blockPercent REAL,
-                correctPercent REAL,
-                longestSmoothParagraph INTEGER DEFAULT 0,
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "ReadingSessions table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS TroubledWords(
-                id TEXT PRIMARY KEY,
-                sessionId TEXT,
-                userId TEXT,
-                word TEXT,
-                type TEXT,
-                firstLetter TEXT,
-                FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id),
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "TroubledWords table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS LetterStats(
-                userId TEXT,
-                letter TEXT,
-                count INTEGER,
-                PRIMARY KEY(userId, letter),
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "LetterStats table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS SessionLetterStats(
-                sessionId TEXT,
-                userId TEXT,
-                letter TEXT,
-                stutterCount INTEGER,
-                PRIMARY KEY(sessionId, letter),
-                FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id),
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "SessionLetterStats table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS ConversationSessions(
-                id TEXT PRIMARY KEY,
-                userId TEXT,
-                date REAL,
-                duration REAL,
-                fillerWordPercent REAL,
-                longestSmoothTalk INTEGER DEFAULT 0,
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "ConversationSessions table ready.")
-    }
-
-    private func runMigrations() {
-        // 1. Check if the column exists BEFORE attempting to alter the table
-        if !columnExists(tableName: "ReadingSessions", columnName: "longestSmoothParagraph") {
-            let sql = "ALTER TABLE ReadingSessions ADD COLUMN longestSmoothParagraph INTEGER DEFAULT 0;"
-            var stmt: OpaquePointer?
-            
-            if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
-                sqlite3_step(stmt)
-                print("Migration successful: Added longestSmoothParagraph.")
-            } else {
-                print("Migration failed to compile.")
-            }
-            sqlite3_finalize(stmt)
-        } else {
-            print("Migration skipped: longestSmoothParagraph already exists. Console remains clean.")
-        }
+        
+        let createExerciseLog = "CREATE TABLE IF NOT EXISTS ExerciseLog (id TEXT PRIMARY KEY, exerciseName TEXT, completionDate REAL, source TEXT, exerciseDuration INTEGER);"
+        let createGoals = "CREATE TABLE IF NOT EXISTS Goals (goalName TEXT PRIMARY KEY, goalValue INTEGER);"
+        let createStutterStats = "CREATE TABLE IF NOT EXISTS StutterStats (letter TEXT PRIMARY KEY, count INTEGER);"
+        let createUsers = "CREATE TABLE IF NOT EXISTS Users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, createdAt REAL);"
+        let createProfiles = "CREATE TABLE IF NOT EXISTS Profiles (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, dob TEXT, mobile TEXT, isOnboardingCompleted INTEGER DEFAULT 0, FOREIGN KEY(id) REFERENCES Users(id));"
+        let createReadingSessions = "CREATE TABLE IF NOT EXISTS ReadingSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fluencyScore INTEGER, repetitionPercent REAL, prolongationPercent REAL, blockPercent REAL, correctPercent REAL, longestSmoothParagraph INTEGER DEFAULT 0, FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createTroubledWords = "CREATE TABLE IF NOT EXISTS TroubledWords (id TEXT PRIMARY KEY, sessionId TEXT, userId TEXT, word TEXT, type TEXT, firstLetter TEXT, FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createLetterStats = "CREATE TABLE IF NOT EXISTS LetterStats (userId TEXT, letter TEXT, count INTEGER, PRIMARY KEY(userId, letter), FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createSessionLetterStats = "CREATE TABLE IF NOT EXISTS SessionLetterStats (sessionId TEXT, userId TEXT, letter TEXT, stutterCount INTEGER, PRIMARY KEY(sessionId, letter), FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createConversationSessions = "CREATE TABLE IF NOT EXISTS ConversationSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fillerWordPercent REAL, longestSmoothTalk INTEGER DEFAULT 0, FOREIGN KEY(userId) REFERENCES Users(id));"
+        
+        sqlite3_exec(db, createExerciseLog, nil, nil, nil)
+        sqlite3_exec(db, createGoals, nil, nil, nil)
+        sqlite3_exec(db, createStutterStats, nil, nil, nil)
+        sqlite3_exec(db, createUsers, nil, nil, nil)
+        sqlite3_exec(db, createProfiles, nil, nil, nil)
+        sqlite3_exec(db, createReadingSessions, nil, nil, nil)
+        sqlite3_exec(db, createTroubledWords, nil, nil, nil)
+        sqlite3_exec(db, createLetterStats, nil, nil, nil)
+        sqlite3_exec(db, createSessionLetterStats, nil, nil, nil)
+        sqlite3_exec(db, createConversationSessions, nil, nil, nil)
+        
+        print("10 Tables created in ExerciseLogs\n")
     }
 
     // 2. Helper function to inspect the SQLite table schema
@@ -362,7 +260,7 @@ class LogManager {
         sqlite3_finalize(statement)
         
         if !fromSync {
-            print("Local Profile saved, but wait! We actually push fields individually from callers, ignoring full profile push here for safety")
+            SupabaseSyncManager.shared.pushProfile(profile)
         }
     }
 
@@ -391,7 +289,6 @@ class LogManager {
         return profile
     }
 
-
     private func initializeDefaultGoals() {
         let defaults: [(String, Int)] = [
             (GoalKeys.exercise,     10),
@@ -404,10 +301,12 @@ class LogManager {
             if sqlite3_prepare_v2(db, insertSQL, -1, &statement, nil) == SQLITE_OK {
                 sqlite3_bind_text(statement, 1, (name as NSString).utf8String, -1, nil)
                 sqlite3_bind_int(statement, 2, Int32(value))
-                if sqlite3_step(statement) == SQLITE_DONE { print("Initialized default goal: \(name)") }
+                if sqlite3_step(statement) == SQLITE_DONE {}
             }
             sqlite3_finalize(statement)
         }
+        
+        print("Initialized default goals.")
     }
 
     func updateGoal(name: String, value: Int, fromSync: Bool = false) {
