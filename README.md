@@ -1,6 +1,6 @@
-# Spasht: Real-Time Speech Therapy Engine
+# Spasht: Real-Time Speech Therapy App
 
-An iOS application designed to provide immediate feedback for individuals with stuttering disfluencies. Spasht listens, aligns text to audio in real-time, and generates actionable fluency metrics. No cloud processing delays, no privacy concerns—just raw, on-device machine learning.
+An iOS app built to give immediate feedback to people with stuttering disfluencies. Spasht listens, aligns what you say to the text in real-time, and gives you fluency metrics. Everything runs locally on the device using CoreML, so there is no cloud delay and zero privacy concerns.
 
 ![Swift](https://img.shields.io/badge/Swift-5.x-FA7343?style=flat&logo=swift&logoColor=white)
 ![iOS](https://img.shields.io/badge/iOS-16.0+-000000?style=flat&logo=apple&logoColor=white)
@@ -8,41 +8,39 @@ An iOS application designed to provide immediate feedback for individuals with s
 
 ---
 
-## The Tech Behind the Talk
+## How It Works
 
-- **Real-Time Disfluency Detection:** Built a speech analysis system that actively detects repetitions, prolongations, and blocks using timestamped speech recognition.
-- **Dynamic Time Warping (DTW):** Engineered a text-audio alignment pipeline that compares the user's spoken audio directly against reference prompts to pinpoint exact moments of disfluency.
-- **Closed-Loop Feedback Engine:** Automatically identifies "trouble words" from the user's speech patterns and dynamically spawns personalized practice tasks. It learns what you struggle with and drills it.
-- **Actionable Analytics:** Computes and visualizes core fluency metrics—accuracy, block rate, and overall speech continuity—giving users concrete insight into their progress.
-- **Zero-Latency Inference:** Fully optimized for on-device processing. This guarantees both privacy (audio never leaves the device) and the millisecond-level latency necessary for legitimate real-time feedback.
+*   **Real-Time Detection:** The app listens for repetitions, prolongations, and blocks using timestamped speech recognition.
+*   **Dynamic Time Warping (DTW):** It uses a custom DTW pipeline to compare your audio directly against reference prompts to find exact moments of disfluency.
+*   **Closed-Loop Feedback:** It automatically figures out your "trouble words" from your speech patterns and creates custom practice tasks just for you.
+*   **Analytics:** It tracks your accuracy, block rate, and overall speech continuity over time so you can actually see your progress.
+*   **Zero-Latency Inference:** Fully optimized for on-device processing. The audio never leaves your phone, which keeps your data secure and makes the feedback instant.
 
----
+## Architecture
 
-## Architecture Overview
-
-- **Audio Pipeline:** `SFSpeechRecognizer` coupled with custom `AVAudioEngine` tapping to extract raw PCM buffers.
-- **Alignment Engine:** Custom Swift implementation of the DTW algorithm running on background GCD queues to avoid main-thread blocking.
-- **Data Persistence:** CoreData handles the storage of longitudinal fluency metrics and trouble-word histories.
+*   **Audio Pipeline:** Uses SFSpeechRecognizer and a custom AVAudioEngine tap to extract raw PCM audio buffers.
+*   **Alignment Engine:** A native Swift implementation of the DTW algorithm running on background queues to keep the main UI fluid.
+*   **Data Storage:** CoreData manages all the historical fluency metrics and trouble word tracking.
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-- Xcode 14.0 or newer
-- An iOS device running iOS 16.0+ (Simulator microphone support is notoriously finicky for audio analysis, highly recommend testing on physical hardware).
+### Requirements
+*   Xcode 14.0 or newer
+*   An iOS device running iOS 16.0 or better. I highly recommend using a real iPhone since the Simulator microphone pipeline can be very unreliable for audio analysis.
 
 ### Installation
-1. Clone the repository:
+1. Clone the project locally:
    ```bash
    git clone https://github.com/amayIIp/MITWPU_Group_16.git
    ```
-2. Open the `.xcodeproj` (or `.xcworkspace` if using CocoaPods/SPM) in Xcode.
-3. Select your physical iOS device.
-4. Hit `Cmd + R` to build, deploy, and start talking.
+2. Open the Xcode project file.
+3. Select your connected iPhone.
+4. Press `Cmd + R` to build and run the app.
 
 ---
 
 ## License
 
-This project is for educational and clinical research purposes. 
+This project is intended for educational and clinical research purposes only. 
