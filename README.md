@@ -2,10 +2,6 @@
 
 An iOS app built to give immediate feedback to people with stuttering disfluencies. Spasht listens, aligns what you say to the text in real-time, and gives you fluency metrics. Everything runs locally on the device using CoreML, so there is no cloud delay and zero privacy concerns.
 
-![Swift](https://img.shields.io/badge/Swift-5.x-FA7343?style=flat&logo=swift&logoColor=white)
-![iOS](https://img.shields.io/badge/iOS-16.0+-000000?style=flat&logo=apple&logoColor=white)
-![CoreML](https://img.shields.io/badge/CoreML-On--Device-007AFF?style=flat)
-
 ---
 
 ## How It Works
