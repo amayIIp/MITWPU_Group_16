@@ -20,6 +20,25 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var googleSignIn: UIButton!
     private let client = SupabaseManager.shared.client
     var onSwitchToSignup: (() -> Void)?
+    
+    private var loadingOverlay: UIView?
+    
+    private func showLoading() {
+        let overlay = UIView(frame: view.bounds)
+        overlay.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.color = .white
+        indicator.center = overlay.center
+        indicator.startAnimating()
+        overlay.addSubview(indicator)
+        view.addSubview(overlay)
+        loadingOverlay = overlay
+    }
+    
+    private func hideLoading() {
+        loadingOverlay?.removeFromSuperview()
+        loadingOverlay = nil
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,6 +61,7 @@ class LoginViewController: UIViewController {
         }
         
         continueButton.isEnabled = false
+        showLoading()
         
         // --- STEP 0: Wipe local database to replace guest data with cloud data ---
         // These are completely synchronous filesystem wipes and SQLite resets. 
@@ -78,6 +98,7 @@ class LoginViewController: UIViewController {
                                 DatabaseManager.shared.syncLocalDailyTasksToCloud()
                                 
                                 self?.continueButton.isEnabled = true
+                                self?.hideLoading()
                                 self?.performLoginTransition()
                             }
                         }
@@ -85,6 +106,7 @@ class LoginViewController: UIViewController {
                 }
             } catch {
                 DispatchQueue.main.async {
+                    self.hideLoading()
                     self.continueButton.isEnabled = true
                     let msg = error.localizedDescription.contains("credentials")
                         ? "Incorrect email or password. Please try again."
@@ -175,6 +197,8 @@ class LoginViewController: UIViewController {
         let rawNonce = randomNonceString()
         let hashedNonce = sha256(rawNonce)
         
+        showLoading()
+        
         Task {
             do {
                 let result = try await GIDSignIn.sharedInstance.signIn(
@@ -186,6 +210,7 @@ class LoginViewController: UIViewController {
                 let user = result.user
                 
                 guard let idToken = user.idToken?.tokenString else {
+                    self.hideLoading()
                     showAlert(title: "Google Sign-In Error", message: "Failed to get ID token")
                     return
                 }
@@ -212,6 +237,7 @@ class LoginViewController: UIViewController {
                         SupabaseSyncManager.shared.reapplyDailyTaskCompletions {
                             DispatchQueue.main.async {
                                 DatabaseManager.shared.syncLocalDailyTasksToCloud()
+                                self?.hideLoading()
                                 self?.performLoginTransition()
                             }
                         }
@@ -220,6 +246,7 @@ class LoginViewController: UIViewController {
                 
             } catch {
                 DispatchQueue.main.async {
+                    self.hideLoading()
                     self.showAlert(title: "Google Sign-In Failed", message: error.localizedDescription)
                 }
             }

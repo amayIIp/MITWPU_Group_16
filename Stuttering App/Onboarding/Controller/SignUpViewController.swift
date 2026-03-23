@@ -21,6 +21,25 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     private let client = SupabaseManager.shared.client
     var onSwitchToSignin: (() -> Void)?
     
+    private var loadingOverlay: UIView?
+    
+    private func showLoading() {
+        let overlay = UIView(frame: view.bounds)
+        overlay.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.color = .white
+        indicator.center = overlay.center
+        indicator.startAnimating()
+        overlay.addSubview(indicator)
+        view.addSubview(overlay)
+        loadingOverlay = overlay
+    }
+    
+    private func hideLoading() {
+        loadingOverlay?.removeFromSuperview()
+        loadingOverlay = nil
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -64,6 +83,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         }
         
         SignUpButton.isEnabled = false
+        showLoading()
         
         Task {
             do {
@@ -86,11 +106,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 AppState.isLoginCompleted = true
                 
                 DispatchQueue.main.async {
+                    self.hideLoading()
                     self.SignUpButton.isEnabled = true
                     self.handleNavigationLogic()
                 }
             } catch {
                 DispatchQueue.main.async {
+                    self.hideLoading()
                     self.SignUpButton.isEnabled = true
                     self.showAlert(message: error.localizedDescription)
                 }
@@ -179,6 +201,8 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         let rawNonce = randomNonceString()
         let hashedNonce = sha256(rawNonce)
         
+        showLoading()
+        
         Task {
             do {
                 let result = try await GIDSignIn.sharedInstance.signIn(
@@ -190,6 +214,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 let user = result.user
                 
                 guard let idToken = user.idToken?.tokenString else {
+                    self.hideLoading()
                     showAlert(message: "Failed to get ID token")
                     return
                 }
@@ -221,11 +246,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 AppState.isLoginCompleted = true
                 
                 DispatchQueue.main.async {
+                    self.hideLoading()
                     self.handleNavigationLogic()
                 }
                 
             } catch {
                 DispatchQueue.main.async {
+                    self.hideLoading()
                     self.showAlert(message: error.localizedDescription)
                 }
             }
