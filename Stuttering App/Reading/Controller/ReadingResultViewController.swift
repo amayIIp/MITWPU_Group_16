@@ -2,7 +2,6 @@ import UIKit
 
 class ReadingResultViewController: UIViewController {
     
-    @IBOutlet var exercisesStackView: UIStackView!
     @IBOutlet weak var troubledWordsStackView: UIStackView!
     @IBOutlet weak var insightsLabel: UILabel!
     @IBOutlet weak var fluencyCircleView: UIView!
@@ -28,6 +27,10 @@ class ReadingResultViewController: UIViewController {
         troubledWordsStackView.alignment = .fill
         troubledWordsStackView.distribution = .fill
         
+        // Ensure multiline label wraps properly inside stack views
+        insightsLabel.numberOfLines = 0
+        insightsLabel.lineBreakMode = .byWordWrapping
+        
         if let report = report {
             print("REPORT RECEIVED with score: \(report.fluencyScore)")
             setupUIWithReport(report)
@@ -36,6 +39,24 @@ class ReadingResultViewController: UIViewController {
             setupFluencyCircle(score: 0)
             insightsLabel.text = "No audio data recorded."
         }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let labelWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
+        insightsLabel.preferredMaxLayoutWidth = labelWidth
+    }
+    
+    private func updateInsightsLayout() {
+        // Recalculate the width for wrapping
+        let labelWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
+        insightsLabel.preferredMaxLayoutWidth = labelWidth
+        insightsLabel.invalidateIntrinsicContentSize()
+        
+        // Force the entire view hierarchy to re-layout
+        insightsLabel.superview?.setNeedsLayout()
+        insightsLabel.superview?.superview?.setNeedsLayout()
+        view.layoutIfNeeded()
     }
     
     func setupUIWithReport(_ report: StutterJSONReport) {
@@ -51,10 +72,12 @@ class ReadingResultViewController: UIViewController {
             if let dayReport = await LogManager.shared.getDayReport(for: Date()) {
                 await MainActor.run {
                     self.insightsLabel.text = dayReport.insight
+                    self.updateInsightsLayout()
                 }
             } else {
                 await MainActor.run {
                     self.insightsLabel.text = "You showed up and practiced — that matters."
+                    self.updateInsightsLayout()
                 }
             }
         }
@@ -65,18 +88,6 @@ class ReadingResultViewController: UIViewController {
         prolongationPercentage.text = "\(Int(report.percentages.prolongation))"
         
         loadTroubledWords(words: report.stutteredWords)
-        
-        var recommended: [String] = []
-        if report.percentages.blocks > 5.0 { recommended.append("Easy Onset") }
-        if report.percentages.repetition > 5.0 { recommended.append("Pull-outs") }
-        if report.percentages.prolongation > 5.0 { recommended.append("Light Contact") }
-        
-        if recommended.isEmpty {
-            recommended.append("Breathing Control")
-            recommended.append("Slow Reading")
-        }
-        
-        loadExercises(exercises: recommended)
         LogManager.shared.saveReadingSession(report: report)
         LogManager.shared.debugPrintAllReadingSessions()
 
@@ -84,77 +95,77 @@ class ReadingResultViewController: UIViewController {
 
     
     func loadTroubledWords(words: [String]) {
-        troubledWordsStackView.arrangedSubviews.forEach { view in
-            if view is UIStackView || (view as? UILabel)?.text == "None! Great job." {
-                view.removeFromSuperview()
-            }
-        }
+        troubledWordsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        troubledWordsStackView.axis = .vertical
+        troubledWordsStackView.alignment = .leading
+        troubledWordsStackView.distribution = .fill
+        troubledWordsStackView.spacing = 12
+        troubledWordsStackView.setContentHuggingPriority(.required, for: .vertical)
         
         let cleanWords = words.filter({ !$0.isEmpty })
         
         if cleanWords.isEmpty {
-            let label = UILabel()
-            label.text = "None! Great job."
-            label.textColor = .secondaryLabel
-            label.font = UIFont.systemFont(ofSize: 14)
-            label.textAlignment = .center
-            troubledWordsStackView.addArrangedSubview(label)
+            let noWordsLabel = UILabel()
+            noWordsLabel.text = "No Troubled Words."
+            noWordsLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+            noWordsLabel.textColor = .secondaryLabel
+            noWordsLabel.textAlignment = .left
+            noWordsLabel.numberOfLines = 1
+            troubledWordsStackView.alignment = .fill
+            troubledWordsStackView.addArrangedSubview(noWordsLabel)
             return
         }
         
-        let maxPerRow = 3
-        var currentRowStack: UIStackView?
-        let displayWords = Array(cleanWords.prefix(9))
-        
-        for (index, word) in displayWords.enumerated() {
-            if index % maxPerRow == 0 {
-                currentRowStack = UIStackView()
-                currentRowStack?.axis = .horizontal
-                currentRowStack?.alignment = .leading
-                currentRowStack?.distribution = .fillProportionally
-                currentRowStack?.spacing = 12
-                troubledWordsStackView.addArrangedSubview(currentRowStack!)
-            }
-            let chip = createChipLabel(text: word, textColor: customBrandBlue)
-            currentRowStack?.addArrangedSubview(chip)
+        let screenWidth: CGFloat
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            screenWidth = windowScene.screen.bounds.width
+        } else {
+            screenWidth = 390
         }
-        view.layoutIfNeeded()
-    }
-    
-    func loadExercises(exercises: [String]) {
-        exercisesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        let maxPerRow = 3
-        var currentRowStack: UIStackView?
         
-        for (index, exercise) in exercises.enumerated() {
-            if index % maxPerRow == 0 {
-                currentRowStack = UIStackView()
-                currentRowStack?.axis = .horizontal
-                currentRowStack?.alignment = .leading
-                currentRowStack?.distribution = .fillProportionally
-                currentRowStack?.spacing = 12
-                exercisesStackView.addArrangedSubview(currentRowStack!)
+        // 20 leading on scrollView content + 20 leading inside the card = 40 each side = 80 total
+        let maxWidth = screenWidth - 80
+        var currentWidth: CGFloat = 0
+        
+        var currentRowView = createRowStack()
+        troubledWordsStackView.addArrangedSubview(currentRowView)
+        
+        let displayWords = Array(cleanWords.prefix(12))
+        
+        for word in displayWords {
+            let label = createTagLabel(text: word)
+            let labelWidth = label.intrinsicContentSize.width
+            
+            if currentWidth + labelWidth > maxWidth && currentWidth > 0 {
+                currentRowView = createRowStack()
+                troubledWordsStackView.addArrangedSubview(currentRowView)
+                currentWidth = 0
             }
-            let chip = createChipLabel(text: exercise, textColor: .systemGreen)
-            currentRowStack?.addArrangedSubview(chip)
+            
+            currentRowView.addArrangedSubview(label)
+            currentWidth += (labelWidth + 8)
         }
     }
     
-    func createChipLabel(text: String, textColor: UIColor) -> UILabel {
-        let label = UILabel()
+    private func createRowStack() -> UIStackView {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.distribution = .fill
+        stack.spacing = 8
+        return stack
+    }
+    
+    private func createTagLabel(text: String) -> PaddingLabel {
+        let label = PaddingLabel()
         label.text = text
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        label.textColor = textColor
-        label.backgroundColor = textColor.withAlphaComponent(0.12)
+        label.textColor = UIColor(red: 0.1, green: 0.2, blue: 0.2, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 0.88, green: 0.95, blue: 0.95, alpha: 1.0)
         label.textAlignment = .center
-        label.numberOfLines = 1
-        label.layer.cornerRadius = 14
-        label.layer.masksToBounds = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        label.setContentHuggingPriority(.required, for: .horizontal)
-        label.setContentCompressionResistancePriority(.required, for: .horizontal)
-        label.text = "  \(text)  "
+        label.layer.cornerRadius = 12
+        label.clipsToBounds = true
         return label
     }
     
@@ -204,5 +215,24 @@ class ReadingResultViewController: UIViewController {
         if let initialPresenter = self.presentingViewController?.presentingViewController {
             initialPresenter.dismiss(animated: true, completion: nil)
         }
+    }
+}
+
+class PaddingLabel: UILabel {
+    
+    var topInset: CGFloat = 6.0
+    var bottomInset: CGFloat = 6.0
+    var leftInset: CGFloat = 12.0
+    var rightInset: CGFloat = 12.0
+
+    override func drawText(in rect: CGRect) {
+        let insets = UIEdgeInsets(top: topInset, left: leftInset, bottom: bottomInset, right: rightInset)
+        super.drawText(in: rect.inset(by: insets))
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(width: size.width + leftInset + rightInset,
+                      height: size.height + topInset + bottomInset)
     }
 }
