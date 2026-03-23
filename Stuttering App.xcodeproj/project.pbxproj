@@ -161,7 +161,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JGBU3XBL5N;
+				DEVELOPMENT_TEAM = 3R2UHS38TG;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
@@ -197,7 +197,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JGBU3XBL5N;
+				DEVELOPMENT_TEAM = 3R2UHS38TG;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
