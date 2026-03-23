@@ -218,6 +218,8 @@ class LastOnboardingViewController: UIViewController {
     
     @IBAction func getStartedButtonTapped(_ sender: UIButton) {
         AppState.isOnboardingCompleted = true
+        AppState.isLoginCompleted = true // CRITICAL: Guest modes must flag LoginCompleted or SceneDelegate traps them on restart!
+        
         AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
         
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }

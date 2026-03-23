@@ -51,7 +51,7 @@ class SupabaseSyncManager {
                 for source in sources {
                     let logs = LogManager.shared.getLogs(for: source)
                     for log in logs {
-                        pushExerciseLog(id: log.id.uuidString, name: log.exerciseName, source: log.source.rawValue, duration: log.exerciseDuration)
+                        pushExerciseLog(id: log.id.uuidString, name: log.exerciseName, source: log.source.rawValue, duration: log.exerciseDuration, completionDate: log.completionDate)
                     }
                 }
                 
@@ -75,7 +75,7 @@ class SupabaseSyncManager {
                 let allAwards = AwardsManager.shared.fetchAwards(query: "SELECT * FROM Awards")
                 for award in allAwards {
                     if award.progress > 0 {
-                        pushAwardUpdate(awardId: award.id, progress: award.progress, status: award.status)
+                        pushAwardUpdate(awardId: award.id, progress: award.progress, status: award.status, completionDate: award.completionDate)
                     }
                 }
                 
@@ -160,20 +160,27 @@ class SupabaseSyncManager {
             struct DailyTaskRow: Decodable {
                 let name: String
                 let is_completed: Bool
+                let updated_at: String?
             }
             
             do {
                 let tasks: [DailyTaskRow] = try await client
                     .from("daily_tasks")
-                    .select("id, name, is_completed")
+                    .select("id, name, is_completed, updated_at")
                     .eq("user_id", value: userId)
                     .eq("is_completed", value: true)
                     .execute()
                     .value
                             
-                print("☁️ Reapplying \(tasks.count) completed daily tasks")
+                let todayString = istFormatter.string(from: Date()).prefix(10) // "yyyy-MM-dd"
+                let todaysTasks = tasks.filter { task in
+                    guard let updatedAt = task.updated_at else { return false }
+                    return updatedAt.hasPrefix(todayString)
+                }
+                
+                print("☁️ Reapplying \(todaysTasks.count) completed daily tasks for today")
                             
-                for t in tasks {
+                for t in todaysTasks {
                     let sql = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
                     var stmt: OpaquePointer?
                     
@@ -222,10 +229,12 @@ class SupabaseSyncManager {
             .value
         
         if let row = rows.first {
-            // If the cloud has a definitive value, use it.
-            // If the cloud has null (e.g. the old string push was rejected),
-            // fall back to whatever the device already knows from AppState.
-            let resolvedOnboarding = row.is_onboarding_completed ?? AppState.isOnboardingCompleted
+            // Guard against newly created cloud profiles (which default to false)
+            // overwriting a local Guest profile that has already completed onboarding.
+            let cloudSaysComplete = row.is_onboarding_completed ?? false
+            let localSaysComplete = AppState.isOnboardingCompleted
+            
+            let resolvedOnboarding = localSaysComplete ? true : cloudSaysComplete
             
             let profile = UserProfile(
                 id: userId,
@@ -240,10 +249,10 @@ class SupabaseSyncManager {
             AppState.isOnboardingCompleted = resolvedOnboarding
             print("☁️ Onboarding status restored: \(resolvedOnboarding) (cloud=\(String(describing: row.is_onboarding_completed)))")
             
-            // If we used the local fallback, push the corrected boolean to cloud
-            if row.is_onboarding_completed == nil && resolvedOnboarding {
+            // If local was ahead of cloud, forcibly sync it upwards to rectify cloud state!
+            if localSaysComplete && !cloudSaysComplete {
                 pushProfile(profile)
-                print("☁️ Pushed corrected onboarding status to cloud")
+                print("☁️ Pushed corrected onboarding status upward to cloud")
             }
         }
         print("Profile restored.")
@@ -721,7 +730,7 @@ class SupabaseSyncManager {
         }
     }
     
-    func pushAwardUpdate(awardId: String, progress: Double, status: String) {
+    func pushAwardUpdate(awardId: String, progress: Double, status: String, completionDate: Date? = nil) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -731,7 +740,7 @@ class SupabaseSyncManager {
                     "award_id": .string(awardId),
                     "progress": .double(progress),
                     "status": .string(status),
-                    "updated_at": .string(istFormatter.string(from: Date()))
+                    "updated_at": .string(istFormatter.string(from: completionDate ?? Date()))
                 ]
                 try await client
                     .from("user_awards")
@@ -745,7 +754,7 @@ class SupabaseSyncManager {
     
     // MARK: - Exercise & Journey Sync
     
-    func pushExerciseLog(id: String, name: String, source: String, duration: Int) {
+    func pushExerciseLog(id: String, name: String, source: String, duration: Int, completionDate: Date? = nil) {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -755,7 +764,7 @@ class SupabaseSyncManager {
                     "exercise_name": .string(name),
                     "source": .string(source),
                     "duration": .integer(duration),
-                    "completion_date": .string(istFormatter.string(from: Date()))
+                    "completion_date": .string(istFormatter.string(from: completionDate ?? Date()))
                 ]
                 try await client
                     .from("exercise_logs")

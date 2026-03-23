@@ -63,16 +63,16 @@ class LoginViewController: UIViewController {
         continueButton.isEnabled = false
         showLoading()
         
-        // --- STEP 0: Wipe local database to replace guest data with cloud data ---
-        // These are completely synchronous filesystem wipes and SQLite resets. 
-        // We do this immediately before async network calls!
-        LogManager.shared.resetDatabaseForNewUser()
-        DatabaseManager.shared.resetDatabaseForNewUser()
-        AwardsManager.shared.resetDatabaseForNewUser()
-        
         Task {
             do {
                 try await client.auth.signIn(email: email, password: password)
+                
+                // --- STEP 0: Wipe local database to replace guest data with cloud data ---
+                // We do this immediately AFTER successful auth to prevent data loss on failed login!
+                LogManager.shared.resetDatabaseForNewUser()
+                DatabaseManager.shared.resetDatabaseForNewUser()
+                AwardsManager.shared.resetDatabaseForNewUser()
+                AppState.isOnboardingCompleted = false
                 
                 // Step 1: Init LogManager AFTER sign-in so it creates the
                 // local user/profile for the correct (signed-in) user ID.
@@ -226,6 +226,12 @@ class LoginViewController: UIViewController {
                         nonce: rawNonce
                     )
                 )
+                
+                // Wipe local database ONLY after successful network authentication
+                LogManager.shared.resetDatabaseForNewUser()
+                DatabaseManager.shared.resetDatabaseForNewUser()
+                AwardsManager.shared.resetDatabaseForNewUser()
+                AppState.isOnboardingCompleted = false
                 
                 // Sync data post-login
                 LogManager.shared.initializeUserIfNeeded()

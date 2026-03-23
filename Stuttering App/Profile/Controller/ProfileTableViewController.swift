@@ -1,4 +1,5 @@
 import UIKit
+import Supabase
 
 class ProfileTableViewController: UITableViewController {
     
@@ -38,25 +39,35 @@ class ProfileTableViewController: UITableViewController {
     }
     
     func performLogout() {
-        
-        AppState.isLoginCompleted = false
-        AppState.isOnboardingCompleted = false
-        
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        
-        guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {
-            print("Error: Could not find LandingNav")
-            return
+        Task {
+            do {
+                try await SupabaseManager.shared.client.auth.signOut()
+                print("Successfully signed out of Supabase.")
+            } catch {
+                print("Failed to sign out of Supabase: \(error)")
+            }
+            
+            DispatchQueue.main.async {
+                AppState.isLoginCompleted = false
+                AppState.isOnboardingCompleted = false
+                
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                
+                guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {
+                    print("Error: Could not find LandingNav")
+                    return
+                }
+                
+                if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
+                    UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                        window.rootViewController = landingNav
+                    }, completion: nil)
+                }
+                
+                self.clearAllAppData()
+            }
         }
-        
-        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
-           let window = sceneDelegate.window {
-            UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                window.rootViewController = landingNav
-            }, completion: nil)
-        }
-        
-        clearAllAppData()
     }
     
     private func clearAllAppData() {

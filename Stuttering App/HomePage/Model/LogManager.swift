@@ -190,7 +190,49 @@ class LogManager {
 
     func getCurrentUserId() -> String? {
         if currentUserId == nil { initializeUserIfNeeded() }
-        return currentUserId
+        return currentUserId ?? "guest_user"
+    }
+    
+    func migrateGuestData(to newUserId: String) {
+        var stmt: OpaquePointer?
+        
+        let checkSQL = "SELECT isOnboardingCompleted FROM Profiles WHERE id = 'guest_user';"
+        var hasGuest = false
+        if sqlite3_prepare_v2(db, checkSQL, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                hasGuest = true
+            }
+        }
+        sqlite3_finalize(stmt)
+        
+        if hasGuest {
+            // Delete placeholder profile to avoid Primary Key collision
+            let deleteSQL = "DELETE FROM Profiles WHERE id = ?;"
+            if sqlite3_prepare_v2(db, deleteSQL, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                sqlite3_step(stmt)
+            }
+            sqlite3_finalize(stmt)
+            
+            // Migrate Profiles (use 'id' column)
+            let updateProfile = "UPDATE Profiles SET id = ? WHERE id = 'guest_user';"
+            if sqlite3_prepare_v2(db, updateProfile, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                sqlite3_step(stmt)
+            }
+            sqlite3_finalize(stmt)
+            
+            // Migrate tables using 'userId' column
+            let tables = ["ReadingSessions", "TroubledWords", "LetterStats", "SessionLetterStats", "ConversationSessions"]
+            for table in tables {
+                let updateSQL = "UPDATE \(table) SET userId = ? WHERE userId = 'guest_user';"
+                if sqlite3_prepare_v2(db, updateSQL, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                    sqlite3_step(stmt)
+                }
+                sqlite3_finalize(stmt)
+            }
+        }
     }
     
     func initializeUserIfNeeded() {

@@ -98,9 +98,14 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 LogManager.shared.initializeUserIfNeeded()
                 
                 if let userId = LogManager.shared.getCurrentUserId() {
+                    LogManager.shared.migrateGuestData(to: userId)
+                    
                     var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
                     profile.firstName = name
                     LogManager.shared.saveProfile(profile)
+                    
+                    // Push all local guest data to the NEW cloud account!
+                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in }
                 }
                 
                 AppState.isLoginCompleted = true
@@ -235,12 +240,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 LogManager.shared.initializeUserIfNeeded()
                 
                 if let userId = LogManager.shared.getCurrentUserId() {
+                    LogManager.shared.migrateGuestData(to: userId)
+                    
                     var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
                     // You can optionally extract name from result.user.profile?.name
                     if let displayName = result.user.profile?.name {
                         profile.firstName = displayName
                     }
                     LogManager.shared.saveProfile(profile)
+                    
+                    // Push all local guest data to the NEW cloud account!
+                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in }
                 }
                 
                 AppState.isLoginCompleted = true

@@ -43,6 +43,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     // MARK: - Auth State Verification
     private func checkSessionValidity() async -> Bool {
+        // Fast-path: Offline profiles and Guest mode
+        if AppState.isLoginCompleted && LogManager.shared.getCurrentUserId() == "guest_user" {
+            return true
+        }
+        
         do {
             let session = try await SupabaseManager.shared.client.auth.session
             return !session.isExpired
