@@ -31,6 +31,15 @@ class SupabaseSyncManager {
     
     private init() {}
     
+    /// Defense-in-depth: blocks any push call when in guest mode
+    private func guardAccountMode(_ fn: String = #function) -> Bool {
+        guard SessionManager.shared.isAccountMode else {
+            SessionManager.shared.logBlockedSupabaseCall(fn)
+            return false
+        }
+        return true
+    }
+    
     // MARK: - Bulk Push Local to Cloud
     func pushAllLocalDataToCloud(completion: @escaping (Result<Void, Error>) -> Void) {
         Task {
@@ -612,6 +621,7 @@ class SupabaseSyncManager {
     // MARK: - Push Local Changes to Cloud (Local-First Sync)
     
     func pushReadingSession(_ report: StutterJSONReport, duration: TimeInterval, sessionId: String, longestSmoothParagraph: Int = 0) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -668,6 +678,7 @@ class SupabaseSyncManager {
     }
     
     func pushStreak(currentStreak: Int) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -687,6 +698,7 @@ class SupabaseSyncManager {
     }
     
     func pushProfile(_ profile: UserProfile) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -711,6 +723,7 @@ class SupabaseSyncManager {
     }
     
     func pushOnboardingStatus(isCompleted: Bool) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -731,6 +744,7 @@ class SupabaseSyncManager {
     }
     
     func pushAwardUpdate(awardId: String, progress: Double, status: String, completionDate: Date? = nil) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -755,6 +769,7 @@ class SupabaseSyncManager {
     // MARK: - Exercise & Journey Sync
     
     func pushExerciseLog(id: String, name: String, source: String, duration: Int, completionDate: Date? = nil) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -777,6 +792,7 @@ class SupabaseSyncManager {
     }
     
     func pushJourneyUpdate(name: String, isCompleted: Bool) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -797,6 +813,7 @@ class SupabaseSyncManager {
     }
     
     func pushDailyTaskUpdate(id: Int, name: String, description: String, duration: Int, isCompleted: Bool) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -841,6 +858,7 @@ class SupabaseSyncManager {
     }
     
     func pushConversationSession(sessionId: String, duration: TimeInterval, fillerWordPercent: Double, longestSmoothTalk: Int) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
@@ -864,6 +882,7 @@ class SupabaseSyncManager {
     }
     
     func pushLetterStats(userId: String) {
+        guard guardAccountMode() else { return }
         Task {
             do {
                 let stats = LogManager.shared.getAllLetterStats(for: userId)
@@ -884,6 +903,7 @@ class SupabaseSyncManager {
     }
 
     func pushUserGoal(goalName: String, goalValue: Int) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {

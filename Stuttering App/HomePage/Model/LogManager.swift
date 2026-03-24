@@ -189,16 +189,43 @@ class LogManager {
 
 
     func getCurrentUserId() -> String? {
-        if currentUserId == nil { initializeUserIfNeeded() }
-        return currentUserId ?? "guest_user"
+        if currentUserId == nil {
+            if SessionManager.shared.isGuestMode {
+                initializeGuestUser()
+            } else {
+                initializeUserIfNeeded()
+            }
+        }
+        return currentUserId ?? SessionManager.shared.deviceId
+    }
+    
+    /// Initialize a guest user using the device ID — NO Supabase calls
+    func initializeGuestUser() {
+        let guestId = SessionManager.shared.deviceId
+        print("📋 [GUEST] Initializing guest user with deviceId: \(guestId)")
+        currentUserId = createOrGetUser(email: "guest@local", userId: guestId)
+        
+        // Ensure a profile exists for the guest
+        let profileSQL = "INSERT OR IGNORE INTO Profiles (id, isOnboardingCompleted) VALUES (?, 0);"
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, profileSQL, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (guestId as NSString).utf8String, -1, nil)
+            sqlite3_step(stmt)
+        }
+        sqlite3_finalize(stmt)
+        print("📋 [GUEST] Guest user initialized")
     }
     
     func migrateGuestData(to newUserId: String) {
+        let guestId = SessionManager.shared.deviceId
         var stmt: OpaquePointer?
         
-        let checkSQL = "SELECT isOnboardingCompleted FROM Profiles WHERE id = 'guest_user';"
+        print("🔄 [MIGRATE] Starting migration from guest (\(guestId)) to account (\(newUserId))")
+        
+        let checkSQL = "SELECT isOnboardingCompleted FROM Profiles WHERE id = ?;"
         var hasGuest = false
         if sqlite3_prepare_v2(db, checkSQL, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (guestId as NSString).utf8String, -1, nil)
             if sqlite3_step(stmt) == SQLITE_ROW {
                 hasGuest = true
             }
@@ -215,9 +242,10 @@ class LogManager {
             sqlite3_finalize(stmt)
             
             // Migrate Profiles (use 'id' column)
-            let updateProfile = "UPDATE Profiles SET id = ? WHERE id = 'guest_user';"
+            let updateProfile = "UPDATE Profiles SET id = ? WHERE id = ?;"
             if sqlite3_prepare_v2(db, updateProfile, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                sqlite3_bind_text(stmt, 2, (guestId as NSString).utf8String, -1, nil)
                 sqlite3_step(stmt)
             }
             sqlite3_finalize(stmt)
@@ -225,17 +253,30 @@ class LogManager {
             // Migrate tables using 'userId' column
             let tables = ["ReadingSessions", "TroubledWords", "LetterStats", "SessionLetterStats", "ConversationSessions"]
             for table in tables {
-                let updateSQL = "UPDATE \(table) SET userId = ? WHERE userId = 'guest_user';"
+                let updateSQL = "UPDATE \(table) SET userId = ? WHERE userId = ?;"
                 if sqlite3_prepare_v2(db, updateSQL, -1, &stmt, nil) == SQLITE_OK {
                     sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 2, (guestId as NSString).utf8String, -1, nil)
                     sqlite3_step(stmt)
                 }
                 sqlite3_finalize(stmt)
             }
+            print("🔄 [MIGRATE] All guest data tables migrated to userId: \(newUserId)")
+        } else {
+            print("🔄 [MIGRATE] No guest data found to migrate")
         }
+        
+        // Update currentUserId
+        currentUserId = newUserId
     }
     
     func initializeUserIfNeeded() {
+        // For guest mode, use the guest initializer
+        if SessionManager.shared.isGuestMode {
+            initializeGuestUser()
+            return
+        }
+        
         guard let user = SupabaseManager.shared.client.auth.currentUser,
               let email = user.email else {
             print("No logged in user found in Supabase.")
@@ -301,8 +342,10 @@ class LogManager {
         }
         sqlite3_finalize(statement)
         
-        if !fromSync {
+        if !fromSync && SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushProfile(profile)
+        } else if !fromSync && SessionManager.shared.isGuestMode {
+            print("📋 [GUEST] Profile saved locally only (guest mode)")
         }
     }
 
@@ -362,8 +405,10 @@ class LogManager {
         }
         sqlite3_finalize(statement)
         
-        if !fromSync {
+        if !fromSync && SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushUserGoal(goalName: name, goalValue: value)
+        } else if !fromSync && SessionManager.shared.isGuestMode {
+            print("📋 [GUEST] Goal updated locally only (guest mode)")
         }
     }
 
@@ -405,13 +450,17 @@ class LogManager {
         }
         sqlite3_finalize(statement)
         
-        // 3. Push the EXACT SAME ID to Supabase
-        SupabaseSyncManager.shared.pushExerciseLog(
-            id: logId,
-            name: exerciseName,
-            source: source.rawValue,
-            duration: exerciseDuration
-        )
+        // 3. Push the EXACT SAME ID to Supabase (account mode only)
+        if SessionManager.shared.isAccountMode {
+            SupabaseSyncManager.shared.pushExerciseLog(
+                id: logId,
+                name: exerciseName,
+                source: source.rawValue,
+                duration: exerciseDuration
+            )
+        } else {
+            print("📋 [GUEST] Exercise log saved locally only (guest mode)")
+        }
     }
 
     func getLogs(for source: ExerciseSource, on date: Date? = nil) -> [ExerciseLog] {
@@ -502,8 +551,12 @@ class LogManager {
         saveSessionLetterStats(userId: userId, sessionId: sessionId, letterCounts: report.letterAnalysis)
         print("Saved reading session for user: \(userId)")
         
-        SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId, longestSmoothParagraph: longestSmoothParagraph)
-        SupabaseSyncManager.shared.pushLetterStats(userId: userId)
+        if SessionManager.shared.isAccountMode {
+            SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId, longestSmoothParagraph: longestSmoothParagraph)
+            SupabaseSyncManager.shared.pushLetterStats(userId: userId)
+        } else {
+            print("📋 [GUEST] Reading session saved locally only (guest mode)")
+        }
     }
 
     private func saveTroubledWords(report: StutterJSONReport, userId: String, sessionId: String) {
@@ -658,12 +711,16 @@ class LogManager {
             sqlite3_bind_int(statement, 6,    Int32(longestSmoothTalk))
             if sqlite3_step(statement) == SQLITE_DONE { print("ConversationSession inserted.") }
             
-            SupabaseSyncManager.shared.pushConversationSession(
-                sessionId: sessionId,
-                duration: duration,
-                fillerWordPercent: fillerWordPercent,
-                longestSmoothTalk: longestSmoothTalk
-            )
+            if SessionManager.shared.isAccountMode {
+                SupabaseSyncManager.shared.pushConversationSession(
+                    sessionId: sessionId,
+                    duration: duration,
+                    fillerWordPercent: fillerWordPercent,
+                    longestSmoothTalk: longestSmoothTalk
+                )
+            } else {
+                print("📋 [GUEST] Conversation session saved locally only (guest mode)")
+            }
         }
         sqlite3_finalize(statement)
     }

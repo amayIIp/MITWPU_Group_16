@@ -52,9 +52,9 @@ class HomePageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupRadialChart()
         loadTaskName()
         AchievedAwardsUpdate()
-        setupRadialChart()
         configureNavigationBar()
         displayRandomQuote()
         setupNotificationCentre()
@@ -78,7 +78,10 @@ class HomePageViewController: UIViewController {
     }
     
     private func syncFromCloudIfLoggedIn() {
-        guard AppState.isLoginCompleted else { return }
+        guard SessionManager.shared.isAccountMode else {
+            print("📋 [GUEST] Skipping background cloud sync (guest mode)")
+            return
+        }
         
         Task {
             do {
@@ -234,7 +237,7 @@ class HomePageViewController: UIViewController {
     @objc private func profileTapped() {
         let storyboard = UIStoryboard(name: "Profile", bundle: nil)
         
-        if AppState.isLoginCompleted {
+        if SessionManager.shared.isAccountMode {
             guard let profileNav = storyboard.instantiateViewController(withIdentifier: "ProfileNav") as? UINavigationController else { return }
             
             profileNav.modalPresentationStyle = .pageSheet

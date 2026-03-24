@@ -146,12 +146,20 @@ class DatabaseManager {
 
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
         
-        // Push local progress to Supabase Cloud
-        SupabaseSyncManager.shared.pushJourneyUpdate(name: taskName, isCompleted: true)
-        SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: taskName)
+        // Push local progress to Supabase Cloud (account mode only)
+        if SessionManager.shared.isAccountMode {
+            SupabaseSyncManager.shared.pushJourneyUpdate(name: taskName, isCompleted: true)
+            SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: taskName)
+        } else {
+            print("📋 [GUEST] Task marked complete locally only (guest mode)")
+        }
     }
     
     func syncLocalDailyTasksToCloud() {
+        guard SessionManager.shared.isAccountMode else {
+            print("📋 [GUEST] Skipping cloud sync of daily tasks (guest mode)")
+            return
+        }
         let tasks = fetchDailyTasks()
         for task in tasks {
             SupabaseSyncManager.shared.pushDailyTaskUpdate(
@@ -278,7 +286,11 @@ class DatabaseManager {
             object: newStreak
         )
         
-        SupabaseSyncManager.shared.pushStreak(currentStreak: newStreak)
+        if SessionManager.shared.isAccountMode {
+            SupabaseSyncManager.shared.pushStreak(currentStreak: newStreak)
+        } else {
+            print("📋 [GUEST] Streak updated locally only (guest mode)")
+        }
     }
 
     func fetchCurrentStreak() -> Int {

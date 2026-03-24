@@ -67,12 +67,15 @@ class LoginViewController: UIViewController {
             do {
                 try await client.auth.signIn(email: email, password: password)
                 
-                // --- STEP 0: Wipe local database to replace guest data with cloud data ---
-                // We do this immediately AFTER successful auth to prevent data loss on failed login!
+                // --- STEP 0: Start account session and wipe local database to replace with cloud data ---
+                guard let userId = SupabaseManager.shared.currentUser?.id.uuidString else {
+                    throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID after login"])
+                }
+                SessionManager.shared.startAccountSession(userId: userId)
+                
                 LogManager.shared.resetDatabaseForNewUser()
                 DatabaseManager.shared.resetDatabaseForNewUser()
                 AwardsManager.shared.resetDatabaseForNewUser()
-                AppState.isOnboardingCompleted = false
                 
                 // Step 1: Init LogManager AFTER sign-in so it creates the
                 // local user/profile for the correct (signed-in) user ID.
@@ -227,11 +230,16 @@ class LoginViewController: UIViewController {
                     )
                 )
                 
+                // Start account session
+                guard let userId = SupabaseManager.shared.currentUser?.id.uuidString else {
+                    throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID after Google login"])
+                }
+                SessionManager.shared.startAccountSession(userId: userId)
+                
                 // Wipe local database ONLY after successful network authentication
                 LogManager.shared.resetDatabaseForNewUser()
                 DatabaseManager.shared.resetDatabaseForNewUser()
                 AwardsManager.shared.resetDatabaseForNewUser()
-                AppState.isOnboardingCompleted = false
                 
                 // Sync data post-login
                 LogManager.shared.initializeUserIfNeeded()

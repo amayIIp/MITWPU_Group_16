@@ -41,15 +41,18 @@ class ProfileTableViewController: UITableViewController {
     func performLogout() {
         Task {
             do {
-                try await SupabaseManager.shared.client.auth.signOut()
-                print("Successfully signed out of Supabase.")
+                // Only sign out of Supabase if we were in account mode
+                if SessionManager.shared.isAccountMode {
+                    try await SupabaseManager.shared.client.auth.signOut()
+                    print("🚪 [SESSION] Successfully signed out of Supabase.")
+                }
             } catch {
-                print("Failed to sign out of Supabase: \(error)")
+                print("🚪 [SESSION] Failed to sign out of Supabase: \(error)")
             }
             
             DispatchQueue.main.async {
-                AppState.isLoginCompleted = false
-                AppState.isOnboardingCompleted = false
+                // End the session — this clears AppState flags and preserves deviceId
+                SessionManager.shared.endSession()
                 
                 let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
                 
@@ -73,18 +76,11 @@ class ProfileTableViewController: UITableViewController {
     private func clearAllAppData() {
         print("--- Initiating Complete Session Teardown ---")
         
-        // 1. Clear UserDefaults
-        if let bundleID = Bundle.main.bundleIdentifier {
-            UserDefaults.standard.removePersistentDomain(forName: bundleID)
-        }
-        
-        // 2. Clear secure storage if applicable (e.g., Keychain)
-        // (StorageManager email cleared step removed)
-        
-        // 3. Wipe and reboot all SQLite databases
+        // Wipe and reboot all SQLite databases
         LogManager.shared.resetDatabaseForNewUser()
         DatabaseManager.shared.resetDatabaseForNewUser()
         AwardsManager.shared.resetDatabaseForNewUser()
         
-        print("--- Teardown Complete. Ready for next session. ---")    }
+        print("--- Teardown Complete. Ready for next session. ---")
+    }
 }

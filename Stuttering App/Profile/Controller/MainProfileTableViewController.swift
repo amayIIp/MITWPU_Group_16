@@ -61,7 +61,9 @@ class MainProfileTableViewController: UITableViewController {
             mobileField.text    = profile.mobile
             dobField.text       = profile.dob
         }
-        emailField.text = SupabaseManager.shared.client.auth.currentUser?.email
+        emailField.text = SessionManager.shared.isAccountMode
+            ? SupabaseManager.shared.client.auth.currentUser?.email
+            : "Guest Mode"
     }
     
     private func loadUserName() {

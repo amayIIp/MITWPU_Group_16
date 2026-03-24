@@ -117,5 +117,17 @@ class FirstPageAnimationViewController: UIViewController {
 
     }
     
+    // MARK: - Guest Mode Segue
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // The "Continue as guest" button fires a storyboard segue to OnboardingNameViewController.
+        // We intercept it here to start the guest session BEFORE the segue completes.
+        if segue.destination is OnboardingNameViewController {
+            print("🚪 [SESSION] Guest mode selected — starting guest session")
+            SessionManager.shared.startGuestSession()
+            LogManager.shared.initializeGuestUser()
+        }
+    }
+    
     
 }

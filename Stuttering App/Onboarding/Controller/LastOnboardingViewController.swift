@@ -227,6 +227,14 @@ class LastOnboardingViewController: UIViewController {
         profile.isOnboardingCompleted = true
         LogManager.shared.saveProfile(profile)
         
+        // Push onboarding status to Supabase (account mode only)
+        if SessionManager.shared.isAccountMode {
+            SupabaseSyncManager.shared.pushProfile(profile)
+            print("☁️ [SYNC] Onboarding status pushed to cloud")
+        } else {
+            print("📋 [GUEST] Onboarding completed locally only")
+        }
+        
         let logic = LogicMaker()
         logic.checkForNewDay()
             

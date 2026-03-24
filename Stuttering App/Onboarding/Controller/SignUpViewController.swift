@@ -88,16 +88,28 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         Task {
             do {
                 // Create Supabase cloud account
-                try await client.auth.signUp(
+                let authResponse = try await client.auth.signUp(
                     email: email,
                     password: password,
                     data: ["first_name": .string(name)]
                 )
                 
+                // Auto sign-in immediately after sign-up to create a proper session
+                // (signUp alone may not create a session if email confirmation is configured)
+                if SupabaseManager.shared.currentUser == nil {
+                    try await client.auth.signIn(email: email, password: password)
+                    print("🚪 [SESSION] Auto sign-in after sign-up successful")
+                }
+                
+                // Start account session
+                let userId = authResponse.user.id.uuidString
+                SessionManager.shared.startAccountSession(userId: userId)
+                
                 // Also save locally for offline access
                 LogManager.shared.initializeUserIfNeeded()
                 
                 if let userId = LogManager.shared.getCurrentUserId() {
+                    print("🔄 [MIGRATE] Starting guest → account migration")
                     LogManager.shared.migrateGuestData(to: userId)
                     
                     var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
@@ -105,7 +117,9 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     LogManager.shared.saveProfile(profile)
                     
                     // Push all local guest data to the NEW cloud account!
-                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in }
+                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in
+                        print("☁️ [SYNC] All guest data pushed to cloud for new account")
+                    }
                 }
                 
                 AppState.isLoginCompleted = true
@@ -236,10 +250,18 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     )
                 )
                 
+                // Start account session for Google sign-up
+                guard let supabaseUser = SupabaseManager.shared.currentUser else {
+                    throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user after Google sign-up"])
+                }
+                let userId = supabaseUser.id.uuidString
+                SessionManager.shared.startAccountSession(userId: userId)
+                
                 // Save locally for offline access
                 LogManager.shared.initializeUserIfNeeded()
                 
                 if let userId = LogManager.shared.getCurrentUserId() {
+                    print("🔄 [MIGRATE] Starting guest → account migration (Google)")
                     LogManager.shared.migrateGuestData(to: userId)
                     
                     var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
@@ -250,7 +272,9 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     LogManager.shared.saveProfile(profile)
                     
                     // Push all local guest data to the NEW cloud account!
-                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in }
+                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in
+                        print("☁️ [SYNC] All guest data pushed to cloud for new Google account")
+                    }
                 }
                 
                 AppState.isLoginCompleted = true

@@ -26,49 +26,60 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = launchStoryboard.instantiateInitialViewController() ?? UIViewController()
         window.makeKeyAndVisible()
         
-        // 2. Check the session asynchronously
+        // 2. Restore session using SessionManager
         Task {
-            let isSessionValid = await checkSessionValidity()
+            let restoredMode = await SessionManager.shared.restoreSession()
             
-            if isSessionValid {
+            // Initialize the correct user context
+            switch restoredMode {
+            case .guest:
+                LogManager.shared.initializeGuestUser()
+                print("🚪 [SESSION] Guest session restored — no Supabase calls")
+                
+            case .account:
                 LogManager.shared.initializeUserIfNeeded()
+                print("🚪 [SESSION] Account session restored — user initialized")
+                
+            case .none:
+                print("🚪 [SESSION] No session to restore — showing landing page")
             }
             
-            // 3. Route to the correct Storyboard on the Main Thread
+            // 3. Route to the correct screen on the Main Thread
             await MainActor.run {
-                self.routeUser(isSessionValid: isSessionValid)
+                self.routeUser(mode: restoredMode)
             }
         }
     }
     
-    // MARK: - Auth State Verification
-    private func checkSessionValidity() async -> Bool {
-        // Fast-path: Offline profiles and Guest mode
-        if AppState.isLoginCompleted && LogManager.shared.getCurrentUserId() == "guest_user" {
-            return true
-        }
-        
-        do {
-            let session = try await SupabaseManager.shared.client.auth.session
-            return !session.isExpired
-        } catch {
-            return false // No session or failed to fetch
-        }
-    }
-
-    // MARK: - iOS 26 Navigation Routing
-    private func routeUser(isSessionValid: Bool) {
+    // MARK: - Session-Based Navigation Routing
+    private func routeUser(mode: SessionManager.UserMode) {
         var initialVC: UIViewController
         
-        if isSessionValid && AppState.isOnboardingCompleted {
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+        switch mode {
+        case .guest:
+            if AppState.isOnboardingCompleted {
+                // Guest completed onboarding → go to Home
+                let storyboard = UIStoryboard(name: "Home", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+            } else {
+                // Guest hasn't completed onboarding → resume onboarding
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+            }
             
-        } else if isSessionValid && AppState.isLoginCompleted && !AppState.isOnboardingCompleted {
-            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-            initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+        case .account:
+            if AppState.isOnboardingCompleted {
+                // Signed-in user with completed onboarding → Home
+                let storyboard = UIStoryboard(name: "Home", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+            } else {
+                // Signed-in user but onboarding not complete (edge case, shouldn't happen for sign-in)
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+            }
             
-        } else {
+        case .none:
+            // No session → show welcome/landing screen
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "LandingNav")
         }
@@ -94,3 +105,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func sceneDidEnterBackground(_ scene: UIScene) {}
 }
+
