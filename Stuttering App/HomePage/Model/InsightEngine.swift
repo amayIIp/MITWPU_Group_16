@@ -129,7 +129,7 @@ actor InsightEngine {
 
         Rules:
         - Exactly 2 sentences.
-        - Total length must be less than 20 words.
+        - Total length must be less than 15 words.
         - Both sentences must be similar length (roughly equal words).
         - Be specific — use the exact numbers provided.
         - Warm and encouraging, never clinical.
