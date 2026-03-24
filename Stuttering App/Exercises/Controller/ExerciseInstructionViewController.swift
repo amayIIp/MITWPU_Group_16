@@ -38,7 +38,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     @IBOutlet weak var bottomViewConstraint: NSLayoutConstraint!
     
     @IBOutlet weak var contentStackView: UIStackView!
-    @IBOutlet weak var imageContainerStackView: UIView!
+//    @IBOutlet weak var imageContainerStackView: UIView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -272,10 +272,10 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     private func updateStackLayout(imageViewHidden: Bool, labelHidden: Bool? = nil) {
         
         if imageViewHidden {
-            self.imageContainerStackView.isHidden = true
+//            self.imageContainerStackView.isHidden = true
             self.stepImageView.isHidden = true
         } else {
-            self.imageContainerStackView.isHidden = false
+//            self.imageContainerStackView.isHidden = false
             self.stepImageView.isHidden = false
         }
         
@@ -285,7 +285,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         }
         
         UIView.animate(withDuration: 0.3) {
-            self.imageContainerStackView.alpha = imageViewHidden ? 0.0 : 1.0
+//            self.imageContainerStackView.alpha = imageViewHidden ? 0.0 : 1.0
             self.contentStackView.layoutIfNeeded()
         }
     }

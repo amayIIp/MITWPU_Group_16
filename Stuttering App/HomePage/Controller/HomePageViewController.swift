@@ -424,13 +424,12 @@ class HomePageViewController: UIViewController {
     }
     
     @IBAction func dailyTaskTapped(_ sender: UIButton) {
-        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        let targetID = AppState.isDailyChallengesCompleted ? "DailyTasksViewController" : "DailyChallengesOnboarding"
         
-        if let detailVC = storyboard.instantiateViewController(withIdentifier: "DailyTasksViewController") as? DailyTasksViewController {
-            
-            detailVC.title = "Daily Tasks"
-            self.navigationController?.pushViewController(detailVC, animated: true)
-        }
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        let destinationVC = storyboard.instantiateViewController(withIdentifier: targetID)
+        
+        self.navigationController?.pushViewController(destinationVC, animated: true)
     }
 
     @IBAction func warmUpTapped(_ sender: UIButton) {
