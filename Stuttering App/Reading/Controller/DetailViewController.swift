@@ -45,9 +45,17 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         view.backgroundColor = UIColor(named: "bg")
         textView?.backgroundColor = UIColor(named: "bg")
+        
+        self.selectedDAFDelay = self.initialDAFDelay
+        audioEngine.attach(delayNode)
+        
         setupTextView()
         setupPermissions()
         setupAudioSession()
+        
+        let format = audioEngine.inputNode.outputFormat(forBus: 0)
+        audioEngine.connect(audioEngine.inputNode, to: delayNode, format: format)
+        audioEngine.connect(delayNode, to: audioEngine.mainMixerNode, format: format)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -114,6 +122,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         sheetVC.delegate = self
         self.sheetVC = sheetVC
         sheetVC.isModalInPresentation = true
+        sheetVC.currentDAFDelay = self.selectedDAFDelay
         
         if let sheet = sheetVC.sheetPresentationController {
             sheet.delegate = self
@@ -146,7 +155,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func setupAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetoothA2DP, .defaultToSpeaker])
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch { print("Audio Session Setup Error: \(error)") }
     }
@@ -168,16 +177,14 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         let format = inputNode.outputFormat(forBus: 0)
         
-        audioEngine.attach(delayNode)
         if selectedDAFDelay > 0 && areHeadphonesConnected() {
             delayNode.delayTime = selectedDAFDelay
             delayNode.wetDryMix = 100
+            audioEngine.mainMixerNode.outputVolume = 1.0
         } else {
             delayNode.wetDryMix = 0
+            audioEngine.mainMixerNode.outputVolume = 0.0
         }
-        
-        audioEngine.connect(inputNode, to: delayNode, format: format)
-        audioEngine.connect(delayNode, to: audioEngine.mainMixerNode, format: format)
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             guard let self = self else { return }
@@ -207,7 +214,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func areHeadphonesConnected() -> Bool {
         let route = AVAudioSession.sharedInstance().currentRoute
         return route.outputs.contains { port in
-            [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE].contains(port.portType)
+            [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE, .usbAudio].contains(port.portType)
         }
     }
     
@@ -384,11 +391,13 @@ extension DetailViewController: WorkoutSheetDelegate {
     
     func didUpdateDAFDelay(_ delay: Double) {
         self.selectedDAFDelay = delay
-        if areHeadphonesConnected() {
+        if areHeadphonesConnected() && delay > 0 {
             delayNode.delayTime = delay
-            delayNode.wetDryMix = (delay > 0) ? 100 : 0
+            delayNode.wetDryMix = 100
+            audioEngine.mainMixerNode.outputVolume = 1.0
         } else {
             delayNode.wetDryMix = 0
+            audioEngine.mainMixerNode.outputVolume = 0.0
         }
     }
 }
