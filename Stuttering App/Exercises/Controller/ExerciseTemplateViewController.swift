@@ -19,8 +19,9 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
     var isExerciseCompleted: Bool = false
     
     @IBOutlet weak var contentStackView: UIStackView!
-    @IBOutlet weak var imageContainerStackView: UIView!
+//    @IBOutlet weak var imageContainerStackView: UIView!
     @IBOutlet weak var stepImageView: UIImageView!
+    @IBOutlet weak var stepImageViewView: UIView!
     @IBOutlet weak var stepLabel: UILabel!
     @IBOutlet weak var instructionLabel: UILabel!
     @IBOutlet weak var targetWordLabel: UILabel!
@@ -88,7 +89,7 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         targetWordLabel.font = .systemFont(ofSize: 48, weight: .bold)
         targetWordLabel.textColor = UIColor(named: "ButtonTheme")
         
-        stepLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        //stepLabel.font = .systemFont(ofSize: 20, weight: .bold)
         
         instructionLabel.font = .preferredFont(forTextStyle: .headline)
         instructionLabel.textColor = .systemGray
@@ -358,11 +359,13 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
     
     private func updateStackLayout(imageViewHidden: Bool, labelHidden: Bool? = nil) {
         if imageViewHidden {
-            self.imageContainerStackView.isHidden = true
+//            self.imageContainerStackView.isHidden = true
             self.stepImageView.isHidden = true
+            self.stepImageViewView.isHidden = true
         } else {
-            self.imageContainerStackView.isHidden = false
+//            self.imageContainerStackView.isHidden = false
             self.stepImageView.isHidden = false
+            self.stepImageViewView.isHidden = false
         }
         
         if let labelHide = labelHidden {
@@ -371,7 +374,7 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         }
         
         UIView.animate(withDuration: 0.3) {
-            self.imageContainerStackView.alpha = imageViewHidden ? 0.0 : 1.0
+//            self.imageContainerStackView.alpha = imageViewHidden ? 0.0 : 1.0
             self.contentStackView.layoutIfNeeded()
         }
     }
