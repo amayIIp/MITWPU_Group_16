@@ -150,6 +150,7 @@ class DatabaseManager {
         if SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushJourneyUpdate(name: taskName, isCompleted: true)
             SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: taskName)
+            syncLocalDailyTasksToCloud()
         } else {
             print("📋 [GUEST] Task marked complete locally only (guest mode)")
         }
