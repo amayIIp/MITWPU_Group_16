@@ -17,7 +17,9 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var continueButton: UIButton!
     @IBOutlet weak var forgotPassword: UIButton!
     
+    @IBOutlet weak var passwordToggleButton: UIButton!
     @IBOutlet weak var googleSignIn: UIButton!
+    @IBOutlet weak var continueAsGuest: UIButton!
     private let client = SupabaseManager.shared.client
     var onSwitchToSignup: (() -> Void)?
     
@@ -50,7 +52,37 @@ class LoginViewController: UIViewController {
     func setupUI() {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
+        
         passwordTextField.isSecureTextEntry = true
+
+        // 1. Create a small configuration
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium, scale: .small)
+        let icon = UIImage(systemName: "eye.slash", withConfiguration: config)
+
+        // 2. Apply to the button
+        passwordToggleButton.setImage(icon, for: .normal)
+        passwordToggleButton.tintColor = .secondaryLabel // This gives it that subtle grey look
+
+        // 3. Assign to the text field
+        passwordTextField.rightView = passwordToggleButton
+        passwordTextField.rightViewMode = .always
+    }
+    @IBAction func togglePasswordVisibility(_ sender: UIButton) {
+        passwordTextField.isSecureTextEntry.toggle()
+            
+            // 2. Prepare the small configuration again
+            let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium, scale: .small)
+            let imageName = passwordTextField.isSecureTextEntry ? "eye.slash" : "eye"
+            
+            // 3. Update the image with the config
+            let updatedIcon = UIImage(systemName: imageName, withConfiguration: config)
+            sender.setImage(updatedIcon, for: .normal)
+            
+            // 4. Standard iOS fix for cursor/font jumping
+            if let text = passwordTextField.text {
+                passwordTextField.text = nil
+                passwordTextField.text = text
+            }
     }
 
     @IBAction func loginButtonTapped(_ sender: UIButton) {

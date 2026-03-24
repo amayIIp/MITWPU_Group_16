@@ -1,17 +1,10 @@
-//
-//  FirstPageAnimationViewController.swift
-//  Spasht
-//
-//  Created by Prathamesh Patil on 19/11/25.
-//
-
 import UIKit
 
 class FirstPageAnimationViewController: UIViewController {
 
     @IBOutlet weak var headerLabel: UIImageView!
     @IBOutlet weak var infoLabel: UIStackView!
-    @IBOutlet weak var buttonView: UIView!
+    @IBOutlet weak var buttonView: UIView! // This is your card
     
     @IBOutlet weak var SignUpButton: UIButton!
     @IBOutlet weak var SigninButton: UIButton!
@@ -21,6 +14,7 @@ class FirstPageAnimationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Hide everything initially
         headerLabel.alpha = 0
         infoLabel.alpha = 0
         buttonView.alpha = 0
@@ -50,13 +44,17 @@ class FirstPageAnimationViewController: UIViewController {
         let moveDown = CGAffineTransform(translationX: 0, y: distanceToCenter)
         let scaleUp = CGAffineTransform(scaleX: 2.0, y: 2.0)
 
+        // Header starts large and centered
         headerLabel.transform = scaleUp.concatenating(moveDown)
-        buttonView.transform = CGAffineTransform(translationX: 0, y: view.bounds.height)
+        
+        // Card starts invisible and slightly offset if you still want a subtle slide,
+        // otherwise, just let alpha handle the dissolve.
+        buttonView.transform = CGAffineTransform(translationX: 0, y: 20)
     }
 
     private func startSequenceAnimation() {
-    
-        UIView.animate(withDuration: 2.0,
+        // 1. Animate Header to top
+        UIView.animate(withDuration: 1.8,
                        delay: 0.2,
                        usingSpringWithDamping: 0.85,
                        initialSpringVelocity: 0.5,
@@ -66,20 +64,16 @@ class FirstPageAnimationViewController: UIViewController {
             
         } completion: { _ in
 
-            UIView.animate(withDuration: 1.25,
+            // 2. Dissolve in the Info Text and the Card together
+            UIView.animate(withDuration: 1.5,
                            delay: 0.1,
                            options: .curveEaseInOut) {
                 
                 self.infoLabel.alpha = 1.0
                 
-            }
-            
-            UIView.animate(withDuration: 1.5,
-                           delay: 0.3,
-                           options: .curveEaseOut) {
-                
-                self.buttonView.alpha = 1
-                self.buttonView.transform = .identity
+                // Card dissolve animation
+                self.buttonView.alpha = 1.0
+                self.buttonView.transform = .identity // Clears the small 20pt offset
             }
         }
     }
@@ -87,47 +81,29 @@ class FirstPageAnimationViewController: UIViewController {
     // MARK: - Button Actions
     
     @IBAction func signUpTapped(_ sender: UIButton) {
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
-        
-        // 4. (Optional) Apply modern iOS 26 sheet behaviors
-        nextModalVC.modalPresentationStyle = .pageSheet
-        if let sheet = nextModalVC.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-        }
-        
-        // 5. Present the new modal from the original underlying screen
-        present(nextModalVC, animated: true)
+        presentModal(identifier: "SignUpViewController")
     }
     
     @IBAction func signInTapped(_ sender: UIButton) {
+        presentModal(identifier: "LoginViewController")
+    }
+    
+    private func presentModal(identifier: String) {
         let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        let nextModalVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+        let nextModalVC = storyboard.instantiateViewController(withIdentifier: identifier)
         
-        // 4. (Optional) Apply modern iOS 26 sheet behaviors
         nextModalVC.modalPresentationStyle = .pageSheet
         if let sheet = nextModalVC.sheetPresentationController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        
-        // 5. Present the new modal from the original underlying screen
         present(nextModalVC, animated: true)
-
     }
     
-    // MARK: - Guest Mode Segue
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // The "Continue as guest" button fires a storyboard segue to OnboardingNameViewController.
-        // We intercept it here to start the guest session BEFORE the segue completes.
         if segue.destination is OnboardingNameViewController {
-            print("🚪 [SESSION] Guest mode selected — starting guest session")
             SessionManager.shared.startGuestSession()
             LogManager.shared.initializeGuestUser()
         }
     }
-    
-    
 }
