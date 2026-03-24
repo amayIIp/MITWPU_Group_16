@@ -3,8 +3,7 @@ import UIKit
 
 protocol WorkoutSheetDelegate: AnyObject {
     func didTapPlayPause()
-    func didTapDecreaseSpeed()
-    func didTapIncreaseSpeed()
+    func didChangeSpeed(_ speed: Double)
     func didTapReset()
     func didTapShowResult()
     func didUpdateDAFDelay(_ delay: Double)
@@ -14,51 +13,151 @@ class ReadingControlsViewController: UIViewController {
     
     weak var delegate: WorkoutSheetDelegate?
     
-    
     @IBOutlet weak var playPauseButton: UIButton!
-    @IBOutlet weak var speedUpButton: UIButton!
-    @IBOutlet weak var speedDownButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
     @IBOutlet weak var endButton: UIButton!
     @IBOutlet weak var dafButton: UIButton!
+    @IBOutlet weak var speedSlider: UISlider!
+    
+    @IBOutlet weak var sliderStack: UIStackView!
+    @IBOutlet weak var timer: UILabel!
+    
+    @IBOutlet weak var playPauseWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var dafWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var resetHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var endHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var stackTopConstraint: NSLayoutConstraint!
     
     var currentPlaybackSpeed: Double = 1.0
     var currentDAFDelay: Double = 0.0
+    
+    var screenHeight : CGFloat = 850
+    
+    private var timerObject: Timer?
+    private var startTime: Date?
+    private var elapsedTime: TimeInterval = 0
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupButtons()
         configureMenu()
+        setupSlider()
+        timer.text = "00:00"
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        adjustButtonSizes()
+    }
+    
+    func startTimer() {
+        startTime = Date()
+        timerObject = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateTimer()
+        }
+    }
+    
+    func pauseTimer() {
+        timerObject?.invalidate()
+        timerObject = nil
+        startTime = nil
+    }
+    
+    func resetTimer() {
+        timerObject?.invalidate()
+        timerObject = nil
+        
+        elapsedTime = 0
+        startTime = nil
+        
+        timer.text = "00:00"
+    }
+    
+    private func updateTimer() {
+        guard let start = startTime else { return }
+
+        let totalTime = elapsedTime + Date().timeIntervalSince(start)
+
+        let minutes = Int(totalTime) / 60
+        let seconds = Int(totalTime) % 60
+
+        timer.text = String(format: "%02d:%02d", minutes, seconds)
+    }
+
+    func updatePlaybackState(isPlaying: Bool, hasFinished: Bool, currentTime: TimeInterval) {
+
+        let symbolName = isPlaying ? "pause.fill" : "play.fill"
+        let symbol = UIImage(systemName: symbolName)
+
+        playPauseButton.setImage(symbol, for: .normal)
+        playPauseButton.tintColor = .systemBlue
+        
+        self.elapsedTime = currentTime
+
+        if isPlaying {
+            if timerObject == nil { startTimer() }
+        } else {
+            pauseTimer()
+        
+            let minutes = Int(currentTime) / 60
+            let seconds = Int(currentTime) % 60
+            timer.text = String(format: "%02d:%02d", minutes, seconds)
+        }
     }
     
     private func setupButtons() {
-        let config = UIImage.SymbolConfiguration(pointSize: 36, weight: .regular, scale: .default)
-        let playSymbol = UIImage(systemName: "microphone.slash", withConfiguration: config)
-        playPauseButton.setImage(playSymbol, for: .normal)
         playPauseButton.configuration = .glass()
-        speedUpButton.configuration = .glass()
-        speedUpButton.setImage(UIImage(systemName: "hare"), for: .normal)
-        speedDownButton.configuration = .glass()
-        speedDownButton.setImage(UIImage(systemName: "tortoise"), for: .normal)
-        resetButton.configuration = .glass()
-        resetButton.setImage(UIImage(systemName: "arrow.trianglehead.clockwise"), for: .normal)
+        playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+
+        var config = UIButton.Configuration.prominentGlass()
+        config.title = "Reset"
+
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.preferredFont(forTextStyle: .title2)
+            return outgoing
+        }
+        
         dafButton.configuration = .glass()
         dafButton.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
         
+        sliderStack.isHidden = true
     }
     
+    private func setupSlider() {
+        speedSlider.minimumValue = 0.5
+        speedSlider.maximumValue = 2.0
+        speedSlider.value = Float(currentPlaybackSpeed)
+        
+        speedSlider.minimumTrackTintColor = .buttonTheme
+        speedSlider.maximumTrackTintColor = .systemGray3
+        
+    }
+    
+    private func adjustButtonSizes() {
+        guard playPauseWidthConstraint != nil, dafWidthConstraint != nil else { return }
+        
+        let proportionalWidth = view.bounds.width * 0.212
+        let optimalWidth = max(80.0, min(proportionalWidth, 110))
+        
+        playPauseWidthConstraint.constant = optimalWidth
+        dafWidthConstraint.constant = optimalWidth
+        endHeightConstraint.constant = optimalWidth * 0.6
+        resetHeightConstraint.constant = optimalWidth * 0.6
+        stackTopConstraint.constant = (screenHeight - optimalWidth)/2
+    }
+    
+    @IBAction func speedSliderChanged(_ sender: UISlider) {
+        let speed = Double(sender.value)
+        currentPlaybackSpeed = speed
+        
+        delegate?.didChangeSpeed(speed)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
     @IBAction func playPauseTapped(_ sender: UIButton) {
         delegate?.didTapPlayPause()
-    }
-    
-    @IBAction func decreaseSpeedTapped(_ sender: UIButton) {
-        delegate?.didTapDecreaseSpeed()
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-    
-    @IBAction func increaseSpeedTapped(_ sender: UIButton) {
-        delegate?.didTapIncreaseSpeed()
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
     @IBAction func resetTapped(_ sender: UIButton) {
@@ -70,22 +169,25 @@ class ReadingControlsViewController: UIViewController {
         delegate?.didTapShowResult()
     }
     
-    
-    func updatePlaybackState(isPlaying: Bool, hasFinished: Bool) {
-        let config = UIImage.SymbolConfiguration(pointSize: 42, weight: .regular, scale: .default)
-        let symbolName = isPlaying ? "microphone" : "microphone.slash"
-        let symbol = UIImage(systemName: symbolName, withConfiguration: config)
-        playPauseButton.setImage(symbol, for: .normal)
-        
-        playPauseButton.tintColor = isPlaying ? .systemRed : .systemBlue
-    }
-    
     func toggleDoneButtonVisibility(isHidden: Bool) {
-        // Wrap in an animation block for a smooth iOS-native fade effect
-        UIView.animate(withDuration: 0.25) {
-            self.endButton.alpha = isHidden ? 0.0 : 1.0
-            self.endButton.isHidden = isHidden
+        
+        if !isHidden {
+            self.sliderStack.isHidden = false
         }
+        
+        UIView.animate(
+            withDuration: 0.3,
+            delay: 0.0,
+            options: [.curveEaseInOut, .beginFromCurrentState],
+            animations: {
+                self.sliderStack.alpha = isHidden ? 0.0 : 1.0
+            },
+            completion: { _ in
+                if isHidden {
+                    self.sliderStack.isHidden = true
+                }
+            }
+        )
     }
     
     func configureMenu() {

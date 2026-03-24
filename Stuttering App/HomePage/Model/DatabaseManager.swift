@@ -22,7 +22,7 @@ class DatabaseManager {
 
     func openDatabase() {
         let fileUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("Spasht.sqlite")
-        print("| Database URL: \(fileUrl.path)")
+        print("Spasht Database Created")
         if sqlite3_open(fileUrl.path, &db) != SQLITE_OK {
             print("Error opening database")
         }
@@ -33,13 +33,8 @@ class DatabaseManager {
         
         let createDaily = "CREATE TABLE IF NOT EXISTS DailyTasks (id INTEGER PRIMARY KEY, name TEXT, description TEXT, duration INTEGER, isCompleted INTEGER DEFAULT 0)"
         
-        let createStreak = """
-        CREATE TABLE IF NOT EXISTS Streak (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            currentStreak INTEGER,
-            lastCompletedDate TEXT
-        )
-        """
+        let createStreak = "CREATE TABLE IF NOT EXISTS Streak (id INTEGER PRIMARY KEY CHECK (id = 1), currentStreak INTEGER,lastCompletedDate TEXT)"
+        
         sqlite3_exec(db, createStreak, nil, nil, nil)
         sqlite3_exec(db, createJourney, nil, nil, nil)
         sqlite3_exec(db, createDaily, nil, nil, nil)
@@ -58,7 +53,7 @@ class DatabaseManager {
         sqlite3_finalize(countStmt)
         
         if count == 0 {
-            print("Database: Journey table empty. Populating initial sequence...")
+            print("Journey table empty. Populating initial sequence...")
             let exercises = [
                 "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction", "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction"
             ]
@@ -76,6 +71,8 @@ class DatabaseManager {
                 }
             }
             sqlite3_finalize(insertStmt)
+            
+            print("Journey table Initialized\n")
         }
     }
     
@@ -142,15 +139,29 @@ class DatabaseManager {
         executeNameUpdate(query: updateJourney, name: taskName)
         
         updateDailyGoalCompletionStatus()
-        
-        updateDailyGoalCompletionStatus()
 
         if isDailyGoalCompleted {
             updateStreakIfEligible()
         }
 
-        
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
+        
+        // Push local progress to Supabase Cloud
+        SupabaseSyncManager.shared.pushJourneyUpdate(name: taskName, isCompleted: true)
+        SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: taskName)
+    }
+    
+    func syncLocalDailyTasksToCloud() {
+        let tasks = fetchDailyTasks()
+        for task in tasks {
+            SupabaseSyncManager.shared.pushDailyTaskUpdate(
+                id: task.id,
+                name: task.name,
+                description: task.description,
+                duration: task.duration,
+                isCompleted: task.isCompleted
+            )
+        }
     }
     
     private func executeNameUpdate(query: String, name: String) {
@@ -237,7 +248,7 @@ class DatabaseManager {
         let today = todayString()
         let yesterday = yesterdayString()
 
-        // ❌ Already counted today
+        // Already counted today
         if lastDate == today { return }
 
         // ✅ Increment or reset
@@ -266,6 +277,8 @@ class DatabaseManager {
             name: NSNotification.Name("streakUpdated"),
             object: newStreak
         )
+        
+        SupabaseSyncManager.shared.pushStreak(currentStreak: newStreak)
     }
 
     func fetchCurrentStreak() -> Int {
@@ -280,6 +293,67 @@ class DatabaseManager {
         }
         sqlite3_finalize(stmt)
         return streak
+    }
+
+    func getCompletedJourneyCount() -> Int {
+        let query = "SELECT COUNT(*) FROM Journey WHERE isCompleted = 1"
+        var stmt: OpaquePointer?
+        var count = 0
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+        return count
+    }
+
+    func getTotalJourneyCount() -> Int {
+        let query = "SELECT COUNT(*) FROM Journey"
+        var stmt: OpaquePointer?
+        var count = 0
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+        return count
+    }
+    
+    func resetDatabaseForNewUser() {
+        // 1. Safely close the existing SQLite connection in memory
+        if db != nil {
+            if sqlite3_close(db) != SQLITE_OK {
+                print("Warning: Could not close Spasht database perfectly.")
+            }
+            db = nil
+        }
+        
+        // 2. Clear cached memory variables
+        isDailyGoalCompleted = false
+        
+        // 3. Delete the physical SQLite file from the Documents directory
+        do {
+            let fileUrl = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent("Spasht.sqlite")
+            
+            if FileManager.default.fileExists(atPath: fileUrl.path) {
+                try FileManager.default.removeItem(at: fileUrl)
+                print("Old Spasht database file permanently deleted.")
+            }
+        } catch {
+            print("Error deleting Spasht database file: \(error)")
+        }
+        
+        // 4. Re-initialize the tables and default data for the new user
+        openDatabase()
+        createTables()
+        populateInitialJourney()
+        initializeStreakIfNeeded()
+        
+        print("Spasht Database engine rebooted and ready for Guest.")
     }
 
 }

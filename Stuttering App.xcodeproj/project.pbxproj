@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08A2F69460700C78634 /* GoogleSignIn */; };
+		1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08C2F69460700C78634 /* GoogleSignInSwift */; };
+		1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08F2F69462B00C78634 /* RiveRuntime */; };
+		19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 19B7F8C42F5E961600E02FB6 /* Supabase */; };
 		19EB3DD52ED71B340003B76D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 19EB3DD42ED71B340003B76D /* .gitignore */; };
 /* End PBXBuildFile section */
 
@@ -16,7 +20,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
+		1993B29F2F69476F00C78634 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -29,7 +33,7 @@
 		19EB3D352ED6ED290003B76D /* Stuttering App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				19B90DE82F21F66700182243 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
+				1993B29F2F69476F00C78634 /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
 			);
 			path = "Stuttering App";
 			sourceTree = "<group>";
@@ -41,6 +45,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */,
+				1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */,
+				19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */,
+				1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +84,10 @@
 			);
 			name = "Stuttering App";
 			packageProductDependencies = (
+				19B7F8C42F5E961600E02FB6 /* Supabase */,
+				1993B08A2F69460700C78634 /* GoogleSignIn */,
+				1993B08C2F69460700C78634 /* GoogleSignInSwift */,
+				1993B08F2F69462B00C78634 /* RiveRuntime */,
 			);
 			productName = "Stuttering App";
 			productReference = 194C02B42F21D937009DB06D /* Stuttering App.app */;
@@ -105,6 +117,11 @@
 			);
 			mainGroup = 19EB3D2A2ED6ED290003B76D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 19EB3D2A2ED6ED290003B76D;
 			projectDirPath = "";
@@ -144,20 +161,24 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = C2N3Q4846H;
+				DEVELOPMENT_TEAM = 3R2UHS38TG;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow microphone usage for audio input ";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow speech recognition for speech test ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Stuttering-App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.Stuttering.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -176,20 +197,24 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = C2N3Q4846H;
+				DEVELOPMENT_TEAM = 3R2UHS38TG;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage for camera input ";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow microphone usage for audio input ";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow speech recognition for speech test ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Stuttering-App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.Stuttering.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -342,6 +367,56 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
+		1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rive-app/rive-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.17.0;
+			};
+		};
+		19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1993B08A2F69460700C78634 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		1993B08C2F69460700C78634 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+		1993B08F2F69462B00C78634 /* RiveRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */;
+			productName = RiveRuntime;
+		};
+		19B7F8C42F5E961600E02FB6 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 19EB3D2B2ED6ED290003B76D /* Project object */;
 }

@@ -15,7 +15,8 @@ class AwardsManager {
     func openDatabase() {
         let fileUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("AwardsDB.sqlite")
         
-        print("Database Path: \(fileUrl.path)")
+        print("Awards Database Created \n Database Path: \(fileUrl.path)")
+
         if sqlite3_open(fileUrl.path, &db) != SQLITE_OK {
             print("Error opening database")
             return
@@ -56,12 +57,12 @@ class AwardsManager {
 extension AwardsManager {
     
     func seedDatabaseIfNeeded() {
+        openDatabase()
+        
         if getAwardsCount() > 0 {
             print("Database already seeded. Skipping.")
             return
         }
-        
-        print("Database empty. Starting seed process...")
         
         guard let url = Bundle.main.url(forResource: "Awards", withExtension: "json") else {
             print("Error: Awards.json file not found in bundle.")
@@ -77,7 +78,7 @@ extension AwardsManager {
                     insertInitialAward(award, groupType: group.type)
                 }
             }
-            print("Database successfully seeded.")
+            print("Database successfully seeded.\n")
             
         } catch {
             print("Error parsing JSON: \(error)")
@@ -119,6 +120,11 @@ extension AwardsManager {
     }
 
     func updateAwardProgress(id: String, progress: Double, newStatus: String) {
+        // Ensure DB is open before updating
+        if db == nil {
+            openDatabase()
+            seedDatabaseIfNeeded()
+        }
         
         let query = "UPDATE Awards SET progress = ?, completionDate = ?, status = ? WHERE id = ?"
         var stmt: OpaquePointer?
@@ -134,6 +140,8 @@ extension AwardsManager {
             
             if sqlite3_step(stmt) == SQLITE_DONE {
                 print("Updated award \(id): \(newStatus)")
+                // Push to Supabase cloud
+                SupabaseSyncManager.shared.pushAwardUpdate(awardId: id, progress: clampedProgress, status: newStatus)
             } else {
                 print("Failed to update award: \(id)")
             }
@@ -215,6 +223,24 @@ extension AwardsManager {
         return result
     }
     
+    func getAchievedAwardsCount() -> Int {
+        var count = 0
+        // Query to count only the awards where progress is 100% (1.0 or greater)
+        let query = "SELECT COUNT(*) FROM Awards WHERE progress >= 1.0"
+        var stmt: OpaquePointer?
+        
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        } else {
+            print("Error: Failed to prepare getAchievedAwardsCount query.")
+        }
+        
+        sqlite3_finalize(stmt)
+        return count
+    }
+    
     func getTopLockedAward() -> AwardModel? {
         var stmt: OpaquePointer?
         var result: AwardModel?
@@ -240,4 +266,35 @@ extension AwardsManager {
         
         return result
     }
+    
+    func resetDatabaseForNewUser() {
+        // 1. Safely close the existing SQLite connection in memory
+        if db != nil {
+            if sqlite3_close(db) != SQLITE_OK {
+                print("Warning: Could not close Awards database perfectly.")
+            }
+            db = nil
+        }
+        
+        // 2. Delete the physical SQLite file from the Documents directory
+        do {
+            let fileUrl = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent("AwardsDB.sqlite")
+            
+            if FileManager.default.fileExists(atPath: fileUrl.path) {
+                try FileManager.default.removeItem(at: fileUrl)
+                print("Old Awards database file permanently deleted.")
+            }
+        } catch {
+            print("Error deleting Awards database file: \(error)")
+        }
+        
+        // 3. Re-initialize and re-seed from JSON for the new user
+        openDatabase()
+        seedDatabaseIfNeeded()
+        
+        print("Awards Database engine rebooted and ready for Guest.")
+    }
+    
 }

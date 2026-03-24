@@ -1,13 +1,10 @@
 import Foundation
 import SQLite3
-
-// MARK: - Enums
+import Supabase
 
 enum TrendDirection {
     case up, down, neutral
 }
-
-// MARK: - Analytics Models
 
 struct DayReport {
     let date: Date
@@ -17,20 +14,27 @@ struct DayReport {
     let avgAccuracy: Double
     let fluencyGrowth: Double
     let improvementPercent: Double
-    let insight: String                 // e.g. "Your 'r' and 's' sounds have improved 12% today!!"
+    let insight: String
+}
+
+struct UserProfile {
+    let id: String
+    var firstName: String?
+    var lastName: String?
+    var dob: String?
+    var mobile: String?
+    var isOnboardingCompleted: Bool
 }
 
 struct OverallProgressReport {
 
-    // MARK: Top Bar
     let daysPracticed: Int
+    let daysGoalsCompleted: Int
     let activeStreak: Int
     let totalHours: Double
 
-    // MARK: Headline
-    let headlineInsight: String         // e.g. "You're speaking with remarkable smoothness and confidence!"
+    let headlineInsight: String
 
-    // MARK: Key Metrics
     let fluencyGrowthPercent: Double
     let fluencyTrend: TrendDirection
     let avgBlockPercent: Double
@@ -40,25 +44,24 @@ struct OverallProgressReport {
     let improvementPercent: Double
     let improvementTrend: TrendDirection
 
-    // MARK: Exercise
     let exercisesCompleted: Int
+    let totalExercisesPracticed: Int
     let exercisesGoal: Int
     let totalExerciseMinutesThisWeek: Int
     let mostPracticedTechnique: String
 
-    // MARK: Reading
+    let totalReadingSessions: Int
     let avgBlocksPerReading: Double
     let readingBlockTrend: TrendDirection
-    let avgReadingDuration: TimeInterval        // seconds
-    let longestSmoothParagraph: Int             // seconds
+    let avgReadingDuration: TimeInterval
+    let longestSmoothParagraph: Int
 
-    // MARK: Conversation
+    let totalConversationSessions: Int
     let avgFillerWordPercent: Double
     let fillerTrend: TrendDirection
-    let avgConversationDuration: TimeInterval   // seconds
-    let longestSmoothTalk: Int                  // seconds
+    let avgConversationDuration: TimeInterval
+    let longestSmoothTalk: Int
 
-    // MARK: Weekly Trend
     let weeklyTrend: [WeeklyPoint]
 }
 
@@ -67,13 +70,12 @@ struct WeeklyPoint {
     let avgFluency: Double
 }
 
-// MARK: - LogManager
 
 class LogManager {
 
     static let shared = LogManager()
 
-    private var db: OpaquePointer?
+    private(set) var db: OpaquePointer?
     private let dbName = "ExerciseDatabase.sqlite"
     private var currentUserId: String?
 
@@ -86,133 +88,93 @@ class LogManager {
     private init() {
         openDatabase()
         createTables()
-        runMigrations()
         initializeDefaultGoals()
     }
 
-    // MARK: - Database Setup
+    
+    func getMostRecentReadingSessionDate() -> Date? {
+        guard let userId = getCurrentUserId() else { return nil }
+
+        let sql = """
+            SELECT date FROM ReadingSessions
+            WHERE userId = ?
+            ORDER BY date DESC
+            LIMIT 1;
+            """
+
+        var stmt: OpaquePointer?
+        var result: Date?
+
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                let timestamp = sqlite3_column_double(stmt, 0)
+                result = Date(timeIntervalSince1970: timestamp)
+            }
+        }
+
+        sqlite3_finalize(stmt)
+        return result
+    }
 
     private func openDatabase() {
         let fileURL = try! FileManager.default
             .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
             .appendingPathComponent(dbName)
-        print("Database Path: \(fileURL.path)")
+        print("ExerciseLog Database Created")
         if sqlite3_open(fileURL.path, &db) != SQLITE_OK {
             print("Error: Unable to open database.")
         }
     }
 
     private func createTables() {
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS ExerciseLog(
-                id TEXT PRIMARY KEY,
-                exerciseName TEXT,
-                completionDate REAL,
-                source TEXT,
-                exerciseDuration INTEGER
-            );
-            """, successMessage: "ExerciseLog table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS Goals(
-                goalName TEXT PRIMARY KEY,
-                goalValue INTEGER
-            );
-            """, successMessage: "Goals table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS StutterStats(
-                letter TEXT PRIMARY KEY,
-                count INTEGER
-            );
-            """, successMessage: "StutterStats table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS Users(
-                id TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                createdAt REAL
-            );
-            """, successMessage: "Users table ready.")
-
-        // ReadingSessions — duration and longestSmoothParagraph included from the start
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS ReadingSessions(
-                id TEXT PRIMARY KEY,
-                userId TEXT,
-                date REAL,
-                duration REAL,
-                fluencyScore INTEGER,
-                repetitionPercent REAL,
-                prolongationPercent REAL,
-                blockPercent REAL,
-                correctPercent REAL,
-                longestSmoothParagraph INTEGER DEFAULT 0,
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "ReadingSessions table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS TroubledWords(
-                id TEXT PRIMARY KEY,
-                sessionId TEXT,
-                userId TEXT,
-                word TEXT,
-                type TEXT,
-                firstLetter TEXT,
-                FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id),
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "TroubledWords table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS LetterStats(
-                userId TEXT,
-                letter TEXT,
-                count INTEGER,
-                PRIMARY KEY(userId, letter),
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "LetterStats table ready.")
-
-        // Per-session letter counts — enables day-level letter improvement insight
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS SessionLetterStats(
-                sessionId TEXT,
-                userId TEXT,
-                letter TEXT,
-                stutterCount INTEGER,
-                PRIMARY KEY(sessionId, letter),
-                FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id),
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "SessionLetterStats table ready.")
-
-        execute(sql: """
-            CREATE TABLE IF NOT EXISTS ConversationSessions(
-                id TEXT PRIMARY KEY,
-                userId TEXT,
-                date REAL,
-                duration REAL,
-                fillerWordPercent REAL,
-                longestSmoothTalk INTEGER DEFAULT 0,
-                FOREIGN KEY(userId) REFERENCES Users(id)
-            );
-            """, successMessage: "ConversationSessions table ready.")
+        
+        let createExerciseLog = "CREATE TABLE IF NOT EXISTS ExerciseLog (id TEXT PRIMARY KEY, exerciseName TEXT, completionDate REAL, source TEXT, exerciseDuration INTEGER);"
+        let createGoals = "CREATE TABLE IF NOT EXISTS Goals (goalName TEXT PRIMARY KEY, goalValue INTEGER);"
+        let createStutterStats = "CREATE TABLE IF NOT EXISTS StutterStats (letter TEXT PRIMARY KEY, count INTEGER);"
+        let createUsers = "CREATE TABLE IF NOT EXISTS Users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, createdAt REAL);"
+        let createProfiles = "CREATE TABLE IF NOT EXISTS Profiles (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, dob TEXT, mobile TEXT, isOnboardingCompleted INTEGER DEFAULT 0, FOREIGN KEY(id) REFERENCES Users(id));"
+        let createReadingSessions = "CREATE TABLE IF NOT EXISTS ReadingSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fluencyScore INTEGER, repetitionPercent REAL, prolongationPercent REAL, blockPercent REAL, correctPercent REAL, longestSmoothParagraph INTEGER DEFAULT 0, FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createTroubledWords = "CREATE TABLE IF NOT EXISTS TroubledWords (id TEXT PRIMARY KEY, sessionId TEXT, userId TEXT, word TEXT, type TEXT, firstLetter TEXT, FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createLetterStats = "CREATE TABLE IF NOT EXISTS LetterStats (userId TEXT, letter TEXT, count INTEGER, PRIMARY KEY(userId, letter), FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createSessionLetterStats = "CREATE TABLE IF NOT EXISTS SessionLetterStats (sessionId TEXT, userId TEXT, letter TEXT, stutterCount INTEGER, PRIMARY KEY(sessionId, letter), FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createConversationSessions = "CREATE TABLE IF NOT EXISTS ConversationSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fillerWordPercent REAL, longestSmoothTalk INTEGER DEFAULT 0, FOREIGN KEY(userId) REFERENCES Users(id));"
+        
+        sqlite3_exec(db, createExerciseLog, nil, nil, nil)
+        sqlite3_exec(db, createGoals, nil, nil, nil)
+        sqlite3_exec(db, createStutterStats, nil, nil, nil)
+        sqlite3_exec(db, createUsers, nil, nil, nil)
+        sqlite3_exec(db, createProfiles, nil, nil, nil)
+        sqlite3_exec(db, createReadingSessions, nil, nil, nil)
+        sqlite3_exec(db, createTroubledWords, nil, nil, nil)
+        sqlite3_exec(db, createLetterStats, nil, nil, nil)
+        sqlite3_exec(db, createSessionLetterStats, nil, nil, nil)
+        sqlite3_exec(db, createConversationSessions, nil, nil, nil)
+        
+        print("10 Tables created in ExerciseLogs\n")
     }
 
-    /// Safe ALTER TABLE migrations for users upgrading from older schema versions.
-    private func runMigrations() {
-        let migrations = [
-            "ALTER TABLE ReadingSessions ADD COLUMN longestSmoothParagraph INTEGER DEFAULT 0;"
-        ]
-        for sql in migrations {
-            var stmt: OpaquePointer?
-            sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
-            sqlite3_step(stmt)  // silently fails if column already exists — that's fine
-            sqlite3_finalize(stmt)
+    // 2. Helper function to inspect the SQLite table schema
+    private func columnExists(tableName: String, columnName: String) -> Bool {
+        let sql = "PRAGMA table_info(\(tableName));"
+        var stmt: OpaquePointer?
+        var exists = false
+        
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            // Step through every column in the table
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                // Index 1 in PRAGMA table_info is the column name
+                if let nameCStr = sqlite3_column_text(stmt, 1) {
+                    let name = String(cString: nameCStr)
+                    if name == columnName {
+                        exists = true
+                        break
+                    }
+                }
+            }
         }
+        sqlite3_finalize(stmt)
+        return exists
     }
 
     private func execute(sql: String, successMessage: String) {
@@ -225,51 +187,149 @@ class LogManager {
         sqlite3_finalize(statement)
     }
 
-    // MARK: - User Management
-
-    func initializeUserIfNeeded() {
-        guard let email = StorageManager.shared.getEmail() else {
-            print("No email found in storage.")
-            return
-        }
-        currentUserId = createOrGetUser(email: email)
-    }
 
     func getCurrentUserId() -> String? {
         if currentUserId == nil { initializeUserIfNeeded() }
-        return currentUserId
+        return currentUserId ?? "guest_user"
+    }
+    
+    func migrateGuestData(to newUserId: String) {
+        var stmt: OpaquePointer?
+        
+        let checkSQL = "SELECT isOnboardingCompleted FROM Profiles WHERE id = 'guest_user';"
+        var hasGuest = false
+        if sqlite3_prepare_v2(db, checkSQL, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                hasGuest = true
+            }
+        }
+        sqlite3_finalize(stmt)
+        
+        if hasGuest {
+            // Delete placeholder profile to avoid Primary Key collision
+            let deleteSQL = "DELETE FROM Profiles WHERE id = ?;"
+            if sqlite3_prepare_v2(db, deleteSQL, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                sqlite3_step(stmt)
+            }
+            sqlite3_finalize(stmt)
+            
+            // Migrate Profiles (use 'id' column)
+            let updateProfile = "UPDATE Profiles SET id = ? WHERE id = 'guest_user';"
+            if sqlite3_prepare_v2(db, updateProfile, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                sqlite3_step(stmt)
+            }
+            sqlite3_finalize(stmt)
+            
+            // Migrate tables using 'userId' column
+            let tables = ["ReadingSessions", "TroubledWords", "LetterStats", "SessionLetterStats", "ConversationSessions"]
+            for table in tables {
+                let updateSQL = "UPDATE \(table) SET userId = ? WHERE userId = 'guest_user';"
+                if sqlite3_prepare_v2(db, updateSQL, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (newUserId as NSString).utf8String, -1, nil)
+                    sqlite3_step(stmt)
+                }
+                sqlite3_finalize(stmt)
+            }
+        }
+    }
+    
+    func initializeUserIfNeeded() {
+        guard let user = SupabaseManager.shared.client.auth.currentUser,
+              let email = user.email else {
+            print("No logged in user found in Supabase.")
+            return
+        }
+        currentUserId = createOrGetUser(email: email, userId: user.id.uuidString)
     }
 
-    func createOrGetUser(email: String) -> String {
-        let checkSQL = "SELECT id FROM Users WHERE email = ?;"
+    func createOrGetUser(email: String, userId: String) -> String {
+        let checkSQL = "SELECT id FROM Users WHERE id = ?;"
         var statement: OpaquePointer?
 
         if sqlite3_prepare_v2(db, checkSQL, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1, (email as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
             if sqlite3_step(statement) == SQLITE_ROW,
                let idCStr = sqlite3_column_text(statement, 0) {
-                let userId = String(cString: idCStr)
+                let existingUserId = String(cString: idCStr)
                 sqlite3_finalize(statement)
-                return userId
+                return existingUserId
             }
         }
         sqlite3_finalize(statement)
 
         let insertSQL = "INSERT INTO Users (id, email, createdAt) VALUES (?, ?, ?);"
-        let newId = UUID().uuidString
         let now   = Date().timeIntervalSince1970
 
         if sqlite3_prepare_v2(db, insertSQL, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1, (newId as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
             sqlite3_bind_text(statement, 2, (email as NSString).utf8String, -1, nil)
             sqlite3_bind_double(statement, 3, now)
             sqlite3_step(statement)
         }
         sqlite3_finalize(statement)
-        return newId
+        
+        // Initialize an empty profile for the new user
+        let profileSQL = "INSERT OR IGNORE INTO Profiles (id, isOnboardingCompleted) VALUES (?, 0);"
+        if sqlite3_prepare_v2(db, profileSQL, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            sqlite3_step(statement)
+        }
+        sqlite3_finalize(statement)
+        
+        return userId
+    }
+    
+    func saveProfile(_ profile: UserProfile, fromSync: Bool = false) {
+        let sql = """
+            INSERT OR REPLACE INTO Profiles (id, firstName, lastName, dob, mobile, isOnboardingCompleted)
+            VALUES (?, ?, ?, ?, ?, ?);
+            """
+        var statement: OpaquePointer?
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (profile.id as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 2, ((profile.firstName ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 3, ((profile.lastName ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 4, ((profile.dob ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 5, ((profile.mobile ?? "") as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(statement, 6, profile.isOnboardingCompleted ? 1 : 0)
+            
+            if sqlite3_step(statement) == SQLITE_DONE {
+                print("Local Profile saved for \(profile.id)")
+            }
+        }
+        sqlite3_finalize(statement)
+        
+        if !fromSync {
+            SupabaseSyncManager.shared.pushProfile(profile)
+        }
     }
 
-    // MARK: - Goals
+    func getProfile(userId: String) -> UserProfile? {
+        let sql = "SELECT firstName, lastName, dob, mobile, isOnboardingCompleted FROM Profiles WHERE id = ?;"
+        var statement: OpaquePointer?
+        var profile: UserProfile?
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(statement) == SQLITE_ROW {
+                let first = sqlite3_column_text(statement, 0).map { String(cString: $0) }
+                let last = sqlite3_column_text(statement, 1).map { String(cString: $0) }
+                let dob = sqlite3_column_text(statement, 2).map { String(cString: $0) }
+                let mob = sqlite3_column_text(statement, 3).map { String(cString: $0) }
+                let isComplete = sqlite3_column_int(statement, 4) == 1
+                
+                profile = UserProfile(id: userId, firstName: first?.isEmpty == false ? first : nil,
+                                      lastName: last?.isEmpty == false ? last : nil,
+                                      dob: dob?.isEmpty == false ? dob : nil,
+                                      mobile: mob?.isEmpty == false ? mob : nil,
+                                      isOnboardingCompleted: isComplete)
+            }
+        }
+        sqlite3_finalize(statement)
+        return profile
+    }
 
     private func initializeDefaultGoals() {
         let defaults: [(String, Int)] = [
@@ -283,13 +343,15 @@ class LogManager {
             if sqlite3_prepare_v2(db, insertSQL, -1, &statement, nil) == SQLITE_OK {
                 sqlite3_bind_text(statement, 1, (name as NSString).utf8String, -1, nil)
                 sqlite3_bind_int(statement, 2, Int32(value))
-                if sqlite3_step(statement) == SQLITE_DONE { print("Initialized default goal: \(name)") }
+                if sqlite3_step(statement) == SQLITE_DONE {}
             }
             sqlite3_finalize(statement)
         }
+        
+        print("Initialized default goals.")
     }
 
-    func updateGoal(name: String, value: Int) {
+    func updateGoal(name: String, value: Int, fromSync: Bool = false) {
         let sql = "INSERT OR REPLACE INTO Goals (goalName, goalValue) VALUES (?, ?);"
         var statement: OpaquePointer?
         if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
@@ -299,6 +361,10 @@ class LogManager {
             else { print("Failed to update goal.") }
         }
         sqlite3_finalize(statement)
+        
+        if !fromSync {
+            SupabaseSyncManager.shared.pushUserGoal(goalName: name, goalValue: value)
+        }
     }
 
     func getGoal(name: String) -> Int {
@@ -315,21 +381,37 @@ class LogManager {
         return result
     }
 
-    // MARK: - Exercise Log
 
     func addLog(exerciseName: String, source: ExerciseSource, exerciseDuration: Int) {
+        // 1. Generate a single, unified ID for this specific log
+        let logId = UUID().uuidString
+        
         let sql = "INSERT INTO ExerciseLog (id, exerciseName, completionDate, source, exerciseDuration) VALUES (?, ?, ?, ?, ?);"
         var statement: OpaquePointer?
+        
         if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1,   (UUID().uuidString as NSString).utf8String, -1, nil)
-            sqlite3_bind_text(statement, 2,   (exerciseName as NSString).utf8String, -1, nil)
+            // 2. Use the unified ID for local storage
+            sqlite3_bind_text(statement, 1, (logId as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 2, (exerciseName as NSString).utf8String, -1, nil)
             sqlite3_bind_double(statement, 3, Date().timeIntervalSince1970)
-            sqlite3_bind_text(statement, 4,   (source.rawValue as NSString).utf8String, -1, nil)
-            sqlite3_bind_int(statement, 5,    Int32(exerciseDuration))
-            if sqlite3_step(statement) == SQLITE_DONE { print("Log inserted.") }
-            else { print("Could not insert row.") }
+            sqlite3_bind_text(statement, 4, (source.rawValue as NSString).utf8String, -1, nil)
+            sqlite3_bind_int(statement, 5, Int32(exerciseDuration))
+            
+            if sqlite3_step(statement) == SQLITE_DONE {
+                print("✅ Log inserted locally with ID: \(logId)")
+            } else {
+                print("❌ Could not insert row locally.")
+            }
         }
         sqlite3_finalize(statement)
+        
+        // 3. Push the EXACT SAME ID to Supabase
+        SupabaseSyncManager.shared.pushExerciseLog(
+            id: logId,
+            name: exerciseName,
+            source: source.rawValue,
+            duration: exerciseDuration
+        )
     }
 
     func getLogs(for source: ExerciseSource, on date: Date? = nil) -> [ExerciseLog] {
@@ -374,9 +456,7 @@ class LogManager {
         return resultLogs
     }
 
-    // MARK: - Reading Sessions
 
-    /// Pass `duration` in seconds and `longestSmoothParagraph` in seconds.
     func saveReadingSession(report: StutterJSONReport,
                             duration: TimeInterval = 0,
                             longestSmoothParagraph: Int = 0) {
@@ -421,6 +501,9 @@ class LogManager {
         updateLetterStats(userId: userId, letterCounts: report.letterAnalysis)
         saveSessionLetterStats(userId: userId, sessionId: sessionId, letterCounts: report.letterAnalysis)
         print("Saved reading session for user: \(userId)")
+        
+        SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId, longestSmoothParagraph: longestSmoothParagraph)
+        SupabaseSyncManager.shared.pushLetterStats(userId: userId)
     }
 
     private func saveTroubledWords(report: StutterJSONReport, userId: String, sessionId: String) {
@@ -454,7 +537,6 @@ class LogManager {
         sqlite3_finalize(statement)
     }
 
-    /// Saves per-session letter stutter counts for the letter-improvement insight engine.
     private func saveSessionLetterStats(userId: String, sessionId: String, letterCounts: [String: Int]) {
         let sql = """
             INSERT OR REPLACE INTO SessionLetterStats (sessionId, userId, letter, stutterCount)
@@ -512,6 +594,24 @@ class LogManager {
         return words
     }
 
+    func getAllLetterStats(for userId: String) -> [String: Int] {
+        let sql = "SELECT letter, count FROM LetterStats WHERE userId = ?;"
+        var statement: OpaquePointer?
+        var stats: [String: Int] = [:]
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            while sqlite3_step(statement) == SQLITE_ROW {
+                if let letterCStr = sqlite3_column_text(statement, 0) {
+                    let letter = String(cString: letterCStr)
+                    let count = Int(sqlite3_column_int(statement, 1))
+                    stats[letter] = count
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+        return stats
+    }
+
     func getTopLetters(for userId: String, limit: Int) -> [String] {
         let sql = """
             SELECT letter FROM LetterStats
@@ -534,9 +634,7 @@ class LogManager {
         return letters
     }
 
-    // MARK: - Conversation Sessions
 
-    /// Call this at the end of every conversation session.
     func saveConversationSession(duration: TimeInterval,
                                  fillerWordPercent: Double,
                                  longestSmoothTalk: Int) {
@@ -551,18 +649,25 @@ class LogManager {
             """
         var statement: OpaquePointer?
         if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1,   (UUID().uuidString as NSString).utf8String, -1, nil)
+            let sessionId = UUID().uuidString
+            sqlite3_bind_text(statement, 1,   (sessionId as NSString).utf8String, -1, nil)
             sqlite3_bind_text(statement, 2,   (userId as NSString).utf8String, -1, nil)
             sqlite3_bind_double(statement, 3, Date().timeIntervalSince1970)
             sqlite3_bind_double(statement, 4, duration)
             sqlite3_bind_double(statement, 5, fillerWordPercent)
             sqlite3_bind_int(statement, 6,    Int32(longestSmoothTalk))
             if sqlite3_step(statement) == SQLITE_DONE { print("ConversationSession inserted.") }
+            
+            SupabaseSyncManager.shared.pushConversationSession(
+                sessionId: sessionId,
+                duration: duration,
+                fillerWordPercent: fillerWordPercent,
+                longestSmoothTalk: longestSmoothTalk
+            )
         }
         sqlite3_finalize(statement)
     }
 
-    // MARK: - Stutter Stats (global/legacy)
 
     func updateStutterStats(letterCounts: [String: Int]) {
         let sql = """
@@ -603,7 +708,35 @@ class LogManager {
         execute(sql: "DELETE FROM StutterStats;", successMessage: "Stutter stats reset.")
     }
 
-    // MARK: - Debug
+
+    func getAverageFluency(userId: String) -> Double {
+        let sql = "SELECT AVG(fluencyScore) FROM ReadingSessions WHERE userId = ?;"
+        var stmt: OpaquePointer?
+        var val = 0.0
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                val = sqlite3_column_double(stmt, 0)
+            }
+        }
+        sqlite3_finalize(stmt)
+        return val
+    }
+
+    func getBestFluency(userId: String) -> Double {
+        let sql = "SELECT MAX(fluencyScore) FROM ReadingSessions WHERE userId = ?;"
+        var stmt: OpaquePointer?
+        var val = 0.0
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (userId as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                val = sqlite3_column_double(stmt, 0)
+            }
+        }
+        sqlite3_finalize(stmt)
+        return val
+    }
+
 
     func debugPrintAllReadingSessions() {
         let sql = "SELECT id, userId, fluencyScore, date FROM ReadingSessions;"
@@ -623,11 +756,9 @@ class LogManager {
     }
 }
 
-// MARK: - Day Analytics
 
 extension LogManager {
 
-    /// All session rows for a given calendar day (current user).
     func getSessionsForDay(_ date: Date) -> [[String: Any]] {
         guard let userId = getCurrentUserId() else { return [] }
 
@@ -666,8 +797,6 @@ extension LogManager {
         return rows
     }
 
-    /// Full DayReport including a personalized insight.
-    /// Foundation model is tried first; rule-based chain is the fallback.
     func getDayReport(for date: Date) async -> DayReport? {
         let sessions = getSessionsForDay(date)
         guard !sessions.isEmpty else { return nil }
@@ -712,11 +841,7 @@ extension LogManager {
             insight: insight
         )
     }
-
-    // MARK: - Letter Data Builder
-
-    /// Computes top improved letters for today vs prior 7 days.
-    /// Passed as context to InsightEngine so both AI and fallback have the same data.
+    
     private func buildTopImprovedLetters(for date: Date) -> [(letter: String, improvementPct: Double)] {
         guard let userId = getCurrentUserId() else { return [] }
 
@@ -771,8 +896,6 @@ extension LogManager {
     }
 }
 
-// MARK: - Overall Progress Report
-
 extension LogManager {
 
     func getOverallProgressReport() async -> OverallProgressReport? {
@@ -812,20 +935,27 @@ extension LogManager {
         let fillerTrend       = trendInverse(current: fillerThis, previous: fillerLast)
         let readingBlockTrend = trendInverse(current: blockThisWeek, previous: blockLastWeek)
 
+        // ── Goals Completed ──────────────────────────────────────────────────
+        let daysGoalsCompleted = getDaysGoalsCompleted()
+
         // ── Exercise ─────────────────────────────────────────────────────────
-        let exercisesCompleted          = getLogs(for: .exercises).count
+        let allExerciseLogs             = getLogs(for: .exercises)
+        let exercisesCompleted          = allExerciseLogs.count
+        let totalExercisesPracticed     = getLogs(for: .dailyTasks).count + allExerciseLogs.count
         let exercisesGoal               = getGoal(name: GoalKeys.exercise)
         let totalExerciseMinutesThisWeek = getExerciseMinutesThisWeek()
         let mostPracticedTechnique      = getMostPracticedExercise()
 
         // ── Reading ──────────────────────────────────────────────────────────
-        let avgReadingDuration    = getAvgReadingDuration(userId: userId)
+        let totalReadingSessions   = getTotalReadingSessions(userId: userId)
+        let avgReadingDuration     = getAvgReadingDuration(userId: userId)
         let longestSmoothParagraph = getLongestSmoothParagraph(userId: userId)
 
         // ── Conversation ─────────────────────────────────────────────────────
-        let avgFillerWordPercent    = getAvgFillerWordPercent(userId: userId)
-        let avgConversationDuration = getAvgConversationDuration(userId: userId)
-        let longestSmoothTalk       = getLongestSmoothTalk(userId: userId)
+        let totalConversationSessions = getTotalConversationSessions(userId: userId)
+        let avgFillerWordPercent      = getAvgFillerWordPercent(userId: userId)
+        let avgConversationDuration   = getAvgConversationDuration(userId: userId)
+        let longestSmoothTalk         = getLongestSmoothTalk(userId: userId)
 
         // ── Headline ─────────────────────────────────────────────────────────
         let overallContext = OverallInsightContext(
@@ -841,6 +971,7 @@ extension LogManager {
 
         return OverallProgressReport(
             daysPracticed: daysPracticed,
+            daysGoalsCompleted: daysGoalsCompleted,
             activeStreak: activeStreak,
             totalHours: totalHours,
             headlineInsight: headline,
@@ -853,13 +984,16 @@ extension LogManager {
             improvementPercent: improvementPct,
             improvementTrend: improvementTrend,
             exercisesCompleted: exercisesCompleted,
+            totalExercisesPracticed: totalExercisesPracticed,
             exercisesGoal: exercisesGoal,
             totalExerciseMinutesThisWeek: totalExerciseMinutesThisWeek,
             mostPracticedTechnique: mostPracticedTechnique,
+            totalReadingSessions: totalReadingSessions,
             avgBlocksPerReading: avgBlock,
             readingBlockTrend: readingBlockTrend,
             avgReadingDuration: avgReadingDuration,
             longestSmoothParagraph: longestSmoothParagraph,
+            totalConversationSessions: totalConversationSessions,
             avgFillerWordPercent: avgFillerWordPercent,
             fillerTrend: fillerTrend,
             avgConversationDuration: avgConversationDuration,
@@ -867,14 +1001,38 @@ extension LogManager {
             weeklyTrend: getWeeklyTrend(userId: userId)
         )
     }
-
-    // MARK: - Top Bar
-
+    
     private func getDaysPracticed(userId: String) -> Int {
         let sql = """
             SELECT COUNT(DISTINCT CAST(date / 86400 AS INTEGER))
             FROM ReadingSessions WHERE userId = ?;
             """
+        return singleIntQuery(sql: sql, userId: userId)
+    }
+
+    private func getDaysGoalsCompleted() -> Int {
+        let sql = """
+            SELECT COUNT(DISTINCT CAST(completionDate / 86400 AS INTEGER))
+            FROM ExerciseLog WHERE source = 'dailyTasks';
+            """
+        var stmt: OpaquePointer?
+        var count = 0
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+        return count
+    }
+
+    private func getTotalReadingSessions(userId: String) -> Int {
+        let sql = "SELECT COUNT(*) FROM ReadingSessions WHERE userId = ?;"
+        return singleIntQuery(sql: sql, userId: userId)
+    }
+
+    private func getTotalConversationSessions(userId: String) -> Int {
+        let sql = "SELECT COUNT(*) FROM ConversationSessions WHERE userId = ?;"
         return singleIntQuery(sql: sql, userId: userId)
     }
 
@@ -1026,7 +1184,7 @@ extension LogManager {
             if sqlite3_step(stmt) == SQLITE_ROW { total = Int(sqlite3_column_int(stmt, 0)) }
         }
         sqlite3_finalize(stmt)
-        return total / 60   // seconds → minutes
+        return total / 60
     }
 
     private func getMostPracticedExercise() -> String {
@@ -1063,8 +1221,6 @@ extension LogManager {
         sqlite3_finalize(stmt); return result
     }
 
-    // MARK: - Streak
-
     private func calculateStreak(userId: String) -> Int {
         let sql = """
             SELECT DISTINCT CAST(date / 86400 AS INTEGER) as day
@@ -1080,18 +1236,36 @@ extension LogManager {
         }
         sqlite3_finalize(stmt)
 
+//        guard !days.isEmpty else { return 0 }
+//        let todayDay = Int(Date().timeIntervalSince1970 / 86400)
+//        guard days[0] == todayDay || days[0] == todayDay - 1 else { return 0 }
+//
+//        var streak = 1
+//        for i in 1 ..< days.count {
+//            if days[i - 1] - days[i] == 1 { streak += 1 } else { break }
+//        }
+//        return streak
+        
         guard !days.isEmpty else { return 0 }
+
         let todayDay = Int(Date().timeIntervalSince1970 / 86400)
+
         guard days[0] == todayDay || days[0] == todayDay - 1 else { return 0 }
 
         var streak = 1
-        for i in 1 ..< days.count {
-            if days[i - 1] - days[i] == 1 { streak += 1 } else { break }
+
+        if days.count > 1 {
+            for i in 1..<days.count {
+                if days[i - 1] - days[i] == 1 {
+                    streak += 1
+                } else {
+                    break
+                }
+            }
         }
+
         return streak
     }
-
-    // MARK: - Weekly Trend
 
     private func getWeeklyTrend(userId: String) -> [WeeklyPoint] {
         let sql = """
@@ -1115,8 +1289,6 @@ extension LogManager {
         sqlite3_finalize(stmt); return points
     }
 
-    // MARK: - Generic Query Helpers
-
     private func singleIntQuery(sql: String, userId: String) -> Int {
         var stmt: OpaquePointer?; var val = 0
         if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
@@ -1137,9 +1309,6 @@ extension LogManager {
         sqlite3_finalize(stmt); return val
     }
 
-    // MARK: - Trend Helpers
-
-    /// Higher = better (fluency, accuracy, improvement).
     private func trend(current: Double, previous: Double) -> TrendDirection {
         let d = current - previous
         if d > 1 { return .up }
@@ -1147,16 +1316,44 @@ extension LogManager {
         return .neutral
     }
 
-    /// Lower = better (blocks, filler words). Down arrow in data → shown as up (improvement).
     private func trendInverse(current: Double, previous: Double) -> TrendDirection {
         let d = current - previous
         if d < -1 { return .up }
         if d > 1  { return .down }
         return .neutral
     }
+    
+    func resetDatabaseForNewUser() {
+        // 1. Safely close the existing SQLite connection in memory
+        if db != nil {
+            if sqlite3_close(db) != SQLITE_OK {
+                print("Warning: Could not close database perfectly.")
+            }
+            db = nil
+        }
+        
+        currentUserId = nil
+        
+        do {
+            let fileURL = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent(dbName)
+            
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                try FileManager.default.removeItem(at: fileURL)
+                print("Old database file permanently deleted.")
+            }
+        } catch {
+            print("Error deleting database file: \(error)")
+        }
+        
+        // 4. Re-initialize for the next user/guest session
+        openDatabase()
+        createTables()
+        initializeDefaultGoals()
+        print("Database engine rebooted and ready for Guest.")
+    }
 }
-
-// MARK: - Helpers
 
 private extension Int {
     var asDouble: Double { Double(self) }

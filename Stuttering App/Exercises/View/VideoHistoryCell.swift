@@ -16,13 +16,11 @@ class HistoryCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        // iOS 26 UI: Soft, continuous corners for thumbnails
         thumbnailImageView.layer.cornerRadius = 12
         thumbnailImageView.layer.cornerCurve = .continuous
         thumbnailImageView.clipsToBounds = true
         thumbnailImageView.contentMode = .scaleAspectFill
         
-        // Default styling
         headingLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         dateLabel.textColor = .secondaryLabel
         durationLabel.textColor = .secondaryLabel

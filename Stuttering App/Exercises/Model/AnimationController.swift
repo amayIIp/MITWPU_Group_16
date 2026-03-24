@@ -24,15 +24,11 @@ class AnimationController {
     
     
     func startAnimation(for stepConfig: StepAnimationConfig, word: String) {
-        // Cancel any ongoing animations
         cancelAnimations()
-        
-        // Initialize text builder with the word
         textBuilder = TextAnimationBuilder(syllableWord: word)
         currentConfig = stepConfig
         substepIndex = 0
         
-        // Check if this step shows an image instead of animations
         if stepConfig.showImage {
             delegate?.shouldHideTargetLabel(true)
             return
@@ -51,10 +47,8 @@ class AnimationController {
         guard let config = currentConfig,
               let builder = textBuilder else { return }
         
-        // Show target label
         delegate?.shouldHideTargetLabel(false)
         
-        // Iterate through all substeps
         for (index, substep) in config.substeps.enumerated() {
             let totalDelay = calculateTotalDelay(upToIndex: index)
             
@@ -70,7 +64,6 @@ class AnimationController {
     
     private func executeSubstep(_ substep: AnimationSubstep, builder: TextAnimationBuilder, isLast: Bool) {
         let attributedText = builder.generateText(for: substep.type)
-        
         
         UIView.transition(
             with: UIView(),

@@ -11,8 +11,11 @@ class FirstPageAnimationViewController: UIViewController {
 
     @IBOutlet weak var headerLabel: UIImageView!
     @IBOutlet weak var infoLabel: UIStackView!
-
     @IBOutlet weak var buttonView: UIView!
+    
+    @IBOutlet weak var SignUpButton: UIButton!
+    @IBOutlet weak var SigninButton: UIButton!
+    
     var hasSetInitialState = false
     
     override func viewDidLoad() {
@@ -22,9 +25,7 @@ class FirstPageAnimationViewController: UIViewController {
         infoLabel.alpha = 0
         buttonView.alpha = 0
     }
-    
-
-    
+        
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
@@ -39,41 +40,82 @@ class FirstPageAnimationViewController: UIViewController {
         startSequenceAnimation()
     }
     
-    
     private func setupInitialState() {
         headerLabel.alpha = 1
-        
-        // view.bounds.midY gives the exact vertical center of the visible screen
+
         let screenCenterY = view.bounds.midY
         let labelCenterY = headerLabel.center.y
-        
+
         let distanceToCenter = screenCenterY - labelCenterY
-        // Move it down to the center
         let moveDown = CGAffineTransform(translationX: 0, y: distanceToCenter)
         let scaleUp = CGAffineTransform(scaleX: 2.0, y: 2.0)
-        
+
         headerLabel.transform = scaleUp.concatenating(moveDown)
+        buttonView.transform = CGAffineTransform(translationX: 0, y: view.bounds.height)
     }
-    
+
     private func startSequenceAnimation() {
-          // Animate Header back to Top
+    
         UIView.animate(withDuration: 2.0,
                        delay: 0.2,
                        usingSpringWithDamping: 0.85,
                        initialSpringVelocity: 0.5,
                        options: .curveEaseInOut) {
             
-            // This automatically moves it back to the storyboard position
             self.headerLabel.transform = .identity
             
         } completion: { _ in
-            
-            UIView.animate(withDuration: 0.5) {
-                self.infoLabel.alpha = 1.0
-                self.buttonView.alpha = 1.0
+
+            UIView.animate(withDuration: 1.25,
+                           delay: 0.1,
+                           options: .curveEaseInOut) {
                 
+                self.infoLabel.alpha = 1.0
+                
+            }
+            
+            UIView.animate(withDuration: 1.5,
+                           delay: 0.3,
+                           options: .curveEaseOut) {
+                
+                self.buttonView.alpha = 1
+                self.buttonView.transform = .identity
             }
         }
     }
 
+    // MARK: - Button Actions
+    
+    @IBAction func signUpTapped(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+        let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
+        
+        // 4. (Optional) Apply modern iOS 26 sheet behaviors
+        nextModalVC.modalPresentationStyle = .pageSheet
+        if let sheet = nextModalVC.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        
+        // 5. Present the new modal from the original underlying screen
+        present(nextModalVC, animated: true)
+    }
+    
+    @IBAction func signInTapped(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+        let nextModalVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+        
+        // 4. (Optional) Apply modern iOS 26 sheet behaviors
+        nextModalVC.modalPresentationStyle = .pageSheet
+        if let sheet = nextModalVC.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        
+        // 5. Present the new modal from the original underlying screen
+        present(nextModalVC, animated: true)
+
+    }
+    
+    
 }

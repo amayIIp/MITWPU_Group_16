@@ -22,53 +22,67 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
     var targetWord: String = ""
     var currentFileID: String = ""
 
+    // Add these as stored properties at the top of the class
+    private let impactFeedback = UIImpactFeedbackGenerator(style: .rigid)
+    private let notificationFeedback = UINotificationFeedbackGenerator()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupAudioSession()
         styleUI()
         updateButtonState(isRecording: false)
-        view.layoutIfNeeded()
         targetLabel.text = targetWord
     }
-
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        setupAudioSession()
+        impactFeedback.prepare()
+        notificationFeedback.prepare()
+    }
+    
     // MARK: - Audio Setup
     func setupAudioSession() {
-        recordingSession = AVAudioSession.sharedInstance()
-        do {
-            try recordingSession.setCategory(.playAndRecord, mode: .default)
-            try recordingSession.setActive(true)
-            
-            // Modern iOS permission request
-            AVAudioApplication.requestRecordPermission { allowed in
-                if !allowed {
-                    print("⚠️ Microphone permission denied.")
-                }
+        // ✅ Session is already active (pre-warmed by parent screen).
+        // Only the permission check is needed here — this is fast and non-blocking.
+        AVAudioApplication.requestRecordPermission { [weak self] allowed in
+            if !allowed {
+                self?.showPermissionDeniedAlert()
             }
-        } catch {
-            print("⚠️ Failed to set up audio session: \(error.localizedDescription)")
+        }
+    }
+    
+    func showPermissionDeniedAlert() {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(
+                title: "Microphone Access Required",
+                message: "To record your voice diary, please enable microphone access in Settings.",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { _ in
+                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }))
+            
+            self.present(alert, animated: true, completion: nil)
         }
     }
 
     // MARK: - Actions
     @IBAction func toggleRecording(_ sender: UIButton) {
         if let recorder = audioRecorder, recorder.isRecording {
-            // STOP RECORDING
-            recorder.stop()
-            updateButtonState(isRecording: false)
-            stopTimer()
-            
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
-            
-        } else {
-            // START RECORDING
-            startRecording()
-            updateButtonState(isRecording: true)
-            startTimer()
-            
-            let generator = UIImpactFeedbackGenerator(style: .rigid)
-            generator.impactOccurred()
-        }
+                recorder.stop()
+                updateButtonState(isRecording: false)
+                stopTimer()
+                notificationFeedback.notificationOccurred(.success)
+            } else {
+                startRecording()
+                updateButtonState(isRecording: true)
+                startTimer()
+                impactFeedback.impactOccurred()
+            }
     }
     
     @IBAction func tapToMainScreen(_ sender: Any) {
@@ -79,21 +93,34 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
 
     func startRecording() {
         currentFileID = UUID().uuidString
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(currentFileID).appendingPathExtension("m4a")
-        
+        let tempURL = FileManager.default
+            .temporaryDirectory
+            .appendingPathComponent(currentFileID)
+            .appendingPathExtension("m4a")
+
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 44100,
             AVNumberOfChannelsKey: 1,
             AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
         ]
-        
-        do {
-            audioRecorder = try AVAudioRecorder(url: tempURL, settings: settings)
-            audioRecorder?.delegate = self
-            audioRecorder?.record()
-        } catch {
-            print("⚠️ Could not start recording: \(error.localizedDescription)")
+
+        // ✅ FIX: Initialise AVAudioRecorder on a background thread.
+        // First-time instantiation is slow; doing it off-main prevents the
+        // ~1 second freeze on the first "Start Recording" tap.
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            do {
+                let recorder = try AVAudioRecorder(url: tempURL, settings: settings)
+                recorder.delegate = self
+                recorder.record()
+
+                DispatchQueue.main.async {
+                    self.audioRecorder = recorder
+                }
+            } catch {
+                print("⚠️ Could not start recording: \(error.localizedDescription)")
+            }
         }
     }
 

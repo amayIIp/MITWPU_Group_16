@@ -7,33 +7,38 @@
 
 import UIKit
 
-class OnboardingNameViewController: UIViewController, UITextFieldDelegate {
+// 1. Add UIGestureRecognizerDelegate
+class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var continueButton: UIButton!
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //setupButton()
         setupTextField()
         setupDismissKeyboardGesture()
     }
     
-    func setupButton() {
-        continueButton.configuration = .prominentGlass()
-        continueButton.configuration?.title = "Continue"
-    }
-    
     func setupTextField() {
         nameTextField.delegate = self
-        //nameTextField.placeholder = "Enter your name"
         nameTextField.returnKeyType = .done
+        
+        nameTextField.autocorrectionType = .no
+        nameTextField.spellCheckingType = .no
+        nameTextField.smartDashesType = .no
+        nameTextField.smartQuotesType = .no
+        nameTextField.smartInsertDeleteType = .no
     }
     
     func setupDismissKeyboardGesture() {
-        let tapGesture = UITapGestureRecognizer(target: view,
-                                               action: #selector(UIView.endEditing))
+        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
+        
+        // 2. Prevent the gesture from swallowing touches
+        tapGesture.cancelsTouchesInView = false
+        
+        // 3. Set the delegate so we can filter touches
+        tapGesture.delegate = self
+        
         view.addGestureRecognizer(tapGesture)
     }
 
@@ -48,6 +53,21 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        StorageManager.shared.saveName(name)
+        guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
+                
+        var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
+        profile.firstName = name
+
+        LogManager.shared.saveProfile(profile)
+    }
+    
+    // MARK: - UIGestureRecognizerDelegate
+    
+    // 4. Ignore the tap gesture if the user is tapping the text field or button
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if touch.view is UITextField || touch.view is UIButton {
+            return false
+        }
+        return true
     }
 }

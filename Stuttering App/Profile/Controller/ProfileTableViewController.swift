@@ -1,4 +1,5 @@
 import UIKit
+import Supabase
 
 class ProfileTableViewController: UITableViewController {
     
@@ -13,7 +14,9 @@ class ProfileTableViewController: UITableViewController {
     }
     
     private func loadUserName() {
-        if let name = StorageManager.shared.getName() {
+        if let userId = LogManager.shared.getCurrentUserId(),
+           let profile = LogManager.shared.getProfile(userId: userId),
+           let name = profile.firstName {
             nameLabel.text = "\(name)"
         } else {
             nameLabel.text = "User"
@@ -36,23 +39,52 @@ class ProfileTableViewController: UITableViewController {
     }
     
     func performLogout() {
-        
-        AppState.isLoginCompleted = false
-        AppState.isOnboardingCompleted = false
-        
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        
-        guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {
-            print("Error: Could not find LandingNav")
-            return
-        }
-        
-        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
-           let window = sceneDelegate.window {
-            UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                window.rootViewController = landingNav
-            }, completion: nil)
+        Task {
+            do {
+                try await SupabaseManager.shared.client.auth.signOut()
+                print("Successfully signed out of Supabase.")
+            } catch {
+                print("Failed to sign out of Supabase: \(error)")
+            }
+            
+            DispatchQueue.main.async {
+                AppState.isLoginCompleted = false
+                AppState.isOnboardingCompleted = false
+                
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                
+                guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {
+                    print("Error: Could not find LandingNav")
+                    return
+                }
+                
+                if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
+                    UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                        window.rootViewController = landingNav
+                    }, completion: nil)
+                }
+                
+                self.clearAllAppData()
+            }
         }
     }
     
+    private func clearAllAppData() {
+        print("--- Initiating Complete Session Teardown ---")
+        
+        // 1. Clear UserDefaults
+        if let bundleID = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+        }
+        
+        // 2. Clear secure storage if applicable (e.g., Keychain)
+        // (StorageManager email cleared step removed)
+        
+        // 3. Wipe and reboot all SQLite databases
+        LogManager.shared.resetDatabaseForNewUser()
+        DatabaseManager.shared.resetDatabaseForNewUser()
+        AwardsManager.shared.resetDatabaseForNewUser()
+        
+        print("--- Teardown Complete. Ready for next session. ---")    }
 }
