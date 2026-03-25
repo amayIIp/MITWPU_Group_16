@@ -1,4 +1,5 @@
 import UIKit
+import Supabase
 
 class ProfileTableViewController: UITableViewController {
     
@@ -13,7 +14,9 @@ class ProfileTableViewController: UITableViewController {
     }
     
     private func loadUserName() {
-        if let name = StorageManager.shared.getName() {
+        if let userId = LogManager.shared.getCurrentUserId(),
+           let profile = LogManager.shared.getProfile(userId: userId),
+           let name = profile.firstName {
             nameLabel.text = "\(name)"
         } else {
             nameLabel.text = "User"
@@ -36,23 +39,48 @@ class ProfileTableViewController: UITableViewController {
     }
     
     func performLogout() {
-        
-        AppState.isLoginCompleted = false
-        AppState.isOnboardingCompleted = false
-        
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        
-        guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {
-            print("Error: Could not find LandingNav")
-            return
-        }
-        
-        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
-           let window = sceneDelegate.window {
-            UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                window.rootViewController = landingNav
-            }, completion: nil)
+        Task {
+            do {
+                // Only sign out of Supabase if we were in account mode
+                if SessionManager.shared.isAccountMode {
+                    try await SupabaseManager.shared.client.auth.signOut()
+                    print("🚪 [SESSION] Successfully signed out of Supabase.")
+                }
+            } catch {
+                print("🚪 [SESSION] Failed to sign out of Supabase: \(error)")
+            }
+            
+            DispatchQueue.main.async {
+                // End the session — this clears AppState flags and preserves deviceId
+                SessionManager.shared.endSession()
+                
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                
+                guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {
+                    print("Error: Could not find LandingNav")
+                    return
+                }
+                
+                if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
+                    UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                        window.rootViewController = landingNav
+                    }, completion: nil)
+                }
+                
+                self.clearAllAppData()
+            }
         }
     }
     
+    private func clearAllAppData() {
+        print("--- Initiating Complete Session Teardown ---")
+        
+        // Wipe and reboot all SQLite databases
+        LogManager.shared.resetDatabaseForNewUser()
+        DatabaseManager.shared.resetDatabaseForNewUser()
+        AwardsManager.shared.resetDatabaseForNewUser()
+        
+        print("--- Teardown Complete. Ready for next session. ---")
+    }
 }

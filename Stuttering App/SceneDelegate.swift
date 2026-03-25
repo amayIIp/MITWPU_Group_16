@@ -6,11 +6,11 @@
 //
 
 import UIKit
+import Supabase
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
 
     func scene(_ scene: UIScene,
                willConnectTo session: UISceneSession,
@@ -18,61 +18,91 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        window = UIWindow(windowScene: windowScene)
+        let window = UIWindow(windowScene: windowScene)
+        self.window = window
         
-        // ✅ ALWAYS initialize user if email exists
-        if let _ = StorageManager.shared.getEmail() {
-            LogManager.shared.initializeUserIfNeeded()
+        // 1. Show a temporary blank screen or LaunchScreen while checking auth state
+        let launchStoryboard = UIStoryboard(name: "LaunchScreen", bundle: nil)
+        window.rootViewController = launchStoryboard.instantiateInitialViewController() ?? UIViewController()
+        window.makeKeyAndVisible()
+        
+        // 2. Restore session using SessionManager
+        Task {
+            let restoredMode = await SessionManager.shared.restoreSession()
+            
+            // Initialize the correct user context
+            switch restoredMode {
+            case .guest:
+                LogManager.shared.initializeGuestUser()
+                print("🚪 [SESSION] Guest session restored — no Supabase calls")
+                
+            case .account:
+                LogManager.shared.initializeUserIfNeeded()
+                print("🚪 [SESSION] Account session restored — user initialized")
+                
+            case .none:
+                print("🚪 [SESSION] No session to restore — showing landing page")
+            }
+            
+            // 3. Route to the correct screen on the Main Thread
+            await MainActor.run {
+                self.routeUser(mode: restoredMode)
+            }
         }
-        
+    }
+    
+    // MARK: - Session-Based Navigation Routing
+    private func routeUser(mode: SessionManager.UserMode) {
         var initialVC: UIViewController
         
-        if AppState.isLoginCompleted || AppState.isOnboardingCompleted {
+        switch mode {
+        case .guest:
+            if AppState.isOnboardingCompleted {
+                // Guest completed onboarding → go to Home
+                let storyboard = UIStoryboard(name: "Home", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+            } else {
+                // Guest hasn't completed onboarding → resume onboarding
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+            }
             
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+        case .account:
+            if AppState.isOnboardingCompleted {
+                // Signed-in user with completed onboarding → Home
+                let storyboard = UIStoryboard(name: "Home", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+            } else {
+                // Signed-in user but onboarding not complete (edge case, shouldn't happen for sign-in)
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+            }
             
-        } else {
-            
+        case .none:
+            // No session → show welcome/landing screen
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             initialVC = storyboard.instantiateViewController(withIdentifier: "LandingNav")
         }
         
-        window?.rootViewController = initialVC
-        window?.makeKeyAndVisible()
+        // Smoothly swap the root view controller
+        guard let window = self.window else { return }
+        window.rootViewController = initialVC
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
     }
 
-
-    func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-        // This occurs shortly after the scene enters the background, or when its session is discarded.
-        // Release any resources associated with this scene that can be re-created the next time the scene connects.
-        // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
-    }
-
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-    }
-
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
-        // This may occur due to temporary interruptions (ex. an incoming phone call).
-    }
-
+    // MARK: - Scene Lifecycle
+    func sceneDidDisconnect(_ scene: UIScene) {}
+    func sceneDidBecomeActive(_ scene: UIScene) {}
+    func sceneWillResignActive(_ scene: UIScene) {}
+    
     func sceneWillEnterForeground(_ scene: UIScene) {
+        AwardsManager.shared.seedDatabaseIfNeeded()
+        
         let logic = LogicMaker()
         logic.checkForNewDay()
-        // Called as the scene transitions from the background to the foreground.
-        // Use this method to undo the changes made on entering the background.
+        
     }
-
-    func sceneDidEnterBackground(_ scene: UIScene) {
-        // Called as the scene transitions from the foreground to the background.
-        // Use this method to save data, release shared resources, and store enough scene-specific state information
-        // to restore the scene back to its current state.
-    }
-
-
+    
+    func sceneDidEnterBackground(_ scene: UIScene) {}
 }
 

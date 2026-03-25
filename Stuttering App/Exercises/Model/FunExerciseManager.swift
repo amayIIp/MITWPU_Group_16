@@ -7,15 +7,20 @@
 
 import Foundation
 
-// 1. The Data Model
 struct VideoLog: Codable {
-    let id: String          // The UUID of the .mov file
+    let id: String
     let heading: String
     let date: Date
-    let duration: Double    // Kept as double for precise math, formatted later
+    let duration: Double
 }
 
-// 2. The Storage Manager
+struct AudioLog: Codable {
+    let id: String
+    let heading: String
+    let date: Date
+    let duration: Double
+}
+
 class MetadataManager {
     static let shared = MetadataManager()
     
@@ -24,24 +29,20 @@ class MetadataManager {
         return documentsURL.appendingPathComponent("video_logs_metadata.json")
     }
     
-    // Fetch all saved logs
     func loadLogs() -> [VideoLog] {
         guard let data = try? Data(contentsOf: fileURL),
               let logs = try? JSONDecoder().decode([VideoLog].self, from: data) else {
             return []
         }
-        // Sort newest first
         return logs.sorted { $0.date > $1.date }
     }
     
-    // Save a new log
     func saveLog(_ log: VideoLog) {
         var currentLogs = loadLogs()
         currentLogs.append(log)
         saveContext(logs: currentLogs)
     }
     
-    // Delete a log
     func deleteLog(id: String) {
         var currentLogs = loadLogs()
         currentLogs.removeAll { $0.id == id }
@@ -55,19 +56,11 @@ class MetadataManager {
     }
 }
 
-struct AudioLog: Codable {
-    let id: String
-    let heading: String
-    let date: Date
-    let duration: Double
-}
-
 class AudioMetadataManager {
     static let shared = AudioMetadataManager()
     
     private var fileURL: URL {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        // Save to a distinct JSON file
         return documentsURL.appendingPathComponent("audio_logs_metadata.json")
     }
     

@@ -10,7 +10,9 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     var titleToDisplay: String = ""
     var exerciseDuration: Int = 0
     var startTime: Date?
+    var accumulatedDuration: TimeInterval = 0.0
     var initialDAFDelay: Double = 0.0
+    private var currentPlaybackSpeed: Double = 1.0
 
     
     private let wordsPerHighlight = 3
@@ -35,26 +37,25 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     var recordedTranscript = ""
     var recordedSegments: [SFTranscriptionSegment] = []
     
-    // NEW: Background state management for long paragraphs
     private var totalSegmentsCaptured: [SFTranscriptionSegment] = []
 
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("DEBUG: DetailVC viewDidLoad")
-        print("DEBUG: textToDisplay: '\(textToDisplay.prefix(50))...'")
-        
-        if textView == nil {
-            print("ERROR: textView is NIL in DetailVC! Check Storyboard Outlet connection.")
-        } else {
-            print("DEBUG: textView is connected.")
-        }
         
         view.backgroundColor = UIColor(named: "bg")
-        textView?.backgroundColor = UIColor(named: "bg") // Use optional chaining just in case
+        textView?.backgroundColor = UIColor(named: "bg")
+        
+        self.selectedDAFDelay = self.initialDAFDelay
+        audioEngine.attach(delayNode)
+        
         setupTextView()
         setupPermissions()
         setupAudioSession()
+        
+        let format = audioEngine.inputNode.outputFormat(forBus: 0)
+        audioEngine.connect(audioEngine.inputNode, to: delayNode, format: format)
+        audioEngine.connect(delayNode, to: audioEngine.mainMixerNode, format: format)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -73,11 +74,18 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
-
+    func updatePlaybackSpeed() {
+        highlightDuration = max(minDuration, min(maxDuration, 1.7 / currentPlaybackSpeed))
+        
+        if isPlaying {
+            startTimer()
+        }
+    }
+    
     func setupTextView() {
         guard let textView = textView else { return }
         
-        let baseFont = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        let baseFont = UIFont.preferredFont(forTextStyle: .body)
         defaultAttributes = [.font: baseFont, .foregroundColor: UIColor.gray]
         highlightAttributes = [.font: baseFont, .foregroundColor: UIColor.black]
         
@@ -100,42 +108,28 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         return ranges
     }
     
-//    private func presentWorkoutSheet() {
-//        guard let sheetVC = storyboard?.instantiateViewController(withIdentifier: "ReadingControlsViewController") as? ReadingControlsViewController else { return }
-//        sheetVC.delegate = self
-//        self.sheetVC = sheetVC
-//        sheetVC.isModalInPresentation = true
-//        
-//        if let sheet = sheetVC.sheetPresentationController {
-//            sheet.detents = [
-//                .custom(identifier: .init("quarter")) { $0.maximumDetentValue * 0.25 },
-//                .custom(identifier: .init("half")) { $0.maximumDetentValue * 0.38 }
-//            ]
-//            sheet.selectedDetentIdentifier = .init("quarter")
-//            sheet.prefersGrabberVisible = true
-//            sheet.largestUndimmedDetentIdentifier = .init("quarter")
-//            sheet.preferredCornerRadius = 20
-//        }
-//        present(sheetVC, animated: true)
-//    }
-    
+    private var totalExerciseDuration: TimeInterval {
+        var total = accumulatedDuration
+        if isPlaying, let start = startTime {
+            total += Date().timeIntervalSince(start)
+        }
+        return total
+    }
+
     private func presentWorkoutSheet() {
         guard let sheetVC = storyboard?.instantiateViewController(withIdentifier: "ReadingControlsViewController") as? ReadingControlsViewController else { return }
         
         sheetVC.delegate = self
         self.sheetVC = sheetVC
         sheetVC.isModalInPresentation = true
+        sheetVC.currentDAFDelay = self.selectedDAFDelay
         
         if let sheet = sheetVC.sheetPresentationController {
-            sheet.delegate = self // Set the delegate to track manual dragging
+            sheet.delegate = self
             
             sheet.detents = [
-                .custom(identifier: .init("quarter")) { context in
-                    0.25 * context.maximumDetentValue
-                },
-                .custom(identifier: .init("half")) { context in
-                    0.38 * context.maximumDetentValue
-                }
+                .custom(identifier: .init("quarter")) { context in 0.18 * context.maximumDetentValue },
+                .custom(identifier: .init("half")) { context in 0.40 * context.maximumDetentValue }
             ]
             sheet.selectedDetentIdentifier = .init("quarter")
             sheet.prefersGrabberVisible = true
@@ -147,14 +141,13 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         sheetVC.view.layer.cornerRadius = 20
         sheetVC.view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         sheetVC.view.clipsToBounds = true
+        sheetVC.screenHeight = view.frame.height * 0.18
         
         present(sheetVC, animated: true) {
-            // Ensure initial state hides the Done button since we start at "quarter"
             sheetVC.toggleDoneButtonVisibility(isHidden: true)
         }
     }
 
-    
     func setupPermissions() {
         SFSpeechRecognizer.requestAuthorization { _ in }
     }
@@ -162,13 +155,12 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func setupAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetoothA2DP, .defaultToSpeaker])
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch { print("Audio Session Setup Error: \(error)") }
     }
     
     func startRecording() {
-        // Stop current task to clear internal buffers
         if recognitionTask != nil {
             recognitionTask?.cancel()
             recognitionTask = nil
@@ -181,22 +173,18 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         guard let recognitionRequest = recognitionRequest else { return }
         recognitionRequest.shouldReportPartialResults = true
         
-        // Start time only if it's a fresh start
         if startTime == nil { startTime = Date() }
         
         let format = inputNode.outputFormat(forBus: 0)
         
-        // Setup DAF
-        audioEngine.attach(delayNode)
         if selectedDAFDelay > 0 && areHeadphonesConnected() {
             delayNode.delayTime = selectedDAFDelay
             delayNode.wetDryMix = 100
+            audioEngine.mainMixerNode.outputVolume = 1.0
         } else {
             delayNode.wetDryMix = 0
+            audioEngine.mainMixerNode.outputVolume = 0.0
         }
-        
-        audioEngine.connect(inputNode, to: delayNode, format: format)
-        audioEngine.connect(delayNode, to: audioEngine.mainMixerNode, format: format)
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             guard let self = self else { return }
@@ -226,7 +214,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func areHeadphonesConnected() -> Bool {
         let route = AVAudioSession.sharedInstance().currentRoute
         return route.outputs.contains { port in
-            [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE].contains(port.portType)
+            [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE, .usbAudio].contains(port.portType)
         }
     }
     
@@ -253,24 +241,32 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             currentWordBlockIndex = 0
             highlightBlock(at: -1, isFinalReset: true)
         }
+        
         isPlaying = true
+        startTime = Date()
+        
         startRecording()
         startTimer()
         highlightBlock(at: currentWordBlockIndex)
         currentWordBlockIndex += 1
         
         notifySheetOfStateChange()
-        animateSheet(to: .init("quarter")) // Automatically collapse on play
+        animateSheet(to: .init("quarter"))
     }
 
     func pausePlayback() {
+        if let start = startTime {
+            accumulatedDuration += Date().timeIntervalSince(start)
+            startTime = nil
+        }
+        
         isPlaying = false
         stopRecording()
         highlightTimer?.invalidate()
         highlightTimer = nil
         
         notifySheetOfStateChange()
-        animateSheet(to: .init("half")) // Automatically expand on pause
+        animateSheet(to: .init("half"))
     }
     
     func decreaseSpeed() {
@@ -285,31 +281,33 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     func resetReading() {
         pausePlayback()
-        currentWordBlockIndex = 0
+        accumulatedDuration = 0.0
         startTime = nil
+        currentWordBlockIndex = 0
+        
         highlightBlock(at: -1, isFinalReset: true)
         textView.setContentOffset(.zero, animated: true)
         recordedTranscript = ""
         recordedSegments = []
+        
+        sheetVC?.resetTimer()
         notifySheetOfStateChange()
     }
     
     private func animateSheet(to detentIdentifier: UISheetPresentationController.Detent.Identifier) {
         guard let sheet = sheetVC?.sheetPresentationController else { return }
         
-        // Smoothly animate the detent change
         sheet.animateChanges {
             sheet.selectedDetentIdentifier = detentIdentifier
         }
         
-        // Update the Done button visibility based on the new state
         let isExpanded = (detentIdentifier == .init("half"))
         sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
     }
-    
+
     private func notifySheetOfStateChange() {
         let finished = currentWordBlockIndex * wordsPerHighlight >= wordRanges.count
-        sheetVC?.updatePlaybackState(isPlaying: isPlaying, hasFinished: finished)
+        sheetVC?.updatePlaybackState(isPlaying: isPlaying, hasFinished: finished, currentTime: totalExerciseDuration)
     }
     
     private func highlightBlock(at blockIndex: Int, isFinalReset: Bool = false) {
@@ -342,9 +340,8 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func didTapOpenButton() {
-        let duration = Date().timeIntervalSince(startTime ?? Date())
+        let duration = totalExerciseDuration
         
-        // ACCURACY FIX: Pass the recorded data to the optimized analyzer
         let jsonResult = StutterAnalyzer.analyze(
             reference: textToDisplay,
             transcript: recordedTranscript,
@@ -370,17 +367,23 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func logReadingActivity() {
-        let duration = Date().timeIntervalSince(startTime ?? Date())
-        self.exerciseDuration = Int(duration)
+        self.exerciseDuration = Int(totalExerciseDuration)
         LogManager.shared.addLog(exerciseName: titleToDisplay, source: .reading, exerciseDuration: self.exerciseDuration)
     }
 }
 
 extension DetailViewController: WorkoutSheetDelegate {
     func didTapPlayPause() { togglePlayPause() }
-    func didTapDecreaseSpeed() { decreaseSpeed() }
-    func didTapIncreaseSpeed() { increaseSpeed() }
-    func didTapReset() { resetReading() }
+    
+    func didChangeSpeed(_ speed: Double) {
+            currentPlaybackSpeed = speed
+            updatePlaybackSpeed()
+        }
+    
+    func didTapReset() {
+        resetReading()
+    }
+    
     func didTapShowResult() {
         pausePlayback()
         self.dismiss(animated: true) { self.didTapOpenButton() }
@@ -388,11 +391,13 @@ extension DetailViewController: WorkoutSheetDelegate {
     
     func didUpdateDAFDelay(_ delay: Double) {
         self.selectedDAFDelay = delay
-        if areHeadphonesConnected() {
+        if areHeadphonesConnected() && delay > 0 {
             delayNode.delayTime = delay
-            delayNode.wetDryMix = (delay > 0) ? 100 : 0
+            delayNode.wetDryMix = 100
+            audioEngine.mainMixerNode.outputVolume = 1.0
         } else {
             delayNode.wetDryMix = 0
+            audioEngine.mainMixerNode.outputVolume = 0.0
         }
     }
 }
@@ -400,22 +405,30 @@ extension DetailViewController: WorkoutSheetDelegate {
 extension DetailViewController: UISheetPresentationControllerDelegate {
     func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheetPresentationController: UISheetPresentationController) {
         
-        // Determine if the sheet was dragged to the expanded "half" state
         let isExpanded = sheetPresentationController.selectedDetentIdentifier == .init("half")
-        
-        // 1. Update the Done button visibility based on the new size
         sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
         
-        // 2. Sync the playback state with the modal's physical position
         if isExpanded {
-            // Modal was dragged UP: Pause the exercise if it's currently running
             if isPlaying {
-                pausePlayback()
+                isPlaying = false
+                stopRecording()
+                highlightTimer?.invalidate()
+                highlightTimer = nil
+                if let start = startTime {
+                    accumulatedDuration += Date().timeIntervalSince(start)
+                    startTime = nil
+                }
+                notifySheetOfStateChange()
             }
         } else {
-            // Modal was dragged DOWN: Resume the exercise if it's currently paused
             if !isPlaying {
-                startPlayback()
+                isPlaying = true
+                startTime = Date()
+                startRecording()
+                startTimer()
+                highlightBlock(at: currentWordBlockIndex)
+                currentWordBlockIndex += 1
+                notifySheetOfStateChange()
             }
         }
     }

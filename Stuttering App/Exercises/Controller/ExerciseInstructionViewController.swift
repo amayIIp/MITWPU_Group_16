@@ -28,6 +28,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
 
     @IBOutlet weak var stepLabel: UILabel!
     @IBOutlet weak var stepImageView: UIImageView!
+    @IBOutlet weak var stepImageViewView: UIView!
     @IBOutlet weak var stepTextLabel: UILabel!
     @IBOutlet weak var targetWordLabel: UILabel!
     @IBOutlet weak var progressView: ProgressBarView!
@@ -46,6 +47,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         setupDesign()
         loadExerciseData()
         setupInitialState()
+        
     }
     
     private func setupAnimationController() {
@@ -63,9 +65,9 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         targetWordLabel.font = .systemFont(ofSize: 48, weight: .bold)
         targetWordLabel.textColor = UIColor(named: "ButtonTheme")
         
-        stepLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        //stepLabel.font = .systemFont(ofSize: 20, weight: .bold)
         
-        stepTextLabel.font = .systemFont(ofSize: 17, weight: .medium)
+        //stepTextLabel.font = .systemFont(ofSize: 17, weight: .medium)
         stepTextLabel.numberOfLines = 0
         stepTextLabel.textAlignment = .center
         
@@ -90,6 +92,10 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     private func setupInitialState() {
         prevButton.isHidden = true
         prevButton.alpha = 0
+        
+        if exerciseName == "Story Cubes" {
+            AudioSessionManager.shared.prewarmRecordSession()
+        }
     }
 
     private func loadExerciseData() {
@@ -104,8 +110,6 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     }
     
     private func loadWordData(from exercise: LibraryExercises) {
-        // FIXED: Try to fetch a random word for ALL exercise types, fallback to Example.
-        
         let targets = exercise.dataBank.targets
         let categoryKeys = targets.keys.sorted()
         
@@ -114,7 +118,6 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
            let randomWord = words.randomElement() {
             currentWord = randomWord
         } else {
-            // Fallback to example demonstration if dataBank is empty
             currentWord = exercise.exampleDemonstration.first?.displayText ?? "Ready"
         }
     }
@@ -131,7 +134,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         let progress = CGFloat(currentStepNumber) / CGFloat(steps.count)
         progressView.setProgress(progress, animated: true)
         
-        nextButton.configuration?.title = (index == steps.count - 1) ? "Complete" : "Next"
+        nextButton.configuration?.title = (index == steps.count - 1) ? "Start" : "Next"
         
         if let template = exerciseTemplate {
             handleAnimatedExercise(template: template, stepNumber: currentStepNumber, step: step)
@@ -180,13 +183,11 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         }
     }
     
-    // MARK: - Exercise Handlers (FIXED)
     private func handleTextOnlyExercise(step: ExerciseStep) {
         guard let _ = currentExercise else { return }
         
         updateStackLayout(imageViewHidden: true, labelHidden: false)
 
-        // FIXED: Use loaded currentWord
         targetWordLabel.attributedText = formatToolkitSentence(currentWord)
         
         self.targetWordLabel.isHidden = false
@@ -212,10 +213,8 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         if let stepConfig = template.stepConfigs.first(where: { $0.stepNumber == stepNumber }) {
             
             if stepConfig.showImage {
-                // Show image with optional text
                 showImage(step.image)
                 
-                // Check if it's a sentence or single word
                 if currentWord.contains("'") || currentWord.contains(" ") {
                     targetWordLabel.attributedText = formatToolkitSentence(currentWord)
                 } else {
@@ -230,7 +229,6 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
                 updateStackLayout(imageViewHidden: false, labelHidden: !shouldShowLabel)
                 
             } else {
-                // Show animated syllable text
                 updateStackLayout(imageViewHidden: true)
                 animationController.startAnimation(for: stepConfig, word: currentWord)
                 if stepConfig.autoAdvance { nextButton.isEnabled = false }
@@ -275,11 +273,11 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     private func updateStackLayout(imageViewHidden: Bool, labelHidden: Bool? = nil) {
         
         if imageViewHidden {
-            self.imageContainerStackView.isHidden = true
-            self.stepImageView.isHidden = true
+            //self.imageContainerStackView.isHidden = true
+            self.stepImageViewView.isHidden = true
         } else {
-            self.imageContainerStackView.isHidden = false
-            self.stepImageView.isHidden = false
+            //self.imageContainerStackView.isHidden = false
+            self.stepImageViewView.isHidden = false
         }
         
         if let labelHide = labelHidden {
@@ -288,7 +286,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         }
         
         UIView.animate(withDuration: 0.3) {
-            self.imageContainerStackView.alpha = imageViewHidden ? 0.0 : 1.0
+            //self.imageContainerStackView.alpha = imageViewHidden ? 0.0 : 1.0
             self.contentStackView.layoutIfNeeded()
         }
     }
@@ -342,17 +340,12 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     }
     
     func generateVideoDiaryTopics() {
-        // 1. Fetch the Video Diary exercise using the pristine ExerciseManager
         guard let videoDiaryExercise = ExerciseManager.fetchExercise(title: exerciseName) else { return }
         
-        // 2. Extract and flatten all category arrays (daily_life, opinions, reflection)
         let allPrompts = videoDiaryExercise.dataBank.targets.values.flatMap { $0 }
-        
-        // 3. Select a truly random prompt from the entire combined pool
         if let randomPrompt = allPrompts.randomElement() {
             targetWord = randomPrompt
         } else {
-            // Fallback to the JSON example demonstration if the data bank is empty
             targetWord = videoDiaryExercise.exampleDemonstration.first?.displayText ?? "Describe something that made you smile today."
         }
         
@@ -361,12 +354,10 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     func generateStoryCues() {
         guard let voiceDiaryExercise = ExerciseManager.fetchExercise(title: "Story Cubes") else { return }
         
-        // Flatten all available prompts from the data bank
         let allPrompts = voiceDiaryExercise.dataBank.targets.values.flatMap { $0 }
         
         var selectedWords: [String] = []
         
-        // Ensure we have enough prompts to select from; otherwise, fallback to defaults or available prompts
         if allPrompts.count >= 4 {
             // Select 4 random, unique words
             // We shuffle the array and prefix 4 to ensure uniqueness if that's desired.
