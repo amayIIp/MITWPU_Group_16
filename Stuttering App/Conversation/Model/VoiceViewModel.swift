@@ -123,21 +123,43 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     
     // MARK: - AI / Language Model
     
-    @MainActor
     func prepareModel() async {
         let model = SystemLanguageModel.default
+        
         let personaInstructions = """
-        You are a warm, supportive conversation partner helping someone practice speaking. 
-        Keep responses very short (1-2 sentences maximum). 
-        Be encouraging and natural. 
-        Never correct grammar or pronunciation - just have a friendly conversation.
-        Ask simple, open-ended questions to keep the conversation flowing.
+        You are a friendly and supportive speaking partner helping a user improve their spoken English.
+        Your job is to dynamically adapt the conversation style based on what the user says.
+
+        Rules:
+        - Keep responses very short (1–2 sentences).
+        - Speak in simple, clear English.
+        - Always ask ONE relevant follow-up question.
+        - Keep the conversation natural and engaging.
+
+        Conversation behavior:
+        - If the user gives a short answer, encourage them to expand.
+        - If the user talks about job, career, or interview → switch to interview style.
+        - If the user tells or asks for stories → switch to storytelling style.
+        - If the user talks about daily routine → switch to daily life conversation.
+        - Otherwise → continue casual conversation.
+        - Gradually increase complexity as the conversation continues.
+        - Avoid repeating the same type of questions.
+
+        Important:
+        - Do NOT correct grammar explicitly.
+        - Do NOT give long explanations.
+        - Focus on helping the user speak more.
+
+        Tone:
+        - Friendly, patient, and slightly curious.
         """
         
         if model.availability == .available {
             self.session = LanguageModelSession(model: model, instructions: personaInstructions)
         } else {
-            delegate?.didEncounterError("AI model is not available on this device.")
+            await MainActor.run {
+                self.delegate?.didEncounterError("AI model is not available on this device.")
+            }
         }
     }
     
@@ -161,10 +183,13 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             self.state = .speaking
             
             self.conversationHistory.append((speaker: "AI", text: text))
+            if self.conversationHistory.count > 12 {
+                self.conversationHistory.removeFirst()
+            }
             self.delegate?.addMessageToConversation(speaker: "AI", text: text)
             
             let utterance = AVSpeechUtterance(string: text)
-            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+            utterance.voice = AVSpeechSynthesisVoice(language: "en-IN")
             utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
             utterance.pitchMultiplier = 1.0
             utterance.volume = 1.0
@@ -361,23 +386,45 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         
         let userInput = currentBufferText
         conversationHistory.append((speaker: "User", text: userInput))
+
+        if conversationHistory.count > 12 {
+            conversationHistory.removeFirst()
+        }
         
         delegate?.addMessageToConversation(speaker: "User", text: userInput)
         state = .thinking
         
-        Task { @MainActor in
+        Task {
             guard let session = self.session else {
-                self.delegate?.didEncounterError("AI session not initialized")
-                self.state = .idle
+                await MainActor.run {
+                    self.delegate?.didEncounterError("AI session not initialized")
+                    self.state = .idle
+                }
                 return
             }
             
             do {
-                let response = try await session.respond(to: userInput)
+                
+                let context = self.conversationHistory
+                    .suffix(6)
+                    .map { "\($0.speaker): \($0.text)" }
+                    .joined(separator: "\n")
+                
+                let prompt = context + "\nUser: \(userInput)"
+                
+                
+                let response = try await session.respond(to: prompt)
+                
                 let responseContent = response.content
-                self.speak(responseContent)
+                
+                await MainActor.run {
+                    self.speak(responseContent)
+                }
+                
             } catch {
-                self.speak("Sorry, could you say that again?")
+                await MainActor.run {
+                    self.speak("Sorry, could you say that again?")
+                }
             }
         }
     }

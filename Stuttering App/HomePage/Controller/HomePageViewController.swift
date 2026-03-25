@@ -405,10 +405,15 @@ class HomePageViewController: UIViewController {
     }
     
     @IBAction func dailySummaryTapped(_ sender: UIButton) {
-        let storyboard = UIStoryboard(name: "Summary", bundle: nil)
-        
-        if let detailVC = storyboard.instantiateViewController(withIdentifier: "SummaryViewController") as? SummaryViewController {
-            self.navigationController?.pushViewController(detailVC, animated: true)
+        if AppState.isDailyProgressCompleted {
+            let storyboard = UIStoryboard(name: "Summary", bundle: nil)
+            if let detailVC = storyboard.instantiateViewController(withIdentifier: "SummaryViewController") as? SummaryViewController {
+                self.navigationController?.pushViewController(detailVC, animated: true)
+            }
+        } else {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "DailyProgressOnboarding")
+            self.navigationController?.pushViewController(onboardingVC, animated: true)
         }
     }
     
@@ -433,13 +438,11 @@ class HomePageViewController: UIViewController {
     }
 
     @IBAction func warmUpTapped(_ sender: UIButton) {
-        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        let targetID = AppState.isExercisesCompleted ? "WarmUpListViewController" : "WarmUpOnboarding"
         
-        if let detailVC = storyboard.instantiateViewController(withIdentifier: "WarmUpListViewController") as? WarmUpListViewController {
-            
-            detailVC.title = "WarmUp"
-            self.navigationController?.pushViewController(detailVC, animated: true)
-        }
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        let destinationVC = storyboard.instantiateViewController(withIdentifier: targetID)
+        self.navigationController?.pushViewController(destinationVC, animated: true)
     }
 
 }
