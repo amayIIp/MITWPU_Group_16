@@ -217,11 +217,18 @@ class LastOnboardingViewController: UIViewController {
     }
     
     @IBAction func getStartedButtonTapped(_ sender: UIButton) {
+        // 1. Initialize guest session if no account session exists
+        if !SessionManager.shared.isAccountMode {
+            SessionManager.shared.startGuestSession()
+        }
+        
+        // 2. Mark onboarding and login as complete
         AppState.isOnboardingCompleted = true
-        AppState.isLoginCompleted = true // CRITICAL: Guest modes must flag LoginCompleted or SceneDelegate traps them on restart!
+        AppState.isLoginCompleted = true
         
         AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
         
+        // 3. Fetch ID (which will now safely return the deviceId for guests)
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
         var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
         profile.isOnboardingCompleted = true
@@ -238,12 +245,12 @@ class LastOnboardingViewController: UIViewController {
         let logic = LogicMaker()
         logic.checkForNewDay()
             
+        // 4. Transition to Home View Controller
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
 
         guard let window = view.window else { return }
-
-        window.backgroundColor = .systemBackground 
+        window.backgroundColor = .systemBackground
 
         UIView.animate(withDuration: 0.3, animations: {
             window.rootViewController?.view.alpha = 0

@@ -37,13 +37,157 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Warm Up" largeTitleDisplayMode="always" id="LSF-Qn-j1N"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics"/>
                     <connections>
                         <outlet property="tableView" destination="xGO-2d-mM1" id="gbn-x6-44F"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="772-fk-9bV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4933.5877862595416" y="1112.6760563380283"/>
+            <point key="canvasLocation" x="6731" y="82"/>
+        </scene>
+        <!--Daily Challenges-->
+        <scene sceneID="eGI-DW-B3P">
+            <objects>
+                <viewController storyboardIdentifier="DailyChallengesOnboarding" id="HNp-ad-09k" customClass="DailyChallengesOnboarding" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="qa6-bh-MD9">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Personalized tasks to build your speech fluency and confidence, one day at a time." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Joh-YC-k55">
+                                <rect key="frame" x="16" y="172" width="361" height="40.666666666666657"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="29" translatesAutoresizingMaskIntoConstraints="NO" id="6oK-a3-7fU">
+                                <rect key="frame" x="20" y="244.66666666666663" width="353" height="270"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Xow-Ko-0iC">
+                                        <rect key="frame" x="0.0" y="0.0" width="353" height="70.666666666666671"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="98t-FQ-yR4">
+                                                <rect key="frame" x="0.0" y="3" width="35.333333333333336" height="33.666666666666671"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="MUN-4z-kqK">
+                                                <rect key="frame" x="43.333333333333343" y="0.0" width="309.66666666666663" height="70.666666666666671"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Qk-vy-eKl">
+                                                        <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Challenges adapt to your stuttering level for effective, stress-free practice." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qrf-UM-Kin">
+                                                        <rect key="frame" x="0.0" y="30.000000000000025" width="309.66666666666669" height="40.666666666666657"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="dl3-2H-2sP">
+                                        <rect key="frame" x="0.0" y="99.666666666666657" width="353" height="70.666666666666657"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="zXy-eM-I7A">
+                                                <rect key="frame" x="0.0" y="3" width="35.333333333333336" height="33.666666666666671"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="Dvl-0y-p3o">
+                                                <rect key="frame" x="43.333333333333343" y="0.0" width="309.66666666666663" height="70.666666666666671"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fHR-6w-LnC">
+                                                        <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Challenges adapt to your stuttering level for effective, stress-free practice." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="obR-lZ-m2f">
+                                                        <rect key="frame" x="0.0" y="29.999999999999996" width="309.66666666666669" height="40.666666666666657"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="4rp-7a-K1W">
+                                        <rect key="frame" x="0.0" y="199.33333333333334" width="353" height="70.666666666666657"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="csF-6x-UW9">
+                                                <rect key="frame" x="0.0" y="3" width="35.333333333333336" height="33.666666666666671"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="YfX-vU-Upe">
+                                                <rect key="frame" x="43.333333333333343" y="0.0" width="309.66666666666663" height="70.666666666666671"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="n9I-3u-BMc">
+                                                        <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Challenges adapt to your stuttering level for effective, stress-free practice." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Fx-sw-oJ9">
+                                                        <rect key="frame" x="0.0" y="29.999999999999996" width="309.66666666666669" height="40.666666666666657"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MZ7-zW-a5m">
+                                <rect key="frame" x="32" y="724" width="329" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="ROC-wp-pai"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="gray" title="Continue" cornerStyle="capsule">
+                                    <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
+                                    <color key="baseForegroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="proceedToNextScreenTapped:" destination="HNp-ad-09k" eventType="touchUpInside" id="ego-K1-RfN"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Progress is synced with your fluency profile. Manage goals in Settings." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZYQ-VI-aSM">
+                                <rect key="frame" x="44" y="682.33333333333337" width="305" height="33.666666666666629"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="SHR-um-nm3"/>
+                        <color key="backgroundColor" name="bg"/>
+                        <constraints>
+                            <constraint firstItem="SHR-um-nm3" firstAttribute="trailing" secondItem="MZ7-zW-a5m" secondAttribute="trailing" constant="32" id="BR3-bi-2bv"/>
+                            <constraint firstItem="6oK-a3-7fU" firstAttribute="leading" secondItem="SHR-um-nm3" secondAttribute="leading" constant="20" id="DW4-pl-5PO"/>
+                            <constraint firstItem="MZ7-zW-a5m" firstAttribute="top" secondItem="ZYQ-VI-aSM" secondAttribute="bottom" constant="8" id="E0G-gN-6GJ"/>
+                            <constraint firstItem="6oK-a3-7fU" firstAttribute="top" secondItem="Joh-YC-k55" secondAttribute="bottom" constant="32" id="EEY-Ij-AdV"/>
+                            <constraint firstItem="ZYQ-VI-aSM" firstAttribute="leading" secondItem="SHR-um-nm3" secondAttribute="leading" constant="44" id="IkD-m2-vRI"/>
+                            <constraint firstItem="MZ7-zW-a5m" firstAttribute="leading" secondItem="SHR-um-nm3" secondAttribute="leading" constant="32" id="LdR-6j-NPL"/>
+                            <constraint firstItem="Joh-YC-k55" firstAttribute="top" secondItem="SHR-um-nm3" secondAttribute="top" id="Ng2-wq-W5H"/>
+                            <constraint firstItem="SHR-um-nm3" firstAttribute="trailing" secondItem="ZYQ-VI-aSM" secondAttribute="trailing" constant="44" id="YFP-YA-YCw"/>
+                            <constraint firstItem="SHR-um-nm3" firstAttribute="trailing" secondItem="Joh-YC-k55" secondAttribute="trailing" constant="16" id="bbF-pT-O8C"/>
+                            <constraint firstItem="SHR-um-nm3" firstAttribute="bottom" secondItem="MZ7-zW-a5m" secondAttribute="bottom" constant="10" id="fBl-tW-3gj"/>
+                            <constraint firstAttribute="trailing" secondItem="6oK-a3-7fU" secondAttribute="trailing" constant="20" id="mPP-cM-yKW"/>
+                            <constraint firstItem="Joh-YC-k55" firstAttribute="leading" secondItem="SHR-um-nm3" secondAttribute="leading" constant="16" id="vDL-3Y-yVR"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Daily Challenges" id="JlE-PV-YYY"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wgq-pY-Wbq" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6027" y="806"/>
         </scene>
         <!--Daily Tasks-->
         <scene sceneID="20K-K0-BxH">
@@ -72,6 +216,7 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Daily Tasks" largeTitleDisplayMode="always" id="WE0-S1-kgs"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics"/>
                     <connections>
                         <outlet property="tableView" destination="1WP-KL-wP3" id="4ZO-0F-4px"/>
                     </connections>
@@ -938,7 +1083,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yY8-sB-Iq3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="8216" y="67"/>
+            <point key="canvasLocation" x="4934" y="-652"/>
         </scene>
         <!--Home-->
         <scene sceneID="7Ih-Sj-yKu">
@@ -959,6 +1104,146 @@
             </objects>
             <point key="canvasLocation" x="3830" y="82"/>
         </scene>
+        <!--Daily Progress-->
+        <scene sceneID="XTc-Va-tVe">
+            <objects>
+                <viewController id="bap-Nw-ANa" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="fQE-LS-cNS">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Personalized tasks to build your speech fluency and confidence, one day at a time." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cMG-br-xGj">
+                                <rect key="frame" x="16" y="172" width="361" height="40.666666666666657"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="29" translatesAutoresizingMaskIntoConstraints="NO" id="sv3-gy-2S5">
+                                <rect key="frame" x="20" y="244.66666666666663" width="353" height="270"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="zAs-jt-bxW">
+                                        <rect key="frame" x="0.0" y="0.0" width="353" height="70.666666666666671"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Pfu-GX-d5O">
+                                                <rect key="frame" x="0.0" y="3" width="35.333333333333336" height="33.666666666666671"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="gAh-89-BOS">
+                                                <rect key="frame" x="43.333333333333343" y="0.0" width="309.66666666666663" height="70.666666666666671"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JGv-4i-gJV">
+                                                        <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Challenges adapt to your stuttering level for effective, stress-free practice." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IOi-cS-vj7">
+                                                        <rect key="frame" x="0.0" y="30.000000000000025" width="309.66666666666669" height="40.666666666666657"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="TiU-fT-SJm">
+                                        <rect key="frame" x="0.0" y="99.666666666666657" width="353" height="70.666666666666657"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="2eZ-Uq-T3T">
+                                                <rect key="frame" x="0.0" y="3" width="35.333333333333336" height="33.666666666666671"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="kbL-Yq-0AL">
+                                                <rect key="frame" x="43.333333333333343" y="0.0" width="309.66666666666663" height="70.666666666666671"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1n9-um-cnT">
+                                                        <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Challenges adapt to your stuttering level for effective, stress-free practice." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EMQ-xl-US0">
+                                                        <rect key="frame" x="0.0" y="29.999999999999996" width="309.66666666666669" height="40.666666666666657"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="vNl-ap-zil">
+                                        <rect key="frame" x="0.0" y="199.33333333333334" width="353" height="70.666666666666657"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Ujh-s8-zdT">
+                                                <rect key="frame" x="0.0" y="3" width="35.333333333333336" height="33.666666666666671"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                            </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="ypO-v4-zKC">
+                                                <rect key="frame" x="43.333333333333343" y="0.0" width="309.66666666666663" height="70.666666666666671"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yvf-fU-4tR">
+                                                        <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Challenges adapt to your stuttering level for effective, stress-free practice." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7xf-Xl-pLY">
+                                                        <rect key="frame" x="0.0" y="29.999999999999996" width="309.66666666666669" height="40.666666666666657"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yVf-Xp-fY6">
+                                <rect key="frame" x="32" y="724" width="329" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="rxu-Kd-C8M"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="gray" title="Continue" cornerStyle="capsule">
+                                    <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
+                                    <color key="baseForegroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                </buttonConfiguration>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Progress is synced with your fluency profile. Manage goals in Settings." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AOF-EB-yeL">
+                                <rect key="frame" x="44" y="682.33333333333337" width="305" height="33.666666666666629"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="n0m-wX-4fE"/>
+                        <color key="backgroundColor" name="bg"/>
+                        <constraints>
+                            <constraint firstItem="yVf-Xp-fY6" firstAttribute="leading" secondItem="n0m-wX-4fE" secondAttribute="leading" constant="32" id="0kj-ga-i4G"/>
+                            <constraint firstItem="sv3-gy-2S5" firstAttribute="top" secondItem="cMG-br-xGj" secondAttribute="bottom" constant="32" id="Ka8-pl-yRd"/>
+                            <constraint firstItem="n0m-wX-4fE" firstAttribute="bottom" secondItem="yVf-Xp-fY6" secondAttribute="bottom" constant="10" id="Oeu-ME-Mgs"/>
+                            <constraint firstItem="n0m-wX-4fE" firstAttribute="trailing" secondItem="cMG-br-xGj" secondAttribute="trailing" constant="16" id="SrV-Ib-6rB"/>
+                            <constraint firstAttribute="trailing" secondItem="sv3-gy-2S5" secondAttribute="trailing" constant="20" id="Uig-Zx-HGJ"/>
+                            <constraint firstItem="sv3-gy-2S5" firstAttribute="leading" secondItem="n0m-wX-4fE" secondAttribute="leading" constant="20" id="gLr-xq-IQC"/>
+                            <constraint firstItem="yVf-Xp-fY6" firstAttribute="top" secondItem="AOF-EB-yeL" secondAttribute="bottom" constant="8" id="ndT-VI-yhU"/>
+                            <constraint firstItem="AOF-EB-yeL" firstAttribute="leading" secondItem="n0m-wX-4fE" secondAttribute="leading" constant="44" id="ooX-vT-LXJ"/>
+                            <constraint firstItem="cMG-br-xGj" firstAttribute="leading" secondItem="n0m-wX-4fE" secondAttribute="leading" constant="16" id="s05-Dh-9A2"/>
+                            <constraint firstItem="n0m-wX-4fE" firstAttribute="trailing" secondItem="AOF-EB-yeL" secondAttribute="trailing" constant="44" id="skZ-eE-TiN"/>
+                            <constraint firstItem="n0m-wX-4fE" firstAttribute="trailing" secondItem="yVf-Xp-fY6" secondAttribute="trailing" constant="32" id="t5b-52-wKQ"/>
+                            <constraint firstItem="cMG-br-xGj" firstAttribute="top" secondItem="n0m-wX-4fE" secondAttribute="top" id="yxI-fW-Gzx"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Daily Progress" id="mur-Wz-VWB"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Wk8-1y-xVg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6731" y="810"/>
+        </scene>
     </scenes>
     <resources>
         <image name="FirstStep" width="500" height="500"/>
@@ -968,6 +1253,7 @@
         <image name="flame.fill" catalog="system" width="106" height="128"/>
         <image name="house" catalog="system" width="128" height="104"/>
         <image name="person.circle" catalog="system" width="128" height="123"/>
+        <image name="person.fill" catalog="system" width="128" height="120"/>
         <image name="sparkles" catalog="system" width="115" height="128"/>
         <namedColor name="ButtonTheme">
             <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
@@ -976,22 +1262,22 @@
             <color red="0.91764705882352937" green="0.94901960784313721" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.53333333333333333" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGray2Color">
-            <color red="0.68235294120000001" green="0.68235294120000001" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemOrangeColor">
-            <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.55294117647058827" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
