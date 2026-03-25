@@ -61,60 +61,68 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="29" translatesAutoresizingMaskIntoConstraints="NO" id="6oK-a3-7fU">
-                                <rect key="frame" x="20" y="244.66666666666663" width="353" height="211"/>
+                                <rect key="frame" x="20" y="244.66666666666663" width="353" height="212.33333333333337"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Xow-Ko-0iC">
-                                        <rect key="frame" x="0.0" y="0.0" width="353" height="91"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="Xow-Ko-0iC">
+                                        <rect key="frame" x="0.0" y="0.0" width="353" height="91.666666666666671"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="98t-FQ-yR4">
-                                                <rect key="frame" x="0.0" y="3" width="35.333333333333336" height="33.666666666666671"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="98t-FQ-yR4">
+                                                <rect key="frame" x="0.0" y="3.0000000000000036" width="35" height="31.333333333333325"/>
                                                 <color key="tintColor" name="ButtonTheme"/>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="35" id="oIX-lR-S2F"/>
+                                                </constraints>
+                                                <imageReference key="image" image="person.fill" catalog="system" symbolScale="medium"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="31"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="MUN-4z-kqK">
-                                                <rect key="frame" x="43.333333333333343" y="0.0" width="309.66666666666663" height="91"/>
+                                                <rect key="frame" x="49" y="0.0" width="304" height="91.666666666666671"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Qk-vy-eKl">
-                                                        <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
-                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="117.33333333333333" height="20.333333333333332"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Challenges are curated based on your current stuttering level and performance." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qrf-UM-Kin">
-                                                        <rect key="frame" x="0.0" y="30.000000000000028" width="292.66666666666669" height="61"/>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                        <nil key="textColor"/>
+                                                        <rect key="frame" x="0.0" y="27.333333333333343" width="292.66666666666669" height="64.333333333333329"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="dl3-2H-2sP">
-                                        <rect key="frame" x="0.0" y="120.00000000000003" width="353" height="91"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="dl3-2H-2sP">
+                                        <rect key="frame" x="0.0" y="120.66666666666666" width="353" height="91.666666666666657"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="flame.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="zXy-eM-I7A">
-                                                <rect key="frame" x="0.0" y="-1.6666666666666679" width="33" height="39.666666666666671"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="zXy-eM-I7A">
+                                                <rect key="frame" x="0.0" y="-1.3333333333333321" width="35" height="37"/>
                                                 <color key="tintColor" name="ButtonTheme"/>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="35" id="l7t-Mz-lZP"/>
+                                                </constraints>
+                                                <imageReference key="image" image="flame.fill" catalog="system" symbolScale="medium"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="31"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="Dvl-0y-p3o">
-                                                <rect key="frame" x="41" y="0.0" width="312" height="91"/>
+                                                <rect key="frame" x="49" y="0.0" width="304" height="91.666666666666671"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fHR-6w-LnC">
-                                                        <rect key="frame" x="0.0" y="0.0" width="158.66666666666666" height="23"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="142.66666666666666" height="20.333333333333332"/>
                                                         <string key="text">Build Consistency
 </string>
-                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="obR-lZ-m2f">
-                                                        <rect key="frame" x="0.0" y="30" width="283.66666666666669" height="61"/>
+                                                        <rect key="frame" x="0.0" y="27.333333333333371" width="283.66666666666669" height="64.333333333333329"/>
                                                         <string key="text">Complete daily tasks to maintain and grow your streak.
 </string>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                        <nil key="textColor"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
@@ -1092,16 +1100,16 @@
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="29" translatesAutoresizingMaskIntoConstraints="NO" id="sv3-gy-2S5">
                                 <rect key="frame" x="20" y="244.66666666666663" width="353" height="270"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="zAs-jt-bxW">
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="zAs-jt-bxW">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="70.666666666666671"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="scope" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Pfu-GX-d5O">
-                                                <rect key="frame" x="0.0" y="-2.3333333333333393" width="45.333333333333336" height="44.000000000000014"/>
+                                                <rect key="frame" x="0.0" y="-2" width="42.333333333333336" height="41"/>
                                                 <color key="tintColor" name="ButtonTheme"/>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="31"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="gAh-89-BOS">
-                                                <rect key="frame" x="53.333333333333343" y="0.0" width="299.66666666666663" height="70.666666666666671"/>
+                                                <rect key="frame" x="56.333333333333343" y="0.0" width="296.66666666666663" height="70.666666666666671"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Daily Goals Tracking" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JGv-4i-gJV">
                                                         <rect key="frame" x="0.0" y="0.0" width="179.33333333333334" height="23"/>
@@ -1119,16 +1127,16 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="TiU-fT-SJm">
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="TiU-fT-SJm">
                                         <rect key="frame" x="0.0" y="99.666666666666657" width="353" height="70.666666666666657"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="chart.line.uptrend.xyaxis" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="2eZ-Uq-T3T">
-                                                <rect key="frame" x="0.0" y="2.3333333333333321" width="42.666666666666664" height="34.666666666666671"/>
+                                                <rect key="frame" x="0.0" y="2.6666666666666679" width="40.666666666666664" height="32"/>
                                                 <color key="tintColor" name="ButtonTheme"/>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="31"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="kbL-Yq-0AL">
-                                                <rect key="frame" x="50.666666666666657" y="0.0" width="302.33333333333337" height="70.666666666666671"/>
+                                                <rect key="frame" x="54.666666666666657" y="0.0" width="298.33333333333337" height="70.666666666666671"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Performance Metrics" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1n9-um-cnT">
                                                         <rect key="frame" x="0.0" y="0.0" width="185.66666666666666" height="23"/>
@@ -1146,16 +1154,16 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="vNl-ap-zil">
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="vNl-ap-zil">
                                         <rect key="frame" x="0.0" y="199.33333333333334" width="353" height="70.666666666666657"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="calendar" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Ujh-s8-zdT">
-                                                <rect key="frame" x="0.0" y="2.6666666666666643" width="40.333333333333336" height="34.333333333333343"/>
+                                                <rect key="frame" x="0.0" y="2.6666666666666679" width="38.333333333333336" height="32"/>
                                                 <color key="tintColor" name="ButtonTheme"/>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="31"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="ypO-v4-zKC">
-                                                <rect key="frame" x="48.333333333333343" y="0.0" width="304.66666666666663" height="70.666666666666671"/>
+                                                <rect key="frame" x="52.333333333333343" y="0.0" width="300.66666666666663" height="70.666666666666671"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Day-Wise Breakdown" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yvf-fU-4tR">
                                                         <rect key="frame" x="0.0" y="0.0" width="188.66666666666666" height="23"/>
@@ -1190,7 +1198,7 @@
                                     <action selector="proceedToNextScreenTapped:" destination="bap-Nw-ANa" eventType="touchUpInside" id="dpO-fY6-pNs"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Progress is synced with your  profile. Manage goals in Settings." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AOF-EB-yeL">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Progress is synced with your profile. Manage goals in Settings." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AOF-EB-yeL">
                                 <rect key="frame" x="44" y="682.33333333333337" width="305" height="33.666666666666629"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -1214,12 +1222,12 @@
                             <constraint firstItem="cMG-br-xGj" firstAttribute="top" secondItem="n0m-wX-4fE" secondAttribute="top" id="yxI-fW-Gzx"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Daily Progress" id="mur-Wz-VWB"/>
+                    <navigationItem key="navigationItem" title="Daily Progress" largeTitleDisplayMode="never" id="mur-Wz-VWB"/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Wk8-1y-xVg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6731" y="810"/>
+            <point key="canvasLocation" x="6731" y="811"/>
         </scene>
         <!--Pre event warmup-->
         <scene sceneID="DQy-ge-S2Y">
@@ -1238,16 +1246,16 @@
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="29" translatesAutoresizingMaskIntoConstraints="NO" id="Wcn-7z-Lff">
                                 <rect key="frame" x="20" y="265" width="353" height="211"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="fjE-X8-jZn">
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="fjE-X8-jZn">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="91"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="microphone.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="R1k-JR-cbP">
-                                                <rect key="frame" x="0.0" y="-1.0000000000000036" width="33.333333333333336" height="39"/>
+                                                <rect key="frame" x="0.0" y="-0.3333333333333357" width="31" height="36.333333333333336"/>
                                                 <color key="tintColor" name="ButtonTheme"/>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="31"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="K4r-9U-gg0">
-                                                <rect key="frame" x="41.333333333333343" y="0.0" width="311.66666666666663" height="91"/>
+                                                <rect key="frame" x="45" y="0.0" width="308" height="91"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Voice Preparation" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="87d-a1-5Od">
                                                         <rect key="frame" x="0.0" y="0.0" width="156.33333333333334" height="23"/>
@@ -1265,16 +1273,16 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Mk9-g3-JZM">
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="Mk9-g3-JZM">
                                         <rect key="frame" x="0.0" y="120" width="353" height="91"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="sparkles" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="JJO-mC-VeS">
-                                                <rect key="frame" x="0.0" y="-2.6666666666666679" width="36.666666666666664" height="41.666666666666671"/>
+                                                <rect key="frame" x="0.0" y="-1.9999999999999964" width="34.333333333333336" height="38.666666666666671"/>
                                                 <color key="tintColor" name="ButtonTheme"/>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="33"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="31"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="Vs8-sG-hbf">
-                                                <rect key="frame" x="44.666666666666657" y="0.0" width="308.33333333333337" height="91"/>
+                                                <rect key="frame" x="48.333333333333343" y="0.0" width="304.66666666666663" height="91"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tailored to You" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2zc-KX-gFT">
                                                         <rect key="frame" x="0.0" y="0.0" width="130" height="23"/>
@@ -1283,7 +1291,7 @@
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pre event warmup are curated based on your current stuttering level and performance." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0ND-qQ-PDM">
-                                                        <rect key="frame" x="0.0" y="30" width="308" height="61"/>
+                                                        <rect key="frame" x="0.0" y="30" width="304.66666666666669" height="61"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
