@@ -11,9 +11,17 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     @IBOutlet weak var continueButton: UIButton!
     @IBOutlet weak var bottomViewConstraint: NSLayoutConstraint!
     
-    @IBOutlet weak var waveformStackView: UIStackView!
-    private var waveformBars: [UIView] = []
-    private let numberOfBars = 9
+    @IBOutlet weak var waveformView: BarWaveformView!
+    // Defines how many bars fit on screen before scrolling. Adjust based on your UI width.
+    private let maxWaveformBars = 150
+    // MARK: - Waveform Variables
+    private var waveformHistory: [CGFloat] = []
+    private var smoothedMagnitude: Float = 0.0
+    private var displayLink: CADisplayLink?
+    // NEW: Timing controls for the horizontal scroll speed
+    private var lastShiftTime: CFTimeInterval = 0
+    // Change this to make it faster/slower. 0.08 means it adds ~12 bars per second.
+    private let shiftInterval: CFTimeInterval = 0.04
     
     let paragraphs: [String] = [
         "Because everyone has a significant story to tell, Peter, a professional photographer, typically describes his most incredible, adventurous experiences. My grandfather, who is nearly ninety-three years old, often ponders those vibrant, green mountains while talking to anyone who will listen attentively.",
@@ -41,7 +49,6 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         createParagraphLabels()
         highlightParagraph(at: currentIndex, animated: false)
         setupPermissions()
-        setupWaveformUI()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -54,26 +61,22 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         stopRecording()
     }
     
-    func setupWaveformUI() {
-        waveformStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        waveformBars.removeAll()
-        
-        for _ in 0..<numberOfBars {
-            let bar = UIView()
-            bar.backgroundColor = .buttonTheme
-            bar.layer.cornerRadius = 6
-            bar.translatesAutoresizingMaskIntoConstraints = false
-            bar.heightAnchor.constraint(equalToConstant: 5).isActive = true
-            
-            waveformStackView.addArrangedSubview(bar)
-            waveformBars.append(bar)
-        }
-    }
-    
-    
     func setupPermissions() {
         SFSpeechRecognizer.requestAuthorization { authStatus in
         }
+    }
+    
+    func updateWaveform(with magnitude: CGFloat) {
+        // 1. Append the new real-time magnitude to our history
+        waveformHistory.append(magnitude)
+        
+        // 2. Keep the array size manageable so it scrolls smoothly left-to-right
+        if waveformHistory.count > maxWaveformBars {
+            waveformHistory.removeFirst()
+        }
+        
+        // 3. Feed the data to the custom view (it automatically triggers UI updates)
+        waveformView.amplitudes = waveformHistory
     }
     
     func startRecording() throws {
@@ -86,96 +89,127 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         let inputNode = audioEngine.inputNode
-        
         inputNode.removeTap(onBus: 0)
         
-        // ✅ START TIMER
+        // ✅ START TIMER & RESET WAVEFORM STATE
         startTime = Date()
+        waveformHistory.removeAll()
+        smoothedMagnitude = 0.0
         
         guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create request") }
         recognitionRequest.shouldReportPartialResults = true
-        
-        if #available(iOS 13, *) {
-            recognitionRequest.requiresOnDeviceRecognition = true
-        }
+        if #available(iOS 13, *) { recognitionRequest.requiresOnDeviceRecognition = true }
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
                 let newText = result.bestTranscription.formattedString
-                
                 if !newText.isEmpty {
                     self.recordedTranscript = newText
                     self.recordedSegments = result.bestTranscription.segments
                 }
             }
-            if error != nil {
-                self.stopRecording()
-            }
+            if error != nil { self.stopRecording() }
         }
         
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer, when) in
+        // MARK: - Optimized Audio Tap
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] (buffer, when) in
+            guard let self = self else { return }
             self.recognitionRequest?.append(buffer)
             
             guard let channelData = buffer.floatChannelData?[0] else { return }
             let frameLength = UInt32(buffer.frameLength)
             
             var sum: Float = 0
-            for i in 0..<Int(frameLength) {
-                sum += channelData[i] * channelData[i]
-            }
+            for i in 0..<Int(frameLength) { sum += channelData[i] * channelData[i] }
             
             let rms = sqrt(sum / Float(frameLength))
+                    
+            let rawMagnitude = rms * 12.0
+            let filteredMagnitude = rawMagnitude < 0.03 ? 0.0 : rawMagnitude
             
-            let magnitude = Swift.max(0.1, Swift.min(1.0, rms * 40))
-            
+            // Dispatch only the math update to the main thread to prevent data races
             DispatchQueue.main.async {
-                self.updateWaveform(with: CGFloat(magnitude))
+                if filteredMagnitude > self.smoothedMagnitude {
+                    self.smoothedMagnitude = (self.smoothedMagnitude * 0.4) + (filteredMagnitude * 0.6)
+                } else {
+                    self.smoothedMagnitude = filteredMagnitude
+                }
             }
         }
         
         audioEngine.prepare()
         try audioEngine.start()
+        
+        // ✅ START THE UI REFRESH LOOP
+        startDisplayLink()
         print("🎤 Test Recording Started...")
     }
-    func updateWaveform(with magnitude: CGFloat) {
-        let maxHeight: CGFloat = 48.0
-        
-        for bar in waveformBars {
-            let randomFactor = CGFloat.random(in: 0.8...1.2)
-            let targetHeight = max(5, maxHeight * magnitude * randomFactor)
-            
-            if let heightConstraint = bar.constraints.first(where: { $0.firstAttribute == .height }) {
-                heightConstraint.constant = targetHeight
-            }
-        }
-        
-        UIView.animate(withDuration: 0.1, delay: 0, options: .curveEaseOut, animations: {
-            self.view.layoutIfNeeded()
-        }, completion: nil)
-    }
-    
+
     func stopRecording() {
         if audioEngine.isRunning {
             audioEngine.stop()
             recognitionRequest?.endAudio()
             audioEngine.inputNode.removeTap(onBus: 0)
             
+            // ✅ STOP THE UI REFRESH LOOP
+            stopDisplayLink()
+            
             DispatchQueue.main.async {
-                UIView.animate(withDuration: 0.3) {
-                    for bar in self.waveformBars {
-                        if let height = bar.constraints.first(where: { $0.firstAttribute == .height }) {
-                            height.constant = 5
-                        }
-                    }
-                    self.view.layoutIfNeeded()
-                }
+                // Smoothly flatten out the visual waveform
+                self.waveformHistory = Array(repeating: 0.0, count: self.waveformHistory.count)
+                self.waveformView.amplitudes = self.waveformHistory
             }
             print("🛑 Test Recording Stopped.")
         }
     }
+
+    private func startDisplayLink() {
+        stopDisplayLink()
+        lastShiftTime = CACurrentMediaTime() // Reset the timer
+        
+        displayLink = CADisplayLink(target: self, selector: #selector(updateUIFromDisplayLink(_:)))
+        
+        if #available(iOS 15.0, *) {
+            displayLink?.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 60, preferred: 60)
+        } else {
+            displayLink?.preferredFramesPerSecond = 60
+        }
+        displayLink?.add(to: .main, forMode: .common)
+    }
     
+    @objc private func updateUIFromDisplayLink(_ displayLink: CADisplayLink) {
+        let finalMagnitude = Swift.max(0.0, Swift.min(1.0, self.smoothedMagnitude))
+        
+        // 1. VERTICAL SMOOTHNESS (60fps)
+        // Always update the very last item in the array.
+        // This makes the active center bar dance fluidly without moving left.
+        if waveformHistory.isEmpty {
+            waveformHistory.append(CGFloat(finalMagnitude))
+        } else {
+            waveformHistory[waveformHistory.count - 1] = CGFloat(finalMagnitude)
+        }
+        
+        // 2. HORIZONTAL SCROLLING (Slow & Relaxed)
+        // Only commit a new bar and shift the graph to the left every 0.08 seconds.
+        if displayLink.timestamp - lastShiftTime >= shiftInterval {
+            waveformHistory.append(CGFloat(finalMagnitude))
+            
+            if waveformHistory.count > 150 {
+                waveformHistory.removeFirst()
+            }
+            lastShiftTime = displayLink.timestamp // Reset timer for the next shift
+        }
+        
+        // 3. Render
+        waveformView.amplitudes = waveformHistory
+    }
+
+    private func stopDisplayLink() {
+        displayLink?.invalidate()
+        displayLink = nil
+    }
     
     func setupButtons() {
         updateButtonStates()
