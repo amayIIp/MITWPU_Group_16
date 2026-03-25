@@ -8,11 +8,19 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
+    @IBOutlet weak var waveformView: BarWaveformView!
+    
     override func viewDidLoad() {
-        let isCompleted = DatabaseManager.shared.isDailyGoalCompleted
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        updateUI()
+    }
+    
+    func updateUI() {
+        // Simulated data matching the peaks and valleys of a voice recording
+        let sampleData: [CGFloat] = [0.1, 0.4, 0.8, 0.3, 0.9, 0.5, 0.2]
+        waveformView.amplitudes = sampleData
     }
 
 
