@@ -196,6 +196,10 @@ class DatabaseManager {
 
         // 👇 If no pending tasks → daily goal completed
         isDailyGoalCompleted = (pendingCount == 0)
+        
+        if isDailyGoalCompleted {
+            NotificationManager.shared.cancelTodayNightReminder()
+        }
 
         // Optional: notify UI / other listeners
         NotificationCenter.default.post(

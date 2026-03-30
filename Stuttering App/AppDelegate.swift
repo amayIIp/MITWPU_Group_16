@@ -25,6 +25,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             BackgroundParagraphManager.shared.startInitialBatch()
         }
         
+        NotificationManager.shared.requestAuthorization()
+        
         return true
     }
 
