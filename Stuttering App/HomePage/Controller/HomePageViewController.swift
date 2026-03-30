@@ -406,8 +406,8 @@ class HomePageViewController: UIViewController {
     
     @IBAction func dailySummaryTapped(_ sender: UIButton) {
         if AppState.isDailyProgressCompleted {
-            let storyboard = UIStoryboard(name: "Summary", bundle: nil)
-            if let detailVC = storyboard.instantiateViewController(withIdentifier: "SummaryViewController") as? SummaryViewController {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            if let detailVC = storyboard.instantiateViewController(withIdentifier: "PracticeViewController") as? PracticeViewController {
                 self.navigationController?.pushViewController(detailVC, animated: true)
             }
         } else {
