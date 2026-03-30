@@ -13,13 +13,13 @@
                 "id": "ex_diaph_breathing",
                 "name": "Airflow Practice",
                 "description": "Improves breath control when starting vowel sounds",
-                "short_time": 100
+                "short_time": 10
               },
               {
                 "id": "ex_pmr",
                 "name": "Flexible Pacing",
                 "description": "Helps you start long words more slowly",
-                "short_time": 85
+                "short_time":10
               }
             ]
         },
@@ -32,19 +32,19 @@
                 "id": "ex_artic_precision",
                 "name": "Gentle Onset",
                 "description": "Helps start vowels and M, N, L sounds gently",
-                "short_time": 115
+                "short_time": 10
               },
               {
                 "id": "ex_coarticulation",
                 "name": "Light Contacts",
                 "description": "Reduces tension in P, B, T, D, K, G sounds",
-                "short_time": 95
+                "short_time":10
               },
               {
                 "id": "ex_light_contact",
                 "name": "Prolongation",
                 "description": "Keeps airflow steady in S, F, SH, TH sounds",
-                "short_time": 60
+                "short_time":10
               }
             ]
         },
@@ -57,19 +57,19 @@
                 "id": "ex_rate_control",
                 "name": "Preparatory Set",
                 "description": "Plan smooth starts for feared words",
-                "short_time": 85
+                "short_time": 10
               },
               {
                 "id": "ex_coord_speech",
                 "name": "Pull-Out",
-                "description": "CRelease tension while stuck on a word",
-                "short_time": 135
+                "description": "Release tension while stuck on a word",
+                "short_time": 10
               },
               {
                 "id": "ex_prolonged_speech",
                 "name": "Block Correction",
                 "description": "Calm down and redo the word smoothly",
-                "short_time": 105
+                "short_time": 10
               }
             ]
         }

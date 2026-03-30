@@ -12,12 +12,18 @@ class DatabaseManager {
     static let shared = DatabaseManager()
     private(set) var isDailyGoalCompleted: Bool = false
     var db: OpaquePointer?
+    
+    // 🔥 Ensures Swift doesn't destroy strings from memory before SQLite saves them
+    internal let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
     private init() {
         openDatabase()
         createTables()
         populateInitialJourney()
         initializeStreakIfNeeded()
+        
+        // This forces the DB to check your Journey table and update "Go-To" on startup
+        syncLegacyJourneyCompletions()
     }
 
     func openDatabase() {
@@ -30,14 +36,28 @@ class DatabaseManager {
 
     func createTables() {
         let createJourney = "CREATE TABLE IF NOT EXISTS Journey (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, isCompleted INTEGER DEFAULT 0)"
-        
         let createDaily = "CREATE TABLE IF NOT EXISTS DailyTasks (id INTEGER PRIMARY KEY, name TEXT, description TEXT, duration INTEGER, isCompleted INTEGER DEFAULT 0)"
-        
         let createStreak = "CREATE TABLE IF NOT EXISTS Streak (id INTEGER PRIMARY KEY CHECK (id = 1), currentStreak INTEGER,lastCompletedDate TEXT)"
+        
+        // --- NEW TABLES FOR LIBRARY ---
+        let createExercises = """
+        CREATE TABLE IF NOT EXISTS Exercises (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            name TEXT, 
+            targetPhoneme TEXT, 
+            completionCount INTEGER DEFAULT 0,
+            lastCompleted DATETIME
+        )
+        """
+        let createUserPhonemes = "CREATE TABLE IF NOT EXISTS UserPhonemes (id INTEGER PRIMARY KEY AUTOINCREMENT, phoneme TEXT)"
         
         sqlite3_exec(db, createStreak, nil, nil, nil)
         sqlite3_exec(db, createJourney, nil, nil, nil)
         sqlite3_exec(db, createDaily, nil, nil, nil)
+        
+        // Execute new tables
+        sqlite3_exec(db, createExercises, nil, nil, nil)
+        sqlite3_exec(db, createUserPhonemes, nil, nil, nil)
     }
 
     private func populateInitialJourney() {
@@ -63,7 +83,7 @@ class DatabaseManager {
             
             if sqlite3_prepare_v2(db, insertQuery, -1, &insertStmt, nil) == SQLITE_OK {
                 for name in exercises {
-                    sqlite3_bind_text(insertStmt, 1, (name as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(insertStmt, 1, (name as NSString).utf8String, -1, SQLITE_TRANSIENT)
                     if sqlite3_step(insertStmt) != SQLITE_DONE {
                         print("Error inserting \(name)")
                     }
@@ -103,15 +123,15 @@ class DatabaseManager {
 
         if sqlite3_prepare_v2(db, insert, -1, &statement, nil) == SQLITE_OK {
             sqlite3_bind_int(statement, 1, Int32(id))
-            sqlite3_bind_text(statement, 2, (name as NSString).utf8String, -1, nil)
-            sqlite3_bind_text(statement, 3, (desc as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 2, (name as NSString).utf8String, -1, SQLITE_TRANSIENT)
+            sqlite3_bind_text(statement, 3, (desc as NSString).utf8String, -1, SQLITE_TRANSIENT)
             sqlite3_bind_int(statement, 4, Int32(duration))
             sqlite3_step(statement)
         }
         sqlite3_finalize(statement)
     }
     
-     func fetchDailyTasks() -> [DailyTask] {
+    func fetchDailyTasks() -> [DailyTask] {
         let query = "SELECT id, name, description, duration, isCompleted FROM DailyTasks ORDER BY id ASC"
         var statement: OpaquePointer?
         var tasks: [DailyTask] = []
@@ -131,12 +151,60 @@ class DatabaseManager {
         return tasks
     }
     
-    func markTaskComplete(taskName: String) {
-        let updateDaily = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
-        let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE name = ?"
+    func fetchGoToExercises() -> [String] {
+        // Fetch top 3 most completed exercises, fallback to last completed if none
+        let query = "SELECT name FROM Exercises WHERE completionCount > 0 ORDER BY completionCount DESC, lastCompleted DESC LIMIT 3"
+        var statement: OpaquePointer?
+        var names: [String] = []
+
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            while sqlite3_step(statement) == SQLITE_ROW {
+                if let cString = sqlite3_column_text(statement, 0) {
+                    names.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
+                }
+            }
+        }
+        sqlite3_finalize(statement)
         
-        executeNameUpdate(query: updateDaily, name: taskName)
-        executeNameUpdate(query: updateJourney, name: taskName)
+        if names.isEmpty {
+            let fallbackQuery = "SELECT name FROM Exercises ORDER BY lastCompleted DESC LIMIT 3"
+            if sqlite3_prepare_v2(db, fallbackQuery, -1, &statement, nil) == SQLITE_OK {
+                while sqlite3_step(statement) == SQLITE_ROW {
+                    if let cString = sqlite3_column_text(statement, 0) {
+                        names.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
+                    }
+                }
+            }
+            sqlite3_finalize(statement)
+        }
+        
+        print("DEBUG SQL: Found \(names.count) Go-To exercises in DB.")
+        return names
+    }
+
+    // MARK: - Completion Logic
+    
+    func markTaskComplete(taskName: String) {
+        let trimmedName = taskName.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 1. Update all state tables using LIKE and TRIM for safety
+        let updateDaily = "UPDATE DailyTasks SET isCompleted = 1 WHERE TRIM(name) LIKE ?"
+        let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE TRIM(name) LIKE ?"
+        
+        // 2. Increment the analytics count
+        
+        let updateExerciseStats = """
+        UPDATE Exercises 
+        SET completionCount = completionCount + 1, lastCompleted = CURRENT_TIMESTAMP 
+        WHERE TRIM(name) LIKE ?
+        """
+        
+        executeNameUpdate(query: updateDaily, name: trimmedName)
+        executeNameUpdate(query: updateJourney, name: trimmedName)
+        executeNameUpdate(query: updateExerciseStats, name: trimmedName)
+        
+        // 3. Force a cross-check immediately
+        syncLegacyJourneyCompletions()
         
         updateDailyGoalCompletionStatus()
 
@@ -144,16 +212,63 @@ class DatabaseManager {
             updateStreakIfEligible()
         }
 
+        // 4. Notify UI to refresh 'Try New' and 'Go-To'
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
         
-        // Push local progress to Supabase Cloud (account mode only)
         if SessionManager.shared.isAccountMode {
-            SupabaseSyncManager.shared.pushJourneyUpdate(name: taskName, isCompleted: true)
-            SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: taskName)
+            SupabaseSyncManager.shared.pushJourneyUpdate(name: trimmedName, isCompleted: true)
+            SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: trimmedName)
             syncLocalDailyTasksToCloud()
-        } else {
-            print("📋 [GUEST] Task marked complete locally only (guest mode)")
         }
+    }
+    func markExComplete(taskName: String) {
+        let trimmedName = taskName.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 1. Update all state tables using LIKE and TRIM for safety
+        
+        let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE TRIM(name) LIKE ?"
+        
+        // 2. Increment the analytics count
+        
+        let updateExerciseStats = """
+        UPDATE Exercises 
+        SET completionCount = completionCount + 1, lastCompleted = CURRENT_TIMESTAMP 
+        WHERE TRIM(name) LIKE ?
+        """
+        
+        
+        executeNameUpdate(query: updateJourney, name: trimmedName)
+        executeNameUpdate(query: updateExerciseStats, name: trimmedName)
+        
+        // 3. Force a cross-check immediately
+        syncLegacyJourneyCompletions()
+        
+        updateDailyGoalCompletionStatus()
+
+        if isDailyGoalCompleted {
+            updateStreakIfEligible()
+        }
+
+        // 4. Notify UI to refresh 'Try New' and 'Go-To'
+        NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
+        
+        if SessionManager.shared.isAccountMode {
+            SupabaseSyncManager.shared.pushJourneyUpdate(name: trimmedName, isCompleted: true)
+            SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: trimmedName)
+            syncLocalDailyTasksToCloud()
+        }
+    }
+
+    func syncLegacyJourneyCompletions() {
+        let syncQuery = """
+        UPDATE Exercises 
+        SET completionCount = 1, lastCompleted = CURRENT_TIMESTAMP 
+        WHERE TRIM(name) IN (SELECT TRIM(name) FROM Journey WHERE isCompleted = 1)
+        AND completionCount = 0
+        """
+        
+        sqlite3_exec(db, syncQuery, nil, nil, nil)
+        print("🔄 Try New Sync: Journey progress synced to Exercises analytics.")
     }
     
     func syncLocalDailyTasksToCloud() {
@@ -176,10 +291,56 @@ class DatabaseManager {
     private func executeNameUpdate(query: String, name: String) {
         var statement: OpaquePointer?
         if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
-            sqlite3_bind_text(statement, 1, (name as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 1, (name as NSString).utf8String, -1, SQLITE_TRANSIENT)
             sqlite3_step(statement)
         }
         sqlite3_finalize(statement)
+    }
+    
+    private func debugExerciseState(name: String) {
+        let query = "SELECT completionCount, lastCompleted FROM Exercises WHERE TRIM(name) LIKE ?"
+        var statement: OpaquePointer?
+        
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (name as NSString).utf8String, -1, SQLITE_TRANSIENT)
+            
+            if sqlite3_step(statement) == SQLITE_ROW {
+                let count = sqlite3_column_int(statement, 0)
+                if let text = sqlite3_column_text(statement, 1) {
+                    let date = String(cString: text)
+                    print("   ✅ Found: completionCount=\(count), lastCompleted=\(date)")
+                } else {
+                    print("   ✅ Found: completionCount=\(count), lastCompleted=nil")
+                }
+            } else {
+                print("   ❌ NOT FOUND in Exercises table!")
+                print("   Checking for similar names...")
+                listAllExercises()
+            }
+        }
+        sqlite3_finalize(statement)
+    }
+    
+    private func listAllExercises() {
+        let query = "SELECT name, completionCount FROM Exercises ORDER BY name"
+        var statement: OpaquePointer?
+        var found = false
+        
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            while sqlite3_step(statement) == SQLITE_ROW {
+                if let cString = sqlite3_column_text(statement, 0) {
+                    let name = String(cString: cString)
+                    let count = sqlite3_column_int(statement, 1)
+                    print("      - \(name) (count: \(count))")
+                    found = true
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+        
+        if !found {
+            print("      (Exercises table is empty!)")
+        }
     }
     
     func updateDailyGoalCompletionStatus() {
@@ -194,10 +355,8 @@ class DatabaseManager {
         }
         sqlite3_finalize(statement)
 
-        // 👇 If no pending tasks → daily goal completed
         isDailyGoalCompleted = (pendingCount == 0)
 
-        // Optional: notify UI / other listeners
         NotificationCenter.default.post(
             name: NSNotification.Name("dailyGoalStatusUpdated"),
             object: isDailyGoalCompleted
@@ -235,7 +394,6 @@ class DatabaseManager {
     }
 
     func updateStreakIfEligible() {
-        // Only proceed if daily goal is completed
         guard isDailyGoalCompleted else { return }
 
         let query = "SELECT currentStreak, lastCompletedDate FROM Streak WHERE id = 1"
@@ -257,10 +415,8 @@ class DatabaseManager {
         let today = todayString()
         let yesterday = yesterdayString()
 
-        // Already counted today
         if lastDate == today { return }
 
-        // ✅ Increment or reset
         let newStreak: Int
         if lastDate == yesterday {
             newStreak = currentStreak + 1
@@ -277,7 +433,7 @@ class DatabaseManager {
 
         if sqlite3_prepare_v2(db, update, -1, &updateStmt, nil) == SQLITE_OK {
             sqlite3_bind_int(updateStmt, 1, Int32(newStreak))
-            sqlite3_bind_text(updateStmt, 2, (today as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(updateStmt, 2, (today as NSString).utf8String, -1, SQLITE_TRANSIENT)
             sqlite3_step(updateStmt)
         }
         sqlite3_finalize(updateStmt)
@@ -335,7 +491,6 @@ class DatabaseManager {
     }
     
     func resetDatabaseForNewUser() {
-        // 1. Safely close the existing SQLite connection in memory
         if db != nil {
             if sqlite3_close(db) != SQLITE_OK {
                 print("Warning: Could not close Spasht database perfectly.")
@@ -343,10 +498,8 @@ class DatabaseManager {
             db = nil
         }
         
-        // 2. Clear cached memory variables
         isDailyGoalCompleted = false
         
-        // 3. Delete the physical SQLite file from the Documents directory
         do {
             let fileUrl = try FileManager.default
                 .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
@@ -360,7 +513,6 @@ class DatabaseManager {
             print("Error deleting Spasht database file: \(error)")
         }
         
-        // 4. Re-initialize the tables and default data for the new user
         openDatabase()
         createTables()
         populateInitialJourney()
@@ -369,4 +521,124 @@ class DatabaseManager {
         print("Spasht Database engine rebooted and ready for Guest.")
     }
 
+    // MARK: - Library & Discovery Functions
+    
+    func fetchPhonemeBasedExercises() -> [String] {
+        let query = """
+        SELECT DISTINCT e.name 
+        FROM Exercises e 
+        JOIN UserPhonemes u ON e.targetPhoneme = u.phoneme 
+        ORDER BY e.lastCompleted ASC 
+        LIMIT 5
+        """
+        
+        var statement: OpaquePointer?
+        var names: [String] = []
+
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            while sqlite3_step(statement) == SQLITE_ROW {
+                if let cString = sqlite3_column_text(statement, 0) {
+                    names.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+        return names
+    }
+    
+    func fetchDiscoveryExercise() -> (sectionTitle: String, exerciseName: String?) {
+        let tryNewQuery = "SELECT name FROM Exercises WHERE completionCount = 0 ORDER BY id ASC LIMIT 1"
+        var statement: OpaquePointer?
+        
+        print("🔍 [fetchDiscoveryExercise] Looking for uncompleted exercises (completionCount = 0)...")
+        
+        if sqlite3_prepare_v2(db, tryNewQuery, -1, &statement, nil) == SQLITE_OK {
+            if sqlite3_step(statement) == SQLITE_ROW {
+                let name = String(cString: sqlite3_column_text(statement, 0)).trimmingCharacters(in: .whitespacesAndNewlines)
+                sqlite3_finalize(statement)
+                print("   ✅ Try New: '\(name)'")
+                return ("Try New", name)
+            } else {
+                print("   ⚠️ No uncompleted exercises found!")
+            }
+        }
+        sqlite3_finalize(statement)
+        
+        print("🔍 Falling back to 'Explore Again' (most recent)...")
+        let exploreAgainQuery = "SELECT name FROM Exercises ORDER BY lastCompleted DESC LIMIT 1"
+        if sqlite3_prepare_v2(db, exploreAgainQuery, -1, &statement, nil) == SQLITE_OK {
+            if sqlite3_step(statement) == SQLITE_ROW {
+                let name = String(cString: sqlite3_column_text(statement, 0)).trimmingCharacters(in: .whitespacesAndNewlines)
+                sqlite3_finalize(statement)
+                print("   ✅ Explore Again: '\(name)'")
+                return ("Explore Again", name)
+            }
+        }
+        sqlite3_finalize(statement)
+        
+        print("   ❌ No exercises found at all!")
+        return ("Explore Again", nil)
+    }
+    
+    // MARK: - User Phoneme & Database Seeding Functions
+    
+    func saveUserProblemPhonemes(phonemes: [String]) {
+        let clearQuery = "DELETE FROM UserPhonemes"
+        sqlite3_exec(db, clearQuery, nil, nil, nil)
+        
+        let insertQuery = "INSERT INTO UserPhonemes (phoneme) VALUES (?)"
+        var statement: OpaquePointer?
+        
+        if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
+            for phoneme in phonemes {
+                sqlite3_bind_text(statement, 1, (phoneme as NSString).utf8String, -1, SQLITE_TRANSIENT)
+                if sqlite3_step(statement) != SQLITE_DONE {
+                    print("Error inserting phoneme: \(phoneme)")
+                }
+                sqlite3_reset(statement)
+            }
+        }
+        sqlite3_finalize(statement)
+        print("User problem phonemes updated!")
+    }
+    
+    func seedExercisesDatabase(with names: [String]) {
+        // We iterate through every provided name. If it's missing from the DB, we insert it with 0 completions.
+        // If it's already there, we LEAVE IT ALONE so we don't accidentally erase analytics data.
+        for name in names {
+            let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            var checkStmt: OpaquePointer?
+            var exists = false
+            let checkQuery = "SELECT 1 FROM Exercises WHERE TRIM(name) LIKE ?"
+            
+            if sqlite3_prepare_v2(db, checkQuery, -1, &checkStmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(checkStmt, 1, (cleanName as NSString).utf8String, -1, SQLITE_TRANSIENT)
+                if sqlite3_step(checkStmt) == SQLITE_ROW {
+                    exists = true
+                }
+            }
+            sqlite3_finalize(checkStmt)
+            
+            if !exists {
+                let insertQuery = "INSERT INTO Exercises (name, completionCount, targetPhoneme) VALUES (?, 0, ?)"
+                var insertStmt: OpaquePointer?
+                
+                if sqlite3_prepare_v2(db, insertQuery, -1, &insertStmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(insertStmt, 1, (cleanName as NSString).utf8String, -1, SQLITE_TRANSIENT)
+                    
+                    var target = ""
+                    if cleanName == "Gentle Onset" || cleanName == "Airflow Practice" { target = "Vowels (A,E,I,O,U) & Voiced (M,N,L)" }
+                    else if cleanName == "Light Contacts" { target = "Plosives (P, B, T, D, K, G)" }
+                    else if cleanName == "Prolongation" { target = "Fricatives (S, F, SH, TH)" }
+                    
+                    sqlite3_bind_text(insertStmt, 2, (target as NSString).utf8String, -1, SQLITE_TRANSIENT)
+                    
+                    sqlite3_step(insertStmt)
+                }
+                sqlite3_finalize(insertStmt)
+            }
+        }
+        print("✅ Seeding Complete! Safe insert logic applied.")
+    }
 }
