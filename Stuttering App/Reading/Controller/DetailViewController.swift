@@ -39,6 +39,8 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     private var totalSegmentsCaptured: [SFTranscriptionSegment] = []
 
+    private var tempAudioFile: AVAudioFile?
+    private var tempAudioURL: URL?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -177,6 +179,14 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         let format = inputNode.outputFormat(forBus: 0)
         
+        let tempDir = FileManager.default.temporaryDirectory
+        tempAudioURL = tempDir.appendingPathComponent("reading_\(UUID().uuidString).wav")
+        do {
+            tempAudioFile = try AVAudioFile(forWriting: tempAudioURL!, settings: format.settings)
+        } catch {
+            print("Error creating temp audio file: \(error)")
+        }
+        
         if selectedDAFDelay > 0 && areHeadphonesConnected() {
             delayNode.delayTime = selectedDAFDelay
             delayNode.wetDryMix = 100
@@ -197,6 +207,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { (buffer, _) in
             self.recognitionRequest?.append(buffer)
+            try? self.tempAudioFile?.write(from: buffer)
         }
         
         audioEngine.prepare()
@@ -208,6 +219,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             audioEngine.stop()
             recognitionRequest?.endAudio()
             audioEngine.inputNode.removeTap(onBus: 0)
+            tempAudioFile = nil
         }
     }
     
@@ -342,28 +354,53 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func didTapOpenButton() {
         let duration = totalExerciseDuration
         
-        let jsonResult = StutterAnalyzer.analyze(
-            reference: textToDisplay,
-            transcript: recordedTranscript,
-            segments: recordedSegments,
-            duration: duration
-        )
+        let spinnerView = UIView(frame: view.bounds)
+        spinnerView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        let spinner = UIActivityIndicatorView(style: .large)
+        spinner.color = .white
+        spinner.center = spinnerView.center
+        spinner.startAnimating()
+        spinnerView.addSubview(spinner)
+        view.addSubview(spinnerView)
         
-        guard let jsonData = jsonResult.data(using: .utf8),
-              let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
-            return
-        }
+        Task {
+            var finalTranscript = self.recordedTranscript
+            if let url = self.tempAudioURL {
+                do {
+                    if let whisperResult = try await WhisperDetectionManager.shared.transcribe(audioURL: url) {
+                        finalTranscript = whisperResult
+                    }
+                } catch {
+                    print("WhisperKit failed, falling back to Apple Speech: \(error)")
+                }
+            }
+            
+            let jsonResult = StutterAnalyzer.analyze(
+                reference: self.textToDisplay,
+                transcript: finalTranscript,
+                segments: self.recordedSegments,
+                duration: duration
+            )
+            
+            await MainActor.run {
+                spinnerView.removeFromSuperview()
+                guard let jsonData = jsonResult.data(using: .utf8),
+                      let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
+                    return
+                }
 
-        LogManager.shared.updateStutterStats(letterCounts: report.letterAnalysis)
-        
-        guard let ResultVC = storyboard?.instantiateViewController(withIdentifier: "ReadingResultViewController") as? ReadingResultViewController else { return }
-        ResultVC.report = report
-        
-        let ResultNav = UINavigationController(rootViewController: ResultVC)
-        ResultNav.modalPresentationStyle = .fullScreen
-        self.present(ResultNav, animated: true, completion: nil)
-        
-        logReadingActivity()
+                LogManager.shared.updateStutterStats(letterCounts: report.letterAnalysis)
+                
+                guard let ResultVC = self.storyboard?.instantiateViewController(withIdentifier: "ReadingResultViewController") as? ReadingResultViewController else { return }
+                ResultVC.report = report
+                
+                let ResultNav = UINavigationController(rootViewController: ResultVC)
+                ResultNav.modalPresentationStyle = .fullScreen
+                self.present(ResultNav, animated: true, completion: nil)
+                
+                self.logReadingActivity()
+            }
+        }
     }
     
     func logReadingActivity() {
