@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		192A5D122F7A917E00DB8C96 /* SpeakerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D112F7A917E00DB8C96 /* SpeakerKit */; };
+		192A5D142F7A917E00DB8C96 /* TTSKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D132F7A917E00DB8C96 /* TTSKit */; };
+		192A5D162F7A917E00DB8C96 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D152F7A917E00DB8C96 /* WhisperKit */; };
 		1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08A2F69460700C78634 /* GoogleSignIn */; };
 		1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08C2F69460700C78634 /* GoogleSignInSwift */; };
 		1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08F2F69462B00C78634 /* RiveRuntime */; };
@@ -48,7 +51,10 @@
 				1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */,
 				1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */,
 				19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */,
+				192A5D142F7A917E00DB8C96 /* TTSKit in Frameworks */,
+				192A5D122F7A917E00DB8C96 /* SpeakerKit in Frameworks */,
 				1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */,
+				192A5D162F7A917E00DB8C96 /* WhisperKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +94,9 @@
 				1993B08A2F69460700C78634 /* GoogleSignIn */,
 				1993B08C2F69460700C78634 /* GoogleSignInSwift */,
 				1993B08F2F69462B00C78634 /* RiveRuntime */,
+				192A5D112F7A917E00DB8C96 /* SpeakerKit */,
+				192A5D132F7A917E00DB8C96 /* TTSKit */,
+				192A5D152F7A917E00DB8C96 /* WhisperKit */,
 			);
 			productName = "Stuttering App";
 			productReference = 194C02B42F21D937009DB06D /* Stuttering App.app */;
@@ -121,6 +130,7 @@
 				19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */,
+				192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 19EB3D2A2ED6ED290003B76D;
@@ -369,6 +379,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
@@ -396,6 +414,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		192A5D112F7A917E00DB8C96 /* SpeakerKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = SpeakerKit;
+		};
+		192A5D132F7A917E00DB8C96 /* TTSKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = TTSKit;
+		};
+		192A5D152F7A917E00DB8C96 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
 		1993B08A2F69460700C78634 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;

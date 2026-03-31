@@ -41,6 +41,9 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     var recordedTranscript = ""
     var recordedSegments: [SFTranscriptionSegment] = []
+
+    private var tempAudioFile: AVAudioFile?
+    private var tempAudioURL: URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -113,10 +116,19 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         
+        let tempDir = FileManager.default.temporaryDirectory
+        tempAudioURL = tempDir.appendingPathComponent("test_\(UUID().uuidString).wav")
+        do {
+            tempAudioFile = try AVAudioFile(forWriting: tempAudioURL!, settings: recordingFormat.settings)
+        } catch {
+            print("Error creating temp audio file: \(error)")
+        }
+        
         // MARK: - Optimized Audio Tap
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] (buffer, when) in
             guard let self = self else { return }
             self.recognitionRequest?.append(buffer)
+            try? self.tempAudioFile?.write(from: buffer)
             
             guard let channelData = buffer.floatChannelData?[0] else { return }
             let frameLength = UInt32(buffer.frameLength)
@@ -152,6 +164,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             audioEngine.stop()
             recognitionRequest?.endAudio()
             audioEngine.inputNode.removeTap(onBus: 0)
+            tempAudioFile = nil
             
             // ✅ STOP THE UI REFRESH LOOP
             stopDisplayLink()
@@ -262,27 +275,51 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         stopRecording()
         
         let duration = Date().timeIntervalSince(startTime ?? Date())
-        
         let fullReferenceText = paragraphs.joined(separator: " ")
         
-        let jsonResult = StutterAnalyzer.analyze(
-            reference: fullReferenceText,
-            transcript: recordedTranscript,
-            segments: recordedSegments,
-            duration: duration
-        )
+        let spinnerView = UIView(frame: view.bounds)
+        spinnerView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        let spinner = UIActivityIndicatorView(style: .large)
+        spinner.color = .white
+        spinner.center = spinnerView.center
+        spinner.startAnimating()
+        spinnerView.addSubview(spinner)
+        view.addSubview(spinnerView)
         
-        print("📊 Analysis Result: \(jsonResult)")
-        
-        guard let jsonData = jsonResult.data(using: .utf8),
-              let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
-            print("❌ Error decoding report")
-            return
-        }
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        if let resultVC = storyboard.instantiateViewController(withIdentifier: "LastOnboardingViewController") as? LastOnboardingViewController {
-            resultVC.report = report // Pass data
-            navigationController?.pushViewController(resultVC, animated: true)
+        Task {
+            var finalTranscript = self.recordedTranscript
+            if let url = self.tempAudioURL {
+                do {
+                    if let whisperResult = try await WhisperDetectionManager.shared.transcribe(audioURL: url) {
+                        finalTranscript = whisperResult
+                    }
+                } catch {
+                    print("WhisperKit failed, falling back to Apple Speech: \(error)")
+                }
+            }
+            
+            let jsonResult = StutterAnalyzer.analyze(
+                reference: fullReferenceText,
+                transcript: finalTranscript,
+                segments: self.recordedSegments,
+                duration: duration
+            )
+            
+            print("📊 Analysis Result: \(jsonResult)")
+            
+            await MainActor.run {
+                spinnerView.removeFromSuperview()
+                guard let jsonData = jsonResult.data(using: .utf8),
+                      let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
+                    print("❌ Error decoding report")
+                    return
+                }
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                if let resultVC = storyboard.instantiateViewController(withIdentifier: "LastOnboardingViewController") as? LastOnboardingViewController {
+                    resultVC.report = report // Pass data
+                    self.navigationController?.pushViewController(resultVC, animated: true)
+                }
+            }
         }
     }
     
