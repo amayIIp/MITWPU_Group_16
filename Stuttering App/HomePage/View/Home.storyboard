@@ -1527,8 +1527,7 @@
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Practice" id="Kj0-W8-aT7">
-                        <barButtonItem key="rightBarButtonItem" style="plain" id="nz0-ha-w87">
-                            <imageReference key="image" image="square.and.pencil" catalog="system" symbolScale="default"/>
+                        <barButtonItem key="rightBarButtonItem" title="Set Goals" style="plain" id="nz0-ha-w87">
                             <connections>
                                 <action selector="setGoalsTapped:" destination="SRV-V4-yYd" id="TMj-Ye-XhV"/>
                             </connections>
@@ -1562,7 +1561,6 @@
         <image name="person.fill" catalog="system" width="128" height="120"/>
         <image name="scope" catalog="system" width="128" height="124"/>
         <image name="sparkles" catalog="system" width="115" height="128"/>
-        <image name="square.and.pencil" catalog="system" width="128" height="121"/>
         <namedColor name="ButtonTheme">
             <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
