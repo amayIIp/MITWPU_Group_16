@@ -427,6 +427,9 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
             if source == .dailyTasks {
                 DatabaseManager.shared.markTaskComplete(taskName: self.exerciseName)
             }
+            if source == .exercises {
+                DatabaseManager.shared.markExComplete(taskName: self.exerciseName)
+            }
         }
     }
 }

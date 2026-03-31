@@ -135,7 +135,36 @@ class PhonemesSelectionViewController: UIViewController {
     }
 
     @IBAction func continueButtonTapped(_ sender: UIButton) {
-        print("Saved phonemes:", selectedPhonemes)
+        print("Raw selected phonemes from UI:", selectedPhonemes)
+        
+        var databaseGroupsToSave: Set<String> = []
+        
+        // 1. Define how our raw letters map to the Database/JSON Groups
+        let plosiveLetters: Set<String> = ["b", "p", "k", "g", "t", "d"]
+        let fricativeLetters: Set<String> = ["s", "sh", "f", "v"]
+        let voicedLetters: Set<String> = ["r", "l"]
+        
+        // 2. Check if the user selected any letters that belong to these groups
+        // `isDisjoint` returns false if they share at least one item
+        if !selectedPhonemes.isDisjoint(with: plosiveLetters) {
+            databaseGroupsToSave.insert("Plosives (P, B, T, D, K, G)")
+        }
+        
+        if !selectedPhonemes.isDisjoint(with: fricativeLetters) {
+            databaseGroupsToSave.insert("Fricatives (S, F, SH, TH)")
+        }
+        
+        if !selectedPhonemes.isDisjoint(with: voicedLetters) {
+            databaseGroupsToSave.insert("Vowels (A,E,I,O,U) & Voiced (M,N,L)")
+        }
+        
+        // 3. Save to SQLite Database!
+        // (If they tapped "None" or "Not Sure", the array will just be empty, which is perfectly safe)
+        DatabaseManager.shared.saveUserProblemPhonemes(phonemes: Array(databaseGroupsToSave))
+        
+        print("Mapped and Saved to DB:", databaseGroupsToSave)
+        
+        // TODO: Perform your segue or dismiss the view controller here!
+        // dismiss(animated: true, completion: nil)
     }
 }
-

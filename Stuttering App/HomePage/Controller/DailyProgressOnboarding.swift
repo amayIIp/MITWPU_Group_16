@@ -18,8 +18,8 @@ class DailyProgressOnboarding: UIViewController {
     @IBAction func proceedToNextScreenTapped(_ sender: UIButton) {
         AppState.isDailyProgressCompleted = true
         
-        let storyboard = UIStoryboard(name: "Summary", bundle: nil)
-        guard let nextVC = storyboard.instantiateViewController(withIdentifier: "SummaryViewController") as? SummaryViewController else {
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        guard let nextVC = storyboard.instantiateViewController(withIdentifier: "PracticeViewController") as? PracticeViewController else {
             print("Error: Could not instantiate SummaryViewController")
             return
         }

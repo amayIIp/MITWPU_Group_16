@@ -15,7 +15,10 @@ class LastOnboardingViewController: UIViewController {
     private let completedLabel = UILabel()
     private let timeLabel = UILabel()
     private let splashContainer = UIView()
+    
     var report: StutterJSONReport?
+    
+    private var hasSavedData = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,23 +51,16 @@ class LastOnboardingViewController: UIViewController {
     private func setupCustomBackButton() {
         self.navigationItem.hidesBackButton = true
         
-        // 1. Use modern UIButton Configuration for a native look without background artifacts
         var config = UIButton.Configuration.plain()
         
         let imageConfig = UIImage.SymbolConfiguration(weight: .semibold)
         config.image = UIImage(systemName: "chevron.backward", withConfiguration: imageConfig)
         
-        // Optional: Shift the image slightly left to perfectly align with Apple's default back button
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         
-        // 2. Initialize the button with the configuration
         let backButton = UIButton(configuration: config)
         backButton.addTarget(self, action: #selector(didTapResetButton), for: .touchUpInside)
         
-        // Notice: We do NOT set explicit width/height constraints here.
-        // We let the Navigation Bar's wrapper view handle the intrinsic sizing.
-        
-        // 3. Wrap and set
         let customBarButtonItem = UIBarButtonItem(customView: backButton)
         self.navigationItem.leftBarButtonItem = customBarButtonItem
     }
@@ -74,6 +70,65 @@ class LastOnboardingViewController: UIViewController {
         repitition.text = "\(Int(report.percentages.repetition))%"
         prolongation.text = "\(Int(report.percentages.prolongation))%"
         loadTroubledWords(words: report.stutteredWords)
+        
+        // 👇 Analyze troubled words and save the session data dynamically
+        if !hasSavedData {
+            
+            // Note: If 'saveReadingSession' doesn't currently accept a title parameter,
+            // you will need to update it in your LogManager, OR set it on the report directly
+            // (e.g., var finalReport = report; finalReport.title = "test").
+            LogManager.shared.saveReadingSession(report: report)
+            
+            analyzeAndSaveProblemPhonemes(from: report.stutteredWords)
+            hasSavedData = true
+        }
+    }
+    
+    // MARK: - Phoneme Analysis Logic
+    private func analyzeAndSaveProblemPhonemes(from words: [String]) {
+        let cleanWords = words.filter { !$0.isEmpty }.map { $0.lowercased() }
+        if cleanWords.isEmpty { return }
+
+        var plosiveCount = 0
+        var fricativeCount = 0
+        var vowelVoicedCount = 0
+
+        let plosives: Set<Character> = ["p", "b", "t", "d", "k", "g"]
+        let fricatives: Set<Character> = ["s", "f"]
+        let vowelsVoiced: Set<Character> = ["a", "e", "i", "o", "u", "m", "n", "l"]
+
+        for word in cleanWords {
+            if word.hasPrefix("sh") || word.hasPrefix("th") {
+                fricativeCount += 1
+                continue
+            }
+            if let firstChar = word.first {
+                if plosives.contains(firstChar) {
+                    plosiveCount += 1
+                } else if fricatives.contains(firstChar) {
+                    fricativeCount += 1
+                } else if vowelsVoiced.contains(firstChar) {
+                    vowelVoicedCount += 1
+                }
+            }
+        }
+
+        var problemPhonemes: [String] = []
+
+        if plosiveCount > 0 {
+            problemPhonemes.append("Plosives (P, B, T, D, K, G)")
+        }
+        if fricativeCount > 0 {
+            problemPhonemes.append("Fricatives (S, F, SH, TH)")
+        }
+        if vowelVoicedCount > 0 {
+            problemPhonemes.append("Vowels (A,E,I,O,U) & Voiced (M,N,L)")
+        }
+
+        if !problemPhonemes.isEmpty {
+            DatabaseManager.shared.saveUserProblemPhonemes(phonemes: problemPhonemes)
+            print("Dynamically updated user phonemes based on onboarding reading report: \(problemPhonemes)")
+        }
     }
     
     func loadTroubledWords(words: [String]) {
@@ -185,13 +240,11 @@ class LastOnboardingViewController: UIViewController {
         
         CATransaction.begin()
         CATransaction.setCompletionBlock {
-            // Fade in checkmark and text after ring finishes
             UIView.animate(withDuration: 0.3, animations: {
                 self.checkmarkImageView.alpha = 1.0
                 self.completedLabel.alpha = 1.0
                 self.timeLabel.alpha = 1.0
             }) { _ in
-                // Wait 1 second, then dissolve everything
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     self.dissolveSplash()
                 }
@@ -217,24 +270,20 @@ class LastOnboardingViewController: UIViewController {
     }
     
     @IBAction func getStartedButtonTapped(_ sender: UIButton) {
-        // 1. Initialize guest session if no account session exists
         if !SessionManager.shared.isAccountMode {
             SessionManager.shared.startGuestSession()
         }
         
-        // 2. Mark onboarding and login as complete
         AppState.isOnboardingCompleted = true
         AppState.isLoginCompleted = true
         
         AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
         
-        // 3. Fetch ID (which will now safely return the deviceId for guests)
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
         var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
         profile.isOnboardingCompleted = true
         LogManager.shared.saveProfile(profile)
         
-        // Push onboarding status to Supabase (account mode only)
         if SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushProfile(profile)
             print("☁️ [SYNC] Onboarding status pushed to cloud")
@@ -245,7 +294,6 @@ class LastOnboardingViewController: UIViewController {
         let logic = LogicMaker()
         logic.checkForNewDay()
             
-        // 4. Transition to Home View Controller
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
 
@@ -279,13 +327,10 @@ class LastOnboardingViewController: UIViewController {
         guard let nav = navigationController else { return }
         let stack = nav.viewControllers
         
-        // Check if we have at least 3 view controllers in the stack
-        // (Current VC is index count-1. One back is count-2. Two back is count-3.)
         if stack.count >= 3 {
             let targetVC = stack[stack.count - 3]
             nav.popToViewController(targetVC, animated: true)
         } else {
-            // Failsafe: If there aren't enough screens, just pop to the very first screen
             nav.popToRootViewController(animated: true)
         }
     }
