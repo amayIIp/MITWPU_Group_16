@@ -356,6 +356,10 @@ class DatabaseManager {
         sqlite3_finalize(statement)
 
         isDailyGoalCompleted = (pendingCount == 0)
+        
+        if isDailyGoalCompleted {
+            NotificationManager.shared.cancelTodayNightReminder()
+        }
 
         NotificationCenter.default.post(
             name: NSNotification.Name("dailyGoalStatusUpdated"),
