@@ -1,14 +1,17 @@
 
 
 # Spasht: Real-Time Speech Therapy App
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 13 18" src="https://github.com/user-attachments/assets/73fceb13-739a-4b10-b8b8-5ab87ccffeeb" />
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 18 43" src="https://github.com/user-attachments/assets/10b5f180-5947-4207-85ad-eb9b34848306" />
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 14 04" src="https://github.com/user-attachments/assets/c5f7d8e0-a5c8-45d5-b3f2-825de4927c21" />
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 13 45" src="https://github.com/user-attachments/assets/905cc7ec-9627-4a79-9923-a114115e88e6" />
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 16 47" src="https://github.com/user-attachments/assets/39995724-5da4-4994-b3ea-521396bc0ef7" />
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 15 38" src="https://github.com/user-attachments/assets/9b9d79ae-afd6-4578-953a-614b20fa750b" />
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 15 14" src="https://github.com/user-attachments/assets/881a5b2b-a862-4199-a326-41a5175f5c3d" />
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 16 36" src="https://github.com/user-attachments/assets/165bf6aa-1042-4a04-a6e1-5e36c64cf9ed" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 16 36" src="https://github.com/user-attachments/assets/165bf6aa-1042-4a04-a6e1-5e36c64cf9ed" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 15 38" src="https://github.com/user-attachments/assets/9b9d79ae-afd6-4578-953a-614b20fa750b" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 15 14" src="https://github.com/user-attachments/assets/881a5b2b-a862-4199-a326-41a5175f5c3d" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 13 18" src="https://github.com/user-attachments/assets/73fceb13-739a-4b10-b8b8-5ab87ccffeeb" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 18 43" src="https://github.com/user-attachments/assets/10b5f180-5947-4207-85ad-eb9b34848306" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 14 04" src="https://github.com/user-attachments/assets/c5f7d8e0-a5c8-45d5-b3f2-825de4927c21" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 13 45" src="https://github.com/user-attachments/assets/905cc7ec-9627-4a79-9923-a114115e88e6" />
+<img width="120" height="262" alt="Simulator Screenshot - iPhone 17 Pro - 2026-04-21 at 15 16 47" src="https://github.com/user-attachments/assets/39995724-5da4-4994-b3ea-521396bc0ef7" />
+
+
+
 
 
 
