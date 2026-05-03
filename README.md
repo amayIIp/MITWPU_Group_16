@@ -233,10 +233,12 @@ On first launch, you will be taken through the onboarding flow:
 
 Built by **MIT-WPU Group 16** as part of a project submission.
 
-| Name | Role |
+| Name |
 |---|---|
-| Prathamesh Patil | iOS Development, Audio Pipeline, DTW Engine |
-| *(Add other members)* | *(Add roles)* |
+| Naitik Rathore  |
+| Prathamesh Patil  |
+| Amay Puthiyedath |
+| Krish Jain |
 
 ---
 
