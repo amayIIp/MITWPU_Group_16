@@ -233,14 +233,14 @@ On first launch, you will be taken through the onboarding flow:
 
 Built by **MIT-WPU Group 16** as part of a project submission.
 
-| Name |
-|---|---|
+
+
 | Naitik Rathore  |
 | Prathamesh Patil  |
 | Amay Puthiyedath |
 | Krish Jain |
 
----
+
 
 ## License
 
