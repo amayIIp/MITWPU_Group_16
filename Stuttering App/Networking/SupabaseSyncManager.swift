@@ -20,13 +20,10 @@ class SupabaseSyncManager {
         return formatter
     }
     
+    // MARK: - Sync Timestamp (single source of truth in SessionManager)
     private var lastSyncDateString: String {
-        get {
-            return UserDefaults.standard.string(forKey: "LastDeltaSyncDate") ?? "1970-01-01T00:00:00Z"
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "LastDeltaSyncDate")
-        }
+        get { SessionManager.shared.lastSyncTimestamp }
+        set { SessionManager.shared.lastSyncTimestamp = newValue }
     }
     
     private init() {}
@@ -41,108 +38,86 @@ class SupabaseSyncManager {
     }
     
     // MARK: - Bulk Push Local to Cloud
-    func pushAllLocalDataToCloud(completion: @escaping (Result<Void, Error>) -> Void) {
-        Task {
-            do {
-                guard let userId = client.auth.currentUser?.id.uuidString else {
-                    throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
-                }
-                
-                print("☁️ Starting bulk push of local data to cloud for user: \(userId)")
-                
-                // 1. Profile
-                if let profile = LogManager.shared.getProfile(userId: userId) {
-                    pushProfile(profile)
-                }
-                
-                // 2. Exercise Logs
-                let sources: [ExerciseSource] = [.dailyTasks, .exercises, .warmup, .reading, .conversation]
-                for source in sources {
-                    let logs = LogManager.shared.getLogs(for: source)
-                    for log in logs {
-                        pushExerciseLog(id: log.id.uuidString, name: log.exerciseName, source: log.source.rawValue, duration: log.exerciseDuration, completionDate: log.completionDate)
-                    }
-                }
-                
-                // 3. Daily Tasks & Journey & Goals & Streak
-                DatabaseManager.shared.syncLocalDailyTasksToCloud()
-                
-                let streak = DatabaseManager.shared.fetchCurrentStreak()
-                pushStreak(currentStreak: streak)
-                
-                let goalNames = [LogManager.GoalKeys.exercise, LogManager.GoalKeys.reading, LogManager.GoalKeys.conversation]
-                for name in goalNames {
-                    let val = LogManager.shared.getGoal(name: name)
-                    pushUserGoal(goalName: name, goalValue: val)
-                }
-                
-                // 4. Awards
-                if AwardsManager.shared.db == nil {
-                    AwardsManager.shared.openDatabase()
-                    AwardsManager.shared.seedDatabaseIfNeeded()
-                }
-                let allAwards = AwardsManager.shared.fetchAwards(query: "SELECT * FROM Awards")
-                for award in allAwards {
-                    if award.progress > 0 {
-                        pushAwardUpdate(awardId: award.id, progress: award.progress, status: award.status, completionDate: award.completionDate)
-                    }
-                }
-                
-                print("☁️ ✅ BULK PUSH COMPLETED SUCCESSFULLY")
-                DispatchQueue.main.async {
-                    completion(.success(()))
-                }
-            } catch {
-                print("☁️ ❌ Bulk push FAILED: \(error)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
+    /// Pushes all local data to the cloud.
+    /// Converted to async throws so callers can await it before navigating.
+    func pushAllLocalDataToCloud() async throws {
+        guard let userId = client.auth.currentUser?.id.uuidString else {
+            throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
+        }
+
+        print("☁️ Starting bulk push of local data to cloud for user: \(userId)")
+
+        // 1. Profile
+        if let profile = LogManager.shared.getProfile(userId: userId) {
+            pushProfile(profile)
+        }
+
+        // 2. Exercise Logs
+        let sources: [ExerciseSource] = [.dailyTasks, .exercises, .warmup, .reading, .conversation]
+        for source in sources {
+            let logs = LogManager.shared.getLogs(for: source)
+            for log in logs {
+                pushExerciseLog(id: log.id.uuidString, name: log.exerciseName, source: log.source.rawValue, duration: log.exerciseDuration, completionDate: log.completionDate)
             }
         }
+
+        // 3. Daily Tasks & Journey & Goals & Streak
+        DatabaseManager.shared.syncLocalDailyTasksToCloud()
+
+        let streak = DatabaseManager.shared.fetchCurrentStreak()
+        pushStreak(currentStreak: streak)
+
+        let goalNames = [LogManager.GoalKeys.exercise, LogManager.GoalKeys.reading, LogManager.GoalKeys.conversation]
+        for name in goalNames {
+            let val = LogManager.shared.getGoal(name: name)
+            pushUserGoal(goalName: name, goalValue: val)
+        }
+
+        // 4. Awards
+        if AwardsManager.shared.db == nil {
+            AwardsManager.shared.openDatabase()
+            AwardsManager.shared.seedDatabaseIfNeeded()
+        }
+        let allAwards = AwardsManager.shared.fetchAwards(query: "SELECT * FROM Awards")
+        for award in allAwards where award.progress > 0 {
+            pushAwardUpdate(awardId: award.id, progress: award.progress, status: award.status, completionDate: award.completionDate)
+        }
+
+        print("☁️ ✅ BULK PUSH COMPLETED SUCCESSFULLY")
     }
     
     // MARK: - Auth Sync triggered on Login
-    func syncAllDataFromCloud(completion: @escaping (Result<Void, Error>) -> Void) {
-        Task {
-            do {
-                guard let userId = client.auth.currentUser?.id.uuidString else {
-                    throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
-                }
-                
-                let syncStartTime = istFormatter.string(from: Date())
-                print("☁️ Starting cloud sync for user: \(userId)")
-                
-                if AwardsManager.shared.db == nil {
-                    AwardsManager.shared.openDatabase()
-                    AwardsManager.shared.seedDatabaseIfNeeded()
-                    print("☁️ AwardsDB initialized")
-                }
-                
-                try await fetchAndRestoreProfile(userId: userId)
-                print("☁️ ✅ Profile restored")
-                
-                try await fetchAndRestoreGoals(userId: userId)
-                print("☁️ ✅ Goals/Journey/Streak restored")
-                
-                try await fetchAndRestoreAnalytics(userId: userId)
-                print("☁️ ✅ Analytics restored")
-                
-                try await fetchAndRestoreAwards(userId: userId)
-                print("☁️ ✅ Awards restored")
-                
-                lastSyncDateString = syncStartTime
-                print("☁️ ✅ ALL DATA SYNCED SUCCESSFULLY")
-                
-                DispatchQueue.main.async {
-                    completion(.success(()))
-                }
-            } catch {
-                print("☁️ ❌ Sync FAILED: \(error)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-            }
+    /// Fetches and restores all user data from cloud.
+    /// Converted to async throws — callers can use flat await chains and
+    /// handle errors in a single catch block (no stuck loading overlays).
+    func syncAllDataFromCloud() async throws {
+        guard let userId = client.auth.currentUser?.id.uuidString else {
+            throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
         }
+
+        let syncStartTime = istFormatter.string(from: Date())
+        print("☁️ Starting cloud sync for user: \(userId)")
+
+        if AwardsManager.shared.db == nil {
+            AwardsManager.shared.openDatabase()
+            AwardsManager.shared.seedDatabaseIfNeeded()
+            print("☁️ AwardsDB initialized")
+        }
+
+        try await fetchAndRestoreProfile(userId: userId)
+        print("☁️ ✅ Profile restored")
+
+        try await fetchAndRestoreGoals(userId: userId)
+        print("☁️ ✅ Goals/Journey/Streak restored")
+
+        try await fetchAndRestoreAnalytics(userId: userId)
+        print("☁️ ✅ Analytics restored")
+
+        try await fetchAndRestoreAwards(userId: userId)
+        print("☁️ ✅ Awards restored")
+
+        lastSyncDateString = syncStartTime
+        print("☁️ ✅ ALL DATA SYNCED SUCCESSFULLY")
     }
     
     func hasPendingCloudChanges() async throws -> Bool {
@@ -159,62 +134,66 @@ class SupabaseSyncManager {
         return hasUpdates
     }
     
-    func reapplyDailyTaskCompletions(completion: @escaping () -> Void) {
-        Task {
-            guard let userId = client.auth.currentUser?.id.uuidString else {
-                DispatchQueue.main.async { completion() }
-                return
+    /// Re-applies today's cloud-completed daily tasks into the local SQLite DB.
+    /// Converted to async — callers await it directly inside a Task {}.
+    /// UTC-correct: compares the raw UTC timestamp from Supabase against
+    /// the UTC start-of-day boundary instead of doing IST prefix matching.
+    func reapplyDailyTaskCompletions() async {
+        guard let userId = client.auth.currentUser?.id.uuidString else { return }
+
+        struct DailyTaskRow: Decodable {
+            let name: String
+            let is_completed: Bool
+            let updated_at: String?
+        }
+
+        do {
+            let tasks: [DailyTaskRow] = try await client
+                .from("daily_tasks")
+                .select("id, name, is_completed, updated_at")
+                .eq("user_id", value: userId)
+                .eq("is_completed", value: true)
+                .execute()
+                .value
+
+            // Use UTC start-of-day so the comparison matches the UTC timestamps
+            // that Supabase stores in updated_at (avoids IST/UTC prefix mismatch).
+            var utcCalendar = Calendar(identifier: .gregorian)
+            utcCalendar.timeZone = TimeZone(identifier: "UTC")!
+            let todayUTCStart = utcCalendar.startOfDay(for: Date())
+
+            let utcFormatter = ISO8601DateFormatter()
+            utcFormatter.timeZone = TimeZone(identifier: "UTC")
+
+            let todaysTasks = tasks.filter { task in
+                guard let updatedAtStr = task.updated_at,
+                      let updatedAt = utcFormatter.date(from: updatedAtStr) else { return false }
+                return updatedAt >= todayUTCStart
             }
-            
-            struct DailyTaskRow: Decodable {
-                let name: String
-                let is_completed: Bool
-                let updated_at: String?
-            }
-            
-            do {
-                let tasks: [DailyTaskRow] = try await client
-                    .from("daily_tasks")
-                    .select("id, name, is_completed, updated_at")
-                    .eq("user_id", value: userId)
-                    .eq("is_completed", value: true)
-                    .execute()
-                    .value
-                            
-                let todayString = istFormatter.string(from: Date()).prefix(10) // "yyyy-MM-dd"
-                let todaysTasks = tasks.filter { task in
-                    guard let updatedAt = task.updated_at else { return false }
-                    return updatedAt.hasPrefix(todayString)
-                }
-                
-                print("☁️ Reapplying \(todaysTasks.count) completed daily tasks for today")
-                            
-                for t in todaysTasks {
-                    let sql = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
-                    var stmt: OpaquePointer?
-                    
-                    if sqlite3_prepare_v2(DatabaseManager.shared.db, sql, -1, &stmt, nil) == SQLITE_OK {
-                        sqlite3_bind_text(stmt, 1, (t.name as NSString).utf8String, -1, nil)
-                        let result = sqlite3_step(stmt)
-                        let changes = sqlite3_changes(DatabaseManager.shared.db)
-                        
-                        if result == SQLITE_DONE {
-                            print("☁️   Task '\(t.name)': \(changes) rows updated to completed")
-                        } else {
-                            print("☁️   ⚠️ Step failed for '\(t.name)'")
-                        }
+
+            print("☁️ Reapplying \(todaysTasks.count) completed daily tasks for today (UTC)")
+
+            for t in todaysTasks {
+                let sql = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
+                var stmt: OpaquePointer?
+                if sqlite3_prepare_v2(DatabaseManager.shared.db, sql, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (t.name as NSString).utf8String, -1, nil)
+                    let result = sqlite3_step(stmt)
+                    let changes = sqlite3_changes(DatabaseManager.shared.db)
+                    if result == SQLITE_DONE {
+                        print("☁️   Task '\(t.name)': \(changes) rows updated to completed")
                     } else {
-                        print("☁️   ⚠️ Failed to prepare statement for '\(t.name)'")
+                        print("☁️   ⚠️ Step failed for '\(t.name)'")
                     }
-                    sqlite3_finalize(stmt)
+                } else {
+                    print("☁️   ⚠️ Failed to prepare statement for '\(t.name)'")
                 }
-                DatabaseManager.shared.updateDailyGoalCompletionStatus()
-                
-            } catch {
-                print("☁️ ❌ Failed to reapply daily tasks: \(error)")
+                sqlite3_finalize(stmt)
             }
-            
-            DispatchQueue.main.async { completion() }
+            DatabaseManager.shared.updateDailyGoalCompletionStatus()
+
+        } catch {
+            print("☁️ ❌ Failed to reapply daily tasks: \(error)")
         }
     }
     
@@ -837,6 +816,7 @@ class SupabaseSyncManager {
     }
     
     func markDailyTaskCompletedInCloud(name: String) {
+        guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {

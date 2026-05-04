@@ -292,7 +292,7 @@ class LastOnboardingViewController: UIViewController {
         }
         
         let logic = LogicMaker()
-        logic.checkForNewDay()
+        logic.checkForNewDay(isFromLogin: true)
             
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")

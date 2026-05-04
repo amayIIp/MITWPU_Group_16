@@ -52,15 +52,15 @@ class SessionManager {
         return newId
     }
     
-    /// The active user ID — Supabase UUID for accounts, deviceId for guests
-    var currentUserId: String {
+    /// The active user ID — Supabase UUID for accounts, deviceId for guests.
+    /// In account mode the fallback chain ends at the stored lastUserId or
+    /// the live Supabase session; it does NOT fall through to deviceId so
+    /// we never silently write account data under the wrong identifier.
+    var currentUserId: String? {
         switch currentMode {
         case .account:
-            // Check stored userId FIRST (set during startAccountSession)
-            // because Supabase currentUser may be nil if email confirmation is pending
             return UserDefaults.standard.string(forKey: Keys.lastUserId)
                 ?? SupabaseManager.shared.currentUser?.id.uuidString
-                ?? deviceId
         case .guest:
             return deviceId
         case .none:
@@ -92,13 +92,17 @@ class SessionManager {
     
     // MARK: - Session Lifecycle
     
-    /// Start a fresh guest session (local-only, no Supabase)
+    /// Start a fresh guest session (local-only, no Supabase).
+    /// Always pairs with LogManager guest initialisation so that
+    /// getCurrentUserId() never returns nil for a guest user.
     func startGuestSession() {
         print("🚪 [SESSION] Starting GUEST session with deviceId: \(deviceId)")
         currentMode = .guest
         lastUserId = nil
-        
         AppState.isLoginCompleted = true
+
+        // Ensure guest user is always initialised in SQLite
+        LogManager.shared.initializeGuestUser()
     }
     
     /// Transition to account session after successful Supabase auth
@@ -110,35 +114,40 @@ class SessionManager {
         AppState.isLoginCompleted = true
     }
     
-    /// End the current session (sign-out)
+    /// End the current session (sign-out).
+    /// Invalidates the Supabase JWT keychain token so that restoreSession()
+    /// cannot silently resurrect a session the user explicitly ended.
     func endSession() {
         print("🚪 [SESSION] Ending session (was: \(currentMode.rawValue))")
         currentMode = .none
         lastUserId = nil
         lastSyncTimestamp = "1970-01-01T00:00:00Z"
-        
+
         AppState.isLoginCompleted = false
         AppState.isOnboardingCompleted = false
-        
-        // Clear account-specific UserDefaults but PRESERVE deviceId and userMode
+
+        // Clear account-specific UserDefaults but PRESERVE deviceId
         let preservedDeviceId = deviceId
-        
-        // Clear specific keys instead of nuking entire domain
+
         let keysToRemove = [
             AppState.kLoginCompleted,
             AppState.kOnboardingCompleted,
             Keys.lastUserId,
             Keys.lastSyncDate,
-            "lastDailyTaskRefreshDate"  // Force checkForNewDay to regenerate tasks after logout
+            "lastDailyTaskRefreshDate"
         ]
         for key in keysToRemove {
             UserDefaults.standard.removeObject(forKey: key)
         }
-        
+
         // Restore preserved values
         UserDefaults.standard.set(preservedDeviceId, forKey: Keys.deviceId)
         UserDefaults.standard.set(UserMode.none.rawValue, forKey: Keys.userMode)
-        
+
+        // Invalidate the Supabase JWT stored in the keychain so that
+        // restoreSession() cannot restore this session on next launch.
+        Task { try? await SupabaseManager.shared.client.auth.signOut() }
+
         print("🚪 [SESSION] Session ended. DeviceId preserved: \(preservedDeviceId)")
     }
     
