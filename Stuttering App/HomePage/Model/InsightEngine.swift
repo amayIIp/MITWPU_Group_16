@@ -33,16 +33,28 @@ actor InsightEngine {
 
     private init() {}
     func dayInsight(context: DayInsightContext) async -> String {
+        // Tier 1: On-device Foundation Model
         if let aiInsight = await generateDayInsightAI(context: context) {
             return aiInsight
         }
+        // Tier 2: Gemini API (cloud fallback)
+        if let geminiInsight = await generateDayInsightGemini(context: context) {
+            return geminiInsight
+        }
+        // Tier 3: Deterministic rule-based fallback
         return generateDayInsightRuleBased(context: context)
     }
     
     func overallHeadline(context: OverallInsightContext) async -> String {
+        // Tier 1: On-device Foundation Model
         if let aiHeadline = await generateOverallHeadlineAI(context: context) {
             return aiHeadline
         }
+        // Tier 2: Gemini API (cloud fallback)
+        if let geminiHeadline = await generateOverallHeadlineGemini(context: context) {
+            return geminiHeadline
+        }
+        // Tier 3: Deterministic rule-based fallback
         return generateOverallHeadlineRuleBased(context: context)
     }
 
@@ -206,7 +218,64 @@ actor InsightEngine {
             Output only the sentence — no quotes, no label.
             """
     }
-    
+
+    // MARK: - Tier 2: Gemini API Fallback
+
+    private let geminiSystemInstruction = """
+    You are a supportive speech therapy coach inside an app called Spasht.
+
+    Rules:
+    - Exactly 2 sentences.
+    - Total length must be less than 15 words.
+    - Both sentences must be similar length (roughly equal words).
+    - Be specific — use the exact numbers provided.
+    - Warm and encouraging, never clinical.
+    - No emojis, no markdown, no bullet points.
+    - If letter improvement data exists, lead with it.
+    - Output ONLY the insight text.
+    """
+
+    private func generateDayInsightGemini(context: DayInsightContext) async -> String? {
+        let prompt = buildDayPrompt(context: context)
+
+        guard let text = await GeminiService.shared.generate(
+            systemInstruction: geminiSystemInstruction,
+            prompt: prompt
+        ) else {
+            print("InsightEngine: Gemini day insight failed, falling back to rules")
+            return nil
+        }
+
+        // Apply the same validation as the Foundation Model path
+        guard isValidInsight(text) else {
+            print("InsightEngine: Gemini day insight failed validation")
+            return nil
+        }
+
+        return text
+    }
+
+    private func generateOverallHeadlineGemini(context: OverallInsightContext) async -> String? {
+        let prompt = buildOverallPrompt(context: context)
+
+        guard let text = await GeminiService.shared.generate(
+            systemInstruction: geminiSystemInstruction,
+            prompt: prompt
+        ) else {
+            print("InsightEngine: Gemini headline failed, falling back to rules")
+            return nil
+        }
+
+        guard !text.isEmpty, text.count < 150 else {
+            print("InsightEngine: Gemini headline failed validation")
+            return nil
+        }
+
+        return text
+    }
+
+    // MARK: - Tier 3: Rule-Based Fallback — Day Insight
+
     func generateDayInsightRuleBased(context: DayInsightContext) -> String {
 
         // 1. Letter improvement — most personal
