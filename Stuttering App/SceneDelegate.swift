@@ -56,28 +56,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         var initialVC: UIViewController
         
         switch mode {
-        case .guest:
+        case .guest, .account:
             if AppState.isOnboardingCompleted {
-                // Guest completed onboarding → go to Home
                 let storyboard = UIStoryboard(name: "Home", bundle: nil)
                 initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
             } else {
-                // Guest hasn't completed onboarding → resume onboarding
                 let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
                 initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
             }
-            
-        case .account:
-            if AppState.isOnboardingCompleted {
-                // Signed-in user with completed onboarding → Home
-                let storyboard = UIStoryboard(name: "Home", bundle: nil)
-                initialVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
-            } else {
-                // Signed-in user but onboarding not complete (edge case, shouldn't happen for sign-in)
-                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-                initialVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
-            }
-            
+
         case .none:
             // No session → show welcome/landing screen
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)

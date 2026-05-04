@@ -1,7 +1,6 @@
 import UIKit
 import Supabase
 import GoogleSignIn
-import CryptoKit
 
 class SignUpViewController: UIViewController, UITextFieldDelegate {
 
@@ -70,26 +69,26 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             showAlert(message: "Please fill in all fields.")
             return
         }
-        
+
         guard let name = nameTextField.text,
               !name.trimmingCharacters(in: .whitespaces).isEmpty else {
             showAlert(message: "Please enter your name.")
             return
         }
-        
+
         if !isValidEmail(email) {
             showAlert(message: "Please enter a valid email address.")
             return
         }
-        
+
         if password.count < 8 {
             showAlert(message: "Password is too short. It must be at least 8 characters.")
             return
         }
-        
+
         SignUpButton.isEnabled = false
         showLoading()
-        
+
         Task {
             do {
                 let authResponse = try await client.auth.signUp(
@@ -97,33 +96,43 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     password: password,
                     data: ["first_name": .string(name)]
                 )
-                
-                if SupabaseManager.shared.currentUser == nil {
-                    try await client.auth.signIn(email: email, password: password)
+
+                // BUG-02 fix: after signUp, currentUser is nil when Supabase has
+                // email confirmation enabled. Don't try to sign in or push data
+                // until the user confirms — show a clear message and stop here.
+                guard SupabaseManager.shared.currentUser != nil else {
+                    await MainActor.run {
+                        self.hideLoading()
+                        self.SignUpButton.isEnabled = true
+                        self.showAlert(message: "Account created! Please check your email to confirm your account before logging in.")
+                    }
+                    return
                 }
-                
+
+                // ISSUE-11 fix: use the userId from authResponse directly.
+                // Do NOT re-fetch from LogManager which may still hold the guest ID.
                 let userId = authResponse.user.id.uuidString
                 SessionManager.shared.startAccountSession(userId: userId)
                 LogManager.shared.initializeUserIfNeeded()
-                
-                if let userId = LogManager.shared.getCurrentUserId() {
-                    LogManager.shared.migrateGuestData(to: userId)
-                    var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
-                    profile.firstName = name
-                    LogManager.shared.saveProfile(profile)
-                    
-                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in }
-                }
-                
+
+                LogManager.shared.migrateGuestData(to: userId)
+                var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
+                profile.firstName = name
+                LogManager.shared.saveProfile(profile)
+
+                // ISSUE-09 fix: await the push so we only navigate after data
+                // is safely in the cloud (no navigation-before-push data loss).
+                try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
+
                 AppState.isLoginCompleted = true
-                
-                DispatchQueue.main.async {
+
+                await MainActor.run {
                     self.hideLoading()
                     self.SignUpButton.isEnabled = true
                     self.handleNavigationLogic()
                 }
             } catch {
-                DispatchQueue.main.async {
+                await MainActor.run {
                     self.hideLoading()
                     self.SignUpButton.isEnabled = true
                     self.showAlert(message: error.localizedDescription)
@@ -177,70 +186,47 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         present(alert, animated: true, completion: nil)
     }
     
-    private func randomNonceString(length: Int = 32) -> String {
-        precondition(length > 0)
-        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
-        var result = ""
-        var remainingLength = length
-        while remainingLength > 0 {
-            let randoms: [UInt8] = (0 ..< 16).map { _ in
-                var random: UInt8 = 0
-                _ = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
-                return random
-            }
-            randoms.forEach { random in
-                if remainingLength == 0 { return }
-                if random < charset.count {
-                    result.append(charset[Int(random)])
-                    remainingLength -= 1
-                }
-            }
-        }
-        return result
-    }
-    
-    private func sha256(_ input: String) -> String {
-        let inputData = Data(input.utf8)
-        let hashedData = SHA256.hash(data: inputData)
-        return hashedData.compactMap { String(format: "%02x", $0) }.joined()
-    }
+    // MARK: - Nonce helpers are in AuthHelpers.swift
     
     @objc private func googleSignInTapped() {
-        let rawNonce = randomNonceString()
-        let hashedNonce = sha256(rawNonce)
+        let rawNonce = AuthHelpers.randomNonceString()
+        let hashedNonce = AuthHelpers.sha256(rawNonce)
         showLoading()
         Task {
             do {
                 let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: self, hint: nil, additionalScopes: nil, nonce: hashedNonce)
                 let user = result.user
                 guard let idToken = user.idToken?.tokenString else {
-                    self.hideLoading()
-                    showAlert(message: "Failed to get ID token")
+                    await MainActor.run {
+                        self.hideLoading()
+                        self.showAlert(message: "Failed to get ID token")
+                    }
                     return
                 }
                 let accessToken = user.accessToken.tokenString
                 _ = try await client.auth.signInWithIdToken(credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken, nonce: rawNonce))
-                
+
                 guard let supabaseUser = SupabaseManager.shared.currentUser else { return }
+                // ISSUE-11 fix: use the confirmed Supabase user ID directly.
                 let userId = supabaseUser.id.uuidString
                 SessionManager.shared.startAccountSession(userId: userId)
                 LogManager.shared.initializeUserIfNeeded()
-                
-                if let userId = LogManager.shared.getCurrentUserId() {
-                    LogManager.shared.migrateGuestData(to: userId)
-                    var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
-                    if let displayName = result.user.profile?.name { profile.firstName = displayName }
-                    LogManager.shared.saveProfile(profile)
-                    SupabaseSyncManager.shared.pushAllLocalDataToCloud { _ in }
-                }
-                
+
+                LogManager.shared.migrateGuestData(to: userId)
+                var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
+                if let displayName = result.user.profile?.name { profile.firstName = displayName }
+                LogManager.shared.saveProfile(profile)
+
+                // ISSUE-09 fix: await push before navigating.
+                try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
+
                 AppState.isLoginCompleted = true
-                DispatchQueue.main.async {
+                await MainActor.run {
                     self.hideLoading()
                     self.handleNavigationLogic()
                 }
             } catch {
-                DispatchQueue.main.async {
+                await MainActor.run {
                     self.hideLoading()
                     self.showAlert(message: error.localizedDescription)
                 }
@@ -270,8 +256,9 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.destination is OnboardingNameViewController {
+            // startGuestSession() now internally calls initializeGuestUser(),
+            // so we only need one call here.
             SessionManager.shared.startGuestSession()
-            LogManager.shared.initializeGuestUser()
         }
     }
 }

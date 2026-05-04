@@ -158,13 +158,12 @@ class PhonemesSelectionViewController: UIViewController {
             databaseGroupsToSave.insert("Vowels (A,E,I,O,U) & Voiced (M,N,L)")
         }
         
-        // 3. Save to SQLite Database!
-        // (If they tapped "None" or "Not Sure", the array will just be empty, which is perfectly safe)
+        // 3. Save to SQLite Database and mirror to UserDefaults via StorageManager.
+        // (If they tapped "None" or "Not Sure", the array will be empty, which is perfectly safe.)
         DatabaseManager.shared.saveUserProblemPhonemes(phonemes: Array(databaseGroupsToSave))
-        
-        print("Mapped and Saved to DB:", databaseGroupsToSave)
-        
-        // TODO: Perform your segue or dismiss the view controller here!
-        // dismiss(animated: true, completion: nil)
+        StorageManager.shared.savePhonemes(Array(databaseGroupsToSave))
+
+        print("Mapped and Saved to DB and StorageManager:", databaseGroupsToSave)
+        // Navigation is handled by the storyboard segue connected to this button.
     }
 }

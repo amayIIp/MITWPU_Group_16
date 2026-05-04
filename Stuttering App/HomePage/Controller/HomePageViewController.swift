@@ -82,7 +82,7 @@ class HomePageViewController: UIViewController {
             print("📋 [GUEST] Skipping background cloud sync (guest mode)")
             return
         }
-        
+
         Task {
             do {
                 let hasChanges = try await SupabaseSyncManager.shared.hasPendingCloudChanges()
@@ -90,27 +90,21 @@ class HomePageViewController: UIViewController {
                     print("☁️ Skipping full sync — no new cloud updates detected.")
                     return
                 }
-                
-                SupabaseSyncManager.shared.syncAllDataFromCloud { [weak self] _ in
-                    DispatchQueue.main.async {
-                        // Re-apply daily task completions that checkForNewDay may have wiped
-                        SupabaseSyncManager.shared.reapplyDailyTaskCompletions {
-                            DispatchQueue.main.async {
-                                // Refresh all UI elements
-                                self?.loadTaskName()
-                                self?.loadProgressView()
-                                self?.AchievedAwardsUpdate()
-                                self?.setupRightBarButtons()
-                                
-                                let streak = DatabaseManager.shared.fetchCurrentStreak()
-                                self?.streakCount.text = String(streak)
-                            }
-                        }
-                    }
+
+                try await SupabaseSyncManager.shared.syncAllDataFromCloud()
+                await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
+
+                await MainActor.run {
+                    self.loadTaskName()
+                    self.loadProgressView()
+                    self.AchievedAwardsUpdate()
+                    self.setupRightBarButtons()
+                    let streak = DatabaseManager.shared.fetchCurrentStreak()
+                    self.streakCount.text = String(streak)
                 }
-                
+
             } catch {
-                print("☁️ ❌ Failed to evaluate cloud changes: \(error)")
+                print("☁️ ❌ Background sync failed: \(error)")
             }
         }
     }
