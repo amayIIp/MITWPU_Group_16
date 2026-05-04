@@ -52,7 +52,7 @@ class AudioWaveformView: UIView {
     }
     
     func update(with level: CGFloat) {
-        UIView.animate(withDuration: 0.1, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
+        UIView.animate(withDuration: 0.15, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
             for (index, bar) in self.bars.enumerated() {
                 guard let heightConstraint = bar.constraints.first(where: { $0.firstAttribute == .height }) else { continue }
                 
@@ -84,6 +84,8 @@ class VoiceViewController: UIViewController {
     @IBOutlet weak var aiTextView: UITextView!
     @IBOutlet weak var recordButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
+    @IBOutlet weak var endButton: UIButton!
+    @IBOutlet weak var waveformView: AudioWaveformView!
     
     // MARK: - Properties
     
@@ -97,7 +99,6 @@ class VoiceViewController: UIViewController {
     // Programmatic UI Elements
     private var aiMessageLabel: UILabel!
     private var userMessageLabel: UILabel!
-    private var waveformView: AudioWaveformView!
     private let startPromptLabel = UILabel()
     
     // MARK: - Lifecycle
@@ -141,41 +142,74 @@ class VoiceViewController: UIViewController {
         
         configureButtons()
         setupChatLabels()
-        setupWaveformView()
         setupStartPromptLabel()
-        setupTouchFix() // 🛠️ Fixes the untappable button bug
+        
+        // 🛠️ The New Dynamic Stack Setup
+        setupStackViews()
+        
+        setupTouchFix()
+    }
+    
+    private func setupStackViews() {
+        // 1. Remove views from their storyboard constraints so we can animate them dynamically
+        resetButton.removeFromSuperview()
+        waveformView.removeFromSuperview()
+        recordButton.removeFromSuperview()
+        endButton.removeFromSuperview()
+        
+        // Give the waveform a fixed height so the stack doesn't jitter when the audio bounces
+        waveformView.heightAnchor.constraint(equalToConstant: 80).isActive = true
+        
+        // 2. Horizontal Stack: When waveformView appears, it pushes the buttons outward
+        let hStack = UIStackView(arrangedSubviews: [resetButton, waveformView, recordButton])
+        hStack.axis = .horizontal
+        hStack.spacing = 24
+        hStack.alignment = .center
+        hStack.distribution = .equalSpacing
+        
+        // 3. Vertical Stack: When endButton appears, it pushes the hStack upward
+        let vStack = UIStackView(arrangedSubviews: [hStack, endButton])
+        vStack.axis = .vertical
+        vStack.spacing = 30
+        vStack.alignment = .fill
+        
+        vStack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(vStack)
+        
+        // Pin the vertical stack to the bottom of the screen
+        NSLayoutConstraint.activate([
+            vStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            vStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40)
+        ])
+        
+        // Set initial hidden states
+        waveformView.isHidden = true
+        waveformView.alpha = 0
+        endButton.isHidden = true
+        endButton.alpha = 0
     }
     
     private func configureButtons() {
         var resetConfig = UIButton.Configuration.glass()
         resetConfig.image = UIImage(systemName: "arrow.clockwise")
-        resetConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
+        resetConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
         resetButton.configuration = resetConfig
         resetButton.setTitle("", for: .normal)
         
         var recordConfig = UIButton.Configuration.glass()
         recordConfig.image = UIImage(systemName: "mic.slash")
-        recordConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 24, weight: .semibold)
+        recordConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
         recordButton.configuration = recordConfig
         recordButton.setTitle("", for: .normal)
-    }
-    
-    private func setupWaveformView() {
-        waveformView = AudioWaveformView()
-        waveformView.translatesAutoresizingMaskIntoConstraints = false
-        waveformView.alpha = 0
-        waveformView.isUserInteractionEnabled = false // Let taps pass through
-        view.addSubview(waveformView)
         
-        NSLayoutConstraint.activate([
-            waveformView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            waveformView.centerYAnchor.constraint(equalTo: recordButton.centerYAnchor),
-            waveformView.heightAnchor.constraint(equalToConstant: 100)
-        ])
+        var endConfig = UIButton.Configuration.filled()
+        endConfig.baseBackgroundColor = .systemRed
+        endConfig.cornerStyle = .capsule
+        endButton.configuration = endConfig
+        endButton.setTitle("End", for: .normal)
     }
         
     private func startSessionTimer() {
-        // Prevent multiple timers from spawning
         guard sessionTimer == nil else { return }
         sessionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.sessionDuration += 1
@@ -199,9 +233,7 @@ class VoiceViewController: UIViewController {
         view.addSubview(startPromptLabel)
         
         NSLayoutConstraint.activate([
-            // Perfectly centered horizontally
             startPromptLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            // Perfectly centered vertically in the middle of the screen
             startPromptLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
@@ -256,26 +288,31 @@ class VoiceViewController: UIViewController {
         
         let recordRect = recordButton.convert(recordButton.bounds, to: view)
         let resetRect = resetButton.convert(resetButton.bounds, to: view)
+        let endRect = endButton.convert(endButton.bounds, to: view)
         
         if recordRect.contains(location) && recordButton.isEnabled {
-            UIView.animate(withDuration: 0.1, animations: { self.recordButton.alpha = 0.5 }) { _ in
-                UIView.animate(withDuration: 0.1) { self.recordButton.alpha = 1.0 }
+            UIView.animate(withDuration: 0.15, animations: { self.recordButton.alpha = 0.5 }) { _ in
+                UIView.animate(withDuration: 0.15) { self.recordButton.alpha = 1.0 }
             }
             didTapRecord(recordButton)
         } else if resetRect.contains(location) && resetButton.isEnabled {
-            UIView.animate(withDuration: 0.1, animations: { self.resetButton.alpha = 0.5 }) { _ in
-                UIView.animate(withDuration: 0.1) { self.resetButton.alpha = 1.0 }
+            UIView.animate(withDuration: 0.15, animations: { self.resetButton.alpha = 0.5 }) { _ in
+                UIView.animate(withDuration: 0.15) { self.resetButton.alpha = 1.0 }
             }
             didTapReset(resetButton)
+        } else if endRect.contains(location) && endButton.alpha > 0 {
+            UIView.animate(withDuration: 0.15, animations: { self.endButton.alpha = 0.5 }) { _ in
+                UIView.animate(withDuration: 0.15) { self.endButton.alpha = 1.0 }
+            }
+            didTapEnd(endButton)
         }
     }
     
-    // MARK: - Display Helpers (Updated AI anchoring logic)
+    // MARK: - Display Helpers
     
     private func showAIMessage(_ text: String) {
-        // Fly user message UP and fade out when the AI responds
         if self.userMessageLabel.alpha > 0 {
-            UIView.animate(withDuration: 0.3, animations: {
+            UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, options: .curveEaseInOut, animations: {
                 self.userMessageLabel.transform = CGAffineTransform(translationX: 0, y: -30)
                 self.userMessageLabel.alpha = 0
             }) { _ in
@@ -284,62 +321,79 @@ class VoiceViewController: UIViewController {
             }
         }
         
-        // Update the AI message text smoothly
         if self.aiMessageLabel.alpha > 0 {
-            // If the AI message is already on screen, cross-fade to the new text
-            UIView.transition(with: self.aiMessageLabel, duration: 0.3, options: .transitionCrossDissolve) {
+            UIView.transition(with: self.aiMessageLabel, duration: 0.4, options: .transitionCrossDissolve) {
                 self.aiMessageLabel.text = text
             }
         } else {
-            // For the very first AI message, slide it up into place
             self.aiMessageLabel.text = text
             self.aiMessageLabel.transform = CGAffineTransform(translationX: 0, y: 20)
-            UIView.animate(withDuration: 0.4, delay: 0.1, options: .curveEaseOut) {
+            UIView.animate(withDuration: 0.6, delay: 0.1, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, options: .curveEaseOut, animations: {
                 self.aiMessageLabel.transform = .identity
                 self.aiMessageLabel.alpha = 1
-            }
+            })
         }
     }
     
     private func showUserMessage(_ text: String) {
-        // NOTE: We no longer hide the AI message here! It stays anchored at the top.
-        
-        // If the user label was hidden, slide it up into place beneath the AI message
         if userMessageLabel.alpha == 0 {
             userMessageLabel.transform = CGAffineTransform(translationX: 0, y: 20)
-            UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseOut) {
+            UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, options: .curveEaseOut, animations: {
                 self.userMessageLabel.alpha = 1
                 self.userMessageLabel.transform = .identity
-            }
+            })
         }
-        
-        // Update the live transcription text
         userMessageLabel.text = text
     }
     
     private func resetDisplay(completion: (() -> Void)? = nil) {
-        UIView.animate(withDuration: 0.4, delay: 0, options: [.curveEaseIn]) {
-            // Fly labels UP and out when clearing
+        self.startPromptLabel.isHidden = false
+        self.startPromptLabel.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+        
+        UIView.animate(withDuration: 0.8, delay: 0, usingSpringWithDamping: 0.75, initialSpringVelocity: 0.0, options: [.curveEaseInOut]) {
             self.aiMessageLabel?.transform = CGAffineTransform(translationX: 0, y: -40)
             self.aiMessageLabel?.alpha = 0
             
             self.userMessageLabel?.transform = CGAffineTransform(translationX: 0, y: -40)
             self.userMessageLabel?.alpha = 0
             
-            self.recordButton.transform = .identity
-            self.resetButton.transform = .identity
+            // Re-hide stack elements so they snap back together
+            self.waveformView.isHidden = true
             self.waveformView.alpha = 0
+            
+            self.endButton.isHidden = true
+            self.endButton.alpha = 0.0
+            
             self.startPromptLabel.alpha = 1.0
+            self.startPromptLabel.transform = .identity
+            
+            // Trigger layout engine to animate the collapse smoothly
+            self.view.layoutIfNeeded()
+            
         } completion: { _ in
             self.aiMessageLabel?.text = ""
             self.userMessageLabel?.text = ""
-            
-            // Reset their position so they don't stay hidden off-screen
             self.aiMessageLabel?.transform = .identity
             self.userMessageLabel?.transform = .identity
-            
             completion?()
         }
+    }
+    
+    // MARK: - Session Management
+    
+    private func executeEndSession() {
+        let finalDuration = Int(self.sessionDuration)
+        
+        self.viewModel.stopSession()
+        self.viewModel.resetConversationHistory()
+        self.resetDisplay()
+        self.stopAndResetSessionTimer()
+        
+        LogManager.shared.addLog(
+            exerciseName: "Conversation",
+            source: .conversation,
+            exerciseDuration: finalDuration
+        )
     }
     
     // MARK: - Actions
@@ -369,6 +423,23 @@ class VoiceViewController: UIViewController {
         }
     }
     
+    @IBAction func didTapEnd(_ sender: UIButton) {
+        feedbackGenerator.impactOccurred()
+        
+        let alert = UIAlertController(
+            title: "End Conversation?",
+            message: "Are you sure you want to end this session?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "End", style: .destructive) { [weak self] _ in
+            self?.executeEndSession()
+        })
+        
+        present(alert, animated: true)
+    }
+    
     private func showResetConfirmation() {
         let alert = UIAlertController(
             title: "Restart Conversation?",
@@ -378,12 +449,11 @@ class VoiceViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Restart", style: .destructive) { [weak self] _ in
-            self?.stopAndResetSessionTimer() // 🛠️ Reset the timer
+            self?.stopAndResetSessionTimer()
             self?.resetDisplay {
                 self?.viewModel.resetConversation()
             }
         })
-        
         present(alert, animated: true)
     }
     
@@ -415,11 +485,11 @@ class VoiceViewController: UIViewController {
         
         let isSessionActive = viewModel.isConversationActive || viewModel.hasConversationHistory
         
-        UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: .curveEaseInOut) {
+        UIView.animate(withDuration: 0.8, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.0, options: [.curveEaseInOut, .allowUserInteraction]) {
             
             var config = UIButton.Configuration.glass()
             config.image = UIImage(systemName: symbol)
-            config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 24, weight: .semibold)
+            config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
             
             self.recordButton.configuration = config
             self.recordButton.setTitle("", for: .normal)
@@ -427,21 +497,36 @@ class VoiceViewController: UIViewController {
             self.recordButton.alpha = isEnabled ? 1.0 : 0.6
             
             if isSessionActive {
-                self.resetButton.transform = CGAffineTransform(translationX: -75, y: 0)
-                self.recordButton.transform = CGAffineTransform(translationX: 75, y: 0)
-                
+                // Changing isHidden inside the animation block triggers the layout shift
+                self.waveformView.isHidden = false
                 self.waveformView.alpha = 1.0
-                self.startPromptLabel.alpha = 0.0
-            } else {
-                self.recordButton.transform = .identity
-                self.resetButton.transform = .identity
                 
+                self.endButton.isHidden = false
+                self.endButton.alpha = 1.0
+                
+                self.startPromptLabel.alpha = 0.0
+                self.startPromptLabel.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            } else {
+                self.waveformView.isHidden = true
                 self.waveformView.alpha = 0.0
+                
+                self.endButton.isHidden = true
+                self.endButton.alpha = 0.0
+                
                 self.startPromptLabel.alpha = 1.0
+                self.startPromptLabel.transform = .identity
             }
             
             if state != .listening {
                 self.waveformView.update(with: 0.0)
+            }
+            
+            // 🛠️ MAGIC HAPPENS HERE: Forces the StackView to animate its layout updates
+            self.view.layoutIfNeeded()
+            
+        } completion: { _ in
+            if isSessionActive {
+                self.startPromptLabel.isHidden = true
             }
         }
     }
@@ -451,7 +536,7 @@ class VoiceViewController: UIViewController {
 
 extension VoiceViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        if let view = touch.view, view.isDescendant(of: recordButton) || view.isDescendant(of: resetButton) {
+        if let view = touch.view, view.isDescendant(of: recordButton) || view.isDescendant(of: resetButton) || view.isDescendant(of: endButton) {
             return false
         }
         return true
@@ -461,49 +546,34 @@ extension VoiceViewController: UIGestureRecognizerDelegate {
 // MARK: - VoiceViewModelDelegate
 
 extension VoiceViewController: VoiceViewModelDelegate {
-    
     func didUpdateState(_ state: VoiceViewModel.VoiceState) {
-        Task { @MainActor in
-            self.updateVisuals(for: state)
-        }
+        Task { @MainActor in self.updateVisuals(for: state) }
     }
     
     func didUpdateTranscript(_ text: String, isUser: Bool) {
         Task { @MainActor in
-            if isUser && text != "Listening..." {
-                self.showUserMessage(text)
-            }
+            if isUser && text != "Listening..." { self.showUserMessage(text) }
         }
     }
     
     func addMessageToConversation(speaker: String, text: String) {
         Task { @MainActor in
-            if speaker == "AI" {
-                self.showAIMessage(text)
-            } else {
-                self.showUserMessage(text)
-            }
+            if speaker == "AI" { self.showAIMessage(text) } else { self.showUserMessage(text) }
         }
     }
     
     func didEncounterError(_ message: String) {
-        Task { @MainActor in
-            let errorFeedback = UINotificationFeedbackGenerator()
-            errorFeedback.notificationOccurred(.error)
-        }
+        Task { @MainActor in UINotificationFeedbackGenerator().notificationOccurred(.error) }
     }
     
     func didUpdateAudioLevel(_ level: Float) {
-        Task { @MainActor in
-            self.waveformView.update(with: CGFloat(level))
-        }
+        Task { @MainActor in self.waveformView.update(with: CGFloat(level)) }
     }
 }
 
 // MARK: - UITabBarControllerDelegate
 
 extension VoiceViewController: UITabBarControllerDelegate {
-    
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         if viewModel.isConversationActive || viewModel.hasConversationHistory {
             pendingTabViewController = viewController
@@ -514,41 +584,14 @@ extension VoiceViewController: UITabBarControllerDelegate {
     }
     
     private func showExitConversationAlert() {
-        let alert = UIAlertController(
-            title: "End Conversation?",
-            message: "You're currently in an active conversation.",
-            preferredStyle: .alert
-        )
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+        let alert = UIAlertController(title: "End Conversation?", message: "You're currently in an active conversation.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in self?.pendingTabViewController = nil })
+        alert.addAction(UIAlertAction(title: "Exit", style: .destructive) { [weak self] _ in
+            self?.executeEndSession()
+            self?.switchToPendingTab()
             self?.pendingTabViewController = nil
         })
-        
-        alert.addAction(UIAlertAction(title: "Exit", style: .destructive) { [weak self] _ in
-            guard let self = self else { return }
-            
-            // 🛠️ Capture the duration before resetting
-            let finalDuration = Int(self.sessionDuration)
-            
-            self.viewModel.stopSession()
-            self.viewModel.resetConversationHistory()
-            self.resetDisplay()
-            self.switchToPendingTab()
-            self.stopAndResetSessionTimer() // 🛠️ Stop and clear the timer
-            self.pendingTabViewController = nil
-            
-            // 🛠️ Pass the captured duration to LogManager
-            LogManager.shared.addLog(
-                exerciseName: "Conversation",
-                source: .conversation,
-                exerciseDuration: finalDuration
-            )
-        })
-        
-        present(alert, animated: true) {
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.warning)
-        }
+        present(alert, animated: true) { UINotificationFeedbackGenerator().notificationOccurred(.warning) }
     }
     
     private func switchToPendingTab() {

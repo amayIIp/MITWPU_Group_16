@@ -1,11 +1,3 @@
-//
-//  PlaceholderTextView.swift
-//  Stutterr
-//
-//  Created by Prathamesh Patil on 03/10/25.
-//
-
-import Foundation
 import UIKit
 
 class PlaceholderTextView: UITextView {
@@ -17,7 +9,7 @@ class PlaceholderTextView: UITextView {
         }
     }
     
-    @IBInspectable var placeholderColor: UIColor = UIColor.lightGray {
+    @IBInspectable var placeholderColor: UIColor = .tertiaryLabel {
         didSet {
             placeholderLabel.textColor = placeholderColor
         }
@@ -25,11 +17,17 @@ class PlaceholderTextView: UITextView {
 
     private let placeholderLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.lightGray
+        // Use modern semantic colors for iOS aesthetics
+        label.textColor = .tertiaryLabel
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
+    // Store constraints so we can update them dynamically
+    private var placeholderTopConstraint: NSLayoutConstraint!
+    private var placeholderLeadingConstraint: NSLayoutConstraint!
+    private var placeholderTrailingConstraint: NSLayoutConstraint!
 
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
@@ -46,16 +44,23 @@ class PlaceholderTextView: UITextView {
     }
 
     private func setup() {
-        self.addSubview(placeholderLabel)
+        addSubview(placeholderLabel)
         
         placeholderLabel.font = self.font
         placeholderLabel.text = placeholderText
         placeholderLabel.textColor = placeholderColor
 
+        // Initialize constraints but do not hardcode the constants yet
+        placeholderTopConstraint = placeholderLabel.topAnchor.constraint(equalTo: topAnchor)
+        placeholderLeadingConstraint = placeholderLabel.leadingAnchor.constraint(equalTo: leadingAnchor)
+        placeholderTrailingConstraint = placeholderLabel.trailingAnchor.constraint(equalTo: trailingAnchor)
+
         NSLayoutConstraint.activate([
-            placeholderLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: self.textContainerInset.top + self.contentInset.top),
-            placeholderLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: self.textContainerInset.left + self.contentInset.left + self.textContainer.lineFragmentPadding),
-            placeholderLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -(self.textContainerInset.right + self.contentInset.right + self.textContainer.lineFragmentPadding)),
+            placeholderTopConstraint,
+            placeholderLeadingConstraint,
+            placeholderTrailingConstraint,
+            // Ensure the placeholder doesn't stretch the text view horizontally
+            placeholderLabel.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor, constant: -32)
         ])
 
         NotificationCenter.default.addObserver(self,
@@ -64,6 +69,15 @@ class PlaceholderTextView: UITextView {
                                                object: self)
 
         updatePlaceholderVisibility()
+    }
+
+    // This is the critical fix: Update constraint constants whenever the layout changes
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        placeholderTopConstraint.constant = textContainerInset.top + contentInset.top
+        placeholderLeadingConstraint.constant = textContainerInset.left + contentInset.left + textContainer.lineFragmentPadding
+        placeholderTrailingConstraint.constant = -(textContainerInset.right + contentInset.right + textContainer.lineFragmentPadding)
     }
 
     override var font: UIFont? {

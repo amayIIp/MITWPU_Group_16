@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="N4R-4i-pcX">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nrA-nW-2Fs">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
@@ -228,7 +228,7 @@
             </objects>
             <point key="canvasLocation" x="5530.5343511450383" y="1739.4366197183099"/>
         </scene>
-        <!--Exercise-->
+        <!--Exercise Library-->
         <scene sceneID="red-Ek-yjh">
             <objects>
                 <viewController storyboardIdentifier="exerciseLibrary" id="uPe-bu-Hn0" customClass="LibraryViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
@@ -245,18 +245,7 @@
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
-                                <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="GroupCell" id="oOL-DQ-fUB" customClass="GroupCollectionViewCell" customModule="Stuttering_App" customModuleProvider="target">
-                                        <rect key="frame" x="86.666666666666671" y="0.0" width="220" height="217"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="KeV-je-aZG">
-                                            <rect key="frame" x="0.0" y="0.0" width="220" height="217"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </collectionViewCellContentView>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                        <size key="customSize" width="220" height="217"/>
-                                    </collectionViewCell>
-                                </cells>
+                                <cells/>
                                 <connections>
                                     <outlet property="dataSource" destination="uPe-bu-Hn0" id="CRk-QM-02t"/>
                                     <outlet property="delegate" destination="uPe-bu-Hn0" id="njZ-h9-D2v"/>
@@ -272,14 +261,67 @@
                             <constraint firstItem="foe-85-cc9" firstAttribute="leading" secondItem="lLd-gL-j97" secondAttribute="leading" id="sQw-Y6-NW2"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Exercise" id="R52-DE-7xZ"/>
+                    <navigationItem key="navigationItem" title="Exercise Library" id="R52-DE-7xZ"/>
                     <connections>
                         <outlet property="collectionView" destination="foe-85-cc9" id="DAc-u7-o63"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DY0-wk-Oyl" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3156" y="2594"/>
+            <point key="canvasLocation" x="4081.679389312977" y="2593.6619718309862"/>
+        </scene>
+        <!--Exercises-->
+        <scene sceneID="0A7-fg-fdt">
+            <objects>
+                <viewController id="ruC-xk-vPn" customClass="ExerciseTabViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="98R-xd-XuE">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="6Kf-Om-Xj8">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="9SK-4L-uKt">
+                                    <size key="itemSize" width="128" height="128"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="JZR-h5-6gC">
+                                        <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="128"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="fca-vU-RYS">
+                                            <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="128"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </collectionViewCellContentView>
+                                    </collectionViewCell>
+                                </cells>
+                            </collectionView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="C7u-cr-0mW"/>
+                        <color key="backgroundColor" name="bg"/>
+                        <constraints>
+                            <constraint firstItem="C7u-cr-0mW" firstAttribute="trailing" secondItem="6Kf-Om-Xj8" secondAttribute="trailing" id="6ok-xW-PZC"/>
+                            <constraint firstItem="6Kf-Om-Xj8" firstAttribute="leading" secondItem="C7u-cr-0mW" secondAttribute="leading" id="GkD-Gd-brS"/>
+                            <constraint firstAttribute="bottom" secondItem="6Kf-Om-Xj8" secondAttribute="bottom" id="iRP-do-aiR"/>
+                            <constraint firstItem="6Kf-Om-Xj8" firstAttribute="top" secondItem="98R-xd-XuE" secondAttribute="top" id="utw-fa-KEW"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Exercises" id="RNA-VO-vGD">
+                        <barButtonItem key="rightBarButtonItem" image="books.vertical" catalog="system" id="K6c-91-qGd">
+                            <connections>
+                                <segue destination="uPe-bu-Hn0" kind="show" id="DdQ-C1-2Dp"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="exerciseCollectionView" destination="6Kf-Om-Xj8" id="g91-QM-mCZ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7xX-bV-gCQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2121.3740458015268" y="2593.6619718309862"/>
         </scene>
         <!--Video Diary-->
         <scene sceneID="49s-iD-Fsi">
@@ -368,7 +410,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YW8-Rk-K4N" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6457.2519083969464" y="2582.3943661971834"/>
+            <point key="canvasLocation" x="7383.9694656488546" y="2582.3943661971834"/>
         </scene>
         <!--Exercises-->
         <scene sceneID="dmF-So-6Al">
@@ -376,6 +418,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="N4R-4i-pcX" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Exercises" image="person.wave.2" catalog="system" id="AG3-nD-lhO"/>
                     <toolbarItems/>
+                    <navigationItem key="navigationItem" id="TXW-Ah-k1c"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="A7O-of-XH4">
                         <rect key="frame" x="0.0" y="118" width="393" height="106"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -387,7 +430,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vWe-xk-hD8" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2230" y="2594"/>
+            <point key="canvasLocation" x="3156.4885496183206" y="2593.6619718309862"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="mMk-oN-LNe">
@@ -405,7 +448,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Cf3-Su-6QF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5530.5343511450383" y="2582.3943661971834"/>
+            <point key="canvasLocation" x="6457.2519083969464" y="2582.3943661971834"/>
         </scene>
         <!--Recordings-->
         <scene sceneID="Bcd-SE-IjI">
@@ -494,7 +537,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Jkz-K3-VLB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="7300" y="2582"/>
+            <point key="canvasLocation" x="8226.7175572519081" y="2581.6901408450703"/>
         </scene>
         <!--Story Cubes-->
         <scene sceneID="tjS-SS-TEu">
@@ -587,7 +630,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GQX-ft-QvI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6457" y="3332"/>
+            <point key="canvasLocation" x="7382.4427480916029" y="3331.6901408450708"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="vRa-Dw-T0l">
@@ -605,7 +648,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iyH-hB-H2n" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5531" y="3332"/>
+            <point key="canvasLocation" x="6457.2519083969464" y="3331.6901408450708"/>
         </scene>
         <!--Recordings-->
         <scene sceneID="sTh-av-g4T">
@@ -685,7 +728,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sm8-Uz-f2g" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="7300" y="3332"/>
+            <point key="canvasLocation" x="8226.7175572519081" y="3331.6901408450708"/>
         </scene>
         <!--Instructions-->
         <scene sceneID="v2M-Oz-Yg9">
@@ -861,10 +904,33 @@
             </objects>
             <point key="canvasLocation" x="4730.5343511450383" y="1731.6901408450706"/>
         </scene>
+        <!--Exercises-->
+        <scene sceneID="c6q-sK-Z5S">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="nrA-nW-2Fs" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Exercises" image="person.wave.2" catalog="system" id="8ha-9Z-gjd"/>
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="q5m-cW-PCR">
+                        <rect key="frame" x="0.0" y="118" width="393" height="106"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="ruC-xk-vPn" kind="relationship" relationship="rootViewController" id="p1s-Pd-e0A"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fNX-5k-R3D" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1194.6564885496182" y="2593.6619718309862"/>
+        </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="DdQ-C1-2Dp"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <image name="1.1.1" width="1080" height="1080"/>
         <image name="book" catalog="system" width="128" height="99"/>
+        <image name="books.vertical" catalog="system" width="128" height="107"/>
         <image name="person.wave.2" catalog="system" width="128" height="116"/>
         <image name="play" catalog="system" width="120" height="128"/>
         <image name="repeat" catalog="system" width="128" height="98"/>

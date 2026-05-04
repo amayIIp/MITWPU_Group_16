@@ -241,7 +241,32 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ivY-CW-wxC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2428" y="89"/>
+            <point key="canvasLocation" x="2909" y="89"/>
+        </scene>
+        <!--Summary-->
+        <scene sceneID="q5C-nn-xKq">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Summary" id="p4V-Ct-ddt" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="b3r-Qb-j9c"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="jVo-kv-cpE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2282" y="528"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="ZFz-ku-lLh">
+            <objects>
+                <viewController id="dJ2-O4-rNn" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8Ca-bm-d7g">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="Eb8-j7-yFx"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="MXl-f8-ETY" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3075" y="870"/>
         </scene>
         <!--Guest Gate View Controller-->
         <scene sceneID="QG4-Pn-D0L">
@@ -364,7 +389,7 @@
         <!--Progress-->
         <scene sceneID="2Wo-vL-Rqg">
             <objects>
-                <viewController id="WO6-t3-pm4" customClass="ProgressViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Progress" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WO6-t3-pm4" customClass="ProgressViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="mGE-vh-qP4">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1015,12 +1040,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KMb-8A-oY6" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1546" y="-611"/>
+            <point key="canvasLocation" x="3825" y="89"/>
         </scene>
         <!--Speech Goals-->
         <scene sceneID="07b-Rn-GI0">
             <objects>
-                <viewController id="4SZ-S5-UWU" customClass="SetGoalsViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SetGoals" id="4SZ-S5-UWU" customClass="SetGoalsViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="rrg-aw-Nup">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1332,7 +1357,7 @@
                             </constraints>
                         </view>
                         <view key="tableFooterView" contentMode="scaleToFill" id="4By-Y2-glC">
-                            <rect key="frame" x="0.0" y="469" width="393" height="59"/>
+                            <rect key="frame" x="0.0" y="416" width="393" height="59.000000000000057"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DTs-df-CY1">
@@ -1370,16 +1395,16 @@
                                             <segue destination="Kpx-8b-S5L" kind="show" id="pMf-Re-XvU"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" id="SCj-vw-Hyh">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" id="rne-M1-j5j">
                                         <rect key="frame" x="20" y="239" width="353" height="53"/>
                                         <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="SCj-vw-Hyh" id="aII-Y2-AL3">
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rne-M1-j5j" id="uan-nc-ZIA">
                                             <rect key="frame" x="0.0" y="0.0" width="322.66666666666669" height="53"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
-                                        <listContentConfiguration key="contentConfiguration" text="Progress"/>
+                                        <listContentConfiguration key="contentConfiguration" text="Summary"/>
                                         <connections>
-                                            <segue destination="WO6-t3-pm4" kind="show" id="yJg-9N-XXu"/>
+                                            <segue destination="p4V-Ct-ddt" kind="show" id="riR-UO-bSe"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" id="EZl-SU-HCR">
@@ -1394,19 +1419,10 @@
                                             <segue destination="4SZ-S5-UWU" kind="show" id="w9w-kq-WHu"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" id="Y0K-Xa-guF">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" id="grw-TU-RBT">
                                         <rect key="frame" x="20" y="345" width="353" height="53"/>
                                         <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Y0K-Xa-guF" id="RFP-85-5Bh">
-                                            <rect key="frame" x="0.0" y="0.0" width="322.66666666666669" height="53"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </tableViewCellContentView>
-                                        <listContentConfiguration key="contentConfiguration" text="Reminders"/>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" id="rne-M1-j5j">
-                                        <rect key="frame" x="20" y="398" width="353" height="53"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rne-M1-j5j" id="uan-nc-ZIA">
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="grw-TU-RBT" id="Z1T-1p-dvD">
                                             <rect key="frame" x="0.0" y="0.0" width="322.66666666666669" height="53"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>

@@ -63,6 +63,10 @@ class ReadingResultViewController: UIViewController {
         
         if !hasSavedSession {
             LogManager.shared.saveReadingSession(report: report)
+            
+            // 👇 Analyze troubled words and update the database dynamically
+            analyzeAndSaveProblemPhonemes(from: report.stutteredWords)
+            
             hasSavedSession = true
         }
             
@@ -92,8 +96,59 @@ class ReadingResultViewController: UIViewController {
         LogManager.shared.debugPrintAllReadingSessions()
 
     }
-
     
+    // MARK: - Phoneme Analysis Logic
+    private func analyzeAndSaveProblemPhonemes(from words: [String]) {
+        let cleanWords = words.filter { !$0.isEmpty }.map { $0.lowercased() }
+        if cleanWords.isEmpty { return }
+
+        var plosiveCount = 0
+        var fricativeCount = 0
+        var vowelVoicedCount = 0
+
+        // Define our target groups based on your JSON setup
+        let plosives: Set<Character> = ["p", "b", "t", "d", "k", "g"]
+        let fricatives: Set<Character> = ["s", "f"]
+        let vowelsVoiced: Set<Character> = ["a", "e", "i", "o", "u", "m", "n", "l"]
+
+        // Tally up the starting letters of the stuttered words
+        for word in cleanWords {
+            if word.hasPrefix("sh") || word.hasPrefix("th") {
+                fricativeCount += 1
+                continue
+            }
+            if let firstChar = word.first {
+                if plosives.contains(firstChar) {
+                    plosiveCount += 1
+                } else if fricatives.contains(firstChar) {
+                    fricativeCount += 1
+                } else if vowelsVoiced.contains(firstChar) {
+                    vowelVoicedCount += 1
+                }
+            }
+        }
+
+        var problemPhonemes: [String] = []
+
+        // If they struggled with a sound type during this session, add it to their problem list
+        if plosiveCount > 0 {
+            problemPhonemes.append("Plosives (P, B, T, D, K, G)")
+        }
+        if fricativeCount > 0 {
+            problemPhonemes.append("Fricatives (S, F, SH, TH)")
+        }
+        if vowelVoicedCount > 0 {
+            problemPhonemes.append("Vowels (A,E,I,O,U) & Voiced (M,N,L)")
+        }
+
+        // Only save if we actually detected recognizable phonemes
+        if !problemPhonemes.isEmpty {
+            DatabaseManager.shared.saveUserProblemPhonemes(phonemes: problemPhonemes)
+            print("Dynamically updated user phonemes based on reading report: \(problemPhonemes)")
+        }
+    }
+
+    // MARK: - Layout Methods
     func loadTroubledWords(words: [String]) {
         troubledWordsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         

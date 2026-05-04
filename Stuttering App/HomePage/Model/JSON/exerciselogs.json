@@ -19,7 +19,7 @@
                 "id": "ex_pmr",
                 "name": "Flexible Pacing",
                 "description": "Helps you start long words more slowly",
-                "short_time": 10
+                "short_time":10
               }
             ]
         },
@@ -38,13 +38,13 @@
                 "id": "ex_coarticulation",
                 "name": "Light Contacts",
                 "description": "Reduces tension in P, B, T, D, K, G sounds",
-                "short_time": 10
+                "short_time":10
               },
               {
                 "id": "ex_light_contact",
                 "name": "Prolongation",
                 "description": "Keeps airflow steady in S, F, SH, TH sounds",
-                "short_time": 10
+                "short_time":10
               }
             ]
         },
@@ -62,14 +62,14 @@
               {
                 "id": "ex_coord_speech",
                 "name": "Pull-Out",
-                "description": "CRelease tension while stuck on a word",
-                "short_time": 11
+                "description": "Release tension while stuck on a word",
+                "short_time": 10
               },
               {
                 "id": "ex_prolonged_speech",
                 "name": "Block Correction",
                 "description": "Calm down and redo the word smoothly",
-                "short_time": 11
+                "short_time": 10
               }
             ]
         }
