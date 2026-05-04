@@ -51,6 +51,38 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     private let silenceThreshold: TimeInterval = 2.5
     private var hasDetectedSpeech = false
     
+    /// Tracks whether the AI backend is Gemini (cloud) instead of Foundation Model (on-device)
+    private var useGemini: Bool = false
+    
+    /// Shared persona instructions used by both Foundation Model and Gemini
+    private let personaInstructions = """
+    You are a friendly and supportive speaking partner helping a user improve their spoken English.
+    Your job is to dynamically adapt the conversation style based on what the user says.
+
+    Rules:
+    - Keep responses very short (1–2 sentences).
+    - Speak in simple, clear English.
+    - Always ask ONE relevant follow-up question.
+    - Keep the conversation natural and engaging.
+
+    Conversation behavior:
+    - If the user gives a short answer, encourage them to expand.
+    - If the user talks about job, career, or interview → switch to interview style.
+    - If the user tells or asks for stories → switch to storytelling style.
+    - If the user talks about daily routine → switch to daily life conversation.
+    - Otherwise → continue casual conversation.
+    - Gradually increase complexity as the conversation continues.
+    - Avoid repeating the same type of questions.
+
+    Important:
+    - Do NOT correct grammar explicitly.
+    - Do NOT give long explanations.
+    - Focus on helping the user speak more.
+
+    Tone:
+    - Friendly, patient, and slightly curious.
+    """
+    
     // MARK: - Init
     
     override init() {
@@ -126,45 +158,19 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     func prepareModel() async {
         let model = SystemLanguageModel.default
         
-        let personaInstructions = """
-        You are a friendly and supportive speaking partner helping a user improve their spoken English.
-        Your job is to dynamically adapt the conversation style based on what the user says.
-
-        Rules:
-        - Keep responses very short (1–2 sentences).
-        - Speak in simple, clear English.
-        - Always ask ONE relevant follow-up question.
-        - Keep the conversation natural and engaging.
-
-        Conversation behavior:
-        - If the user gives a short answer, encourage them to expand.
-        - If the user talks about job, career, or interview → switch to interview style.
-        - If the user tells or asks for stories → switch to storytelling style.
-        - If the user talks about daily routine → switch to daily life conversation.
-        - Otherwise → continue casual conversation.
-        - Gradually increase complexity as the conversation continues.
-        - Avoid repeating the same type of questions.
-
-        Important:
-        - Do NOT correct grammar explicitly.
-        - Do NOT give long explanations.
-        - Focus on helping the user speak more.
-
-        Tone:
-        - Friendly, patient, and slightly curious.
-        """
-        
         if model.availability == .available {
             self.session = LanguageModelSession(model: model, instructions: personaInstructions)
+            self.useGemini = false
+            print("VoiceViewModel: Using on-device Foundation Model")
         } else {
-            await MainActor.run {
-                self.delegate?.didEncounterError("AI model is not available on this device.")
-            }
+            // Foundation Model unavailable → fall back to Gemini API
+            self.useGemini = true
+            print("VoiceViewModel: Foundation Model unavailable, using Gemini API fallback")
         }
     }
     
     func startConversation() {
-        guard session != nil else {
+        guard session != nil || useGemini else {
             delegate?.didEncounterError("AI is not ready yet")
             return
         }
@@ -394,36 +400,52 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         delegate?.addMessageToConversation(speaker: "User", text: userInput)
         state = .thinking
         
-        Task {
-            guard let session = self.session else {
-                await MainActor.run {
-                    self.delegate?.didEncounterError("AI session not initialized")
-                    self.state = .idle
+        if useGemini {
+            // ── Gemini API path ──────────────────────────────────────────
+            Task {
+                let geminiHistory: [(role: String, text: String)] = self.conversationHistory
+                    .dropLast()
+                    .suffix(10)
+                    .map { turn in
+                        let role = (turn.speaker == "User") ? "user" : "model"
+                        return (role: role, text: turn.text)
+                    }
+                
+                if let reply = await GeminiService.shared.generateChat(
+                    systemInstruction: self.personaInstructions,
+                    history: geminiHistory,
+                    latestUserMessage: userInput
+                ) {
+                    await MainActor.run { self.speak(reply) }
+                } else {
+                    await MainActor.run { self.speak("Sorry, could you say that again?") }
                 }
-                return
             }
-            
-            do {
-                
-                let context = self.conversationHistory
-                    .suffix(6)
-                    .map { "\($0.speaker): \($0.text)" }
-                    .joined(separator: "\n")
-                
-                let prompt = context + "\nUser: \(userInput)"
-                
-                
-                let response = try await session.respond(to: prompt)
-                
-                let responseContent = response.content
-                
-                await MainActor.run {
-                    self.speak(responseContent)
+        } else {
+            // ── Foundation Model path (existing) ─────────────────────────
+            Task {
+                guard let session = self.session else {
+                    await MainActor.run {
+                        self.delegate?.didEncounterError("AI session not initialized")
+                        self.state = .idle
+                    }
+                    return
                 }
                 
-            } catch {
-                await MainActor.run {
-                    self.speak("Sorry, could you say that again?")
+                do {
+                    let context = self.conversationHistory
+                        .suffix(6)
+                        .map { "\($0.speaker): \($0.text)" }
+                        .joined(separator: "\n")
+                    
+                    let prompt = context + "\nUser: \(userInput)"
+                    
+                    let response = try await session.respond(to: prompt)
+                    let responseContent = response.content
+                    
+                    await MainActor.run { self.speak(responseContent) }
+                } catch {
+                    await MainActor.run { self.speak("Sorry, could you say that again?") }
                 }
             }
         }
