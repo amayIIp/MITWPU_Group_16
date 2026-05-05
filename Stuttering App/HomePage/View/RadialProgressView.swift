@@ -32,7 +32,7 @@ class RadialProgressView: UIView {
     }
 
     private func drawBackgroundRings(center: CGPoint, startAngle: CGFloat) {
-        let backgroundColor = UIColor(red: 0.923, green: 0.948, blue: 0.977, alpha: 1.0)
+        let backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
         
         for ring in chartData {
             let fullCircle: CGFloat = 2 * .pi // Full circle

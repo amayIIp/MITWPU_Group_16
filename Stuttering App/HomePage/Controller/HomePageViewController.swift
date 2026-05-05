@@ -211,7 +211,7 @@ class HomePageViewController: UIViewController {
         config.imagePadding = 6
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 2)
         
-        let flameColor = UIColor(red: 1.0, green: 0.435, blue: 0.212, alpha: 1.0)
+        let flameColor = UIColor(red: 1.0, green: 0.329, blue: 0.431, alpha: 1.0)
         let flameConfig = UIImage.SymbolConfiguration(scale: .medium)
         config.image = UIImage(systemName: "flame.fill", withConfiguration: flameConfig)?
             .withTintColor(flameColor, renderingMode: .alwaysOriginal)
@@ -325,7 +325,7 @@ class HomePageViewController: UIViewController {
         let iconViews = [taskIcon1, taskIcon2, taskIcon3, taskIcon4, taskIcon5]
         
         let checkmarkIcon = UIImage(systemName: "checkmark.circle.fill")
-        let circleIcon = UIImage(systemName: "circle")
+        let circleIcon = UIImage(systemName: "circle.fill")
         
         var completedCount = 0
         
@@ -337,11 +337,11 @@ class HomePageViewController: UIViewController {
             
             if task.isCompleted {
                 iconViews[index]?.image = checkmarkIcon
-                iconViews[index]?.tintColor = .systemGreen
+                iconViews[index]?.tintColor = UIColor(named: "green")
                 completedCount += 1
             } else {
                 iconViews[index]?.image = circleIcon
-                iconViews[index]?.tintColor = .secondaryLabel
+                iconViews[index]?.tintColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
             }
         }
         

@@ -167,8 +167,8 @@ class LastOnboardingViewController: UIViewController {
         let label = UILabel()
         label.text = "  \(text)  "
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        label.textColor = .systemBlue
-        label.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.12)
+        label.textColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0).withAlphaComponent(0.12)
         label.textAlignment = .center
         label.layer.cornerRadius = 14
         label.layer.masksToBounds = true

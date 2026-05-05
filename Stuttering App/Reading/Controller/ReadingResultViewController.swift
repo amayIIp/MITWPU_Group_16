@@ -238,7 +238,7 @@ class ReadingResultViewController: UIViewController {
         backgroundCircle.path = circlePath.cgPath
         backgroundCircle.strokeColor = UIColor.systemGray5.cgColor
         backgroundCircle.lineWidth = lineWidth
-        backgroundCircle.fillColor = UIColor.clear.cgColor
+        backgroundCircle.fillColor = CGColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
         backgroundCircle.lineCap = .round
         fluencyCircleView.layer.addSublayer(backgroundCircle)
         
