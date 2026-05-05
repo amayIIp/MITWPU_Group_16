@@ -1062,6 +1062,7 @@
                                                     <constraint firstAttribute="width" constant="30" id="Eqb-3k-PZb"/>
                                                     <constraint firstAttribute="height" constant="30" id="w7e-mI-E7k"/>
                                                 </constraints>
+                                                <color key="tintColor" name="ButtonTheme"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled">
                                                     <imageReference key="image" image="minus" catalog="system" symbolScale="small"/>
@@ -1085,6 +1086,7 @@
                                                     <constraint firstAttribute="height" constant="30" id="4Rc-Bu-0Yi"/>
                                                     <constraint firstAttribute="width" constant="30" id="Rfo-Cj-GRG"/>
                                                 </constraints>
+                                                <color key="tintColor" name="ButtonTheme"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled">
                                                     <imageReference key="image" image="plus" catalog="system" symbolScale="small"/>
@@ -1135,6 +1137,7 @@
                                                     <constraint firstAttribute="width" constant="30" id="O1G-Vd-5bd"/>
                                                     <constraint firstAttribute="height" constant="30" id="TQD-13-f93"/>
                                                 </constraints>
+                                                <color key="tintColor" name="ButtonTheme"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled">
                                                     <imageReference key="image" image="minus" catalog="system" symbolScale="small"/>
@@ -1169,6 +1172,7 @@
                                                     <constraint firstAttribute="width" constant="30" id="aso-yv-wSZ"/>
                                                     <constraint firstAttribute="height" constant="30" id="kaX-kd-CHa"/>
                                                 </constraints>
+                                                <color key="tintColor" name="ButtonTheme"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled">
                                                     <imageReference key="image" image="plus" catalog="system" symbolScale="small"/>
@@ -1213,6 +1217,7 @@
                                                     <constraint firstAttribute="height" constant="30" id="xa2-pn-eb3"/>
                                                     <constraint firstAttribute="width" constant="30" id="zRl-bh-oaN"/>
                                                 </constraints>
+                                                <color key="tintColor" name="ButtonTheme"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled">
                                                     <imageReference key="image" image="minus" catalog="system" symbolScale="small"/>
@@ -1247,6 +1252,7 @@
                                                     <constraint firstAttribute="height" constant="30" id="5YP-SZ-z7N"/>
                                                     <constraint firstAttribute="width" constant="30" id="737-9s-pWj"/>
                                                 </constraints>
+                                                <color key="tintColor" name="ButtonTheme"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled">
                                                     <imageReference key="image" image="plus" catalog="system" symbolScale="small"/>
@@ -1472,7 +1478,7 @@
             <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="bg">
-            <color red="0.91764705882352937" green="0.94901960784313721" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.92941176470588238" green="0.90980392156862744" blue="0.93333333333333335" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

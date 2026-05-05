@@ -26,7 +26,7 @@ class ProgressBarView: UIView {
         }
     }
     
-    var trackColor: UIColor = UIColor(red: 0.923, green: 0.948, blue: 0.977, alpha: 1.0) {
+    var trackColor: UIColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0) {
         didSet {
             backgroundLayer.backgroundColor = trackColor.cgColor
         }
