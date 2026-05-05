@@ -1,4 +1,4 @@
-import UIKit
+Chote Chote Chote Choteimport UIKit
 
 class ReadingResultViewController: UIViewController {
     
