@@ -95,12 +95,13 @@
                 <outlet property="awardImage" destination="zMV-Zp-kqv" id="roV-vt-tz6"/>
                 <outlet property="awardName" destination="iDM-Po-EvV" id="8DG-Vl-Mmf"/>
                 <outlet property="cardTitleLabel" destination="PfJ-k9-s9K" id="9Zp-vF-DaK"/>
+                <outlet property="showAllButton" destination="rkX-oJ-k7H" id="H7L-eU-mBy"/>
             </connections>
             <point key="canvasLocation" x="139" y="154"/>
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="nm_002" width="196" height="196"/>
+        <image name="nm_002" width="230" height="230"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
