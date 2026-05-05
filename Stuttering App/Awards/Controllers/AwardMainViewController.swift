@@ -1,12 +1,9 @@
-//
-//  AwardMainViewController.swift
-//  Stuttering App 1
-//
-
 import UIKit
 
+// MARK: - Protocol Definition
 protocol AwardCellDelegate: AnyObject {
     func didTapAwardImage(with award: AwardModel?)
+    func didTapShowAll(in cell: UICollectionViewCell)
 }
 
 class AwardMainViewController: UIViewController {
@@ -22,21 +19,17 @@ class AwardMainViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-
         fetchData()
         setupCollectionView()
     }
     
-    // MARK: - Data Setup
     private func fetchData() {
         weeklyAward = AwardsManager.shared.getTopWeeklyChallenge()
         achievedAward = AwardsManager.shared.getTopAchievedAward()
         lockedAward = AwardsManager.shared.getTopLockedAward()
     }
     
-    // MARK: - Collection View Setup
     private func setupCollectionView() {
-        // Register XIBs - Ensure these strings match your exact .xib file names
         collectionView.register(UINib(nibName: "WeeklyChallengeCell", bundle: nil), forCellWithReuseIdentifier: "WeeklyChallengeCell")
         collectionView.register(UINib(nibName: "AwardStandardCell", bundle: nil), forCellWithReuseIdentifier: "AwardStandardCell")
         
@@ -46,31 +39,46 @@ class AwardMainViewController: UIViewController {
         collectionView.collectionViewLayout = createCompositionalLayout()
     }
     
-    // MARK: - iOS 26 Compositional Layout
+    // MARK: - Unified Navigation Logic
+    /// This handles navigation for both Card Taps and Show All button taps
+    private func handleNavigation(at indexPath: IndexPath) {
+        let storyboard = UIStoryboard(name: "Awards", bundle: nil)
+        
+        if indexPath.section == 0 {
+            // Weekly Challenge Navigation
+            let vcA = storyboard.instantiateViewController(withIdentifier: "WeeklyChallengesViewController")
+            navigationController?.pushViewController(vcA, animated: true)
+            
+        } else if indexPath.section == 1 {
+            if indexPath.item == 0 {
+                // Achieved Navigation
+                let vcB = storyboard.instantiateViewController(withIdentifier: "AchievedViewController")
+                navigationController?.pushViewController(vcB, animated: true)
+                
+            } else if indexPath.item == 1 {
+                // Locked Navigation
+                let vcC = storyboard.instantiateViewController(withIdentifier: "LockedViewController")
+                navigationController?.pushViewController(vcC, animated: true)
+            }
+        }
+    }
+    
     private func createCompositionalLayout() -> UICollectionViewLayout {
         return UICollectionViewCompositionalLayout { (sectionIndex, layoutEnvironment) -> NSCollectionLayoutSection? in
-            
             if sectionIndex == 0 {
-                // Section 0: Weekly Challenge (Full Width)
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(320))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
-                
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(320))
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-                
                 let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
                 return section
-                
             } else {
-                // Section 1: Achieved & Locked (2 Columns)
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .estimated(240))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 6)
-                
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(240))
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-                
                 let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 16, trailing: 10)
                 return section
@@ -93,12 +101,12 @@ extension AwardMainViewController: UICollectionViewDataSource, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.section == 0 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "WeeklyChallengeCell", for: indexPath) as! WeeklyChallengeCell
-            cell.delegate = self // Set the delegate
+            cell.delegate = self
             cell.configure(with: weeklyAward)
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AwardStandardCell", for: indexPath) as! AwardStandardCell
-            cell.delegate = self // Set the delegate
+            cell.delegate = self
             if indexPath.item == 0 {
                 cell.configureAsAchieved(with: achievedAward)
             } else {
@@ -108,44 +116,28 @@ extension AwardMainViewController: UICollectionViewDataSource, UICollectionViewD
         }
     }
     
+    // Card Tap
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let storyboard = UIStoryboard(name: "Awards", bundle: nil) // Update bundle name if needed
-        
-        if indexPath.section == 0 {
-            // Weekly Challenge Card Tapped
-            let vcA = storyboard.instantiateViewController(withIdentifier: "WeeklyChallengesViewController")
-            navigationController?.pushViewController(vcA, animated: true)
-            
-        } else if indexPath.section == 1 {
-            if indexPath.item == 0 {
-                // Achieved Card Tapped
-                let vcB = storyboard.instantiateViewController(withIdentifier: "AchievedViewController")
-                navigationController?.pushViewController(vcB, animated: true)
-                
-            } else if indexPath.item == 1 {
-                // Locked Card Tapped
-                let vcC = storyboard.instantiateViewController(withIdentifier: "LockedViewController")
-                navigationController?.pushViewController(vcC, animated: true)
-            }
-        }
+        handleNavigation(at: indexPath)
     }
 }
 
+// MARK: - AwardCellDelegate
 extension AwardMainViewController: AwardCellDelegate {
     
-    // Handle tapping the IMAGE specifically
+    // Button Tap
+    func didTapShowAll(in cell: UICollectionViewCell) {
+        if let indexPath = collectionView.indexPath(for: cell) {
+            handleNavigation(at: indexPath)
+        }
+    }
+    
+    // Image Tap (Specific Award Detail)
     func didTapAwardImage(with award: AwardModel?) {
         guard let selectedAward = award else { return }
-        
-        let storyboard = UIStoryboard(name: "Awards", bundle: nil) // Ensure this matches your Storyboard name
-        guard let detailVC = storyboard.instantiateViewController(withIdentifier: "AwardDetailViewController") as? AwardDetailViewController else {
-            return
-        }
-        
-        // Pass the correct data model
+        let storyboard = UIStoryboard(name: "Awards", bundle: nil)
+        guard let detailVC = storyboard.instantiateViewController(withIdentifier: "AwardDetailViewController") as? AwardDetailViewController else { return }
         detailVC.award = selectedAward
-        
-        // Push the Detail View Controller
         navigationController?.pushViewController(detailVC, animated: true)
     }
 }

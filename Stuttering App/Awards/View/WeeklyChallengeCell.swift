@@ -1,16 +1,12 @@
-//
-//  WeeklyChallengeCell.swift
-//  Stuttering App 1
-//
-
 import UIKit
 
 class WeeklyChallengeCell: UICollectionViewCell {
     
-    @IBOutlet weak var cardTitleLabel: UILabel! // "Weekly Challenges"
+    @IBOutlet weak var cardTitleLabel: UILabel!
     @IBOutlet weak var weeklyChallengeImage: UIImageView!
     @IBOutlet weak var weeklyChallengeName: UILabel!
     @IBOutlet weak var weeklyChallengeDescription: UILabel!
+    @IBOutlet weak var showAllButton: UIButton? // Optional button outlet
     
     weak var delegate: AwardCellDelegate?
     private var currentAward: AwardModel?
@@ -19,14 +15,13 @@ class WeeklyChallengeCell: UICollectionViewCell {
         super.awakeFromNib()
         setupCardStyle()
         setupImageTapGesture()
+        setupButtonAction()
     }
     
     private func setupCardStyle() {
         contentView.backgroundColor = .systemBackground
         contentView.layer.cornerRadius = 20
-        contentView.layer.cornerCurve = .continuous // Modern iOS curve
-        
-        // Optional: Add subtle shadow for depth
+        contentView.layer.cornerCurve = .continuous
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOpacity = 0.05
         layer.shadowOffset = CGSize(width: 0, height: 4)
@@ -39,18 +34,24 @@ class WeeklyChallengeCell: UICollectionViewCell {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
         weeklyChallengeImage.addGestureRecognizer(tapGesture)
     }
+
+    private func setupButtonAction() {
+        showAllButton?.addTarget(self, action: #selector(showAllTapped), for: .touchUpInside)
+    }
     
     @objc private func imageTapped() {
         delegate?.didTapAwardImage(with: currentAward)
     }
+
+    @objc private func showAllTapped() {
+        delegate?.didTapShowAll(in: self)
+    }
     
     func configure(with award: AwardModel?) {
         self.currentAward = award
-        
         cardTitleLabel.text = "Weekly Challenges"
         
         guard let award = award else { return }
-        
         weeklyChallengeImage.image = UIImage(named: award.id)
         weeklyChallengeName.text = award.name
         
@@ -62,7 +63,7 @@ class WeeklyChallengeCell: UICollectionViewCell {
             }
             weeklyChallengeDescription.textColor = .systemGreen
         } else {
-            weeklyChallengeDescription.text = award.status // e.g., "0 of 7 days"
+            weeklyChallengeDescription.text = award.status
             weeklyChallengeDescription.textColor = .secondaryLabel
         }
     }
