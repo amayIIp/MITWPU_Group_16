@@ -149,7 +149,7 @@ class HomePageViewController: UIViewController {
         let initialChartData: [RadialData] = [
             RadialData(
                 title: "Daily Tasks",
-                color: UIColor(red: 0.28, green: 0.35, blue: 0.63, alpha: 1.0),
+                color: UIColor(named: "ButtonTheme") ?? UIColor(red: 0.28, green: 0.35, blue: 0.63, alpha: 1.0),
                 progress: 0.75,
                 radius: dimensions.radius,
                 lineWidth: dimensions.lineWidth,
@@ -159,9 +159,10 @@ class HomePageViewController: UIViewController {
         
         radialChartView.chartData = initialChartData
         
-        progressBar1.progressColor = UIColor(red: 0.4, green: 0.71, blue: 0.84, alpha: 1.0)
-        progressBar2.progressColor = UIColor(red: 0.95, green: 0.77, blue: 0.24, alpha: 1.0)
-        progressBar3.progressColor = UIColor(red: 0.95, green: 0.55, blue: 0.15, alpha: 1.0)
+        let themeColor = UIColor(named: "ButtonTheme") ?? .systemBlue
+        progressBar1.progressColor = themeColor
+        progressBar2.progressColor = themeColor
+        progressBar3.progressColor = themeColor
     }
 
     private func configureNavigationBar() {

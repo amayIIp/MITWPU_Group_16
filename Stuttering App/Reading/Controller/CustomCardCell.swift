@@ -114,6 +114,6 @@ class CustomCardCell: UICollectionViewCell {
         let config = UIImage.SymbolConfiguration(pointSize: 22, weight: isSelected ? .regular : .light)
         let symbolName = isSelected ? "circle.inset.filled" : "circle"
         headerRadio.image = UIImage(systemName: symbolName, withConfiguration: config)
-        headerRadio.tintColor = isSelected ? .systemBlue : .systemGray3
+        headerRadio.tintColor = isSelected ? UIColor(named: "ButtonTheme") : .systemGray3
     }
 }
