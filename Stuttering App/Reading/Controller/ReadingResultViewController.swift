@@ -1,4 +1,4 @@
-Chote Chote Chote Choteimport UIKit
+import UIKit
 
 class ReadingResultViewController: UIViewController {
     
@@ -14,7 +14,7 @@ class ReadingResultViewController: UIViewController {
     
     private var hasSavedSession = false
     
-    let customBrandBlue = UIColor(red: 0.21, green: 0.32, blue: 0.63, alpha: 1.0)
+    let customBrandBlue = UIColor(named: "ButtonTheme") ?? UIColor(red: 0.21, green: 0.32, blue: 0.63, alpha: 1.0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
