@@ -156,17 +156,20 @@ class PracticeViewController: UIViewController, UITableViewDataSource, UITableVi
         switch section {
         case 0 where !exerciseLogs.isEmpty:
             titleText = "Completed Exercises"
-            titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
+            titleText1 = ""
+            //titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
             
         case 1 where !readingLogs.isEmpty:
             let totalReadingMinutes = calculateTotalDuration(for: readingLogs)
             titleText = "Completed Read Aloud"
-            titleText1 = "\(totalReadingMinutes)/\(readingTarget) mins"
+            titleText1 = ""
+            //titleText1 = "\(totalReadingMinutes)/\(readingTarget) mins"
             
         case 2 where !conversationLogs.isEmpty:
             let totalConvoMinutes = calculateTotalDuration(for: conversationLogs)
             titleText = "Completed Conversations"
-            titleText1 = "\(totalConvoMinutes)/\(conversationTarget) mins"
+            titleText1 = ""
+            //titleText1 = "\(totalConvoMinutes)/\(conversationTarget) mins"
             
         default:
             break

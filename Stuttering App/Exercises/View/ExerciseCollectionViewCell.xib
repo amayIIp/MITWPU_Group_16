@@ -29,22 +29,27 @@
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="01m-my-Oqb">
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="baM-xB-KnB">
                         <rect key="frame" x="235" y="34" width="47" height="27"/>
+                        <color key="backgroundColor" red="0.9267578125" green="0.9326171875" blue="0.9692382812" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <constraints>
-                            <constraint firstAttribute="width" constant="47" id="9ij-Tx-buc"/>
-                            <constraint firstAttribute="height" constant="27" id="LRz-Om-C0o"/>
+                            <constraint firstAttribute="height" constant="27" id="Cvz-xI-78u"/>
+                            <constraint firstAttribute="width" constant="47" id="ZWt-wl-iDj"/>
                         </constraints>
-                        <state key="normal" title="Button"/>
-                        <buttonConfiguration key="configuration" style="gray" title=""/>
-                    </button>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                <real key="value" value="13.5"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                        </userDefinedRuntimeAttributes>
+                    </view>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AOh-Yd-oQV">
                         <rect key="frame" x="296" y="27" width="41" height="41"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="41" id="rZ3-UP-6sZ"/>
                             <constraint firstAttribute="height" constant="41" id="wYv-yU-ds8"/>
                         </constraints>
-                        <color key="tintColor" name="ButtonTheme"/>
+                        <color key="tintColor" name="ButtonThemeMain"/>
                         <state key="normal" title="Button"/>
                         <buttonConfiguration key="configuration" style="plain" image="play.circle.fill" catalog="system">
                             <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="29"/>
@@ -66,16 +71,16 @@
             </view>
             <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
             <constraints>
+                <constraint firstItem="baM-xB-KnB" firstAttribute="leading" secondItem="Dl8-Qz-bfg" secondAttribute="trailing" constant="16" id="4If-op-PI0"/>
                 <constraint firstItem="CGA-8v-os5" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="8Ex-HE-hbK"/>
-                <constraint firstItem="01m-my-Oqb" firstAttribute="leading" secondItem="Dl8-Qz-bfg" secondAttribute="trailing" constant="16" id="Aij-uu-cvU"/>
+                <constraint firstItem="AOh-Yd-oQV" firstAttribute="leading" secondItem="baM-xB-KnB" secondAttribute="trailing" constant="14" id="G8Y-PJ-CbC"/>
                 <constraint firstItem="Fre-oC-9Yz" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="20" id="HGb-EI-vGi"/>
-                <constraint firstItem="AOh-Yd-oQV" firstAttribute="leading" secondItem="01m-my-Oqb" secondAttribute="trailing" constant="14" id="Jno-rw-Vrg"/>
-                <constraint firstItem="01m-my-Oqb" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="Knh-Rr-Uib"/>
                 <constraint firstItem="Dl8-Qz-bfg" firstAttribute="top" secondItem="Fre-oC-9Yz" secondAttribute="bottom" constant="6" id="YAC-vP-wtH"/>
                 <constraint firstItem="AOh-Yd-oQV" firstAttribute="leading" secondItem="CGA-8v-os5" secondAttribute="trailing" constant="21" id="bFc-vM-UOH"/>
                 <constraint firstItem="Fre-oC-9Yz" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="16" id="gm7-4U-ySe"/>
                 <constraint firstItem="Dl8-Qz-bfg" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="20" id="jNf-dc-fkI"/>
                 <constraint firstAttribute="bottom" secondItem="Dl8-Qz-bfg" secondAttribute="bottom" constant="16" id="o3P-wQ-8LW"/>
+                <constraint firstItem="baM-xB-KnB" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="pwb-d2-Rdw"/>
                 <constraint firstAttribute="trailing" secondItem="AOh-Yd-oQV" secondAttribute="trailing" constant="16" id="w9t-tx-s8G"/>
                 <constraint firstItem="AOh-Yd-oQV" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="zbd-as-JrH"/>
             </constraints>
@@ -90,8 +95,8 @@
     </objects>
     <resources>
         <image name="play.circle.fill" catalog="system" width="128" height="123"/>
-        <namedColor name="ButtonTheme">
-            <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
+        <namedColor name="ButtonThemeMain">
+            <color red="0.4873046875" green="0.5239257812" blue="0.798828125" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
     </resources>
 </document>

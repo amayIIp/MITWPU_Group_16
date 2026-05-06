@@ -75,17 +75,17 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         progressView.progressColor = UIColor(named: "ButtonTheme") ?? .systemBlue
         progressView.progress = 0.0
         
-        skipButton.configuration = .glass()
+        skipButton.configuration = .filled()
         skipButton.setTitle("Skip Instructions", for: .normal)
         
         var config = UIButton.Configuration.prominentGlass()
         config.title = "Next"
-        config.baseBackgroundColor = UIColor(named: "ButtonTheme")
+        config.baseBackgroundColor = UIColor(named: "ButtonThemeMain")
         nextButton.configuration = config
         
         var config1 = UIButton.Configuration.prominentGlass()
         config1.title = "Previous"
-        config1.baseBackgroundColor = UIColor(named: "ButtonTheme")
+        config1.baseBackgroundColor = UIColor(named: "ButtonThemeMain")
         prevButton.configuration = config1
     }
     
