@@ -170,11 +170,32 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     }
     
     func startConversation() {
+        startConversation(withTopic: nil)
+    }
+    
+    func startConversation(withTopic topic: String?) {
         guard session != nil || useGemini else {
             delegate?.didEncounterError("AI is not ready yet")
             return
         }
-        speak("Hi there! I'm ready to chat. How are you doing today?")
+        
+        let greeting: String
+        if let topic = topic {
+            switch topic {
+            case "I'll introduce myself":
+                greeting = "Great choice! Go ahead and introduce yourself — tell me your name, what you do, and anything you'd like to share!"
+            case "Can we talk about my weekend plans?":
+                greeting = "Sure! I'd love to hear about your weekend plans. What are you thinking of doing?"
+            case "Let's talk about my day":
+                greeting = "Sounds good! How has your day been so far? Tell me about it!"
+            default:
+                greeting = "Hi there! I'm ready to chat. How are you doing today?"
+            }
+        } else {
+            greeting = "Hi there! I'm ready to chat. How are you doing today?"
+        }
+        
+        speak(greeting)
     }
     
     // MARK: - Speech Synthesis
