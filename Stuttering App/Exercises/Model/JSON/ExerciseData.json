@@ -38,14 +38,14 @@
                           "step_number":3,
                           "label":"The Pre-Exhale",
                           "image":"1.1.3",
-                          "text":"Let out a tiny, silent 'sigh' of air.",
+                          "text":"Breathe out slowly and gently .",
                           "time":3
                        },
                        {
                           "step_number":4,
                           "label":"The Voice",
                           "image":"1.1.4",
-                          "text":"Ride that sigh into pronouncing the word. Do not stop the air.",
+                          "text":"Keep the air flowing while saying the word .Do not stop the air.",
                           "time":5
                        }
                     ],
@@ -206,7 +206,7 @@
                           "step_number":3,
                           "label":"Slide",
                           "image":"",
-                          "text":"Slide continuously into the rest of the word without chopping it up.",
+                          "text":"Continue saying the rest of the word smoothly.",
                           "time":5
                        }
                     ],
@@ -310,28 +310,28 @@
                     "duration_seconds":85,
                     "recommended_reps":5
                  },
-                 "purpose":"To plan a fluent onset when you anticipate a stutter on a specific word.",
+                 "purpose":"Prepare yourself to say a difficult word more smoothly when you expect a stutter.",
                  "instruction_set":{
                     "steps":[
                        {
                           "step_number":1,
                           "label":"Pause",
                           "image":"",
-                          "text":"Identify the word. Do not rush into the word. Stop immediately when you fear the word.",
+                          "text":"Notice the word you may stutter on. Pause for a moment instead of rushing into it.",
                           "time":5
                        },
                        {
                           "step_number":2,
-                          "label":"Map",
+                          "label":"Plan",
                           "image":"",
-                          "text":"Mentally plan to use an 'Easy Onset' (for vowels) or 'Light Contact' (for consonants).",
+                          "text":"Choose a technique — use an Easy Onset for vowel sounds or Light Contact for consonant sounds.",
                           "time":7
                        },
                        {
                           "step_number":3,
-                          "label":"Action",
+                          "label":"Speak",
                           "image":"",
-                          "text":"Say the word using the tool you planned.",
+                          "text":"Say the word slowly and smoothly using the technique you planned.",
                           "time":5
                        }
                     ],
@@ -398,23 +398,23 @@
                     "steps":[
                        {
                           "step_number":1,
-                          "label":"Freeze",
+                          "label":"Pause",
                           "image":"",
-                          "text":"Don't force it. Freeze exactly where you would stutter.",
+                          "text":"Don’t force the word. Pause where you feel stuck.",
                           "time":10
                        },
                        {
                           "step_number":2,
                           "label":"Locate Tension",
                           "image":"",
-                          "text":"Where is the tightness? (Throat? Lips? Tongue?). Focus on it.",
+                          "text":"Notice where your muscles feel tight — throat, lips, or tongue.",
                           "time":7
                        },
                        {
                           "step_number":3,
                           "label":"Melt & Slide",
                           "image":"",
-                          "text":"Consciously relax that specific muscle while prolonging the sound, then slide out.",
+                          "text":"Relax the tight area, stretch the sound gently, and continue the word smoothly.",
                           "time":10
                        }
                     ],
@@ -476,28 +476,28 @@
                     "duration_minutes":105,
                     "recommended_reps":5
                  },
-                 "purpose":"To neutralize panic after a stutter and re-program the brain with a fluent correction.",
+                 "purpose":"Reduce panic after a stutter and practice saying the word more smoothly.",
                  "instruction_set":{
                     "steps":[
                        {
                           "step_number":1,
                           "label":"Stop",
                           "image":"",
-                          "text":"Finish the word/sentence, then stop completely for 3 seconds.",
+                          "text":"Finish the word or sentence, then pause for 3 seconds.",
                           "time":10
                        },
                        {
                           "step_number":2,
                           "label":"Reset",
                           "image":"",
-                          "text":"Use this pause to neutralize the panic and calm the motor system.",
+                          "text":"Use the pause to calm your body and release tension.",
                           "time":5
                        },
                        {
                           "step_number":3,
                           "label":"Re-do",
                           "image":"",
-                          "text":"Say the word again, but this time use a 'Light Contact' or 'Easy Onset'.",
+                          "text":"Say the word again slowly using Light Contact or Easy Onset.",
                           "time":6
                        }
                     ],
@@ -547,13 +547,13 @@
         },
         {
            "module_name":"The Sound Lab",
-           "description":"This is the core feature you requested. Users select the specific sound family they are struggling with.",
+           "description":"Practice techniques for specific sounds that feel difficult or trigger stuttering.",
            "module_id":"level_2",
            "exercises":[
               {
                  "id":"ex_2_1_easy_onset",
                  "title":"Gentle Onset",
-                 "desc":"Helps start vowels and M, N, L sounds gently",
+                 "desc":"Learn to start vowel, M, N, and L sounds softly and smoothly",
                  "category":"Phonation",
                  "target_group":"Vowels (A,E,I,O,U) & Voiced (M,N,L)",
                  "difficulty":"Intermediate",
@@ -562,28 +562,28 @@
                     "duration_minutes":115,
                     "recommended_reps":10
                  },
-                 "purpose":"To prevent hard glottal attacks (vocal cords slamming shut) by initiating sound gently.",
+                 "purpose":"Practice starting sounds gently instead of forcing them out suddenly.",
                  "instruction_set":{
                     "steps":[
                        {
                           "step_number":1,
                           "label":"Airflow",
                           "image":"2.1.1",
-                          "text":"Start with a gentle breath. Let the air move freely before you begin to speak.",
+                          "text":"Take a soft breath and let the air flow naturally before speaking.",
                           "time":10
                        },
                        {
                           "step_number":2,
                           "label":"The Ramp",
                           "image":"",
-                          "text":"Focus on the first letter, gradually raising your volume from 1% to 100% .",
+                          "text":"Start the first sound very softly, then slowly increase your voice volume.",
                           "time":8
                        },
                        {
                           "step_number":3,
                           "label":"Connection",
                           "image":"",
-                          "text":"Do not stop the airflow between the start and the rest of the word. Blend the sound smoothly.",
+                          "text":"Keep the airflow steady and smoothly continue into the rest of the word.",
                           "time":5
                        }
                     ],
@@ -773,28 +773,28 @@
                     "duration_minutes":95,
                     "recommended_reps":10
                  },
-                 "purpose":"To prevent lips or tongue from pressing too tightly and blocking air.",
+                 "purpose":"Learn to use gentle lip and tongue movements so airflow does not get blocked.",
                  "instruction_set":{
                     "steps":[
                        {
                           "step_number":1,
                           "label":"Touch",
                           "image":"2.2.1",
-                          "text":"Bring your articulators (lips or tongue) together so lightly that they barely touch.",
+                          "text":"Let your lips or tongue touch very gently without pressing hard.",
                           "time":8
                        },
                        {
                           "step_number":2,
                           "label":"Initiation",
                           "image":"2.2.2",
-                          "text":"Initiate pronouncing the word from first letter making the sound 'mushy.'",
+                          "text":"Begin the first sound softly and smoothly instead of forcing it out.'",
                           "time":6
                        },
                        {
                           "step_number":3,
                           "label":"Finish",
                           "image":"2.2.3",
-                          "text":"Don't let the air stop completely and finish the word.",
+                          "text":"Keep the airflow moving and smoothly finish the word.",
                           "time":5
                        }
                     ],
@@ -965,21 +965,21 @@
                     "duration_minutes":60,
                     "recommended_reps":10
                  },
-                 "purpose":"To maintain flowing air through sounds where stutterers often hold their breath.",
+                 "purpose":"Practice keeping the air moving smoothly during sounds where people often hold their breath.",
                  "instruction_set":{
                     "steps":[
                        {
                           "step_number":1,
                           "label":"Identify",
                           "image":"",
-                          "text":"Prepare yourself to read the word in a single breath focusing on the first letter.",
+                          "text":"Get ready to say the word smoothly in one breath, focusing on the first sound.",
                           "time":5
                        },
                        {
                           "step_number":2,
                           "label":"Slide",
                           "image":"",
-                          "text":"Start the first letter and slide physically into the vowel without taking a pause between letters.",
+                          "text":"Stretch the first sound and smoothly continue into the rest of the word without pausing.",
                           "time":7
                        }
                     ],
@@ -1116,21 +1116,21 @@
                     "step_number": 1,
                     "label": "Preview",
                     "image": "",
-                    "text": "Read the tongue twister silently and identify tricky sound clusters.",
+                    "text": "Read the tongue twister silently and notice the difficult sounds.",
                     "time": 10
                   },
                   {
                     "step_number": 2,
                     "label": "Slow Initiation",
                     "image": "",
-                    "text": "Begin speaking slowly with steady airflow.",
+                    "text": "Say the sentence slowly with relaxed and steady airflow.",
                     "time": 15
                   },
                   {
                     "step_number": 3,
                     "label": "Connected Speech",
                     "image": "",
-                    "text": "Repeat again, keeping sounds connected without stopping airflow.",
+                    "text": "Repeat the sentence smoothly without stopping between words.",
                     "time": 15
                   }
                 ],
@@ -1155,7 +1155,24 @@
                     "Small snowy stones sparkled softly",
                     "Sunny skies stay serene",
                     "Sneaky spiders spun strong silk",
-                    "Silver ships sailed south"
+                    "Silver ships sailed south",
+                    "Sam softly sang seven songs",
+                        "Sandy seals swim silently",
+                        "Sharp scissors slice straight strings",
+                        "Six sleepy sheep shared shade",
+                        "Speedy squirrels scampered swiftly",
+                        "Silent stars shimmer softly",
+                        "Sweet strawberries smell sunny",
+                        "Smooth streams sparkle silently",
+                        "Sarah saw six silver socks",
+                        "Snowy swans sailed southward",
+                        "Strong storms shook small ships",
+                        "Seven seals sang softly",
+                        "Silly sailors swept sandy shores",
+                        "Soft sunshine spread slowly",
+                        "Swift snakes slid silently",
+                        "Shiny shoes shone sharply",
+                        "Smart students studied science silently"
                   ],
                   "B": [
                     "Big black bugs bleed blue blood",
@@ -1164,16 +1181,52 @@
                     "Blue balloons bounce brightly",
                     "Bold boys bring big boxes",
                     "Bright birds build big nests",
-                    "Busy bakers bake bread"
+                    "Busy bakers bake bread",
+                    "Billy bought blue berries",
+                    "Brown bears bounce basketballs",
+                    "Baby birds blink brightly",
+                    "Big boats bob below bridges",
+                    "Busy brothers balance broomsticks",
+                    "Brisk breezes blew blue banners",
+                    "Black bats beat big drums",
+                    "Best buddies build blanket forts",
+                    "Bright butterflies brush bushes",
+                    "Blue bikes buzz by",
+                    "Brilliant bakers bake buttery biscuits",
+                    "Big buffaloes bump barrels",
+                    "Brave bakers bring banana bread",
+                    "Bouncing beans burst briskly",
+                    "Busy bees buzz beside bushes",
+                    "Bright blue birds blink boldly",
+                    "Brown boots brushed brick walls",
+                    "Bobby baked buttery buns"
                   ],
                   "T_K": [
-                    "Tiny turtles talk together",
-                    "Clever cats catch quick quails",
-                    "Tick-tock clocks tick quickly",
-                    "Tall kangaroos kick kindly",
-                    "Two tricky tigers tiptoe",
-                    "Curious kids crack cookies",
-                    "Talking crows call calmly"
+                      "Tiny turtles talk together",
+                      "Clever cats catch quick quails",
+                      "Tick-tock clocks tick quickly",
+                      "Tall kangaroos kick kindly",
+                      "Two tricky tigers tiptoe",
+                      "Curious kids crack cookies",
+                      "Talking crows call calmly",
+                      "Tiny kittens keep kicking toys",
+                      "Ten tiny turtles tiptoed",
+                      "Cool cats climb carefully",
+                      "Kind kangaroos keep calm",
+                      "Tall towers touch thick clouds",
+                      "Crispy crackers crack quickly",
+                      "Tiny trucks travel tightly",
+                      "Kite strings twist tightly",
+                      "Tommy took two tickets",
+                      "King Kevin kept kicking cans",
+                      "Tricky clocks clicked constantly",
+                      "Clever koalas cook cupcakes",
+                      "Tim carried tiny candles",
+                      "Quick kittens quietly kicked cushions",
+                      "Tiny teachers taught tricky topics",
+                      "Cold cookies cracked crisply",
+                      "Karen kept colorful kites",
+                      "Tiny cats chased crickets"
                   ]
                 }
               }
@@ -1226,31 +1279,76 @@
                     }
                 ],
                 "data_bank": {
-                    "description": "Open-ended prompts encouraging natural, unscripted speech.",
+                    "description": "Open-ended prompts designed to encourage comfortable, natural, and unscripted speaking.",
                     "targets": {
-                        "daily_life": [
-                            "How was your day?",
-                            "What did you enjoy today?",
-                            "What was something unexpected?",
-                            "What did you eat today?",
-                            "Describe a small moment you noticed",
-                            "What made today different?"
-                        ],
-                        "opinions": [
-                            "Talk about a movie or show you like",
-                            "Describe a hobby you enjoy",
-                            "Explain something you are learning",
-                            "What is your favorite place?",
-                            "Talk about a song you love",
-                            "Describe a person you admire"
-                        ],
-                        "reflection": [
-                            "What challenged you today?",
-                            "What went better than expected?",
-                            "What are you looking forward to?",
-                            "What did you learn today?",
-                            "What made you feel calm?"
-                        ]
+                      "daily_life": [
+                        "How was your day?",
+                        "What did you enjoy today?",
+                        "What was something unexpected?",
+                        "What did you eat today?",
+                        "Describe a small moment you noticed",
+                        "What made today different?",
+                        "What was the best part of your morning?",
+                        "Describe your current mood",
+                        "What is something simple you enjoyed recently?",
+                        "Talk about your daily routine",
+                        "Describe your favorite meal",
+                        "What did you spend most of your time doing today?",
+                        "What made you laugh recently?",
+                        "Describe your room or workspace",
+                        "What is one thing you want to improve?",
+                        "Talk about your weekend",
+                        "Describe the weather today",
+                        "What was the most relaxing part of your day?",
+                        "Share a recent conversation you had",
+                        "Describe something you are grateful for"
+                      ],
+
+                      "opinions": [
+                        "Talk about a movie or show you like",
+                        "Describe a hobby you enjoy",
+                        "Explain something you are learning",
+                        "What is your favorite place?",
+                        "Talk about a song you love",
+                        "Describe a person you admire",
+                        "What kind of books do you enjoy?",
+                        "What is your favorite app or game?",
+                        "Talk about a food you never get tired of",
+                        "Describe your dream vacation",
+                        "What makes a good friend?",
+                        "What skill would you like to learn?",
+                        "Talk about a sport or activity you enjoy",
+                        "Describe your favorite season",
+                        "What motivates you?",
+                        "What is a habit you want to build?",
+                        "Talk about a memory you enjoy revisiting",
+                        "Describe your favorite holiday",
+                        "What kind of environment helps you focus?",
+                        "Talk about something you strongly agree or disagree with"
+                      ],
+
+                      "reflection": [
+                        "What challenged you today?",
+                        "What went better than expected?",
+                        "What are you looking forward to?",
+                        "What did you learn today?",
+                        "What made you feel calm?",
+                        "What is something you handled well recently?",
+                        "Describe a fear you are working on",
+                        "What is one thing you are proud of?",
+                        "What helps you relax?",
+                        "What is something you want to improve slowly?",
+                        "Talk about a recent success",
+                        "What is something you are avoiding and why?",
+                        "Describe a moment when you felt confident",
+                        "What does progress mean to you?",
+                        "What would you tell your younger self?",
+                        "What habit has helped you recently?",
+                        "Describe a moment that felt meaningful",
+                        "What kind of person do you want to become?",
+                        "What is something you are thankful for today?",
+                        "What helps you keep going during difficult days?"
+                      ]
                     }
                 }
             },
@@ -1302,27 +1400,182 @@
               }
               ],
               "data_bank": {
-                "description": "Randomized cues grouped by type to vary cognitive demand.",
-                "targets": {
-                  "objects": [
-                    "Key", "Book", "Phone", "Bag", "Clock", "Bottle", "Hat", "Map", "Shoes", "Camera"
-                  ],
-                  "actions": [
-                    "Running", "Searching", "Waiting", "Helping", "Hiding", "Calling", "Building", "Fixing", "Exploring"
-                  ],
-                  "emotions": [
-                    "Excited", "Nervous", "Curious", "Relieved", "Confused", "Happy", "Proud", "Surprised", "Calm"
-                  ],
-                  "settings": [
-                    "Park", "Home", "Bus Stop", "School", "Market", "Beach", "Forest", "Train Station", "Cafe"
-                  ],
-                  "constraints": [
-                    "Must include a problem",
-                    "Must include a solution",
-                    "Story in past tense",
-                    "Story in first person",
-                    "Story under one minute"
-                  ]
+                  "description": "Randomized cues grouped by type to create different storytelling challenges and improve fluent thinking during speech.",
+                  "targets": {
+                    "objects": [
+                      "Key",
+                      "Book",
+                      "Phone",
+                      "Bag",
+                      "Clock",
+                      "Bottle",
+                      "Hat",
+                      "Map",
+                      "Shoes",
+                      "Camera",
+                      "Umbrella",
+                      "Wallet",
+                      "Laptop",
+                      "Flashlight",
+                      "Ticket",
+                      "Backpack",
+                      "Toy",
+                      "Glasses",
+                      "Watch",
+                      "Notebook",
+                      "Microphone",
+                      "Lantern",
+                      "Compass",
+                      "Letter",
+                      "Ring",
+                      "Puzzle",
+                      "Helmet",
+                      "Remote",
+                      "Painting",
+                      "Treasure Box",
+                      "Diary",
+                      "Scarf",
+                      "Bicycle",
+                      "Drone",
+                      "Guitar",
+                      "Passport",
+                      "Charger",
+                      "Telescope",
+                      "Flower",
+                      "Cookie"
+                    ],
+
+                    "actions": [
+                      "Running",
+                      "Searching",
+                      "Waiting",
+                      "Helping",
+                      "Hiding",
+                      "Calling",
+                      "Building",
+                      "Fixing",
+                      "Exploring",
+                      "Climbing",
+                      "Escaping",
+                      "Delivering",
+                      "Drawing",
+                      "Laughing",
+                      "Whispering",
+                      "Swimming",
+                      "Dancing",
+                      "Cooking",
+                      "Traveling",
+                      "Teaching",
+                      "Learning",
+                      "Competing",
+                      "Rescuing",
+                      "Planning",
+                      "Sneaking",
+                      "Investigating",
+                      "Camping",
+                      "Driving",
+                      "Flying",
+                      "Singing",
+                      "Collecting",
+                      "Repairing",
+                      "Cleaning",
+                      "Painting",
+                      "Shopping",
+                      "Jogging",
+                      "Performing",
+                      "Recording",
+                      "Reading",
+                      "Practicing"
+                    ],
+
+                    "emotions": [
+                      "Excited",
+                      "Nervous",
+                      "Curious",
+                      "Relieved",
+                      "Confused",
+                      "Happy",
+                      "Proud",
+                      "Surprised",
+                      "Calm",
+                      "Scared",
+                      "Hopeful",
+                      "Lonely",
+                      "Embarrassed",
+                      "Determined",
+                      "Frustrated",
+                      "Brave",
+                      "Grateful",
+                      "Jealous",
+                      "Shocked",
+                      "Peaceful",
+                      "Motivated",
+                      "Anxious",
+                      "Playful",
+                      "Suspicious",
+                      "Energetic",
+                      "Inspired",
+                      "Tired",
+                      "Disappointed",
+                      "Cheerful",
+                      "Focused"
+                    ],
+
+                    "settings": [
+                      "Park",
+                      "Home",
+                      "Bus Stop",
+                      "School",
+                      "Market",
+                      "Beach",
+                      "Forest",
+                      "Train Station",
+                      "Cafe",
+                      "Airport",
+                      "Library",
+                      "Museum",
+                      "Hospital",
+                      "Mountain",
+                      "Camping Site",
+                      "Mall",
+                      "Playground",
+                      "Village",
+                      "Office",
+                      "Cinema",
+                      "Restaurant",
+                      "River",
+                      "Zoo",
+                      "Stadium",
+                      "Hotel",
+                      "Garden",
+                      "Classroom",
+                      "Bridge",
+                      "Boat",
+                      "Amusement Park"
+                    ],
+
+                    "constraints": [
+                      "Must include a problem",
+                      "Must include a solution",
+                      "Story in past tense",
+                      "Story in first person",
+                      "Story under one minute",
+                      "Story with a happy ending",
+                      "Story with a surprise twist",
+                      "Use all cues in order",
+                      "Story must include dialogue",
+                      "Story must begin with a question",
+                      "Story must end with a lesson",
+                      "Story in future tense",
+                      "Story told like a mystery",
+                      "Story told like an adventure",
+                      "Story must include teamwork",
+                      "Story with only three characters",
+                      "Story must include an unexpected object",
+                      "Story must start in the middle of action",
+                      "Story with a funny ending",
+                      "Story from a child's perspective"
+                    ]
                 }
               }
             }
