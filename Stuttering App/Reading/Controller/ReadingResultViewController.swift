@@ -216,8 +216,11 @@ class ReadingResultViewController: UIViewController {
         let label = PaddingLabel()
         label.text = text
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        label.textColor = UIColor(red: 0.1, green: 0.2, blue: 0.2, alpha: 1.0)
-        label.backgroundColor = UIColor(red: 0.88, green: 0.95, blue: 0.95, alpha: 1.0)
+//        label.textColor = UIColor(red: 0.1, green: 0.2, blue: 0.2, alpha: 1.0)
+//        label.backgroundColor = UIColor(red: 0.88, green: 0.95, blue: 0.95, alpha: 1.0)
+//        
+        label.textColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0).withAlphaComponent(0.12)
         label.textAlignment = .center
         label.layer.cornerRadius = 12
         label.clipsToBounds = true
@@ -236,9 +239,9 @@ class ReadingResultViewController: UIViewController {
         
         let backgroundCircle = CAShapeLayer()
         backgroundCircle.path = circlePath.cgPath
-        backgroundCircle.strokeColor = UIColor.systemGray5.cgColor
+        backgroundCircle.strokeColor = CGColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
         backgroundCircle.lineWidth = lineWidth
-        backgroundCircle.fillColor = CGColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
+        backgroundCircle.fillColor = CGColor(red: 0.9294, green: 0.9098, blue: 0.9333, alpha: 1.0)
         backgroundCircle.lineCap = .round
         fluencyCircleView.layer.addSublayer(backgroundCircle)
         

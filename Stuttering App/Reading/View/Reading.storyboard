@@ -194,7 +194,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <color key="backgroundColor" name="bg"/>
                                 <view key="tableFooterView" contentMode="scaleToFill" id="d9V-nf-Q3A">
-                                    <rect key="frame" x="0.0" y="478.00000000000006" width="393" height="63.000000000000057"/>
+                                    <rect key="frame" x="0.0" y="477.99999999999994" width="393" height="63.000000000000057"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Topics are just for reference. We generate texts based on your specific speech triggers." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNx-sh-UuH">
@@ -690,9 +690,10 @@
                                         <constraints>
                                             <constraint firstAttribute="height" constant="51" id="GLV-Zb-soA"/>
                                         </constraints>
+                                        <color key="tintColor" name="ButtonThemeMain"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Start" cornerStyle="capsule">
-                                            <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                            <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="didTapContinueButton:" destination="Xa4-iT-VBv" eventType="touchUpInside" id="1ib-UW-Ffj"/>
@@ -783,6 +784,9 @@
         <image name="tortoise.fill" catalog="system" width="128" height="64"/>
         <namedColor name="ButtonTheme">
             <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="ButtonThemeMain">
+            <color red="0.4873046875" green="0.5239257812" blue="0.798828125" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="bg">
             <color red="0.92941176470588238" green="0.90980392156862744" blue="0.93333333333333335" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>

@@ -323,7 +323,7 @@
                                                                 </constraints>
                                                                 <imageReference key="image" image="sparkles" catalog="system" renderingMode="hierarchical">
                                                                     <hierarchicalColors>
-                                                                        <color red="0.98431372549019602" green="0.75294117647058822" blue="0.1764705882352941" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                                        <color red="0.9282226562" green="0.8466796875" blue="0.5571289062" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                                         <color systemColor="secondaryLabelColor"/>
                                                                         <color systemColor="tertiaryLabelColor"/>
                                                                     </hierarchicalColors>
@@ -1235,12 +1235,12 @@
                             <constraint firstItem="n0m-wX-4fE" firstAttribute="trailing" secondItem="yVf-Xp-fY6" secondAttribute="trailing" constant="32" id="t5b-52-wKQ"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Practice" largeTitleDisplayMode="never" id="mur-Wz-VWB"/>
+                    <navigationItem key="navigationItem" title="Practice" id="mur-Wz-VWB"/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Wk8-1y-xVg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6731" y="806"/>
+            <point key="canvasLocation" x="7657.2519083969464" y="805.63380281690149"/>
         </scene>
         <!--Warm Up-->
         <scene sceneID="DQy-ge-S2Y">
@@ -1459,7 +1459,7 @@
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
                                                                     </subviews>
-                                                                    <color key="backgroundColor" red="0.0" green="0.78039215689999997" blue="0.19642523672746598" alpha="0.36776518485915494" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    <color key="backgroundColor" red="0.9267578125" green="0.9326171875" blue="0.9692382812" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" constant="62" id="4yJ-2e-XI8"/>
                                                                         <constraint firstItem="55j-Ok-ynq" firstAttribute="centerX" secondItem="T2q-Pa-ABG" secondAttribute="centerX" id="Pl7-Pn-nxF"/>
@@ -1543,6 +1543,24 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="kRW-Gx-hGr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="9322.9007633587789" y="152.81690140845072"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="wId-At-A1w">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="X1U-H5-qZY" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="ySe-yC-Tnm">
+                        <rect key="frame" x="0.0" y="118" width="393" height="106"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="bap-Nw-ANa" kind="relationship" relationship="rootViewController" id="ifh-CF-mAK"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="g6b-HO-zHb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6730.5343511450383" y="805.63380281690149"/>
         </scene>
     </scenes>
     <resources>

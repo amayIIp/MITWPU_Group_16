@@ -3,6 +3,7 @@
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -28,6 +29,7 @@
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rkX-oJ-k7H">
                                 <rect key="frame" x="91.333333333333314" y="245.00000000000003" width="72.666666666666686" height="28.333333333333343"/>
+                                <color key="tintColor" name="ButtonThemeMain"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Show All">
                                     <fontDescription key="titleFontDescription" type="system" pointSize="12"/>
@@ -102,6 +104,9 @@
     </objects>
     <resources>
         <image name="nm_002" width="230" height="230"/>
+        <namedColor name="ButtonThemeMain">
+            <color red="0.3869628906" green="0.4296875" blue="0.7602539062" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

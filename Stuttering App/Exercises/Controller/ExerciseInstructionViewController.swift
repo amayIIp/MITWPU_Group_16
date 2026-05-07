@@ -80,12 +80,12 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
         
         var config = UIButton.Configuration.prominentGlass()
         config.title = "Next"
-        config.baseBackgroundColor = UIColor(named: "ButtonTheme")
+        config.baseBackgroundColor = UIColor(named: "ButtonThemeMain")
         nextButton.configuration = config
         
         var config1 = UIButton.Configuration.prominentGlass()
         config1.title = "Previous"
-        config1.baseBackgroundColor = UIColor(named: "ButtonTheme")
+        config1.baseBackgroundColor = UIColor(named: "ButtonThemeMain")
         prevButton.configuration = config1
     }
     
