@@ -34,6 +34,11 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
         
+        // Hide "Continue as Guest" if they are already a guest upgrading their account
+        if SessionManager.shared.isGuestMode {
+            continueAsGuest?.isHidden = true
+        }
+        
         // --- Password Toggle Config ---
         passwordTextField.isSecureTextEntry = true
         

@@ -422,6 +422,7 @@
                         <outlet property="nameTextField" destination="aGR-Ug-eUI" id="cuD-B7-iRe"/>
                         <outlet property="passwordTextField" destination="8W4-RN-TKD" id="exy-Cf-R88"/>
                         <outlet property="passwordToggleButton" destination="22x-5f-WUi" id="zqq-wO-wFF"/>
+                        <outlet property="continueAsGuest" destination="Yio-ca-6iA" id="zqq-wO-wF2"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="AAy-q6-jCd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1885,6 +1886,7 @@ to say?</string>
                         <outlet property="googleSignIn" destination="GaK-bv-Efw" id="WDG-g6-DKB"/>
                         <outlet property="passwordTextField" destination="lTj-Rb-dww" id="FHL-6K-uMt"/>
                         <outlet property="passwordToggleButton" destination="6TX-pt-aVH" id="VCy-HW-Q5V"/>
+                        <outlet property="continueAsGuest" destination="VJZ-2d-sVf" id="VCy-HW-Q55"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ktC-At-ZPQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
