@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TwK-Tn-5kw">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TwK-Tn-5kw">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -800,110 +800,147 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What These Terms Mean" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NQ7-58-FX0">
-                                <rect key="frame" x="16" y="138" width="215" height="23"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Key Terms" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NQ7-58-FX0">
+                                <rect key="frame" x="16" y="138" width="91" height="23"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="19"/>
                                 <color key="textColor" name="ButtonTheme"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Blocks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cek-yp-Knb">
-                                <rect key="frame" x="20" y="169" width="53" height="21"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="A temporary &quot;stuck&quot; feeling where no sound comes out, often accompanied by physical tension." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I4a-3t-5RR">
-                                <rect key="frame" x="20" y="194" width="353" height="61"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Prolongation" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RjM-r3-JKm">
-                                <rect key="frame" x="20" y="271" width="102" height="21"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Stretching out a specific sound within a word." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OzN-N2-CKk">
-                                <rect key="frame" x="20" y="296" width="353" height="20.333333333333314"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Repetition" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gj4-ge-h93">
-                                <rect key="frame" x="20" y="332.33333333333331" width="82" height="21"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Repeating a sound, syllable, or whole word multiple times." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ipp-xb-etd">
-                                <rect key="frame" x="20" y="357.33333333333331" width="353" height="40.666666666666686"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="How to Read Your Scores" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1rd-at-MAy">
-                                <rect key="frame" x="16" y="422" width="218.66666666666666" height="23"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Scores" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1rd-at-MAy">
+                                <rect key="frame" x="16.000000000000004" y="423" width="60.333333333333343" height="23"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="19"/>
                                 <color key="textColor" name="ButtonTheme"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0% Score" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ecx-ib-1Rz">
-                                <rect key="frame" x="20" y="453" width="78" height="21"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This indicates that no instances of that specific pattern were detected during your recording." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yRs-1W-dEL">
-                                <rect key="frame" x="20" y="478" width="353" height="61"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OPG-mM-8oA">
-                                <rect key="frame" x="20" y="563" width="353" height="69.666666666666629"/>
+                                <rect key="frame" x="20" y="555" width="353" height="69.666666666666629"/>
                                 <string key="text">Accuracy Note: These results are not 100% accurate. Background noise, microphone quality, and varied speech rhythms can influence the data. Use these numbers as a general guide rather than a clinical diagnosis.</string>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2iB-HS-7VR">
+                                <rect key="frame" x="16" y="168" width="361" height="247"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Blocks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cL5-qc-Bkj">
+                                        <rect key="frame" x="16" y="16" width="53" height="21"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="A temporary &quot;stuck&quot; feeling where no sound comes out, often accompanied by physical tension." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="haz-69-6ql">
+                                        <rect key="frame" x="16" y="41" width="329" height="54"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Prolongation" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1cD-uC-Jse">
+                                        <rect key="frame" x="16" y="111" width="102" height="21"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Stretching out a specific sound within a word." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wGY-Bq-gVQ">
+                                        <rect key="frame" x="16" y="136" width="329" height="18"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Repetition" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="31z-MG-z6X">
+                                        <rect key="frame" x="16" y="170" width="82" height="21"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Repeating a sound, syllable, or whole word multiple times." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1k2-Y0-Dtr">
+                                        <rect key="frame" x="16" y="195" width="329" height="36"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="cL5-qc-Bkj" firstAttribute="top" secondItem="2iB-HS-7VR" secondAttribute="top" constant="16" id="kt1-a1-001"/>
+                                    <constraint firstItem="cL5-qc-Bkj" firstAttribute="leading" secondItem="2iB-HS-7VR" secondAttribute="leading" constant="16" id="kt1-a1-002"/>
+                                    <constraint firstItem="haz-69-6ql" firstAttribute="top" secondItem="cL5-qc-Bkj" secondAttribute="bottom" constant="4" id="kt1-a1-003"/>
+                                    <constraint firstItem="haz-69-6ql" firstAttribute="leading" secondItem="2iB-HS-7VR" secondAttribute="leading" constant="16" id="kt1-a1-004"/>
+                                    <constraint firstAttribute="trailing" secondItem="haz-69-6ql" secondAttribute="trailing" constant="16" id="kt1-a1-005"/>
+                                    <constraint firstItem="1cD-uC-Jse" firstAttribute="top" secondItem="haz-69-6ql" secondAttribute="bottom" constant="16" id="kt1-a1-006"/>
+                                    <constraint firstItem="1cD-uC-Jse" firstAttribute="leading" secondItem="2iB-HS-7VR" secondAttribute="leading" constant="16" id="kt1-a1-007"/>
+                                    <constraint firstItem="wGY-Bq-gVQ" firstAttribute="top" secondItem="1cD-uC-Jse" secondAttribute="bottom" constant="4" id="kt1-a1-008"/>
+                                    <constraint firstItem="wGY-Bq-gVQ" firstAttribute="leading" secondItem="2iB-HS-7VR" secondAttribute="leading" constant="16" id="kt1-a1-009"/>
+                                    <constraint firstAttribute="trailing" secondItem="wGY-Bq-gVQ" secondAttribute="trailing" constant="16" id="kt1-a1-010"/>
+                                    <constraint firstItem="31z-MG-z6X" firstAttribute="top" secondItem="wGY-Bq-gVQ" secondAttribute="bottom" constant="16" id="kt1-a1-011"/>
+                                    <constraint firstItem="31z-MG-z6X" firstAttribute="leading" secondItem="2iB-HS-7VR" secondAttribute="leading" constant="16" id="kt1-a1-012"/>
+                                    <constraint firstItem="1k2-Y0-Dtr" firstAttribute="top" secondItem="31z-MG-z6X" secondAttribute="bottom" constant="4" id="kt1-a1-013"/>
+                                    <constraint firstItem="1k2-Y0-Dtr" firstAttribute="leading" secondItem="2iB-HS-7VR" secondAttribute="leading" constant="16" id="kt1-a1-014"/>
+                                    <constraint firstAttribute="trailing" secondItem="1k2-Y0-Dtr" secondAttribute="trailing" constant="16" id="kt1-a1-015"/>
+                                    <constraint firstAttribute="bottom" secondItem="1k2-Y0-Dtr" secondAttribute="bottom" constant="16" id="kt1-a1-016"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="20"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hf8-j6-58A">
+                                <rect key="frame" x="16" y="454" width="361" height="93"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0% Score" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fr8-IW-w9W">
+                                        <rect key="frame" x="16" y="16" width="78" height="21"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This indicates that no instances of that specific pattern were detected during your recording." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0eo-C9-NPh">
+                                        <rect key="frame" x="16" y="41" width="329" height="36"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="fr8-IW-w9W" firstAttribute="top" secondItem="hf8-j6-58A" secondAttribute="top" constant="16" id="kt2-b1-001"/>
+                                    <constraint firstItem="fr8-IW-w9W" firstAttribute="leading" secondItem="hf8-j6-58A" secondAttribute="leading" constant="16" id="kt2-b1-002"/>
+                                    <constraint firstItem="0eo-C9-NPh" firstAttribute="top" secondItem="fr8-IW-w9W" secondAttribute="bottom" constant="4" id="kt2-b1-003"/>
+                                    <constraint firstItem="0eo-C9-NPh" firstAttribute="leading" secondItem="hf8-j6-58A" secondAttribute="leading" constant="16" id="kt2-b1-004"/>
+                                    <constraint firstAttribute="trailing" secondItem="0eo-C9-NPh" secondAttribute="trailing" constant="16" id="kt2-b1-005"/>
+                                    <constraint firstAttribute="bottom" secondItem="0eo-C9-NPh" secondAttribute="bottom" constant="16" id="kt2-b1-006"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="24"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="XgT-CJ-gKm"/>
                         <color key="backgroundColor" name="bg"/>
                         <constraints>
-                            <constraint firstItem="RjM-r3-JKm" firstAttribute="top" secondItem="I4a-3t-5RR" secondAttribute="bottom" constant="16" id="508-VD-zcb"/>
-                            <constraint firstItem="I4a-3t-5RR" firstAttribute="top" secondItem="cek-yp-Knb" secondAttribute="bottom" constant="4" id="AQO-07-JfI"/>
-                            <constraint firstItem="RjM-r3-JKm" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="AiL-Tr-eN7"/>
-                            <constraint firstItem="gj4-ge-h93" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="Bym-Ro-1Xk"/>
+                            <constraint firstItem="2iB-HS-7VR" firstAttribute="top" secondItem="NQ7-58-FX0" secondAttribute="bottom" constant="7" id="3Je-FN-aRx"/>
+                            <constraint firstItem="hf8-j6-58A" firstAttribute="top" secondItem="1rd-at-MAy" secondAttribute="bottom" constant="8" symbolic="YES" id="4DY-hH-fdd"/>
+                            <constraint firstItem="OPG-mM-8oA" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="8xO-wo-ae0"/>
+                            <constraint firstItem="XgT-CJ-gKm" firstAttribute="trailing" secondItem="hf8-j6-58A" secondAttribute="trailing" constant="16" id="9Of-Ux-d6t"/>
                             <constraint firstItem="NQ7-58-FX0" firstAttribute="top" secondItem="XgT-CJ-gKm" secondAttribute="top" constant="16" id="GgF-vd-TQD"/>
-                            <constraint firstItem="cek-yp-Knb" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="HUX-Hq-wcE"/>
-                            <constraint firstItem="ipp-xb-etd" firstAttribute="top" secondItem="gj4-ge-h93" secondAttribute="bottom" constant="4" id="MO7-J0-ctl"/>
                             <constraint firstItem="OPG-mM-8oA" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="P1V-IJ-9wO"/>
-                            <constraint firstItem="XgT-CJ-gKm" firstAttribute="trailing" secondItem="OzN-N2-CKk" secondAttribute="trailing" constant="20" id="Pqx-tE-m1W"/>
-                            <constraint firstItem="OzN-N2-CKk" firstAttribute="top" secondItem="RjM-r3-JKm" secondAttribute="bottom" constant="4" id="QXQ-mk-JEy"/>
-                            <constraint firstItem="yRs-1W-dEL" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="RAF-k6-DGi"/>
-                            <constraint firstItem="OzN-N2-CKk" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="RgA-V5-sPX"/>
-                            <constraint firstItem="gj4-ge-h93" firstAttribute="top" secondItem="OzN-N2-CKk" secondAttribute="bottom" constant="16" id="VtD-os-afo"/>
-                            <constraint firstItem="ecx-ib-1Rz" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="XZX-3J-ojY"/>
-                            <constraint firstItem="XgT-CJ-gKm" firstAttribute="trailing" secondItem="I4a-3t-5RR" secondAttribute="trailing" constant="20" id="ZXt-bw-X72"/>
-                            <constraint firstItem="cek-yp-Knb" firstAttribute="top" secondItem="NQ7-58-FX0" secondAttribute="bottom" constant="8" id="ZrB-QK-m48"/>
                             <constraint firstItem="1rd-at-MAy" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="16" id="aXj-Xh-ZrD"/>
+                            <constraint firstItem="OPG-mM-8oA" firstAttribute="top" secondItem="hf8-j6-58A" secondAttribute="bottom" constant="8" symbolic="YES" id="bNi-ix-07B"/>
                             <constraint firstItem="NQ7-58-FX0" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="16" id="bqg-80-4CF"/>
-                            <constraint firstItem="XgT-CJ-gKm" firstAttribute="trailing" secondItem="yRs-1W-dEL" secondAttribute="trailing" constant="20" id="hB0-x1-oz3"/>
-                            <constraint firstItem="XgT-CJ-gKm" firstAttribute="trailing" secondItem="ipp-xb-etd" secondAttribute="trailing" constant="20" id="hHq-Qe-mTv"/>
-                            <constraint firstItem="yRs-1W-dEL" firstAttribute="top" secondItem="ecx-ib-1Rz" secondAttribute="bottom" constant="4" id="kVK-HL-Zyw"/>
+                            <constraint firstItem="XgT-CJ-gKm" firstAttribute="trailing" secondItem="2iB-HS-7VR" secondAttribute="trailing" constant="16" id="jtP-W9-NN0"/>
                             <constraint firstItem="XgT-CJ-gKm" firstAttribute="trailing" secondItem="OPG-mM-8oA" secondAttribute="trailing" constant="20" id="lRu-tA-4d7"/>
-                            <constraint firstItem="ecx-ib-1Rz" firstAttribute="top" secondItem="1rd-at-MAy" secondAttribute="bottom" constant="8" id="pz3-CY-RXg"/>
-                            <constraint firstItem="ipp-xb-etd" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="vwL-GC-BRY"/>
-                            <constraint firstItem="1rd-at-MAy" firstAttribute="top" secondItem="ipp-xb-etd" secondAttribute="bottom" constant="24" id="wTv-XZ-cFb"/>
-                            <constraint firstItem="OPG-mM-8oA" firstAttribute="top" secondItem="yRs-1W-dEL" secondAttribute="bottom" constant="24" id="zDR-5n-DSC"/>
-                            <constraint firstItem="I4a-3t-5RR" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="20" id="zDr-7B-veb"/>
+                            <constraint firstItem="hf8-j6-58A" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="16" id="opc-4B-8I0"/>
+                            <constraint firstItem="2iB-HS-7VR" firstAttribute="leading" secondItem="XgT-CJ-gKm" secondAttribute="leading" constant="16" id="qcJ-E4-nHN"/>
+                            <constraint firstItem="1rd-at-MAy" firstAttribute="top" secondItem="2iB-HS-7VR" secondAttribute="bottom" constant="8" symbolic="YES" id="rDl-3W-yTa"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="About Speech Patterns" id="Uk3-PY-7Du"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qGK-oT-K1D" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3127" y="1477"/>
+            <point key="canvasLocation" x="3125.9541984732823" y="1476.7605633802818"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="NhZ-Cz-F2g">
@@ -1947,7 +1984,7 @@ to say?</string>
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="ButtonTheme">
-            <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.59215686274509804" green="0.62745098039215685" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="bg">
             <color red="0.92941176470588238" green="0.90980392156862744" blue="0.93333333333333335" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
@@ -1956,16 +1993,16 @@ to say?</string>
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray2Color">
-            <color red="0.68235294120000001" green="0.68235294120000001" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
