@@ -54,7 +54,7 @@
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled" title="Get Started" cornerStyle="capsule">
                                                     <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
-                                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="signInTapped:" destination="QqP-2e-2ML" eventType="touchUpInside" id="0TU-bD-bbJ"/>
@@ -330,7 +330,7 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Pep-Gm-BdV">
-                                <rect key="frame" x="95.333333333333329" y="563.33333333333337" width="202.66666666666669" height="56.666666666666629"/>
+                                <rect key="frame" x="95.333333333333329" y="553.33333333333337" width="202.66666666666669" height="56.666666666666629"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="-5" translatesAutoresizingMaskIntoConstraints="NO" id="ST3-Qs-qvT">
                                         <rect key="frame" x="0.0" y="0.0" width="202.66666666666666" height="28.333333333333332"/>
@@ -365,30 +365,30 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="D1M-fq-pPb">
-                                <rect key="frame" x="32" y="392" width="329" height="160.33333333333337"/>
+                                <rect key="frame" x="32" y="392" width="329" height="150.33333333333337"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cnZ-jG-hAN">
-                                        <rect key="frame" x="0.0" y="0.0" width="329" height="60"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="329" height="50"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="60" id="hnE-gK-NCR"/>
+                                            <constraint firstAttribute="height" constant="50" id="hnE-gK-NCR"/>
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Sign Up" cornerStyle="capsule">
                                             <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
-                                            <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                            <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="signUpButtonTapped:" destination="p77-en-s6h" eventType="touchUpInside" id="sTj-Pc-bCy"/>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  Or" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vr6-k3-dqo">
-                                        <rect key="frame" x="0.0" y="75" width="329" height="20.333333333333329"/>
+                                        <rect key="frame" x="0.0" y="65" width="329" height="20.333333333333329"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sy9-1f-Ug4">
-                                        <rect key="frame" x="0.0" y="110.33333333333331" width="329" height="50"/>
+                                        <rect key="frame" x="0.0" y="100.33333333333331" width="329" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="n7r-X2-DZg"/>
                                         </constraints>
@@ -445,7 +445,7 @@
                                 <buttonConfiguration key="configuration" style="gray" title="Continue" cornerStyle="capsule">
                                     <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
                                     <color key="baseForegroundColor" systemColor="systemBackgroundColor"/>
-                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="continueButtonTapped:" destination="wNi-qZ-XqS" eventType="touchUpInside" id="5ly-9l-M6y"/>
@@ -513,7 +513,7 @@
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Next" cornerStyle="capsule">
-                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="continueButtonTapped:" destination="ddt-Di-a0D" eventType="touchUpInside" id="lit-d9-s6R"/>
@@ -759,7 +759,7 @@
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Start your journey" cornerStyle="capsule">
-                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="getStartedButtonTapped:" destination="7GL-Wf-G0s" eventType="touchUpInside" id="ohe-hF-uoK"/>
@@ -1014,7 +1014,7 @@
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" image="chevron.right" catalog="system" cornerStyle="capsule">
-                                            <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                            <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="nextButtonTapped:" destination="TwK-Tn-5kw" eventType="touchUpInside" id="aOm-Nl-fsB"/>
@@ -1028,7 +1028,7 @@
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" image="repeat" catalog="system" cornerStyle="capsule">
-                                            <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                            <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="resetButtonTapped:" destination="TwK-Tn-5kw" eventType="touchUpInside" id="hcx-ke-KMB"/>
@@ -1039,7 +1039,7 @@
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="esP-oS-L3k"/>
                                         </constraints>
-                                        <color key="tintColor" name="ButtonTheme"/>
+                                        <color key="tintColor" name="ButtonThemeMain"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Submit" cornerStyle="capsule"/>
                                         <connections>
@@ -1135,7 +1135,7 @@ to say?</string>
                                 <buttonConfiguration key="configuration" style="gray" title="Continue" cornerStyle="capsule">
                                     <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
                                     <color key="baseForegroundColor" systemColor="systemBackgroundColor"/>
-                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="continueButtonTapped:" destination="GcJ-lZ-6Xr" eventType="touchUpInside" id="4eI-oC-mDX"/>
@@ -1797,7 +1797,7 @@ to say?</string>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="filled" title="Sign In" cornerStyle="capsule">
                                                     <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
-                                                    <color key="baseBackgroundColor" name="ButtonTheme"/>
+                                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="loginButtonTapped:" destination="TG9-Dv-PBD" eventType="touchUpInside" id="aQh-o1-YrH"/>
@@ -1985,6 +1985,9 @@ to say?</string>
         </namedColor>
         <namedColor name="ButtonTheme">
             <color red="0.59215686274509804" green="0.62745098039215685" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="ButtonThemeMain">
+            <color red="0.48627450980392156" green="0.52156862745098043" blue="0.79607843137254897" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="bg">
             <color red="0.92941176470588238" green="0.90980392156862744" blue="0.93333333333333335" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
