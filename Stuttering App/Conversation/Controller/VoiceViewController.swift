@@ -168,6 +168,8 @@ class VoiceViewController: UIViewController {
         
         // Topic selection overlay (on top of everything)
         setupTopicSelectionView()
+        
+        // Touch fix hack removed — was causing double-firing of button actions
     }
     
     private func setupStackViews() {
@@ -822,3 +824,4 @@ extension VoiceViewController: UITabBarControllerDelegate {
         tabBarController?.selectedViewController = destination
     }
 }
+

@@ -30,9 +30,13 @@ class ReadingResultViewController: UIViewController {
         // Ensure multiline label wraps properly inside stack views
         insightsLabel.numberOfLines = 0
         insightsLabel.lineBreakMode = .byWordWrapping
+        insightsLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        insightsLabel.setContentHuggingPriority(.required, for: .vertical)
         
         if let report = report {
             print("REPORT RECEIVED with score: \(report.fluencyScore)")
+            // Set placeholder immediately so the card renders at full height
+            insightsLabel.text = "Analyzing your session…"
             setupUIWithReport(report)
         } else {
             print("NO REPORT DATA RECEIVED")
@@ -49,13 +53,15 @@ class ReadingResultViewController: UIViewController {
     
     private func updateInsightsLayout() {
         // Recalculate the width for wrapping
-        let labelWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
-        insightsLabel.preferredMaxLayoutWidth = labelWidth
+        let containerWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
+        insightsLabel.preferredMaxLayoutWidth = containerWidth - 28 // 14pt padding each side
         insightsLabel.invalidateIntrinsicContentSize()
         
-        // Force the entire view hierarchy to re-layout
+        // Force the entire view hierarchy to re-layout including the scroll view
         insightsLabel.superview?.setNeedsLayout()
         insightsLabel.superview?.superview?.setNeedsLayout()
+        insightsLabel.superview?.superview?.superview?.setNeedsLayout()
+        view.setNeedsLayout()
         view.layoutIfNeeded()
     }
     
@@ -162,10 +168,10 @@ class ReadingResultViewController: UIViewController {
         
         if cleanWords.isEmpty {
             let noWordsLabel = UILabel()
-            noWordsLabel.text = "No Troubled Words."
+            noWordsLabel.text = "No troubled words detected."
             noWordsLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
             noWordsLabel.textColor = .secondaryLabel
-            noWordsLabel.textAlignment = .left
+            noWordsLabel.textAlignment = .center
             noWordsLabel.numberOfLines = 1
             troubledWordsStackView.alignment = .fill
             troubledWordsStackView.addArrangedSubview(noWordsLabel)
@@ -193,6 +199,11 @@ class ReadingResultViewController: UIViewController {
             let labelWidth = label.intrinsicContentSize.width
             
             if currentWidth + labelWidth > maxWidth && currentWidth > 0 {
+                // Add flexible spacer to finalize this row — prevents chips from stretching
+                let spacer = UIView()
+                spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+                currentRowView.addArrangedSubview(spacer)
+                
                 currentRowView = createRowStack()
                 troubledWordsStackView.addArrangedSubview(currentRowView)
                 currentWidth = 0
@@ -201,6 +212,11 @@ class ReadingResultViewController: UIViewController {
             currentRowView.addArrangedSubview(label)
             currentWidth += (labelWidth + 8)
         }
+        
+        // Add spacer to the last row so chips remain compact
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        currentRowView.addArrangedSubview(spacer)
     }
     
     private func createRowStack() -> UIStackView {
@@ -219,8 +235,8 @@ class ReadingResultViewController: UIViewController {
 //        label.textColor = UIColor(red: 0.1, green: 0.2, blue: 0.2, alpha: 1.0)
 //        label.backgroundColor = UIColor(red: 0.88, green: 0.95, blue: 0.95, alpha: 1.0)
 //        
-        label.textColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
-        label.backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
+        label.textColor = customBrandBlue
+        label.backgroundColor = customBrandBlue.withAlphaComponent(0.15)
         label.textAlignment = .center
         label.layer.cornerRadius = 12
         label.clipsToBounds = true
@@ -241,7 +257,7 @@ class ReadingResultViewController: UIViewController {
         backgroundCircle.path = circlePath.cgPath
         backgroundCircle.strokeColor = CGColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
         backgroundCircle.lineWidth = lineWidth
-        backgroundCircle.fillColor = CGColor(red: 0.9294, green: 0.9098, blue: 0.9333, alpha: 1.0)
+        backgroundCircle.fillColor = UIColor(named: "bg")?.cgColor ?? CGColor(red: 0.929, green: 0.910, blue: 0.933, alpha: 1.0)
         backgroundCircle.lineCap = .round
         fluencyCircleView.layer.addSublayer(backgroundCircle)
         
