@@ -284,7 +284,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         let restartAction = UIAlertAction(title: "Restart", style: .destructive) { [weak self] _ in
             self?.stopRecording()
             
-            self?.navigationController?.popViewController(animated: true)
+            self?.navigationController?.setNavigationBarHidden(true, animated: false)
         }
         
         alert.addAction(cancelAction)
@@ -332,6 +332,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
                 let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
                 if let resultVC = storyboard.instantiateViewController(withIdentifier: "LastOnboardingViewController") as? LastOnboardingViewController {
                     resultVC.report = report // Pass data
+                    self.navigationController?.setNavigationBarHidden(false, animated: false)
                     self.navigationController?.pushViewController(resultVC, animated: true)
                 }
             }
@@ -388,7 +389,10 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func updateButtonStates() {
-        nextButton.isEnabled = currentIndex < paragraphs.count
-        nextButton.alpha = nextButton.isEnabled ? 1.0 : 0.5
+        let enabled = currentIndex < paragraphs.count
+        nextButton.isEnabled = enabled
+        UIView.animate(withDuration: 0.2) {
+            self.nextButton.alpha = enabled ? 1.0 : 0.4
+        }
     }
 }

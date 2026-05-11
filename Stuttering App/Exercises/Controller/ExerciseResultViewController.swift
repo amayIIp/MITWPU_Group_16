@@ -24,7 +24,6 @@ class WaveBackgroundView: UIView {
         }
     }
     
-    // Animate this from 0.0 to 1.0 to fill the screen
     var fillLevel: CGFloat = 0.0
     var targetFillLevel: CGFloat = 0.0
     
@@ -55,17 +54,15 @@ class WaveBackgroundView: UIView {
         displayLink?.invalidate()
         displayLink = nil
     }
+
+    var isAnimating: Bool { displayLink != nil }
     
     @objc private func updateWaves() {
         phase += 0.05
-        
-        // Smoothly interpolate fillLevel to targetFillLevel
         fillLevel += (targetFillLevel - fillLevel) * 0.04
         
         let width = bounds.width
         let height = bounds.height
-        
-        // Target water level (Y coordinate). fillLevel 0 = bottom, 1 = top
         let currentWaterLevel = height * (1.0 - fillLevel)
         
         wave1.path = createWavePath(width: width, height: height, waterLevel: currentWaterLevel, amplitude: 12, frequency: 1.2, phaseOffset: phase)
@@ -100,13 +97,10 @@ class WaveBackgroundView: UIView {
 class ExerciseResultViewController: UIViewController {
     
     var exerciseName: String = ""
-    var durationLabelForExercise: Int = 0
     
     private let waveView = WaveBackgroundView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
-    private let timeContainer = UIView()
-    private let timeLabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,7 +110,7 @@ class ExerciseResultViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -126,7 +120,6 @@ class ExerciseResultViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = UIColor(named: "bg") ?? .systemBackground
-        
         let brandColor = UIColor(resource: .buttonTheme)
         
         // 1. Setup Waves
@@ -154,61 +147,30 @@ class ExerciseResultViewController: UIViewController {
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(subtitleLabel)
         
-        // 3. Setup Time Badge
-        timeContainer.backgroundColor = brandColor.withAlphaComponent(0.15)
-        timeContainer.layer.cornerRadius = 20
-        timeContainer.alpha = 0
-        timeContainer.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(timeContainer)
-        
-        timeLabel.text = formatDuration(durationLabelForExercise)
-        timeLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 18, weight: .bold)
-        timeLabel.textColor = brandColor
-        timeLabel.textAlignment = .center
-        timeLabel.translatesAutoresizingMaskIntoConstraints = false
-        timeContainer.addSubview(timeLabel)
-        
-        // Layout
+        // Layout - Centered title and subtitle
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -60),
+            titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -20),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
-            subtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            timeContainer.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 30),
-            timeContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            timeContainer.heightAnchor.constraint(equalToConstant: 40),
-            
-            timeLabel.leadingAnchor.constraint(equalTo: timeContainer.leadingAnchor, constant: 20),
-            timeLabel.trailingAnchor.constraint(equalTo: timeContainer.trailingAnchor, constant: -20),
-            timeLabel.centerYAnchor.constraint(equalTo: timeContainer.centerYAnchor)
+            subtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     
     private func performEntryAnimation() {
-        // Initial state
         titleLabel.transform = CGAffineTransform(translationX: 0, y: 30)
         subtitleLabel.transform = CGAffineTransform(translationX: 0, y: 30)
-        timeContainer.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
         
-        // Let the wave fill up to 35% of the screen (bottom footer)
         waveView.targetFillLevel = 0.35
         
-        // Animate text in
         UIView.animate(withDuration: 0.8, delay: 0.5, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
             self.titleLabel.alpha = 1.0
             self.titleLabel.transform = .identity
             
             self.subtitleLabel.alpha = 1.0
             self.subtitleLabel.transform = .identity
-        })
-        
-        UIView.animate(withDuration: 0.6, delay: 0.8, usingSpringWithDamping: 0.7, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
-            self.timeContainer.alpha = 1.0
-            self.timeContainer.transform = .identity
         }) { _ in
             // Stay for 2.5 seconds, then transition out
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
@@ -218,27 +180,15 @@ class ExerciseResultViewController: UIViewController {
     }
     
     private func dissolveSplash() {
-        // Drop the wave back down
         waveView.targetFillLevel = 0.0
         
         UIView.animate(withDuration: 0.6, animations: {
             self.titleLabel.alpha = 0
             self.subtitleLabel.alpha = 0
-            self.timeContainer.alpha = 0
-            self.timeContainer.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
         }) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 self.goToMainScreen()
             }
-        }
-    }
-    
-    func formatDuration(_ seconds: Int) -> String {
-        if seconds < 60 {
-            return "\(seconds) Sec"
-        } else {
-            let minutes = Int((Double(seconds) / 60.0).rounded())
-            return "\(minutes) Min"
         }
     }
     

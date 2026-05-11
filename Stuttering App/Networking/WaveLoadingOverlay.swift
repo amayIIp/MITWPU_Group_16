@@ -6,6 +6,10 @@ import UIKit
 // as ExerciseResultViewController. Show it with a context-appropriate message,
 // then dismiss it when the async work is done.
 //
+// Features:
+//  • Only appears after a 250ms delay — instant operations show nothing.
+//  • Stays visible for at least 700ms to prevent an ugly flash.
+//
 // Usage (on a view):
 //   let overlay = WaveLoadingOverlay.show(in: view, message: "Signing you in…")
 //   // ... do async work ...
@@ -18,24 +22,39 @@ import UIKit
 class WaveLoadingOverlay: UIView {
 
     // MARK: - Subviews
-    private let waveView    = WaveBackgroundView()
+    private let waveView     = WaveBackgroundView()
     private let messageLabel = UILabel()
     private let dotLabel     = UILabel()   // animated ellipsis
 
     // MARK: - Internal state
     private var dotTimer: Timer?
-    private var dotCount = 0
+    private var dotCount  = 0
+    private var shownAt   = Date()
+    private var isDismissRequested = false
+    private var pendingCompletion: (() -> Void)?
+
+    /// Minimum time the overlay must remain visible before it can dismiss.
+    /// Prevents the "0.2 sec flash" feeling.
+    private let minimumDisplayTime: TimeInterval = 0.7
 
     // MARK: - Factory helpers
 
     /// Show a wave overlay covering `targetView`.
+    /// Only becomes visible after a 250ms threshold — skips entirely for instant ops.
     @discardableResult
     static func show(in targetView: UIView, message: String) -> WaveLoadingOverlay {
         let overlay = WaveLoadingOverlay(message: message)
         overlay.frame = targetView.bounds
         overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        overlay.alpha = 0
         targetView.addSubview(overlay)
-        overlay.animateIn()
+
+        // Only fade in if the operation takes >250ms
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak overlay] in
+            guard let overlay = overlay, overlay.superview != nil,
+                  !overlay.isDismissRequested else { return }
+            overlay.animateIn()
+        }
         return overlay
     }
 
@@ -110,20 +129,27 @@ class WaveLoadingOverlay: UIView {
     // MARK: - Animation
 
     private func animateIn() {
+        shownAt = Date()
         waveView.start()
         waveView.targetFillLevel = 0.28
 
         messageLabel.transform = CGAffineTransform(translationX: 0, y: 20)
-        dotLabel.transform = CGAffineTransform(translationX: 0, y: 20)
+        dotLabel.transform     = CGAffineTransform(translationX: 0, y: 20)
 
-        UIView.animate(withDuration: 0.55, delay: 0.1,
+        UIView.animate(withDuration: 0.45, delay: 0,
                        usingSpringWithDamping: 0.82,
                        initialSpringVelocity: 0,
                        options: .curveEaseOut) {
+            self.alpha = 1
             self.messageLabel.alpha = 1
             self.messageLabel.transform = .identity
             self.dotLabel.alpha = 1
             self.dotLabel.transform = .identity
+        } completion: { _ in
+            // If dismiss() was already called while we were fading in, honour it now
+            if self.isDismissRequested {
+                self.performDismiss(animated: true, completion: self.pendingCompletion)
+            }
         }
 
         startDotAnimation()
@@ -137,13 +163,37 @@ class WaveLoadingOverlay: UIView {
         }
     }
 
+    // MARK: - Dismiss
+
     /// Dismiss and remove the overlay from its superview.
+    /// Automatically waits out the minimum display time before fading out,
+    /// and handles the case where dismiss() is called before the fade-in completes.
     func dismiss(animated: Bool = true, completion: (() -> Void)? = nil) {
         dotTimer?.invalidate()
         dotTimer = nil
+        isDismissRequested = true
+        pendingCompletion  = completion
 
+        let elapsed   = Date().timeIntervalSince(shownAt)
+        let remaining = max(0, minimumDisplayTime - elapsed)
+
+        // If the overlay never became visible (fast op, still in the 250ms delay),
+        // just remove it silently with no animation.
+        if alpha == 0 && !waveView.isAnimating {
+            waveView.stop()
+            removeFromSuperview()
+            completion?()
+            return
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + remaining) { [weak self] in
+            guard let self = self else { completion?(); return }
+            self.performDismiss(animated: animated, completion: completion)
+        }
+    }
+
+    private func performDismiss(animated: Bool, completion: (() -> Void)?) {
         waveView.targetFillLevel = 0.0
-
         if animated {
             UIView.animate(withDuration: 0.35, animations: {
                 self.alpha = 0

@@ -40,65 +40,73 @@ class ProgressViewController: UIViewController {
     // MARK: - Data Loading
 
     private func loadProgressData() {
+        // Show placeholder values immediately — no blank flash
+        let allLabels: [UILabel?] = [
+            daysGoalsCompletedLabel, activeStreakLabel, totalHoursLabel,
+            avgFluencyLabel, bestFluencyLabel, totalAwardsLabel,
+            totalExercisesPracticedLabel, totalExerciseTimeLabel,
+            totalReadingSectionsLabel, avgReadingDurationLabel,
+            totalConversationSessionsLabel, avgConvoDurationLabel
+        ]
+        allLabels.forEach { $0?.text = "–" }
+        mostPracticedLabel?.text        = "–"
+        longestSmoothParagraphLabel?.text = "–"
+        longestSmoothTalkLabel?.text    = "–"
+
         Task {
             let report = await LogManager.shared.getOverallProgressReport()
 
-            DispatchQueue.main.async { [weak self] in
+            await MainActor.run { [weak self] in
                 guard let self = self else { return }
 
-                if let report = report {
-                    // Section 1: Top Bar
-                    self.daysGoalsCompletedLabel.text = "\(report.daysGoalsCompleted)"
-                    self.activeStreakLabel.text = "\(report.activeStreak)"
-                    self.totalHoursLabel.text = "\(Int(report.totalHours))"
+                // Fade labels in once data is ready
+                UIView.animate(withDuration: 0.3) {
+                    if let report = report {
+                        // Section 1
+                        self.daysGoalsCompletedLabel.text = "\(report.daysGoalsCompleted)"
+                        self.activeStreakLabel.text        = "\(report.activeStreak)"
+                        self.totalHoursLabel.text         = "\(Int(report.totalHours))"
 
-                    // Section 2: Key Metrics
-                    if let userId = LogManager.shared.getCurrentUserId() {
-                        let avgFluency = LogManager.shared.getAverageFluency(userId: userId)
-                        self.avgFluencyLabel.text = "\(Int(avgFluency))"
-                        let bestFluency = LogManager.shared.getBestFluency(userId: userId)
-                        self.bestFluencyLabel.text = "\(Int(bestFluency))"
+                        // Section 2
+                        if let userId = LogManager.shared.getCurrentUserId() {
+                            self.avgFluencyLabel.text  = "\(Int(LogManager.shared.getAverageFluency(userId: userId)))"
+                            self.bestFluencyLabel.text = "\(Int(LogManager.shared.getBestFluency(userId: userId)))"
+                        } else {
+                            self.avgFluencyLabel.text  = "0"
+                            self.bestFluencyLabel.text = "0"
+                        }
+                        self.totalAwardsLabel.text = "\(AwardsManager.shared.getAchievedAwardsCount())"
+
+                        // Section 3
+                        self.totalExercisesPracticedLabel.text = "\(report.totalExercisesPracticed)"
+                        self.totalExerciseTimeLabel.text       = "\(report.totalExerciseMinutesThisWeek)"
+                        self.mostPracticedLabel.text           = report.mostPracticedTechnique
+
+                        // Section 4
+                        self.avgReadingDurationLabel.text     = self.formatDuration(report.avgReadingDuration)
+                        self.longestSmoothParagraphLabel.text = "\(report.longestSmoothParagraph)"
+
+                        // Section 5
+                        self.totalConversationSessionsLabel.text = "\(report.totalConversationSessions)"
+                        self.avgConvoDurationLabel.text          = self.formatDuration(report.avgConversationDuration)
+                        self.longestSmoothTalkLabel.text         = "\(report.longestSmoothTalk)"
                     } else {
-                        self.avgFluencyLabel.text = "--"
-                        self.bestFluencyLabel.text = "--"
+                        self.daysGoalsCompletedLabel.text = "0"
+                        self.activeStreakLabel.text        = "0"
+                        self.totalHoursLabel.text         = "0"
+                        self.avgFluencyLabel.text         = "0"
+                        self.bestFluencyLabel.text        = "0"
+                        self.totalAwardsLabel.text        = "0"
+                        self.totalExercisesPracticedLabel.text = "0"
+                        self.totalExerciseTimeLabel.text       = "0"
+                        self.mostPracticedLabel.text           = "—"
+                        self.totalReadingSectionsLabel.text    = "0"
+                        self.avgReadingDurationLabel.text      = "0:00"
+                        self.longestSmoothParagraphLabel.text  = "0"
+                        self.totalConversationSessionsLabel.text = "0"
+                        self.avgConvoDurationLabel.text          = "0:00"
+                        self.longestSmoothTalkLabel.text         = "0"
                     }
-                    self.totalAwardsLabel.text = "\(AwardsManager.shared.getAchievedAwardsCount())"
-
-                    // Section 3: Exercises
-                    self.totalExercisesPracticedLabel.text = "\(report.totalExercisesPracticed)"
-                    self.totalExerciseTimeLabel.text = "\(report.totalExerciseMinutesThisWeek)"
-                    self.mostPracticedLabel.text = report.mostPracticedTechnique
-
-                    // Section 4: Reading
-//                    self.totalReadingSectionsLabel.text = "\(report.totalReadingSections)"
-                    self.avgReadingDurationLabel.text = self.formatDuration(report.avgReadingDuration)
-                    self.longestSmoothParagraphLabel.text = "\(report.longestSmoothParagraph)"
-
-                    // Section 5: Conversation
-                    self.totalConversationSessionsLabel.text = "\(report.totalConversationSessions)"
-                    self.avgConvoDurationLabel.text = self.formatDuration(report.avgConversationDuration)
-                    self.longestSmoothTalkLabel.text = "\(report.longestSmoothTalk)"
-                } else {
-                    // No data — show defaults
-                    self.daysGoalsCompletedLabel.text = "0"
-                    self.activeStreakLabel.text = "0"
-                    self.totalHoursLabel.text = "0"
-
-                    self.avgFluencyLabel.text = "0"
-                    self.bestFluencyLabel.text = "0"
-                    self.totalAwardsLabel.text = "0"
-
-                    self.totalExercisesPracticedLabel.text = "0"
-                    self.totalExerciseTimeLabel.text = "0"
-                    self.mostPracticedLabel.text = "—"
-
-                    self.totalReadingSectionsLabel.text = "0"
-                    self.avgReadingDurationLabel.text = "0:00"
-                    self.longestSmoothParagraphLabel.text = "0"
-
-                    self.totalConversationSessionsLabel.text = "0"
-                    self.avgConvoDurationLabel.text = "0:00"
-                    self.longestSmoothTalkLabel.text = "0"
                 }
             }
         }

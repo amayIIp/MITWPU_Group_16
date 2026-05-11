@@ -295,32 +295,29 @@ class HomePageViewController: UIViewController {
             self.insightLabel.text = cached
             return
         }
-        
+
+        // Show a placeholder immediately so the label doesn't appear blank
+        self.insightLabel.text = "Loading your insight…"
+
         Task {
             let today = Date()
-            
+
             if let todayReport = await LogManager.shared.getDayReport(for: today) {
                 LogManager.shared.cachedHomeInsight = todayReport.insight
-                await MainActor.run {
-                    self.insightLabel.text = todayReport.insight
-                }
+                await MainActor.run { self.insightLabel.text = todayReport.insight }
                 return
             }
 
             if let lastDate = LogManager.shared.getMostRecentReadingSessionDate(),
                let lastReport = await LogManager.shared.getDayReport(for: lastDate) {
                 LogManager.shared.cachedHomeInsight = lastReport.insight
-                await MainActor.run {
-                    self.insightLabel.text = lastReport.insight
-                }
+                await MainActor.run { self.insightLabel.text = lastReport.insight }
                 return
             }
 
             let fallback = "Your speaking practice hasn't started yet today."
             LogManager.shared.cachedHomeInsight = fallback
-            await MainActor.run {
-                self.insightLabel.text = fallback
-            }
+            await MainActor.run { self.insightLabel.text = fallback }
         }
     }
 

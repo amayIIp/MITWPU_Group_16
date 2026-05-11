@@ -353,10 +353,11 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     func didTapOpenButton() {
         let duration = totalExerciseDuration
-        
-        let loadingOverlay = WaveLoadingOverlay.show(in: view, message: "Analysing your reading…")
-        
+
+        let loadingOverlay = WaveLoadingOverlay.show(in: view, message: "Analysing your reading")
+
         Task {
+            // Step 1 — Transcribe audio
             var finalTranscript = self.recordedTranscript
             if let url = self.tempAudioURL {
                 do {
@@ -367,31 +368,44 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
                     print("WhisperKit failed, falling back to Apple Speech: \(error)")
                 }
             }
-            
+
+            // Step 2 — Analyze
             let jsonResult = StutterAnalyzer.analyze(
                 reference: self.textToDisplay,
                 transcript: finalTranscript,
                 segments: self.recordedSegments,
                 duration: duration
             )
-            
-            await MainActor.run {
-                loadingOverlay.dismiss()
-                guard let jsonData = jsonResult.data(using: .utf8),
-                      let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
-                    return
-                }
 
+            guard let jsonData = jsonResult.data(using: .utf8),
+                  let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
+                await MainActor.run { loadingOverlay.dismiss() }
+                return
+            }
+
+            // Step 3 — Save stats while overlay is still visible
+            await MainActor.run {
                 LogManager.shared.updateStutterStats(letterCounts: report.letterAnalysis)
-                
-                guard let ResultVC = self.storyboard?.instantiateViewController(withIdentifier: "ReadingResultViewController") as? ReadingResultViewController else { return }
-                ResultVC.report = report
-                
-                let ResultNav = UINavigationController(rootViewController: ResultVC)
-                ResultNav.modalPresentationStyle = .fullScreen
-                self.present(ResultNav, animated: true, completion: nil)
-                
-                self.logReadingActivity()
+            }
+
+            // Step 4 — Pre-fetch insight so result screen is fully ready on first paint
+            let insightText = await InsightEngine.shared.sessionInsight(report: report)
+
+            // Step 5 — Everything ready: dismiss overlay, then present result
+            await MainActor.run {
+                loadingOverlay.dismiss {
+                    guard let ResultVC = self.storyboard?.instantiateViewController(
+                        withIdentifier: "ReadingResultViewController"
+                    ) as? ReadingResultViewController else { return }
+
+                    ResultVC.report = report
+                    ResultVC.preloadedInsight = insightText
+
+                    let ResultNav = UINavigationController(rootViewController: ResultVC)
+                    ResultNav.modalPresentationStyle = .fullScreen
+                    self.present(ResultNav, animated: true)
+                    self.logReadingActivity()
+                }
             }
         }
     }
