@@ -235,12 +235,7 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
         let troubledLetters = LogManager.shared.getTopStruggledLetters(limit: 5)
         
         // Show spinner — awaitParagraph handles cache, in-flight, and on-demand generation
-        let activityIndicator = UIActivityIndicatorView(style: .large)
-        activityIndicator.center = self.view.center
-        activityIndicator.color = .gray
-        activityIndicator.hidesWhenStopped = true
-        self.view.addSubview(activityIndicator)
-        activityIndicator.startAnimating()
+        let loadingOverlay = WaveLoadingOverlay.show(in: self.view, message: "Generating your story…")
         self.view.isUserInteractionEnabled = false
         
         Task {
@@ -249,8 +244,7 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
             )
             
             await MainActor.run {
-                activityIndicator.stopAnimating()
-                activityIndicator.removeFromSuperview()
+                loadingOverlay.dismiss()
                 self.view.isUserInteractionEnabled = true
                 
                 if let paragraph = paragraph {

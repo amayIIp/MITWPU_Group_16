@@ -22,22 +22,16 @@ class LoginViewController: UIViewController {
     private let client = SupabaseManager.shared.client
     var onSwitchToSignup: (() -> Void)?
     
-    private var loadingOverlay: UIView?
-    
-    private func showLoading() {
-        let overlay = UIView(frame: view.bounds)
-        overlay.backgroundColor = UIColor(white: 0, alpha: 0.5)
-        let indicator = UIActivityIndicatorView(style: .large)
-        indicator.color = .white
-        indicator.center = overlay.center
-        indicator.startAnimating()
-        overlay.addSubview(indicator)
-        view.addSubview(overlay)
+    private var loadingOverlay: WaveLoadingOverlay?
+
+    private func showLoading(message: String = "Signing you in…") {
+        guard loadingOverlay == nil else { return }
+        let overlay = WaveLoadingOverlay.show(in: view, message: message)
         loadingOverlay = overlay
     }
-    
+
     private func hideLoading() {
-        loadingOverlay?.removeFromSuperview()
+        loadingOverlay?.dismiss()
         loadingOverlay = nil
     }
 
@@ -185,7 +179,7 @@ class LoginViewController: UIViewController {
         let rawNonce = AuthHelpers.randomNonceString()
         let hashedNonce = AuthHelpers.sha256(rawNonce)
 
-        showLoading()
+        showLoading(message: "Connecting with Google…")
 
         Task {
             do {

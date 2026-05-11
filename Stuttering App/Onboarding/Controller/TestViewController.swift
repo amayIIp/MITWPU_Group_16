@@ -299,20 +299,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         let duration = Date().timeIntervalSince(startTime ?? Date())
         let fullReferenceText = paragraphs.joined(separator: " ")
         
-        let spinnerView = UIView(frame: UIScreen.main.bounds)
-        spinnerView.backgroundColor = UIColor.black.withAlphaComponent(0.7)
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.color = .white
-        spinner.center = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
-        spinner.startAnimating()
-        spinnerView.addSubview(spinner)
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.addSubview(spinnerView)
-        } else {
-            view.addSubview(spinnerView)
-        }
+        let loadingOverlay = WaveLoadingOverlay.showOnWindow(message: "Analysing your speech…")
         
         Task {
             var finalTranscript = self.recordedTranscript
@@ -336,7 +323,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             print("📊 Analysis Result: \(jsonResult)")
             
             await MainActor.run {
-                spinnerView.removeFromSuperview()
+                loadingOverlay.dismiss()
                 guard let jsonData = jsonResult.data(using: .utf8),
                       let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
                     print("❌ Error decoding report")

@@ -354,14 +354,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func didTapOpenButton() {
         let duration = totalExerciseDuration
         
-        let spinnerView = UIView(frame: view.bounds)
-        spinnerView.backgroundColor = UIColor(white: 0, alpha: 0.5)
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.color = .white
-        spinner.center = spinnerView.center
-        spinner.startAnimating()
-        spinnerView.addSubview(spinner)
-        view.addSubview(spinnerView)
+        let loadingOverlay = WaveLoadingOverlay.show(in: view, message: "Analysing your reading…")
         
         Task {
             var finalTranscript = self.recordedTranscript
@@ -383,7 +376,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             )
             
             await MainActor.run {
-                spinnerView.removeFromSuperview()
+                loadingOverlay.dismiss()
                 guard let jsonData = jsonResult.data(using: .utf8),
                       let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
                     return
@@ -402,6 +395,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             }
         }
     }
+
     
     func logReadingActivity() {
         self.exerciseDuration = Int(totalExerciseDuration)

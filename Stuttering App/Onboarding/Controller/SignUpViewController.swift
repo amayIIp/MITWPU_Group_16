@@ -16,7 +16,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     private let client = SupabaseManager.shared.client
     var onSwitchToSignin: (() -> Void)?
-    private var loadingOverlay: UIView?
+    private var loadingOverlay: WaveLoadingOverlay?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -162,20 +162,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Helpers & Navigation (Existing)
     
-    private func showLoading() {
-        let overlay = UIView(frame: view.bounds)
-        overlay.backgroundColor = UIColor(white: 0, alpha: 0.5)
-        let indicator = UIActivityIndicatorView(style: .large)
-        indicator.color = .white
-        indicator.center = overlay.center
-        indicator.startAnimating()
-        overlay.addSubview(indicator)
-        view.addSubview(overlay)
-        loadingOverlay = overlay
+    private func showLoading(message: String = "Creating your account…") {
+        guard loadingOverlay == nil else { return }
+        loadingOverlay = WaveLoadingOverlay.show(in: view, message: message)
     }
-    
+
     private func hideLoading() {
-        loadingOverlay?.removeFromSuperview()
+        loadingOverlay?.dismiss()
         loadingOverlay = nil
     }
 
@@ -196,7 +189,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @objc private func googleSignInTapped() {
         let rawNonce = AuthHelpers.randomNonceString()
         let hashedNonce = AuthHelpers.sha256(rawNonce)
-        showLoading()
+        showLoading(message: "Connecting with Google…")
         Task {
             do {
                 let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: self, hint: nil, additionalScopes: nil, nonce: hashedNonce)
