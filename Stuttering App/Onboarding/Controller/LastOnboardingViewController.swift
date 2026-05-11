@@ -1,7 +1,9 @@
 import UIKit
 
+// MARK: - LastOnboardingViewController
 class LastOnboardingViewController: UIViewController {
     
+    // MARK: - IBOutlets
     @IBOutlet weak var blocks: UILabel!
     @IBOutlet weak var repitition: UILabel!
     @IBOutlet weak var prolongation: UILabel!
@@ -9,17 +11,18 @@ class LastOnboardingViewController: UIViewController {
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var getStartedButton: UIButton!
 
-    private let titleLabel = UILabel()
-    private let circleLayer = CAShapeLayer()
-    private let checkmarkImageView = UIImageView()
-    private let completedLabel = UILabel()
-    private let timeLabel = UILabel()
+    // MARK: - UI Components
     private let splashContainer = UIView()
+    private let waveView = WaveBackgroundView() // This will now use the existing definition from your project
+    private let titleLabel = UILabel()
+    private let completedLabel = UILabel()
     
+    // MARK: - Properties
     var report: StutterJSONReport?
-    
     private var hasSavedData = false
-
+    let customBrandBlue = UIColor(named: "ButtonTheme") ?? UIColor(red: 0.21, green: 0.32, blue: 0.63, alpha: 1.0)
+    
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -48,43 +51,97 @@ class LastOnboardingViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
-    private func setupCustomBackButton() {
-        self.navigationItem.hidesBackButton = true
-        
-        var config = UIButton.Configuration.plain()
-        
-        let imageConfig = UIImage.SymbolConfiguration(weight: .semibold)
-        config.image = UIImage(systemName: "chevron.backward", withConfiguration: imageConfig)
-        
-        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        
-        let backButton = UIButton(configuration: config)
-        backButton.addTarget(self, action: #selector(didTapResetButton), for: .touchUpInside)
-        
-        let customBarButtonItem = UIBarButtonItem(customView: backButton)
-        self.navigationItem.leftBarButtonItem = customBarButtonItem
-    }
+    // MARK: - UI Setup
+    private func setupWaveUI() {
+        splashContainer.frame = view.bounds
+        splashContainer.backgroundColor = UIColor(named: "bg") ?? .systemBackground
+        view.addSubview(splashContainer)
 
+        // 1. Setup Waves
+        waveView.frame = splashContainer.bounds
+        waveView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        waveView.themeColor = customBrandBlue
+        splashContainer.addSubview(waveView)
+        waveView.start()
+
+        // 2. Setup Typography
+        titleLabel.text = "Analysis Complete"
+        titleLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        titleLabel.textColor = .label
+        titleLabel.textAlignment = .center
+        titleLabel.alpha = 0
+        
+        completedLabel.text = "Your personalized report is ready"
+        completedLabel.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        completedLabel.textColor = .secondaryLabel
+        completedLabel.textAlignment = .center
+        completedLabel.alpha = 0
+
+        let stack = UIStackView(arrangedSubviews: [titleLabel, completedLabel])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        splashContainer.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: splashContainer.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: splashContainer.centerYAnchor, constant: -60)
+        ])
+    }
+    
+    private func performEntryAnimation() {
+        setupWaveUI()
+        
+        titleLabel.transform = CGAffineTransform(translationX: 0, y: 20)
+        completedLabel.transform = CGAffineTransform(translationX: 0, y: 20)
+        
+        waveView.targetFillLevel = 0.40
+        
+        UIView.animate(withDuration: 0.8, delay: 0.3, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            self.titleLabel.alpha = 1.0
+            self.titleLabel.transform = .identity
+            self.completedLabel.alpha = 1.0
+            self.completedLabel.transform = .identity
+        } completion: { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                self.dissolveSplash()
+            }
+        }
+    }
+    
+    private func dissolveSplash() {
+        waveView.targetFillLevel = 0.0
+        
+        UIView.animate(withDuration: 0.7, delay: 0, options: .curveEaseInOut, animations: {
+            self.splashContainer.alpha = 0.0
+            self.titleLabel.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+        }) { _ in
+            self.waveView.stop()
+            self.splashContainer.removeFromSuperview()
+            
+            self.navigationController?.setNavigationBarHidden(false, animated: true)
+            
+            UIView.animate(withDuration: 0.6) {
+                self.scrollView.alpha = 1.0
+                self.getStartedButton.alpha = 1.0
+            }
+        }
+    }
+    
+    // MARK: - Logic & Actions
     func setupResults(report: StutterJSONReport) {
         blocks.text = "\(Int(report.percentages.blocks))%"
         repitition.text = "\(Int(report.percentages.repetition))%"
         prolongation.text = "\(Int(report.percentages.prolongation))%"
         loadTroubledWords(words: report.stutteredWords)
         
-        // 👇 Analyze troubled words and save the session data dynamically
         if !hasSavedData {
-            
-            // Note: If 'saveReadingSession' doesn't currently accept a title parameter,
-            // you will need to update it in your LogManager, OR set it on the report directly
-            // (e.g., var finalReport = report; finalReport.title = "test").
             LogManager.shared.saveReadingSession(report: report)
-            
             analyzeAndSaveProblemPhonemes(from: report.stutteredWords)
             hasSavedData = true
         }
     }
     
-    // MARK: - Phoneme Analysis Logic
     private func analyzeAndSaveProblemPhonemes(from words: [String]) {
         let cleanWords = words.filter { !$0.isEmpty }.map { $0.lowercased() }
         if cleanWords.isEmpty { return }
@@ -114,20 +171,12 @@ class LastOnboardingViewController: UIViewController {
         }
 
         var problemPhonemes: [String] = []
-
-        if plosiveCount > 0 {
-            problemPhonemes.append("Plosives (P, B, T, D, K, G)")
-        }
-        if fricativeCount > 0 {
-            problemPhonemes.append("Fricatives (S, F, SH, TH)")
-        }
-        if vowelVoicedCount > 0 {
-            problemPhonemes.append("Vowels (A,E,I,O,U) & Voiced (M,N,L)")
-        }
+        if plosiveCount > 0 { problemPhonemes.append("Plosives (P, B, T, D, K, G)") }
+        if fricativeCount > 0 { problemPhonemes.append("Fricatives (S, F, SH, TH)") }
+        if vowelVoicedCount > 0 { problemPhonemes.append("Vowels (A,E,I,O,U) & Voiced (M,N,L)") }
 
         if !problemPhonemes.isEmpty {
             DatabaseManager.shared.saveUserProblemPhonemes(phonemes: problemPhonemes)
-            print("Dynamically updated user phonemes based on onboarding reading report: \(problemPhonemes)")
         }
     }
     
@@ -166,9 +215,9 @@ class LastOnboardingViewController: UIViewController {
     func createChipLabel(text: String) -> UILabel {
         let label = UILabel()
         label.text = "  \(text)  "
-        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        label.textColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
-        label.backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0).withAlphaComponent(0.12)
+        label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        label.textColor = customBrandBlue
+        label.backgroundColor = customBrandBlue.withAlphaComponent(0.15)
         label.textAlignment = .center
         label.layer.cornerRadius = 14
         label.layer.masksToBounds = true
@@ -177,98 +226,19 @@ class LastOnboardingViewController: UIViewController {
         return label
     }
 
-    private func setupRingUI() {
-        splashContainer.frame = view.bounds
-        splashContainer.backgroundColor = .bg
-        view.addSubview(splashContainer)
+    private func setupCustomBackButton() {
+        self.navigationItem.hidesBackButton = true
+        var config = UIButton.Configuration.plain()
+        let imageConfig = UIImage.SymbolConfiguration(weight: .semibold)
+        config.image = UIImage(systemName: "chevron.backward", withConfiguration: imageConfig)
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        let backButton = UIButton(configuration: config)
+        backButton.addTarget(self, action: #selector(didTapResetButton), for: .touchUpInside)
+        let customBarButtonItem = UIBarButtonItem(customView: backButton)
+        self.navigationItem.leftBarButtonItem = customBarButtonItem
+    }
 
-        let centerPoint = view.center
-        let brandColour = UIColor(resource: .buttonTheme).cgColor
-        let radius: CGFloat = 80
-        
-        titleLabel.text = "Stutter Test"
-        titleLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
-        titleLabel.textColor = .black
-        titleLabel.sizeToFit()
-        titleLabel.center = CGPoint(x: centerPoint.x, y: centerPoint.y - radius - 80)
-        titleLabel.alpha = 1.0
-        splashContainer.addSubview(titleLabel)
-        
-        let circularPath = UIBezierPath(arcCenter: centerPoint, radius: radius, startAngle: -CGFloat.pi / 2, endAngle: 3 * CGFloat.pi / 2, clockwise: true)
-        circleLayer.path = circularPath.cgPath
-        circleLayer.strokeColor = brandColour
-        circleLayer.lineWidth = 20
-        circleLayer.fillColor = UIColor.clear.cgColor
-        circleLayer.lineCap = .round
-        circleLayer.strokeEnd = 0
-        splashContainer.layer.addSublayer(circleLayer)
-        
-        let config = UIImage.SymbolConfiguration(pointSize: 60, weight: .bold)
-        checkmarkImageView.image = UIImage(systemName: "checkmark", withConfiguration: config)
-        checkmarkImageView.tintColor = UIColor(cgColor: brandColour)
-        checkmarkImageView.frame = CGRect(x: 0, y: 0, width: 60, height: 60)
-        checkmarkImageView.center = centerPoint
-        checkmarkImageView.alpha = 0
-        splashContainer.addSubview(checkmarkImageView)
-        
-        completedLabel.text = "Completed !!"
-        completedLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
-        completedLabel.textColor = .black
-        completedLabel.sizeToFit()
-        completedLabel.center = CGPoint(x: centerPoint.x, y: centerPoint.y - radius - 40)
-        completedLabel.alpha = 0
-        splashContainer.addSubview(completedLabel)
-        
-        timeLabel.text = ""
-        timeLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        timeLabel.textColor = .black
-        timeLabel.sizeToFit()
-        timeLabel.center = CGPoint(x: centerPoint.x, y: centerPoint.y + radius + 40)
-        timeLabel.alpha = 0
-        splashContainer.addSubview(timeLabel)
-    }
-    
-    private func performEntryAnimation() {
-        setupRingUI()
-        
-        let circularProgressAnimation = CABasicAnimation(keyPath: "strokeEnd")
-        circularProgressAnimation.duration = 1.0
-        circularProgressAnimation.toValue = 1.0
-        circularProgressAnimation.fillMode = .forwards
-        circularProgressAnimation.isRemovedOnCompletion = false
-        circularProgressAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
-        
-        CATransaction.begin()
-        CATransaction.setCompletionBlock {
-            UIView.animate(withDuration: 0.3, animations: {
-                self.checkmarkImageView.alpha = 1.0
-                self.completedLabel.alpha = 1.0
-                self.timeLabel.alpha = 1.0
-            }) { _ in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    self.dissolveSplash()
-                }
-            }
-        }
-        circleLayer.add(circularProgressAnimation, forKey: "progressAnim")
-        CATransaction.commit()
-    }
-    
-    private func dissolveSplash() {
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: [.curveEaseInOut], animations: {
-            self.splashContainer.alpha = 0.0
-        }) { _ in
-            self.splashContainer.removeFromSuperview()
-            
-            self.navigationController?.setNavigationBarHidden(false, animated: false)
-            
-            UIView.animate(withDuration: 0.5) {
-                self.scrollView.alpha = 1.0
-                self.getStartedButton.alpha = 1.0
-            }
-        }
-    }
-    
     @IBAction func getStartedButtonTapped(_ sender: UIButton) {
         if !SessionManager.shared.isAccountMode {
             SessionManager.shared.startGuestSession()
@@ -276,7 +246,6 @@ class LastOnboardingViewController: UIViewController {
         
         AppState.isOnboardingCompleted = true
         AppState.isLoginCompleted = true
-        
         AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
         
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
@@ -286,13 +255,9 @@ class LastOnboardingViewController: UIViewController {
         
         if SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushProfile(profile)
-            print("☁️ [SYNC] Onboarding status pushed to cloud")
-        } else {
-            print("📋 [GUEST] Onboarding completed locally only")
         }
         
-        let logic = LogicMaker()
-        logic.checkForNewDay(isFromLogin: true)
+        LogicMaker().checkForNewDay(isFromLogin: true)
             
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
@@ -305,16 +270,11 @@ class LastOnboardingViewController: UIViewController {
         }) { _ in
             homeVC.view.alpha = 0
             window.rootViewController = homeVC
-            
-            UIView.animate(withDuration: 0.3) {
-                homeVC.view.alpha = 1
-            }
+            UIView.animate(withDuration: 0.3) { homeVC.view.alpha = 1 }
         }
     }
     
     @objc func didTapResetButton() {
-        self.view.endEditing(true)
-        
         let alert = UIAlertController(title: "Reset Test", message: "This will reset your current progress. Continue?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Reset", style: .destructive) { [weak self] _ in
             self?.navigateHere()
@@ -326,10 +286,8 @@ class LastOnboardingViewController: UIViewController {
     func navigateHere() {
         guard let nav = navigationController else { return }
         let stack = nav.viewControllers
-        
         if stack.count >= 3 {
-            let targetVC = stack[stack.count - 3]
-            nav.popToViewController(targetVC, animated: true)
+            nav.popToViewController(stack[stack.count - 3], animated: true)
         } else {
             nav.popToRootViewController(animated: true)
         }

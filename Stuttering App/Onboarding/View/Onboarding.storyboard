@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TwK-Tn-5kw">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TwK-Tn-5kw">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -417,12 +417,12 @@
                     </view>
                     <connections>
                         <outlet property="SignUpButton" destination="cnZ-jG-hAN" id="OE4-bS-iUa"/>
+                        <outlet property="continueAsGuest" destination="Yio-ca-6iA" id="zqq-wO-wF2"/>
                         <outlet property="emailTextField" destination="366-Yt-WOk" id="LiA-TU-Pok"/>
                         <outlet property="googleSignIn" destination="sy9-1f-Ug4" id="pot-gi-7rc"/>
                         <outlet property="nameTextField" destination="aGR-Ug-eUI" id="cuD-B7-iRe"/>
                         <outlet property="passwordTextField" destination="8W4-RN-TKD" id="exy-Cf-R88"/>
                         <outlet property="passwordToggleButton" destination="22x-5f-WUi" id="zqq-wO-wFF"/>
-                        <outlet property="continueAsGuest" destination="Yio-ca-6iA" id="zqq-wO-wF2"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="AAy-q6-jCd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1048,24 +1048,30 @@
                                         </connections>
                                     </button>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bg4-pZ-XfF" customClass="BarWaveformView" customModule="Stuttering_App" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="460" width="393" height="128"/>
-                                        <color key="backgroundColor" name="bg"/>
+                                        <rect key="frame" x="25" y="477" width="343" height="100"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="128" id="BJh-Iu-L6W"/>
+                                            <constraint firstAttribute="height" constant="100" id="BJh-Iu-L6W"/>
                                         </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="24"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
                                     </view>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="bg4-pZ-XfF" firstAttribute="leading" secondItem="rBc-zm-BGe" secondAttribute="leading" id="7OW-44-lJR"/>
+                                    <constraint firstItem="bg4-pZ-XfF" firstAttribute="leading" secondItem="rBc-zm-BGe" secondAttribute="leading" constant="25" id="7OW-44-lJR"/>
                                     <constraint firstAttribute="bottom" secondItem="eLf-49-Ifi" secondAttribute="bottom" constant="300" id="7lq-5n-dw1"/>
                                     <constraint firstAttribute="trailing" secondItem="eLf-49-Ifi" secondAttribute="trailing" constant="25" id="CMx-Zt-vDo"/>
                                     <constraint firstItem="j7u-gU-Jmz" firstAttribute="leading" secondItem="rBc-zm-BGe" secondAttribute="leading" constant="25" id="NPP-is-7Hr"/>
                                     <constraint firstItem="Be0-Cs-X0T" firstAttribute="leading" secondItem="rBc-zm-BGe" secondAttribute="leading" constant="32" id="Ppz-Xq-cVR"/>
                                     <constraint firstAttribute="trailing" secondItem="Be0-Cs-X0T" secondAttribute="trailing" constant="32" id="QHT-hW-YaW"/>
                                     <constraint firstAttribute="bottom" secondItem="Be0-Cs-X0T" secondAttribute="bottom" constant="32" id="S2g-xf-NSA"/>
-                                    <constraint firstItem="Be0-Cs-X0T" firstAttribute="top" secondItem="bg4-pZ-XfF" secondAttribute="bottom" constant="14" id="VxL-nb-uCv"/>
+                                    <constraint firstItem="Be0-Cs-X0T" firstAttribute="top" secondItem="bg4-pZ-XfF" secondAttribute="bottom" constant="25" id="VxL-nb-uCv"/>
                                     <constraint firstItem="eLf-49-Ifi" firstAttribute="leading" secondItem="rBc-zm-BGe" secondAttribute="leading" constant="25" id="aq7-7T-iUC"/>
-                                    <constraint firstAttribute="trailing" secondItem="bg4-pZ-XfF" secondAttribute="trailing" id="dck-Rx-ZIj"/>
+                                    <constraint firstAttribute="trailing" secondItem="bg4-pZ-XfF" secondAttribute="trailing" constant="25" id="dck-Rx-ZIj"/>
                                     <constraint firstAttribute="trailing" secondItem="Hoh-c8-cpt" secondAttribute="trailing" constant="25" id="eGy-xr-q0b"/>
                                     <constraint firstItem="Hoh-c8-cpt" firstAttribute="top" secondItem="eLf-49-Ifi" secondAttribute="bottom" constant="20" id="i6O-oq-buV"/>
                                     <constraint firstItem="eLf-49-Ifi" firstAttribute="top" secondItem="rBc-zm-BGe" secondAttribute="top" constant="8" id="r6B-1B-cd4"/>
@@ -1880,13 +1886,13 @@ to say?</string>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="continueAsGuest" destination="VJZ-2d-sVf" id="VCy-HW-Q55"/>
                         <outlet property="continueButton" destination="699-rg-LMB" id="Rod-oS-xQ6"/>
                         <outlet property="emailTextField" destination="yhH-kr-BDG" id="DQy-nd-qXB"/>
                         <outlet property="forgotPassword" destination="YO5-kD-JJB" id="uMH-kD-l1H"/>
                         <outlet property="googleSignIn" destination="GaK-bv-Efw" id="WDG-g6-DKB"/>
                         <outlet property="passwordTextField" destination="lTj-Rb-dww" id="FHL-6K-uMt"/>
                         <outlet property="passwordToggleButton" destination="6TX-pt-aVH" id="VCy-HW-Q5V"/>
-                        <outlet property="continueAsGuest" destination="VJZ-2d-sVf" id="VCy-HW-Q55"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ktC-At-ZPQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1998,16 +2004,16 @@ to say?</string>
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray2Color">
-            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.68235294120000001" green="0.68235294120000001" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

@@ -426,8 +426,9 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
             
             if source == .dailyTasks {
                 DatabaseManager.shared.markTaskComplete(taskName: self.exerciseName)
-            }
-            if source == .exercises {
+            } else if source == .exercises || source == .warmup {
+                // Both exercise-tab and warmup paths update Journey + analytics and
+                // check streak eligibility, but must never touch the DailyTasks table.
                 DatabaseManager.shared.markExComplete(taskName: self.exerciseName)
             }
         }

@@ -693,6 +693,7 @@
                                         <color key="tintColor" name="ButtonThemeMain"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Start" cornerStyle="capsule">
+                                            <fontDescription key="titleFontDescription" style="UICTFontTextStyleHeadline"/>
                                             <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                         </buttonConfiguration>
                                         <connections>

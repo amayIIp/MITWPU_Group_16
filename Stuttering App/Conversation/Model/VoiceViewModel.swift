@@ -50,11 +50,12 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     private var silenceTimer: Timer?
     private let silenceThreshold: TimeInterval = 2.5
     private var hasDetectedSpeech = false
+    private var blankAudioRetryCount = 0
     
-    /// Tracks whether the AI backend is Gemini (cloud) instead of Foundation Model (on-device)
-    private var useGemini: Bool = false
+    /// When true, use Groq cloud API instead of the on-device Foundation Model
+    private var useGroq: Bool = false
     
-    /// Shared persona instructions used by both Foundation Model and Gemini
+    /// Shared persona instructions used by both Foundation Model and Groq
     private let personaInstructions = """
     You are a friendly and supportive speaking partner helping a user improve their spoken English.
     Your job is to dynamically adapt the conversation style based on what the user says.
@@ -102,7 +103,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     }
     
     var isModelReady: Bool {
-        return session != nil
+        return session != nil || useGroq
     }
     
     func resetConversationHistory() {
@@ -160,12 +161,12 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         
         if model.availability == .available {
             self.session = LanguageModelSession(model: model, instructions: personaInstructions)
-            self.useGemini = false
+            self.useGroq = false
             print("VoiceViewModel: Using on-device Foundation Model")
         } else {
-            // Foundation Model unavailable → fall back to Gemini API
-            self.useGemini = true
-            print("VoiceViewModel: Foundation Model unavailable, using Gemini API fallback")
+            // Foundation Model unavailable → fall back to Groq API
+            self.useGroq = true
+            print("VoiceViewModel: Foundation Model unavailable, using Groq API")
         }
     }
     
@@ -174,7 +175,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     }
     
     func startConversation(withTopic topic: String?) {
-        guard session != nil || useGemini else {
+        guard session != nil || useGroq else {
             delegate?.didEncounterError("AI is not ready yet")
             return
         }
@@ -245,14 +246,27 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         
         configureAudioSession()
         
-        SFSpeechRecognizer.requestAuthorization { status in
-            if status != .authorized {
+        let authStatus = SFSpeechRecognizer.authorizationStatus()
+        
+        switch authStatus {
+        case .authorized:
+            beginRecognition()
+        case .notDetermined:
+            SFSpeechRecognizer.requestAuthorization { [weak self] status in
                 DispatchQueue.main.async {
-                    self.delegate?.didEncounterError("Microphone access denied")
+                    if status == .authorized {
+                        self?.beginRecognition()
+                    } else {
+                        self?.delegate?.didEncounterError("Microphone access denied. Please enable it in Settings.")
+                    }
                 }
             }
+        default:
+            delegate?.didEncounterError("Microphone access denied. Please enable it in Settings.")
         }
-        
+    }
+    
+    private func beginRecognition() {
         state = .listening
         currentBufferText = ""
         hasDetectedSpeech = false
@@ -346,8 +360,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         
         if audioEngine.isRunning {
             audioEngine.stop()
-            audioEngine.inputNode.removeTap(onBus: 0)
         }
+        audioEngine.inputNode.removeTap(onBus: 0)
         
         recognitionRequest?.endAudio()
         
@@ -405,11 +419,19 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         guard !currentBufferText.isEmpty,
               currentBufferText != "Listening...",
               currentBufferText.count > 1 else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                self.startListening()
+            blankAudioRetryCount += 1
+            if blankAudioRetryCount < 3 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    self.startListening()
+                }
+            } else {
+                blankAudioRetryCount = 0
+                delegate?.didEncounterError("Could not detect speech. Please try again.")
+                state = .idle
             }
             return
         }
+        blankAudioRetryCount = 0
         
         let userInput = currentBufferText
         conversationHistory.append((speaker: "User", text: userInput))
@@ -421,20 +443,20 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         delegate?.addMessageToConversation(speaker: "User", text: userInput)
         state = .thinking
         
-        if useGemini {
-            // ── Gemini API path ──────────────────────────────────────────
+        if useGroq {
+            // ── Groq API path ───────────────────────────────────────────
             Task {
-                let geminiHistory: [(role: String, text: String)] = self.conversationHistory
+                let groqHistory: [(role: String, text: String)] = self.conversationHistory
                     .dropLast()
                     .suffix(10)
                     .map { turn in
-                        let role = (turn.speaker == "User") ? "user" : "model"
+                        let role = (turn.speaker == "User") ? "user" : "assistant"
                         return (role: role, text: turn.text)
                     }
                 
-                if let reply = await GeminiService.shared.generateChat(
+                if let reply = await GroqService.shared.generateChat(
                     systemInstruction: self.personaInstructions,
-                    history: geminiHistory,
+                    history: groqHistory,
                     latestUserMessage: userInput
                 ) {
                     await MainActor.run { self.speak(reply) }
@@ -443,30 +465,31 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                 }
             }
         } else {
-            // ── Foundation Model path (existing) ─────────────────────────
+            // ── Foundation Model path (on-device) ────────────────────────
             Task {
                 guard let session = self.session else {
-                    await MainActor.run {
-                        self.delegate?.didEncounterError("AI session not initialized")
-                        self.state = .idle
-                    }
+                    // Foundation Model session is nil — fall back to Groq
+                    print("VoiceViewModel: Foundation Model session lost, falling back to Groq")
+                    self.useGroq = true
+                    await MainActor.run { self.commitUserBuffer() }
                     return
                 }
                 
                 do {
-                    let context = self.conversationHistory
+                    let prompt = self.conversationHistory
                         .suffix(6)
                         .map { "\($0.speaker): \($0.text)" }
                         .joined(separator: "\n")
-                    
-                    let prompt = context + "\nUser: \(userInput)"
                     
                     let response = try await session.respond(to: prompt)
                     let responseContent = response.content
                     
                     await MainActor.run { self.speak(responseContent) }
                 } catch {
-                    await MainActor.run { self.speak("Sorry, could you say that again?") }
+                    // On-device model failed — fall back to Groq for this turn
+                    print("VoiceViewModel: Foundation Model error (\(error.localizedDescription)), falling back to Groq")
+                    self.useGroq = true
+                    await MainActor.run { self.commitUserBuffer() }
                 }
             }
         }

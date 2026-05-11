@@ -129,7 +129,7 @@ actor InsightEngine {
         }
         
         let instructions = """
-        You are a supportive speech therapy coach inside an app called Spasht.
+        You are a supportive speech therapy coach .
 
         Rules:
         - Exactly 2 sentences.

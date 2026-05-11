@@ -2,6 +2,15 @@
 
 import UIKit
 
+// MARK: - Chat Message Model
+
+struct ChatMessage {
+    let id = UUID()
+    let speaker: String
+    var text: String
+    var isTranscribing: Bool = false
+}
+
 // MARK: - AudioWaveformView
 
 class AudioWaveformView: UIView {
@@ -96,16 +105,15 @@ class VoiceViewController: UIViewController {
     private var sessionTimer: Timer?
     private var sessionDuration: TimeInterval = 0
     
-    // Programmatic UI Elements
-    private var aiMessageLabel: UILabel!
-    private var userMessageLabel: UILabel!
-    
-    // Chat Bubble Containers
-    private var aiBubbleView: UIView!
-    private var userBubbleView: UIView!
+    // Chat Stack View (non-scrolling, shows last 4 messages)
+    private var chatStackView: UIStackView!
+    private var displayedBubbles: [UIView] = []
+    private var liveTranscriptBubble: UIView?
+    private let maxVisibleMessages = 4
     
     // Topic Selection UI
     private var topicSelectionView: UIView!
+    private var topicChipViews: [UIView] = []
     private var selectedTopic: String?
     
     // MARK: - Lifecycle
@@ -114,6 +122,11 @@ class VoiceViewController: UIViewController {
         super.viewDidLoad()
         viewModel.delegate = self
         tabBarController?.delegate = self
+        
+        // Keep the "Conversation" large title pinned — don't collapse on scroll
+        navigationItem.largeTitleDisplayMode = .always
+        navigationController?.navigationBar.prefersLargeTitles = true
+        
         configureUI()
         feedbackGenerator.prepare()
     }
@@ -148,15 +161,13 @@ class VoiceViewController: UIViewController {
         aiTextView.isHidden = true
         
         configureButtons()
-        setupChatBubbles()
+        setupChatStack()
         
         // 🛠️ The New Dynamic Stack Setup
         setupStackViews()
         
         // Topic selection overlay (on top of everything)
         setupTopicSelectionView()
-        
-        setupTouchFix()
     }
     
     private func setupStackViews() {
@@ -249,24 +260,23 @@ class VoiceViewController: UIViewController {
             topicSelectionView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             topicSelectionView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
         ])
-        
-        // AI Chat Bubble
+
+        // 1. AI Chat Bubble — native iOS styling
         let aiBubble = UIView()
         aiBubble.translatesAutoresizingMaskIntoConstraints = false
-        aiBubble.backgroundColor = UIColor(resource: .buttonTheme).withAlphaComponent(0.18)
-        aiBubble.layer.cornerRadius = 16
-        aiBubble.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMaxXMaxYCorner]
+        aiBubble.backgroundColor = .secondarySystemBackground
+        aiBubble.layer.cornerRadius = 18
         topicSelectionView.addSubview(aiBubble)
         
         let aiBubbleLabel = UILabel()
         aiBubbleLabel.translatesAutoresizingMaskIntoConstraints = false
         aiBubbleLabel.text = "Hi! What would you like to talk about today?"
-        aiBubbleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
+        aiBubbleLabel.font = .systemFont(ofSize: 16, weight: .medium)
         aiBubbleLabel.textColor = .label
         aiBubbleLabel.numberOfLines = 0
         aiBubble.addSubview(aiBubbleLabel)
         
-        // Topic Options
+        // 2. Topic Options
         let topics = [
             "I'll introduce myself",
             "Can we talk about my weekend plans?",
@@ -283,10 +293,10 @@ class VoiceViewController: UIViewController {
         for topic in topics {
             let chipView = UIView()
             chipView.translatesAutoresizingMaskIntoConstraints = false
-            chipView.backgroundColor = .systemBackground
+            chipView.backgroundColor = .secondarySystemBackground
             chipView.layer.cornerRadius = 20
-            chipView.layer.borderWidth = 1.5
-            chipView.layer.borderColor = UIColor.systemGray4.cgColor
+            chipView.layer.borderWidth = 1
+            chipView.layer.borderColor = UIColor.separator.cgColor
             
             let chipLabel = UILabel()
             chipLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -309,30 +319,13 @@ class VoiceViewController: UIViewController {
             chipView.accessibilityLabel = topic
             
             optionsStack.addArrangedSubview(chipView)
+            topicChipViews.append(chipView)
         }
         
-        // Start Talking Button
-//        let startButton = UIButton(type: .system)
-//        startButton.translatesAutoresizingMaskIntoConstraints = false
-//        startButton.setTitle("Start Talking", for: .normal)
-//        startButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
-//        startButton.setTitleColor(.white, for: .normal)
-//        startButton.backgroundColor = UIColor(resource: .buttonThemeMain)
-//        startButton.layer.cornerRadius = 25
-//        startButton.clipsToBounds = true
-//        startButton.addTarget(self, action: #selector(startTalkingTapped), for: .touchUpInside)
-//        topicSelectionView.addSubview(startButton)
+        // 3. Start Talking Button
         let startButton = UIButton(type: .system)
         startButton.translatesAutoresizingMaskIntoConstraints = false
         startButton.setTitle("Start Talking", for: .normal)
-
-        // Add the symbol and set its color to white
-        startButton.setImage(UIImage(systemName: "microphone.fill"), for: .normal)
-        startButton.tintColor = .white
-
-        // Add a little padding between the icon and the text
-        startButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 10)
-
         startButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         startButton.setTitleColor(.white, for: .normal)
         startButton.backgroundColor = UIColor(resource: .buttonThemeMain)
@@ -341,9 +334,10 @@ class VoiceViewController: UIViewController {
         startButton.addTarget(self, action: #selector(startTalkingTapped), for: .touchUpInside)
         topicSelectionView.addSubview(startButton)
         
-        // Layout
+        // 4. Layout Constraints
         let pad: CGFloat = 16
         NSLayoutConstraint.activate([
+            // RE-ANCHORED: aiBubble now pins to the top of topicSelectionView
             aiBubble.topAnchor.constraint(equalTo: topicSelectionView.topAnchor, constant: pad),
             aiBubble.leadingAnchor.constraint(equalTo: topicSelectionView.leadingAnchor, constant: pad),
             aiBubble.trailingAnchor.constraint(lessThanOrEqualTo: topicSelectionView.trailingAnchor, constant: -60),
@@ -369,12 +363,11 @@ class VoiceViewController: UIViewController {
         feedbackGenerator.impactOccurred()
         selectedTopic = chipView.accessibilityLabel
         
-        // Visual feedback
-        UIView.animate(withDuration: 0.15, animations: {
+        // Scale-only feedback — no background color change to avoid color persistence bug
+        UIView.animate(withDuration: 0.1, animations: {
             chipView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
-            chipView.backgroundColor = UIColor(resource: .buttonTheme).withAlphaComponent(0.12)
         }) { _ in
-            UIView.animate(withDuration: 0.15) {
+            UIView.animate(withDuration: 0.1) {
                 chipView.transform = .identity
             }
             self.beginConversationWithSelectedTopic()
@@ -387,17 +380,17 @@ class VoiceViewController: UIViewController {
     }
     
     private func beginConversationWithSelectedTopic() {
-        // Hide topic overlay with animation
+        chatStackView.isHidden = false
         UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0, options: .curveEaseInOut, animations: {
             self.topicSelectionView.alpha = 0
             self.topicSelectionView.transform = CGAffineTransform(translationX: 0, y: -30)
+            self.chatStackView.alpha = 1.0
         }) { _ in
             self.topicSelectionView.isHidden = true
         }
         
         startSessionTimer()
         
-        // Start conversation with or without topic
         if let topic = selectedTopic {
             viewModel.startConversation(withTopic: topic)
         } else {
@@ -405,140 +398,153 @@ class VoiceViewController: UIViewController {
         }
     }
     
-    private func setupChatBubbles() {
+    private func setupChatStack() {
         guard let container = aiTextView.superview else { return }
         
-        // AI Bubble
-        aiBubbleView = UIView()
-        aiBubbleView.translatesAutoresizingMaskIntoConstraints = false
-        aiBubbleView.backgroundColor = .systemGray6
-        aiBubbleView.layer.cornerRadius = 16
-        aiBubbleView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMaxXMaxYCorner]
-        aiBubbleView.alpha = 0
-        container.addSubview(aiBubbleView)
+        chatStackView = UIStackView()
+        chatStackView.translatesAutoresizingMaskIntoConstraints = false
+        chatStackView.axis = .vertical
+        chatStackView.spacing = 8
+        chatStackView.alignment = .fill
+        chatStackView.distribution = .fill
+        chatStackView.alpha = 0
+        chatStackView.isHidden = true
         
-        aiMessageLabel = UILabel()
-        aiMessageLabel.translatesAutoresizingMaskIntoConstraints = false
-        aiMessageLabel.numberOfLines = 0
-        aiMessageLabel.lineBreakMode = .byWordWrapping
-        aiMessageLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        aiMessageLabel.textColor = .label
-        aiMessageLabel.textAlignment = .left
-        aiBubbleView.addSubview(aiMessageLabel)
-        
-        // User Bubble
-        userBubbleView = UIView()
-        userBubbleView.translatesAutoresizingMaskIntoConstraints = false
-        userBubbleView.backgroundColor = .systemGray6
-        userBubbleView.layer.cornerRadius = 16
-        userBubbleView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner]
-        userBubbleView.alpha = 0
-        container.addSubview(userBubbleView)
-        
-        userMessageLabel = UILabel()
-        userMessageLabel.translatesAutoresizingMaskIntoConstraints = false
-        userMessageLabel.numberOfLines = 0
-        userMessageLabel.lineBreakMode = .byWordWrapping
-        userMessageLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        userMessageLabel.textColor = .label
-        userMessageLabel.textAlignment = .right
-        userBubbleView.addSubview(userMessageLabel)
-        
-        let padding: CGFloat = 16
+        container.insertSubview(chatStackView, at: 0)
         
         NSLayoutConstraint.activate([
-            // AI bubble
-            aiBubbleView.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
-            aiBubbleView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: padding),
-            aiBubbleView.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -60),
-            
-            aiMessageLabel.topAnchor.constraint(equalTo: aiBubbleView.topAnchor, constant: 12),
-            aiMessageLabel.bottomAnchor.constraint(equalTo: aiBubbleView.bottomAnchor, constant: -12),
-            aiMessageLabel.leadingAnchor.constraint(equalTo: aiBubbleView.leadingAnchor, constant: 14),
-            aiMessageLabel.trailingAnchor.constraint(equalTo: aiBubbleView.trailingAnchor, constant: -14),
-            
-            // User bubble
-            userBubbleView.topAnchor.constraint(equalTo: aiBubbleView.bottomAnchor, constant: 16),
-            userBubbleView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -padding),
-            userBubbleView.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 60),
-            
-            userMessageLabel.topAnchor.constraint(equalTo: userBubbleView.topAnchor, constant: 12),
-            userMessageLabel.bottomAnchor.constraint(equalTo: userBubbleView.bottomAnchor, constant: -12),
-            userMessageLabel.leadingAnchor.constraint(equalTo: userBubbleView.leadingAnchor, constant: 14),
-            userMessageLabel.trailingAnchor.constraint(equalTo: userBubbleView.trailingAnchor, constant: -14),
+            chatStackView.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
+            chatStackView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            chatStackView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
         ])
     }
     
-    // MARK: - 🛠️ Touch Fix Hack
+    // MARK: - Bubble Factory
     
-    private func setupTouchFix() {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(handleScreenTap(_:)))
-        tap.cancelsTouchesInView = false
-        tap.delegate = self
-        view.addGestureRecognizer(tap)
+    private func makeBubbleView(for message: ChatMessage) -> UIView {
+        let wrapper = UIView()
+        wrapper.translatesAutoresizingMaskIntoConstraints = false
+        
+        let bubble = UIView()
+        bubble.translatesAutoresizingMaskIntoConstraints = false
+        bubble.layer.cornerRadius = 18
+        
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.tag = 100 // tag for live transcript updates
+        
+        bubble.addSubview(label)
+        wrapper.addSubview(bubble)
+        
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: bubble.topAnchor, constant: 10),
+            label.bottomAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -10),
+            label.leadingAnchor.constraint(equalTo: bubble.leadingAnchor, constant: 14),
+            label.trailingAnchor.constraint(equalTo: bubble.trailingAnchor, constant: -14),
+            
+            bubble.topAnchor.constraint(equalTo: wrapper.topAnchor),
+            bubble.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor),
+            bubble.widthAnchor.constraint(lessThanOrEqualTo: wrapper.widthAnchor, multiplier: 0.78),
+        ])
+        
+        label.text = message.text
+        
+        if message.speaker == "AI" {
+            bubble.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor, constant: 12).isActive = true
+            bubble.backgroundColor = .secondarySystemBackground
+            label.textColor = .label
+        } else {
+            bubble.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor, constant: -12).isActive = true
+            if message.isTranscribing {
+                bubble.backgroundColor = .tertiarySystemFill
+                label.textColor = .secondaryLabel
+            } else {
+                bubble.backgroundColor = UIColor(resource: .buttonThemeMain)
+                label.textColor = .white
+            }
+        }
+        
+        return wrapper
     }
     
-    @objc private func handleScreenTap(_ gesture: UITapGestureRecognizer) {
-        let location = gesture.location(in: view)
-        
-        let recordRect = recordButton.convert(recordButton.bounds, to: view)
-        let resetRect = resetButton.convert(resetButton.bounds, to: view)
-        let endRect = endButton.convert(endButton.bounds, to: view)
-        
-        if recordRect.contains(location) && recordButton.isEnabled {
-            UIView.animate(withDuration: 0.15, animations: { self.recordButton.alpha = 0.5 }) { _ in
-                UIView.animate(withDuration: 0.15) { self.recordButton.alpha = 1.0 }
+    // MARK: - Chat Message Management
+    
+    private func addChatMessage(speaker: String, text: String) {
+        // If committing a live transcript, convert it in place
+        if speaker == "User", let liveBubble = liveTranscriptBubble {
+            if let label = liveBubble.viewWithTag(100) as? UILabel {
+                label.text = text
+                label.textColor = .white
             }
-            didTapRecord(recordButton)
-        } else if resetRect.contains(location) && resetButton.isEnabled {
-            UIView.animate(withDuration: 0.15, animations: { self.resetButton.alpha = 0.5 }) { _ in
-                UIView.animate(withDuration: 0.15) { self.resetButton.alpha = 1.0 }
+            if let bubble = liveBubble.subviews.first {
+                bubble.backgroundColor = UIColor(resource: .buttonThemeMain)
             }
-            didTapReset(resetButton)
-        } else if endRect.contains(location) && endButton.alpha > 0 {
-            UIView.animate(withDuration: 0.15, animations: { self.endButton.alpha = 0.5 }) { _ in
-                UIView.animate(withDuration: 0.15) { self.endButton.alpha = 1.0 }
-            }
-            didTapEnd(endButton)
+            // Fix applied: we leave the liveTranscriptBubble intact here
+            // so late transcript updates aren't orphaned into a new bubble.
+            return
         }
+        
+        let msg = ChatMessage(speaker: speaker, text: text)
+        let bubbleView = makeBubbleView(for: msg)
+        bubbleView.alpha = 0
+        bubbleView.transform = CGAffineTransform(translationX: 0, y: 15)
+        
+        chatStackView.addArrangedSubview(bubbleView)
+        displayedBubbles.append(bubbleView)
+        
+        // Fix applied: Re-assign the new committed bubble as the active transcript
+        // reference just in case late transcripts fire after the text is committed.
+        if speaker == "User" {
+            liveTranscriptBubble = bubbleView
+        }
+        
+        // Animate in
+        UIView.animate(withDuration: 0.35, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0, options: .curveEaseOut) {
+            bubbleView.alpha = 1
+            bubbleView.transform = .identity
+        }
+        
+        // Trim oldest if over max
+        trimOldBubbles()
     }
     
-    // MARK: - Display Helpers
-    
-    private func showAIMessage(_ text: String) {
-        if self.userBubbleView.alpha > 0 {
-            UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, options: .curveEaseInOut, animations: {
-                self.userBubbleView.transform = CGAffineTransform(translationX: 0, y: -30)
-                self.userBubbleView.alpha = 0
-            }) { _ in
-                self.userMessageLabel.text = ""
-                self.userBubbleView.transform = .identity
-            }
-        }
-        
-        if self.aiBubbleView.alpha > 0 {
-            UIView.transition(with: self.aiMessageLabel, duration: 0.4, options: .transitionCrossDissolve) {
-                self.aiMessageLabel.text = text
+    private func updateLiveTranscript(_ text: String) {
+        if let liveBubble = liveTranscriptBubble {
+            if let label = liveBubble.viewWithTag(100) as? UILabel {
+                label.text = text
             }
         } else {
-            self.aiMessageLabel.text = text
-            self.aiBubbleView.transform = CGAffineTransform(translationX: 0, y: 20)
-            UIView.animate(withDuration: 0.6, delay: 0.1, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, options: .curveEaseOut, animations: {
-                self.aiBubbleView.transform = .identity
-                self.aiBubbleView.alpha = 1
-            })
+            let msg = ChatMessage(speaker: "User", text: text, isTranscribing: true)
+            let bubbleView = makeBubbleView(for: msg)
+            bubbleView.alpha = 0
+            bubbleView.transform = CGAffineTransform(translationX: 0, y: 15)
+            
+            chatStackView.addArrangedSubview(bubbleView)
+            displayedBubbles.append(bubbleView)
+            liveTranscriptBubble = bubbleView
+            
+            UIView.animate(withDuration: 0.25) {
+                bubbleView.alpha = 1
+                bubbleView.transform = .identity
+            }
+            
+            trimOldBubbles()
         }
     }
     
-    private func showUserMessage(_ text: String) {
-        if userBubbleView.alpha == 0 {
-            userBubbleView.transform = CGAffineTransform(translationX: 0, y: 20)
-            UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, options: .curveEaseOut, animations: {
-                self.userBubbleView.alpha = 1
-                self.userBubbleView.transform = .identity
-            })
+    private func trimOldBubbles() {
+        while displayedBubbles.count > maxVisibleMessages {
+            let oldest = displayedBubbles.removeFirst()
+            UIView.animate(withDuration: 0.3, animations: {
+                oldest.alpha = 0
+                oldest.isHidden = true
+            }) { _ in
+                oldest.removeFromSuperview()
+            }
         }
-        userMessageLabel.text = text
     }
     
     private func resetDisplay(completion: (() -> Void)? = nil) {
@@ -546,38 +552,36 @@ class VoiceViewController: UIViewController {
         self.topicSelectionView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
         
         UIView.animate(withDuration: 0.8, delay: 0, usingSpringWithDamping: 0.75, initialSpringVelocity: 0.0, options: [.curveEaseInOut]) {
-            self.aiBubbleView?.transform = CGAffineTransform(translationX: 0, y: -40)
-            self.aiBubbleView?.alpha = 0
+            self.chatStackView.alpha = 0
             
-            self.userBubbleView?.transform = CGAffineTransform(translationX: 0, y: -40)
-            self.userBubbleView?.alpha = 0
-            
-            // Re-hide all conversation controls
             self.resetButton.isHidden = true
             self.resetButton.alpha = 0
             self.recordButton.isHidden = true
             self.recordButton.alpha = 0
             self.waveformView.isHidden = true
             self.waveformView.alpha = 0
-            
             self.endButton.isHidden = true
             self.endButton.alpha = 0.0
             
             self.topicSelectionView.alpha = 1.0
             self.topicSelectionView.transform = .identity
-            
-            // Trigger layout engine to animate the collapse smoothly
             self.view.layoutIfNeeded()
-            
         } completion: { _ in
-            self.aiMessageLabel?.text = ""
-            self.userMessageLabel?.text = ""
-            self.aiBubbleView?.transform = .identity
-            self.userBubbleView?.transform = .identity
+            // Clear all bubbles
+            for bubble in self.displayedBubbles {
+                bubble.removeFromSuperview()
+            }
+            self.displayedBubbles.removeAll()
+            self.liveTranscriptBubble = nil
+            self.chatStackView.isHidden = true
             self.selectedTopic = nil
+            for chip in self.topicChipViews {
+                chip.backgroundColor = .secondarySystemBackground
+            }
             completion?()
         }
     }
+
     
     // MARK: - Session Management
     
@@ -750,38 +754,34 @@ class VoiceViewController: UIViewController {
     }
 }
 
-// MARK: - UIGestureRecognizerDelegate
 
-extension VoiceViewController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        // Don't intercept touches on buttons or topic selection overlay
-        if let touchView = touch.view,
-           touchView.isDescendant(of: recordButton) ||
-           touchView.isDescendant(of: resetButton) ||
-           touchView.isDescendant(of: endButton) ||
-           (topicSelectionView != nil && !topicSelectionView.isHidden && touchView.isDescendant(of: topicSelectionView)) {
-            return false
-        }
-        return true
-    }
-}
 
 // MARK: - VoiceViewModelDelegate
 
 extension VoiceViewController: VoiceViewModelDelegate {
     func didUpdateState(_ state: VoiceViewModel.VoiceState) {
-        Task { @MainActor in self.updateVisuals(for: state) }
+        Task { @MainActor in
+            // Fix applied: explicitly clear the transcript bubble reference ONLY
+            // when we begin a totally fresh listening turn.
+            if state == .listening {
+                self.liveTranscriptBubble = nil
+            }
+            self.updateVisuals(for: state)
+        }
     }
     
     func didUpdateTranscript(_ text: String, isUser: Bool) {
         Task { @MainActor in
-            if isUser && text != "Listening..." { self.showUserMessage(text) }
+            // Only process transcripts while actively listening — prevents duplicates
+            // from stale recognition callbacks that fire after commitUserBuffer
+            guard isUser, text != "Listening...", self.viewModel.state == .listening else { return }
+            self.updateLiveTranscript(text)
         }
     }
     
     func addMessageToConversation(speaker: String, text: String) {
         Task { @MainActor in
-            if speaker == "AI" { self.showAIMessage(text) } else { self.showUserMessage(text) }
+            self.addChatMessage(speaker: speaker, text: text)
         }
     }
     
