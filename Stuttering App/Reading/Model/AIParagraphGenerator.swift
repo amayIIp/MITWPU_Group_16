@@ -24,7 +24,7 @@ class AIParagraphGenerator {
         let topicPrompt = buildPrompt(for: topic)
         let prompt = """
         \(topicPrompt)
-        Start directly with the paragraph no heading or subheading.
+        Start directly with the paragraph no heading or subheading and don't include any mathematical digits and any other special character only aplhabets .
         Make it engaging and natural.
         """
         
