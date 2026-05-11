@@ -63,6 +63,21 @@ class StutterAnalyzer {
         // ── Levenshtein alignment ─────────────────────────────────────────────
         let ops = levenshteinAlignment(ref: refWords, hyp: transWords)
 
+        // Calculate the furthest point the user successfully read
+        var tempRefIndex = 0
+        var lastMatchRefIndex = -1
+        for op in ops {
+            switch op {
+            case .match:
+                lastMatchRefIndex = tempRefIndex
+                tempRefIndex += 1
+            case .substitute, .delete:
+                tempRefIndex += 1
+            case .insert:
+                break
+            }
+        }
+
         var correctCount      = 0
         var rawRepetitions:   [String] = []
         var rawProlongations: [String] = []
@@ -83,8 +98,10 @@ class StutterAnalyzer {
                 // Speaker said a different word → no repetition/block model → prolongation.
                 if refIndex < refWords.count {
                     let word = refWords[refIndex]
-                    rawProlongations.append(word)
-                    rawAllStuttered.append(word)
+                    if refIndex <= lastMatchRefIndex + 1 {
+                        rawProlongations.append(word)
+                        rawAllStuttered.append(word)
+                    }
                 }
                 refIndex   += 1
                 transIndex += 1
@@ -115,12 +132,14 @@ class StutterAnalyzer {
                     targetWord = refIndex < refWords.count ? refWords[refIndex] : insertedWord
                 }
 
-                if isRepetition {
-                    rawRepetitions.append(targetWord)
-                } else {
-                    rawProlongations.append(targetWord)
+                if refIndex <= lastMatchRefIndex + 1 {
+                    if isRepetition {
+                        rawRepetitions.append(targetWord)
+                    } else {
+                        rawProlongations.append(targetWord)
+                    }
+                    rawAllStuttered.append(targetWord)
                 }
-                rawAllStuttered.append(targetWord)
                 transIndex += 1
 
             case .delete:
@@ -129,8 +148,7 @@ class StutterAnalyzer {
             }
         }
 
-        // Apply case-insensitive whitelist filter.
-        let stutteredWords  = rawAllStuttered.filter    { paragraphWordsWhitelist.contains($0.lowercased()) }
+        // Apply case-insensitive whitelist filter for repetitions and prolongations.
         let repetitions     = rawRepetitions.filter     { paragraphWordsWhitelist.contains($0.lowercased()) }
         let prolongations   = rawProlongations.filter   { paragraphWordsWhitelist.contains($0.lowercased()) }
 
@@ -182,10 +200,24 @@ class StutterAnalyzer {
                     if paragraphWordsWhitelist.contains(rawWord) {
                         let durationStr = String(format: "%.2f", segment.duration)
                         detectedBlocks.append("\(rawWord) (Duration: \(durationStr)s)")
+                        rawAllStuttered.append(rawWord)
                     }
                 }
             }
         }
+
+        // ── DEDUPLICATE TROUBLE WORDS ─────────────────────────────────────────
+        let rawFiltered = rawAllStuttered.filter { paragraphWordsWhitelist.contains($0.lowercased()) }
+        var uniqueStuttered = [String]()
+        var seenWords = Set<String>()
+        for word in rawFiltered {
+            let lower = word.lowercased()
+            if !seenWords.contains(lower) {
+                seenWords.insert(lower)
+                uniqueStuttered.append(word)
+            }
+        }
+        let stutteredWords = uniqueStuttered
 
         // ── FLUENCY SCORE ─────────────────────────────────────────────────────
         // Weighted penalty against reference word count so score is independent
