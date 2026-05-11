@@ -44,13 +44,13 @@ class AIParagraphGenerator {
             }
         }
         
-        // ── Tier 2: Gemini API Fallback ────────────────────────────────
-        print("AIParagraphGenerator: Using Gemini API fallback")
+        // ── Tier 2: Groq API Fallback ─────────────────────────────────
+        print("AIParagraphGenerator: Using Groq API fallback")
         
-        if let geminiResult = await GeminiService.shared.generateLongForm(
+        if let groqResult = await GroqService.shared.generateLongForm(
             systemInstruction: instructions, prompt: prompt
         ) {
-            return geminiResult
+            return groqResult
                 .replacingOccurrences(of: "\n", with: "\n\n")
                 .replacingOccurrences(of: "\n\n\n", with: "\n\n")
         }

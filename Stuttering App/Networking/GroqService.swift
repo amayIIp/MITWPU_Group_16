@@ -24,6 +24,80 @@ class GroqService {
 
     private init() {}
 
+    // MARK: - Single-Turn Generation (Insight Engine)
+
+    /// Send a prompt with system instructions to Groq and return the text response.
+    /// Returns `nil` on any failure so the caller can fall back to rule-based logic.
+    func generate(systemInstruction: String, prompt: String) async -> String? {
+        guard let url = URL(string: baseURL) else {
+            print("GroqService: Invalid URL")
+            return nil
+        }
+
+        let messages: [[String: String]] = [
+            ["role": "system", "content": systemInstruction],
+            ["role": "user",   "content": prompt]
+        ]
+
+        let body: [String: Any] = [
+            "model": model,
+            "messages": messages,
+            "temperature": 0.7,
+            "max_tokens": 200
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+            print("GroqService: Failed to serialize request body")
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        request.timeoutInterval = 10
+
+        return await performWithRetry(request: request, label: "Generate")
+    }
+
+    // MARK: - Long-Form Generation (Paragraph Generator)
+
+    /// Generate long-form content (e.g., reading passages).
+    /// Uses a higher token limit and longer timeout than the insight generator.
+    func generateLongForm(systemInstruction: String, prompt: String) async -> String? {
+        guard let url = URL(string: baseURL) else {
+            print("GroqService: Invalid URL")
+            return nil
+        }
+
+        let messages: [[String: String]] = [
+            ["role": "system", "content": systemInstruction],
+            ["role": "user",   "content": prompt]
+        ]
+
+        let body: [String: Any] = [
+            "model": model,
+            "messages": messages,
+            "temperature": 0.75,
+            "max_tokens": 4096
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+            print("GroqService: Failed to serialize request body")
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        request.timeoutInterval = 30
+
+        return await performWithRetry(request: request, label: "LongForm")
+    }
+
     // MARK: - Multi-Turn Chat (Conversation Mode)
 
     /// Send a multi-turn conversation to Groq.

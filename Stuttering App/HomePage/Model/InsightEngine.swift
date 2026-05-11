@@ -41,9 +41,9 @@ actor InsightEngine {
         if let aiInsight = await generateDayInsightAI(context: context) {
             return aiInsight
         }
-        // Tier 2: Gemini API (cloud fallback)
-        if let geminiInsight = await generateDayInsightGemini(context: context) {
-            return geminiInsight
+        // Tier 2: Groq API (cloud fallback)
+        if let groqInsight = await generateDayInsightGroq(context: context) {
+            return groqInsight
         }
         // Tier 3: Deterministic rule-based fallback
         return generateDayInsightRuleBased(context: context)
@@ -54,9 +54,9 @@ actor InsightEngine {
         if let aiHeadline = await generateOverallHeadlineAI(context: context) {
             return aiHeadline
         }
-        // Tier 2: Gemini API (cloud fallback)
-        if let geminiHeadline = await generateOverallHeadlineGemini(context: context) {
-            return geminiHeadline
+        // Tier 2: Groq API (cloud fallback)
+        if let groqHeadline = await generateOverallHeadlineGroq(context: context) {
+            return groqHeadline
         }
         // Tier 3: Deterministic rule-based fallback
         return generateOverallHeadlineRuleBased(context: context)
@@ -211,9 +211,9 @@ actor InsightEngine {
             """
     }
 
-    // MARK: - Tier 2: Gemini API Fallback
+    // MARK: - Tier 2: Groq API Fallback
 
-    private let geminiSystemInstruction = """
+    private let groqSystemInstruction = """
     You are a supportive speech therapy coach inside an app called Spasht.
 
     Rules:
@@ -227,39 +227,39 @@ actor InsightEngine {
     - Output ONLY the insight text.
     """
 
-    private func generateDayInsightGemini(context: DayInsightContext) async -> String? {
+    private func generateDayInsightGroq(context: DayInsightContext) async -> String? {
         let prompt = buildDayPrompt(context: context)
 
-        guard let text = await GeminiService.shared.generate(
-            systemInstruction: geminiSystemInstruction,
+        guard let text = await GroqService.shared.generate(
+            systemInstruction: groqSystemInstruction,
             prompt: prompt
         ) else {
-            print("InsightEngine: Gemini day insight failed, falling back to rules")
+            print("InsightEngine: Groq day insight failed, falling back to rules")
             return nil
         }
 
         // Apply the same validation as the Foundation Model path
         guard isValidInsight(text) else {
-            print("InsightEngine: Gemini day insight failed validation")
+            print("InsightEngine: Groq day insight failed validation")
             return nil
         }
 
         return text
     }
 
-    private func generateOverallHeadlineGemini(context: OverallInsightContext) async -> String? {
+    private func generateOverallHeadlineGroq(context: OverallInsightContext) async -> String? {
         let prompt = buildOverallPrompt(context: context)
 
-        guard let text = await GeminiService.shared.generate(
-            systemInstruction: geminiSystemInstruction,
+        guard let text = await GroqService.shared.generate(
+            systemInstruction: groqSystemInstruction,
             prompt: prompt
         ) else {
-            print("InsightEngine: Gemini headline failed, falling back to rules")
+            print("InsightEngine: Groq headline failed, falling back to rules")
             return nil
         }
 
         guard !text.isEmpty, text.count < 150 else {
-            print("InsightEngine: Gemini headline failed validation")
+            print("InsightEngine: Groq headline failed validation")
             return nil
         }
 
