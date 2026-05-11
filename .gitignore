@@ -102,4 +102,10 @@ Package.resolved
 # Ignore only the target-specific plist
 **/Info.plist
 
-
+###############################
+# Bundled AI Model (WhisperKit)
+# 464MB — do NOT commit to git.
+# Download via the setup script or README instructions.
+###############################
+Stuttering App/openai_whisper-small.en/
+Stuttering App/openai_whisper-tiny.en/

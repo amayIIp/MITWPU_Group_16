@@ -57,45 +57,14 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        let spinnerView = UIView(frame: UIScreen.main.bounds)
-        spinnerView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
-        
-        let label = UILabel()
-        label.text = "Loading AI Model (150MB)\nPlease wait..."
-        label.textColor = .white
-        label.numberOfLines = 0
-        label.textAlignment = .center
-        label.font = .systemFont(ofSize: 18, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.color = .white
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        spinner.startAnimating()
-        
-        spinnerView.addSubview(spinner)
-        spinnerView.addSubview(label)
-        
-        NSLayoutConstraint.activate([
-            spinner.centerXAnchor.constraint(equalTo: spinnerView.centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: spinnerView.centerYAnchor, constant: -20),
-            label.topAnchor.constraint(equalTo: spinner.bottomAnchor, constant: 16),
-            label.centerXAnchor.constraint(equalTo: spinnerView.centerXAnchor)
-        ])
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.addSubview(spinnerView)
-        } else {
-            view.addSubview(spinnerView)
-        }
-        
+        // The WhisperKit model is bundled in the app — no download needed.
+        // awaitReady() returns almost instantly since the model loads from disk.
+        // AppDelegate already triggered the singleton at launch, so by the time
+        // the user reaches this screen it is typically already loaded.
         Task {
-            // Wait for the background download/initialization to finish
             await WhisperDetectionManager.shared.awaitReady()
             
             await MainActor.run {
-                spinnerView.removeFromSuperview()
                 SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
                     DispatchQueue.main.async {
                         if authStatus == .authorized {
