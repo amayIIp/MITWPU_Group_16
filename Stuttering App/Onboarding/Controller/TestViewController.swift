@@ -56,7 +56,57 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        try? startRecording()
+        
+        let spinnerView = UIView(frame: UIScreen.main.bounds)
+        spinnerView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        
+        let label = UILabel()
+        label.text = "Loading AI Model (150MB)\nPlease wait..."
+        label.textColor = .white
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 18, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        
+        let spinner = UIActivityIndicatorView(style: .large)
+        spinner.color = .white
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        spinner.startAnimating()
+        
+        spinnerView.addSubview(spinner)
+        spinnerView.addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            spinner.centerXAnchor.constraint(equalTo: spinnerView.centerXAnchor),
+            spinner.centerYAnchor.constraint(equalTo: spinnerView.centerYAnchor, constant: -20),
+            label.topAnchor.constraint(equalTo: spinner.bottomAnchor, constant: 16),
+            label.centerXAnchor.constraint(equalTo: spinnerView.centerXAnchor)
+        ])
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.addSubview(spinnerView)
+        } else {
+            view.addSubview(spinnerView)
+        }
+        
+        Task {
+            // Wait for the background download/initialization to finish
+            await WhisperDetectionManager.shared.awaitReady()
+            
+            await MainActor.run {
+                spinnerView.removeFromSuperview()
+                SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
+                    DispatchQueue.main.async {
+                        if authStatus == .authorized {
+                            try? self?.startRecording()
+                        } else {
+                            print("Speech recognition not authorized.")
+                        }
+                    }
+                }
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -101,7 +151,6 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create request") }
         recognitionRequest.shouldReportPartialResults = true
-        if #available(iOS 13, *) { recognitionRequest.requiresOnDeviceRecognition = true }
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
@@ -111,7 +160,11 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
                     self.recordedSegments = result.bestTranscription.segments
                 }
             }
-            if error != nil { self.stopRecording() }
+            if let error = error {
+                print("Apple Speech Recognizer error/timeout: \(error.localizedDescription)")
+                // Do not call self.stopRecording() here, so that the audio tap continues
+                // writing to the tempAudioFile for Whisper to transcribe the full duration.
+            }
         }
         
         let recordingFormat = inputNode.outputFormat(forBus: 0)
@@ -277,14 +330,20 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         let duration = Date().timeIntervalSince(startTime ?? Date())
         let fullReferenceText = paragraphs.joined(separator: " ")
         
-        let spinnerView = UIView(frame: view.bounds)
-        spinnerView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        let spinnerView = UIView(frame: UIScreen.main.bounds)
+        spinnerView.backgroundColor = UIColor.black.withAlphaComponent(0.7)
         let spinner = UIActivityIndicatorView(style: .large)
         spinner.color = .white
-        spinner.center = spinnerView.center
+        spinner.center = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
         spinner.startAnimating()
         spinnerView.addSubview(spinner)
-        view.addSubview(spinnerView)
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.addSubview(spinnerView)
+        } else {
+            view.addSubview(spinnerView)
+        }
         
         Task {
             var finalTranscript = self.recordedTranscript

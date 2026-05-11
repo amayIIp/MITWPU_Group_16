@@ -4,28 +4,33 @@ import WhisperKit
 class WhisperDetectionManager {
     static let shared = WhisperDetectionManager()
     
-    private var whisperKit: WhisperKit?
+    private var initTask: Task<WhisperKit, Error>?
     private(set) var isReady = false
     
     private init() {
-        Task {
-            do {
-                print("Loading WhisperKit model (small.en)...")
-                // Initializes and automatically downloads the model if it's not present
-                self.whisperKit = try await WhisperKit(model: "small.en")
-                self.isReady = true
-                print("WhisperKit is ready!")
-            } catch {
-                print("Failed to initialize WhisperKit: \(error.localizedDescription)")
-            }
+        initTask = Task {
+            print("Loading WhisperKit model (small.en)...")
+            // Initializes and automatically downloads the model if it's not present
+            let kit = try await WhisperKit(model: "small.en")
+            self.isReady = true
+            print("WhisperKit is ready!")
+            return kit
         }
     }
     
     /// Transcribes the audio file located at the specified URL using WhisperKit
+    func awaitReady() async {
+        guard let initTask = initTask else { return }
+        _ = try? await initTask.value
+    }
+    
     func transcribe(audioURL: URL) async throws -> String? {
-        guard isReady, let whisperKit = whisperKit else {
-            throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit is not ready yet."])
+        guard let initTask = initTask else {
+            throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit initialization not started."])
         }
+        
+        // Wait for the model to finish loading before attempting transcription
+        let whisperKit = try await initTask.value
         
         let path = audioURL.path
         
