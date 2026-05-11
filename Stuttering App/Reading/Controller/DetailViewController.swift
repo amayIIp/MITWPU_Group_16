@@ -422,6 +422,16 @@ extension DetailViewController: WorkoutSheetDelegate {
     }
     
     func didTapShowResult() {
+        guard totalExerciseDuration > 0 else {
+            let alert = UIAlertController(
+                title: "No Reading Recorded",
+                message: "Please start reading before viewing your results.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            sheetVC?.present(alert, animated: true)
+            return
+        }
         pausePlayback()
         self.dismiss(animated: true) { self.didTapOpenButton() }
     }
