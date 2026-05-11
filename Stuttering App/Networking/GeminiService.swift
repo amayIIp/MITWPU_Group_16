@@ -13,8 +13,9 @@ class GeminiService {
     static let shared = GeminiService()
 
     // TODO: Move to Secrets.xcconfig before production release
-    private let apiKey = "AIzaSyCfnymFZk7hNphydaKhNPhJUwDv1HvSEV0"
-    private let model  = "gemini-2.0-flash"
+    //private let apiKey = "AIzaSyCfnymFZk7hNphydaKhNPhJUwDv1HvSEV0"
+    private let apiKey = "AIzaSyAMIzqsMXTPLGB0hOE93Oeyn-zPmuf4Bm4"
+    private let model  = "gemini-3.0-flash"
 
     private var baseURL: String {
         "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent?key=\(apiKey)"

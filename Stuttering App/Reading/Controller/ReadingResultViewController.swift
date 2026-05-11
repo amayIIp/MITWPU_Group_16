@@ -220,7 +220,7 @@ class ReadingResultViewController: UIViewController {
 //        label.backgroundColor = UIColor(red: 0.88, green: 0.95, blue: 0.95, alpha: 1.0)
 //        
         label.textColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
-        label.backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0).withAlphaComponent(0.12)
+        label.backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
         label.textAlignment = .center
         label.layer.cornerRadius = 12
         label.clipsToBounds = true

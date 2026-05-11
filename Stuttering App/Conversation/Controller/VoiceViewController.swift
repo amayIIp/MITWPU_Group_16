@@ -250,15 +250,6 @@ class VoiceViewController: UIViewController {
             topicSelectionView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
         ])
         
-        // Subtitle
-        let subtitleLabel = UILabel()
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        subtitleLabel.text = "Practice real-life conversations with guided prompts"
-        subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
-        subtitleLabel.numberOfLines = 0
-        topicSelectionView.addSubview(subtitleLabel)
-        
         // AI Chat Bubble
         let aiBubble = UIView()
         aiBubble.translatesAutoresizingMaskIntoConstraints = false
@@ -321,9 +312,27 @@ class VoiceViewController: UIViewController {
         }
         
         // Start Talking Button
+//        let startButton = UIButton(type: .system)
+//        startButton.translatesAutoresizingMaskIntoConstraints = false
+//        startButton.setTitle("Start Talking", for: .normal)
+//        startButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+//        startButton.setTitleColor(.white, for: .normal)
+//        startButton.backgroundColor = UIColor(resource: .buttonThemeMain)
+//        startButton.layer.cornerRadius = 25
+//        startButton.clipsToBounds = true
+//        startButton.addTarget(self, action: #selector(startTalkingTapped), for: .touchUpInside)
+//        topicSelectionView.addSubview(startButton)
         let startButton = UIButton(type: .system)
         startButton.translatesAutoresizingMaskIntoConstraints = false
         startButton.setTitle("Start Talking", for: .normal)
+
+        // Add the symbol and set its color to white
+        startButton.setImage(UIImage(systemName: "microphone.fill"), for: .normal)
+        startButton.tintColor = .white
+
+        // Add a little padding between the icon and the text
+        startButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 10)
+
         startButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         startButton.setTitleColor(.white, for: .normal)
         startButton.backgroundColor = UIColor(resource: .buttonThemeMain)
@@ -335,11 +344,7 @@ class VoiceViewController: UIViewController {
         // Layout
         let pad: CGFloat = 16
         NSLayoutConstraint.activate([
-            subtitleLabel.topAnchor.constraint(equalTo: topicSelectionView.topAnchor, constant: pad),
-            subtitleLabel.leadingAnchor.constraint(equalTo: topicSelectionView.leadingAnchor, constant: pad),
-            subtitleLabel.trailingAnchor.constraint(equalTo: topicSelectionView.trailingAnchor, constant: -pad),
-            
-            aiBubble.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 16),
+            aiBubble.topAnchor.constraint(equalTo: topicSelectionView.topAnchor, constant: pad),
             aiBubble.leadingAnchor.constraint(equalTo: topicSelectionView.leadingAnchor, constant: pad),
             aiBubble.trailingAnchor.constraint(lessThanOrEqualTo: topicSelectionView.trailingAnchor, constant: -60),
             

@@ -33,6 +33,10 @@ actor InsightEngine {
 
     private init() {}
     func dayInsight(context: DayInsightContext) async -> String {
+        if context.sessionCount == 0 {
+            return "Let's get started! Do some exercises and start practicing today."
+        }
+        
         // Tier 1: On-device Foundation Model
         if let aiInsight = await generateDayInsightAI(context: context) {
             return aiInsight
@@ -59,21 +63,9 @@ actor InsightEngine {
     }
 
     private func isValidInsight(_ text: String) -> Bool {
-        let sentences = text
-            .split(whereSeparator: { ".!?".contains($0) })
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-
-        guard sentences.count == 2 else { return false }
-
         let words = text.split { $0.isWhitespace }
-        guard words.count >= 40 && words.count <= 60 else { return false }
-
-        let firstCount = sentences[0].split { $0.isWhitespace }.count
-        let secondCount = sentences[1].split { $0.isWhitespace }.count
-
-        let difference = abs(firstCount - secondCount)
-        return difference <= 5
+        // The prompt asks for < 15 words, so let's allow up to 30 just to be safe.
+        return !words.isEmpty && words.count <= 30
     }
 
     
@@ -143,7 +135,7 @@ actor InsightEngine {
         - Exactly 2 sentences.
         - Total length must be less than 15 words.
         - Both sentences must be similar length (roughly equal words).
-        - Be specific — use the exact numbers provided.
+        - Do not use any numbers or percentages in your response.
         - Warm and encouraging, never clinical.
         - No emojis, no markdown, no bullet points.
         - If letter improvement data exists, lead with it.
@@ -191,7 +183,7 @@ actor InsightEngine {
             \(parts.joined(separator: "\n"))
 
             Write a short, warm, specific insight for this user about their day. \
-            Maximum 2 sentences. Use the actual numbers. \
+            Maximum 2 sentences. Do not include any numbers. \
             If letter improvement data is present, lead with that.
             """
     }
@@ -214,7 +206,7 @@ actor InsightEngine {
             \(parts.joined(separator: "\n"))
 
             Write a single motivating headline sentence (max 12 words) that captures \
-            their overall progress. Be specific to their numbers. \
+            their overall progress. Do not include any numbers. \
             Output only the sentence — no quotes, no label.
             """
     }
@@ -228,7 +220,7 @@ actor InsightEngine {
     - Exactly 2 sentences.
     - Total length must be less than 15 words.
     - Both sentences must be similar length (roughly equal words).
-    - Be specific — use the exact numbers provided.
+    - Do not use any numbers or percentages in your response.
     - Warm and encouraging, never clinical.
     - No emojis, no markdown, no bullet points.
     - If letter improvement data exists, lead with it.
@@ -281,7 +273,6 @@ actor InsightEngine {
         // 1. Letter improvement — most personal
         if !context.topImprovedLetters.isEmpty {
             let top    = context.topImprovedLetters.prefix(2)
-            let avgPct = top.map(\.improvementPct).reduce(0, +) / Double(top.count)
 
             let lettersStr: String
             if top.count == 1 {
@@ -289,22 +280,22 @@ actor InsightEngine {
             } else {
                 lettersStr = "'\(top[0].letter)' and '\(top[1].letter)'"
             }
-            return "Your \(lettersStr) sounds have improved \(Int(avgPct))% today!!"
+            return "Your \(lettersStr) sounds have improved today!!"
         }
 
         // 2. High blocks
         if context.avgBlock > 30 {
-            return "Blocks are your main challenge today (\(Int(context.avgBlock))%). Try slow, deliberate starts on each sentence."
+            return "Blocks are your main challenge today. Try slow, deliberate starts on each sentence."
         }
 
         // 3. Low accuracy
         if context.avgAccuracy < 60 {
-            return "Accuracy was lower today (\(Int(context.avgAccuracy))%). Focus on shorter passages and give yourself time to breathe."
+            return "Focus on shorter passages and give yourself time to breathe."
         }
 
         // 4. Fluency jump
         if context.fluencyGrowth > 5 {
-            return "Great progress! Your fluency jumped \(String(format: "%.1f", context.fluencyGrowth)) points today. Keep that momentum!"
+            return "Great progress! Your fluency jumped today. Keep that momentum!"
         }
 
         // 5. Fluency dip
@@ -314,12 +305,12 @@ actor InsightEngine {
 
         // 6. High session count
         if context.sessionCount >= 3 {
-            return "Solid consistency — \(context.sessionCount) sessions today! Multiple short sessions are one of the best ways to improve."
+            return "Solid consistency! Multiple short sessions are one of the best ways to improve."
         }
 
         // 7. High score
         if context.avgFluency >= 80 {
-            return "Excellent day! A fluency score of \(Int(context.avgFluency)) shows real control. Challenge yourself with a harder passage tomorrow."
+            return "Excellent day! Your fluency score shows real control. Challenge yourself with a harder passage tomorrow."
         }
 
         return "You showed up and practiced — that's what counts. Every session builds the habit. Keep going!"
