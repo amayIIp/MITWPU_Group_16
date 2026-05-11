@@ -78,6 +78,9 @@ class LogManager {
     private(set) var db: OpaquePointer?
     private let dbName = "ExerciseDatabase.sqlite"
     private var currentUserId: String?
+    
+    /// Cached home insight — invalidated when a new session is saved
+    var cachedHomeInsight: String?
 
     struct GoalKeys {
         static let exercise     = "Goal_Exercise"
@@ -152,6 +155,12 @@ class LogManager {
         sqlite3_exec(db, createConversationSessions, nil, nil, nil)
         
         print("10 Tables created in ExerciseLogs\n")
+        
+        // Migration: add insight column to ReadingSessions for caching per-session insights
+        if !columnExists(tableName: "ReadingSessions", columnName: "insight") {
+            sqlite3_exec(db, "ALTER TABLE ReadingSessions ADD COLUMN insight TEXT;", nil, nil, nil)
+            print("Migration: Added 'insight' column to ReadingSessions.")
+        }
     }
 
     // 2. Helper function to inspect the SQLite table schema
@@ -506,12 +515,16 @@ class LogManager {
     }
 
 
+    /// Saves a reading session with an optional pre-generated insight.
+    /// Returns the sessionId so callers can update the insight later.
+    @discardableResult
     func saveReadingSession(report: StutterJSONReport,
                             duration: TimeInterval = 0,
-                            longestSmoothParagraph: Int = 0) {
+                            longestSmoothParagraph: Int = 0,
+                            insight: String? = nil) -> String? {
         guard let userId = getCurrentUserId() else {
             print("User not initialized.")
-            return
+            return nil
         }
 
         let sessionId = UUID().uuidString
@@ -521,8 +534,8 @@ class LogManager {
             INSERT INTO ReadingSessions
             (id, userId, date, duration, fluencyScore,
              repetitionPercent, prolongationPercent,
-             blockPercent, correctPercent, longestSmoothParagraph)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+             blockPercent, correctPercent, longestSmoothParagraph, insight)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
 
         var statement: OpaquePointer?
@@ -537,6 +550,11 @@ class LogManager {
             sqlite3_bind_double(statement, 8, report.percentages.blocks)
             sqlite3_bind_double(statement, 9, report.percentages.correct)
             sqlite3_bind_int(statement, 10,   Int32(longestSmoothParagraph))
+            if let insight = insight {
+                sqlite3_bind_text(statement, 11, (insight as NSString).utf8String, -1, nil)
+            } else {
+                sqlite3_bind_null(statement, 11)
+            }
 
             if sqlite3_step(statement) == SQLITE_DONE {
                 print("ReadingSession inserted successfully.")
@@ -557,6 +575,39 @@ class LogManager {
         } else {
             print("📋 [GUEST] Reading session saved locally only (guest mode)")
         }
+        
+        // Invalidate cached home insight so it regenerates with new data
+        cachedHomeInsight = nil
+        
+        return sessionId
+    }
+    
+    /// Updates the insight for an existing session (used when insight is generated async after save).
+    func updateSessionInsight(sessionId: String, insight: String) {
+        let sql = "UPDATE ReadingSessions SET insight = ? WHERE id = ?;"
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (insight as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(stmt, 2, (sessionId as NSString).utf8String, -1, nil)
+            sqlite3_step(stmt)
+        }
+        sqlite3_finalize(stmt)
+    }
+    
+    /// Retrieves the stored insight for a specific session.
+    func getSessionInsight(sessionId: String) -> String? {
+        let sql = "SELECT insight FROM ReadingSessions WHERE id = ?;"
+        var stmt: OpaquePointer?
+        var result: String?
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (sessionId as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_ROW,
+               let cStr = sqlite3_column_text(stmt, 0) {
+                result = String(cString: cStr)
+            }
+        }
+        sqlite3_finalize(stmt)
+        return result
     }
 
     private func saveTroubledWords(report: StutterJSONReport, userId: String, sessionId: String) {

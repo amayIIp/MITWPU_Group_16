@@ -68,29 +68,31 @@ class ReadingResultViewController: UIViewController {
     func setupUIWithReport(_ report: StutterJSONReport) {
         
         if !hasSavedSession {
-            LogManager.shared.saveReadingSession(report: report)
+            // Save session and get its ID for storing the insight later
+            let sessionId = LogManager.shared.saveReadingSession(report: report)
             
-            // 👇 Analyze troubled words and update the database dynamically
+            // Analyze troubled words and update the database dynamically
             analyzeAndSaveProblemPhonemes(from: report.stutteredWords)
             
             hasSavedSession = true
-        }
             
-        setupFluencyCircle(score: CGFloat(report.fluencyScore))
-        
-        Task {
-            if let dayReport = await LogManager.shared.getDayReport(for: Date()) {
-                await MainActor.run {
-                    self.insightsLabel.text = dayReport.insight
-                    self.updateInsightsLayout()
+            // Generate a session-specific insight (not a day average)
+            Task {
+                let insight = await InsightEngine.shared.sessionInsight(report: report)
+                
+                // Store insight in the database for instant recall next time
+                if let sessionId = sessionId {
+                    LogManager.shared.updateSessionInsight(sessionId: sessionId, insight: insight)
                 }
-            } else {
+                
                 await MainActor.run {
-                    self.insightsLabel.text = "You showed up and practiced — that matters."
+                    self.insightsLabel.text = insight
                     self.updateInsightsLayout()
                 }
             }
         }
+            
+        setupFluencyCircle(score: CGFloat(report.fluencyScore))
         
         readingTime.text = report.duration
         blockPercentage.text = "\(Int(report.percentages.blocks))"
@@ -98,7 +100,6 @@ class ReadingResultViewController: UIViewController {
         prolongationPercentage.text = "\(Int(report.percentages.prolongation))"
         
         loadTroubledWords(words: report.stutteredWords)
-        LogManager.shared.saveReadingSession(report: report)
         LogManager.shared.debugPrintAllReadingSessions()
 
     }

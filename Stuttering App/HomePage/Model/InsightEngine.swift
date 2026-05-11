@@ -29,7 +29,6 @@ struct OverallInsightContext {
 actor InsightEngine {
 
     static let shared = InsightEngine()
-    private var session: LanguageModelSession?
 
     private init() {}
     func dayInsight(context: DayInsightContext) async -> String {
@@ -62,6 +61,92 @@ actor InsightEngine {
         return generateOverallHeadlineRuleBased(context: context)
     }
 
+    // MARK: - Session-Specific Insight (for Reading Result screen)
+
+    /// Generates an insight about a single reading session, not the whole day.
+    func sessionInsight(report: StutterJSONReport) async -> String {
+        let prompt = buildSessionPrompt(report: report)
+
+        // Tier 1: On-device Foundation Model
+        let model = SystemLanguageModel.default
+        if model.availability == .available {
+            let session = LanguageModelSession(model: model, instructions: sessionSystemInstruction)
+            do {
+                let response = try await session.respond(to: prompt)
+                let text = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                if isValidInsight(text) { return text }
+            } catch {
+                print("InsightEngine: Session insight Foundation Model failed — \(error.localizedDescription)")
+            }
+        }
+
+        // Tier 2: Groq API
+        if let groqResult = await GroqService.shared.generate(
+            systemInstruction: sessionSystemInstruction, prompt: prompt
+        ), isValidInsight(groqResult) {
+            return groqResult
+        }
+
+        // Tier 3: Rule-based fallback
+        return sessionInsightRuleBased(report: report)
+    }
+
+    private let sessionSystemInstruction = """
+    You are a supportive speech therapy coach inside an app called Spasht.
+
+    Rules:
+    - Exactly 2 sentences, under 25 words total.
+    - Speak about THIS specific reading session only.
+    - Warm, encouraging, never clinical.
+    - Do not use any numbers or percentages.
+    - No emojis, no markdown, no bullet points.
+    - Output ONLY the insight text.
+    """
+
+    private func buildSessionPrompt(report: StutterJSONReport) -> String {
+        var parts: [String] = []
+        parts.append("Fluency score: \(report.fluencyScore)/100.")
+        parts.append("Block percentage: \(Int(report.percentages.blocks))%.")
+        parts.append("Accuracy: \(Int(report.percentages.correct))%.")
+        parts.append("Repetition percentage: \(Int(report.percentages.repetition))%.")
+        parts.append("Prolongation percentage: \(Int(report.percentages.prolongation))%.")
+
+        if !report.stutteredWords.isEmpty {
+            let topWords = report.stutteredWords.prefix(5).joined(separator: ", ")
+            parts.append("Troubled words: \(topWords).")
+        } else {
+            parts.append("No stuttered words detected.")
+        }
+
+        return """
+        Here is the user's data for this specific reading session:
+
+        \(parts.joined(separator: "\n"))
+
+        Write a short, warm, specific insight about this session. \
+        Maximum 2 sentences. Do not include any numbers.
+        """
+    }
+
+    private func sessionInsightRuleBased(report: StutterJSONReport) -> String {
+        if report.stutteredWords.isEmpty && report.fluencyScore >= 90 {
+            return "Excellent reading! Your speech was smooth and confident throughout."
+        }
+        if report.percentages.blocks > 30 {
+            return "Blocks were your main challenge this session. Try slow, deliberate starts on each sentence."
+        }
+        if report.percentages.correct < 60 {
+            return "Take your time with each sentence. Steady pacing helps build confidence."
+        }
+        if report.fluencyScore >= 80 {
+            return "Strong session! Your fluency shows real control. Keep building on this momentum."
+        }
+        if report.fluencyScore >= 50 {
+            return "Good effort! Every session strengthens your speaking skills."
+        }
+        return "You showed up and practiced — that's what counts. Keep going!"
+    }
+
     private func isValidInsight(_ text: String) -> Bool {
         let words = text.split { $0.isWhitespace }
         // The prompt asks for < 15 words, so let's allow up to 30 just to be safe.
@@ -70,11 +155,14 @@ actor InsightEngine {
 
     
     private func generateDayInsightAI(context: DayInsightContext) async -> String? {
-        
-        guard let session = getOrCreateSession() else {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+            print("InsightEngine: Model not available")
             return nil
         }
-        
+
+        // Fresh session each time — insights are independent, not a conversation
+        let session = LanguageModelSession(model: model, instructions: dayInsightInstructions)
         let prompt = buildDayPrompt(context: context)
         
         do {
@@ -93,11 +181,13 @@ actor InsightEngine {
     }
 
     private func generateOverallHeadlineAI(context: OverallInsightContext) async -> String? {
-        
-        guard let session = getOrCreateSession() else {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+            print("InsightEngine: Model not available")
             return nil
         }
-        
+
+        let session = LanguageModelSession(model: model, instructions: dayInsightInstructions)
         let prompt = buildOverallPrompt(context: context)
         
         do {
@@ -115,41 +205,17 @@ actor InsightEngine {
         }
     }
 
-    private func getOrCreateSession() -> LanguageModelSession? {
-        
-        if let existing = session {
-            return existing
-        }
-        
-        let model = SystemLanguageModel.default
-        
-        guard model.availability == .available else {
-            print("InsightEngine: Model not available")
-            return nil
-        }
-        
-        let instructions = """
-        You are a supportive speech therapy coach .
+    private let dayInsightInstructions = """
+    You are a supportive speech therapy coach.
 
-        Rules:
-        - Exactly 2 sentences.
-        - Total length must be less than 15 words.
-        - Both sentences must be similar length (roughly equal words).
-        - Do not use any numbers or percentages in your response.
-        - Warm and encouraging, never clinical.
-        - No emojis, no markdown, no bullet points.
-        - If letter improvement data exists, lead with it.
-        - Output ONLY the insight text.
-        """
-        
-        let newSession = LanguageModelSession(
-            model: model,
-            instructions: instructions
-        )
-        
-        session = newSession
-        return newSession
-    }
+    Rules:
+    - Exactly 2 sentences, under 25 words total.
+    - Do not use any numbers or percentages in your response.
+    - Warm and encouraging, never clinical.
+    - No emojis, no markdown, no bullet points.
+    - If letter improvement data exists, lead with it.
+    - Output ONLY the insight text.
+    """
 
     private func buildDayPrompt(context: DayInsightContext) -> String {
 

@@ -280,11 +280,18 @@ class HomePageViewController: UIViewController {
     }
     
     private func loadHomeInsight() {
+        // Fast path: use cached insight if available (invalidated when a new session is saved)
+        if let cached = LogManager.shared.cachedHomeInsight {
+            self.insightLabel.text = cached
+            return
+        }
+        
         Task {
             let today = Date()
             
             if let todayReport = await LogManager.shared.getDayReport(for: today) {
-                DispatchQueue.main.async {
+                LogManager.shared.cachedHomeInsight = todayReport.insight
+                await MainActor.run {
                     self.insightLabel.text = todayReport.insight
                 }
                 return
@@ -292,15 +299,17 @@ class HomePageViewController: UIViewController {
 
             if let lastDate = LogManager.shared.getMostRecentReadingSessionDate(),
                let lastReport = await LogManager.shared.getDayReport(for: lastDate) {
-
-                DispatchQueue.main.async {
+                LogManager.shared.cachedHomeInsight = lastReport.insight
+                await MainActor.run {
                     self.insightLabel.text = lastReport.insight
                 }
                 return
             }
 
-            DispatchQueue.main.async {
-                self.insightLabel.text = "Your speaking practice hasn't started yet today."
+            let fallback = "Your speaking practice hasn't started yet today."
+            LogManager.shared.cachedHomeInsight = fallback
+            await MainActor.run {
+                self.insightLabel.text = fallback
             }
         }
     }
