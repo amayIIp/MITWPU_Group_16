@@ -245,14 +245,24 @@ class HomePageViewController: UIViewController {
         } else {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
-            
-            nextModalVC.modalPresentationStyle = .pageSheet
-            if let sheet = nextModalVC.sheetPresentationController {
+
+            // 1. Wrap your destination in a Navigation Controller
+            // This allows you to have a navigation bar and push/pop logic inside the modal.
+            let navController = UINavigationController(rootViewController: nextModalVC)
+
+            // 2. Enable Large Titles on the Navigation Bar
+            navController.navigationBar.prefersLargeTitles = true
+
+            // 3. Configure the Sheet (Modal) behavior
+            // We apply the presentation style to the navigation controller itself.
+            navController.modalPresentationStyle = .pageSheet
+            if let sheet = navController.sheetPresentationController {
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
-            
-            present(nextModalVC, animated: true)
+
+            // 4. Present the Navigation Controller
+            present(navController, animated: true)
         }
     }
 

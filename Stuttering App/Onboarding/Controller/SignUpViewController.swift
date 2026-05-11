@@ -151,12 +151,24 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         self.dismiss(animated: true) {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             let nextModalVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
-            nextModalVC.modalPresentationStyle = .pageSheet
-            if let sheet = nextModalVC.sheetPresentationController {
+
+            // 1. Wrap the Login view in a Navigation Controller
+            // This gives you a top bar for titles and future "Cancel" or "Done" buttons.
+            let navController = UINavigationController(rootViewController: nextModalVC)
+
+            // 2. Enable Large Titles
+            navController.navigationBar.prefersLargeTitles = true
+
+            // 3. Configure the Sheet (Modal) behavior
+            // Note: We apply these settings to the navController, not nextModalVC.
+            navController.modalPresentationStyle = .pageSheet
+            if let sheet = navController.sheetPresentationController {
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
-            presentingVC.present(nextModalVC, animated: true)
+
+            // 4. Present the Navigation Controller from your presenting view controller
+            presentingVC.present(navController, animated: true)
         }
     }
     
