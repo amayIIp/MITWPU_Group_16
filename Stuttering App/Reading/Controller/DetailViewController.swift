@@ -87,7 +87,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func setupTextView() {
         guard let textView = textView else { return }
         
-        let baseFont = UIFont.preferredFont(forTextStyle: .body)
+        let baseFont = UIFont.preferredFont(forTextStyle: .title3)
         defaultAttributes = [.font: baseFont, .foregroundColor: UIColor.gray]
         highlightAttributes = [.font: baseFont, .foregroundColor: UIColor.black]
         

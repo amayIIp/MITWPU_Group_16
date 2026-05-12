@@ -39,6 +39,9 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             continueAsGuest?.isHidden = true
         }
         
+        // --- Fat-finger fix: ensure minimum 44pt touch targets ---
+        continueAsGuest?.contentEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        
         // --- Password Toggle Config ---
         passwordTextField.isSecureTextEntry = true
         
@@ -147,6 +150,10 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     }
         
     @IBAction func switchToSigninButtonTapped(_ sender: UIButton) {
+        // Fat-finger fix applied on first tap if not already set
+        if sender.contentEdgeInsets == .zero {
+            sender.contentEdgeInsets = UIEdgeInsets(top: 12, left: 8, bottom: 12, right: 8)
+        }
         guard let presentingVC = self.presentingViewController else { return }
         self.dismiss(animated: true) {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)

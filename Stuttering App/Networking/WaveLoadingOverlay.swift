@@ -109,7 +109,7 @@ class WaveLoadingOverlay: UIView {
 
         // Animated dot label
         dotLabel.font = UIFont.systemFont(ofSize: 22, weight: .semibold)
-        dotLabel.textColor = brandColor
+        dotLabel.textColor = .label
         dotLabel.textAlignment = .left
         dotLabel.alpha = 0
         dotLabel.translatesAutoresizingMaskIntoConstraints = false
