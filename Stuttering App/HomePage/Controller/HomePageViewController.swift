@@ -245,14 +245,24 @@ class HomePageViewController: UIViewController {
         } else {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
-            
-            nextModalVC.modalPresentationStyle = .pageSheet
-            if let sheet = nextModalVC.sheetPresentationController {
+
+            // 1. Wrap your destination in a Navigation Controller
+            // This allows you to have a navigation bar and push/pop logic inside the modal.
+            let navController = UINavigationController(rootViewController: nextModalVC)
+
+            // 2. Enable Large Titles on the Navigation Bar
+            navController.navigationBar.prefersLargeTitles = true
+
+            // 3. Configure the Sheet (Modal) behavior
+            // We apply the presentation style to the navigation controller itself.
+            navController.modalPresentationStyle = .pageSheet
+            if let sheet = navController.sheetPresentationController {
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
-            
-            present(nextModalVC, animated: true)
+
+            // 4. Present the Navigation Controller
+            present(navController, animated: true)
         }
     }
 
@@ -280,28 +290,34 @@ class HomePageViewController: UIViewController {
     }
     
     private func loadHomeInsight() {
+        // Fast path: use cached insight if available (invalidated when a new session is saved)
+        if let cached = LogManager.shared.cachedHomeInsight {
+            self.insightLabel.text = cached
+            return
+        }
+
+        // Show a placeholder immediately so the label doesn't appear blank
+        self.insightLabel.text = "Loading your insight…"
+
         Task {
             let today = Date()
-            
+
             if let todayReport = await LogManager.shared.getDayReport(for: today) {
-                DispatchQueue.main.async {
-                    self.insightLabel.text = todayReport.insight
-                }
+                LogManager.shared.cachedHomeInsight = todayReport.insight
+                await MainActor.run { self.insightLabel.text = todayReport.insight }
                 return
             }
 
             if let lastDate = LogManager.shared.getMostRecentReadingSessionDate(),
                let lastReport = await LogManager.shared.getDayReport(for: lastDate) {
-
-                DispatchQueue.main.async {
-                    self.insightLabel.text = lastReport.insight
-                }
+                LogManager.shared.cachedHomeInsight = lastReport.insight
+                await MainActor.run { self.insightLabel.text = lastReport.insight }
                 return
             }
 
-            DispatchQueue.main.async {
-                self.insightLabel.text = "Your speaking practice hasn't started yet today."
-            }
+            let fallback = "Your speaking practice hasn't started yet today."
+            LogManager.shared.cachedHomeInsight = fallback
+            await MainActor.run { self.insightLabel.text = fallback }
         }
     }
 

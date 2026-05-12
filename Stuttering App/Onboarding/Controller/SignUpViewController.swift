@@ -16,7 +16,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     private let client = SupabaseManager.shared.client
     var onSwitchToSignin: (() -> Void)?
-    private var loadingOverlay: UIView?
+    private var loadingOverlay: WaveLoadingOverlay?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +33,11 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     func setupUI() {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
+        
+        // Hide "Continue as Guest" if they are already a guest upgrading their account
+        if SessionManager.shared.isGuestMode {
+            continueAsGuest?.isHidden = true
+        }
         
         // --- Password Toggle Config ---
         passwordTextField.isSecureTextEntry = true
@@ -146,31 +151,36 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         self.dismiss(animated: true) {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             let nextModalVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
-            nextModalVC.modalPresentationStyle = .pageSheet
-            if let sheet = nextModalVC.sheetPresentationController {
+
+            // 1. Wrap the Login view in a Navigation Controller
+            // This gives you a top bar for titles and future "Cancel" or "Done" buttons.
+            let navController = UINavigationController(rootViewController: nextModalVC)
+
+            // 2. Enable Large Titles
+            navController.navigationBar.prefersLargeTitles = true
+
+            // 3. Configure the Sheet (Modal) behavior
+            // Note: We apply these settings to the navController, not nextModalVC.
+            navController.modalPresentationStyle = .pageSheet
+            if let sheet = navController.sheetPresentationController {
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
-            presentingVC.present(nextModalVC, animated: true)
+
+            // 4. Present the Navigation Controller from your presenting view controller
+            presentingVC.present(navController, animated: true)
         }
     }
     
     // MARK: - Helpers & Navigation (Existing)
     
-    private func showLoading() {
-        let overlay = UIView(frame: view.bounds)
-        overlay.backgroundColor = UIColor(white: 0, alpha: 0.5)
-        let indicator = UIActivityIndicatorView(style: .large)
-        indicator.color = .white
-        indicator.center = overlay.center
-        indicator.startAnimating()
-        overlay.addSubview(indicator)
-        view.addSubview(overlay)
-        loadingOverlay = overlay
+    private func showLoading(message: String = "Creating your account…") {
+        guard loadingOverlay == nil else { return }
+        loadingOverlay = WaveLoadingOverlay.show(in: view, message: message)
     }
-    
+
     private func hideLoading() {
-        loadingOverlay?.removeFromSuperview()
+        loadingOverlay?.dismiss()
         loadingOverlay = nil
     }
 
@@ -191,7 +201,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @objc private func googleSignInTapped() {
         let rawNonce = AuthHelpers.randomNonceString()
         let hashedNonce = AuthHelpers.sha256(rawNonce)
-        showLoading()
+        showLoading(message: "Connecting with Google…")
         Task {
             do {
                 let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: self, hint: nil, additionalScopes: nil, nonce: hashedNonce)

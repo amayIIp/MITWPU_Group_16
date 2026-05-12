@@ -217,7 +217,8 @@ class DatabaseManager {
         
         if SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushJourneyUpdate(name: trimmedName, isCompleted: true)
-            SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: trimmedName)
+            // syncLocalDailyTasksToCloud handles a full push of all tasks including this one;
+            // calling markDailyTaskCompletedInCloud separately was a redundant double-write.
             syncLocalDailyTasksToCloud()
         }
     }
@@ -252,10 +253,11 @@ class DatabaseManager {
         // 4. Notify UI to refresh 'Try New' and 'Go-To'
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
         
+        // NOTE: Do NOT call markDailyTaskCompletedInCloud or syncLocalDailyTasksToCloud here.
+        // This path (Exercise tab) must never write to the daily_tasks Supabase table.
+        // Only journey progression and exercise analytics are synced to the cloud.
         if SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushJourneyUpdate(name: trimmedName, isCompleted: true)
-            SupabaseSyncManager.shared.markDailyTaskCompletedInCloud(name: trimmedName)
-            syncLocalDailyTasksToCloud()
         }
     }
 
@@ -526,6 +528,85 @@ class DatabaseManager {
     }
 
     // MARK: - Library & Discovery Functions
+    
+    /// Returns true if the user has saved at least one problem phoneme group (i.e. went through phoneme selection).
+    func hasUserPhonemes() -> Bool {
+        let query = "SELECT COUNT(*) FROM UserPhonemes"
+        var stmt: OpaquePointer?
+        var count = 0
+        if sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK {
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+        return count > 0
+    }
+    
+    /// Fetches exactly 5 warmup exercises tailored to the user's problem phonemes.
+    ///
+    /// Algorithm:
+    ///   1. Up to 3 exercises whose targetPhoneme matches any saved UserPhoneme group,
+    ///      ordered by lastCompleted ASC (least recently done first).
+    ///   2. Remaining slots (up to 5 total) filled from general exercises
+    ///      (those with an empty or null targetPhoneme), again ordered by lastCompleted ASC.
+    ///
+    /// Returns an empty array if UserPhonemes is empty — caller should fall back to WarmUp.json.
+    func fetchWarmupExercises() -> [String] {
+        guard hasUserPhonemes() else {
+            print("🔥 [Warmup] No user phonemes found — caller should use static WarmUp.json fallback.")
+            return []
+        }
+        
+        var results: [String] = []
+        
+        // STEP 1: Phoneme-matched exercises (up to 3)
+        let phonemeQuery = """
+        SELECT DISTINCT e.name
+        FROM Exercises e
+        JOIN UserPhonemes u ON e.targetPhoneme = u.phoneme
+        ORDER BY e.lastCompleted ASC
+        LIMIT 3
+        """
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, phonemeQuery, -1, &stmt, nil) == SQLITE_OK {
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                if let cString = sqlite3_column_text(stmt, 0) {
+                    results.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
+                }
+            }
+        }
+        sqlite3_finalize(stmt)
+        print("🔥 [Warmup] Phoneme-matched: \(results)")
+        
+        // STEP 2: Fill remaining slots with general exercises (no specific phoneme target)
+        let needed = 5 - results.count
+        if needed > 0 {
+            // Build an exclusion placeholder list so we don't duplicate Step 1 results
+            let placeholders = results.isEmpty ? "''" : results.map { _ in "?" }.joined(separator: ", ")
+            let generalQuery = """
+            SELECT name FROM Exercises
+            WHERE (targetPhoneme IS NULL OR TRIM(targetPhoneme) = '')
+            AND TRIM(name) NOT IN (\(placeholders))
+            ORDER BY lastCompleted ASC
+            LIMIT \(needed)
+            """
+            if sqlite3_prepare_v2(db, generalQuery, -1, &stmt, nil) == SQLITE_OK {
+                for (i, name) in results.enumerated() {
+                    sqlite3_bind_text(stmt, Int32(i + 1), (name as NSString).utf8String, -1, SQLITE_TRANSIENT)
+                }
+                while sqlite3_step(stmt) == SQLITE_ROW {
+                    if let cString = sqlite3_column_text(stmt, 0) {
+                        results.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
+                    }
+                }
+            }
+            sqlite3_finalize(stmt)
+        }
+        
+        print("🔥 [Warmup] Final 5 exercises: \(results)")
+        return results
+    }
     
     func fetchPhonemeBasedExercises() -> [String] {
         let query = """

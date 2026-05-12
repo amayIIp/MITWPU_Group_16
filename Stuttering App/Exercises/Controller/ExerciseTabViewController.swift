@@ -218,7 +218,10 @@ class ExerciseTabViewController: UIViewController {
         // 4. Fun Section
         if !self.funExercises.isEmpty { self.activeSections.append(.fun) }
         
-        self.exerciseCollectionView.reloadData()
+        UIView.transition(with: self.exerciseCollectionView,
+                          duration: 0.25,
+                          options: [.transitionCrossDissolve, .allowUserInteraction],
+                          animations: { self.exerciseCollectionView.reloadData() })
     }
 
     // MARK: - Navigation

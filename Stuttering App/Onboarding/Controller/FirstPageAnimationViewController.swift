@@ -92,12 +92,20 @@ class FirstPageAnimationViewController: UIViewController {
         let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
         let nextModalVC = storyboard.instantiateViewController(withIdentifier: identifier)
         
-        nextModalVC.modalPresentationStyle = .pageSheet
-        if let sheet = nextModalVC.sheetPresentationController {
+        // 1. Wrap your destination in a Navigation Controller
+        let navController = UINavigationController(rootViewController: nextModalVC)
+        
+        // 2. Enable Large Titles on the Navigation Bar
+        navController.navigationBar.prefersLargeTitles = true
+        
+        // 3. Configure the Sheet (Modal) behavior
+        navController.modalPresentationStyle = .pageSheet // Explicitly use pageSheet for the "card" look
+        if let sheet = navController.sheetPresentationController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        present(nextModalVC, animated: true)
+        
+        present(navController, animated: true)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

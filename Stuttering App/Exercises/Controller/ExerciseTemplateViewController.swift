@@ -54,7 +54,7 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         setupAnimationController()
         setupDesign()
         loadData()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(true, animated: true)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -71,7 +71,7 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
     private func setupAnimationController() {
@@ -369,8 +369,11 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         }
         
         if let labelHide = labelHidden {
-            targetWordLabel.isHidden = labelHide
-            targetWordLabel.alpha = labelHide ? 0.0 : 1.0
+            UIView.animate(withDuration: 0.25) {
+                self.targetWordLabel.alpha = labelHide ? 0.0 : 1.0
+            } completion: { _ in
+                self.targetWordLabel.isHidden = labelHide
+            }
         }
         
         UIView.animate(withDuration: 0.3) {
@@ -426,8 +429,9 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
             
             if source == .dailyTasks {
                 DatabaseManager.shared.markTaskComplete(taskName: self.exerciseName)
-            }
-            if source == .exercises {
+            } else if source == .exercises || source == .warmup {
+                // Both exercise-tab and warmup paths update Journey + analytics and
+                // check streak eligibility, but must never touch the DailyTasks table.
                 DatabaseManager.shared.markExComplete(taskName: self.exerciseName)
             }
         }
@@ -522,7 +526,7 @@ extension ExerciseTemplateViewController: AirFlowControlsDelegate {
                 guard let resultVC = storyboard.instantiateViewController(withIdentifier: "ExerciseResult") as? ExerciseResultViewController else { return }
                 
                 resultVC.exerciseName = self.exerciseName
-                resultVC.durationLabelForExercise = Int(self.sessionTotalTime)
+                //resultVC.durationLabelForExercise = Int(self.sessionTotalTime)
                 
                 let resultNav = UINavigationController(rootViewController: resultVC)
                 resultNav.modalPresentationStyle = .fullScreen

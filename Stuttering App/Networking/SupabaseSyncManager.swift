@@ -796,6 +796,10 @@ class SupabaseSyncManager {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
+                // Use UTC formatter so updated_at is in UTC — consistent with how
+                // reapplyDailyTaskCompletions reads and compares timestamps.
+                let utcFormatter = ISO8601DateFormatter()
+                utcFormatter.timeZone = TimeZone(identifier: "UTC")
                 let taskData: [String: AnyJSON] = [
                     "id": .integer(id),
                     "user_id": .string(userId.uuidString),
@@ -803,7 +807,7 @@ class SupabaseSyncManager {
                     "description": .string(description),
                     "duration": .integer(duration),
                     "is_completed": .bool(isCompleted),
-                    "updated_at": .string(istFormatter.string(from: Date()))
+                    "updated_at": .string(utcFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("daily_tasks")
@@ -820,9 +824,12 @@ class SupabaseSyncManager {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
+                // Use UTC formatter — consistent with reapplyDailyTaskCompletions comparison.
+                let utcFormatter = ISO8601DateFormatter()
+                utcFormatter.timeZone = TimeZone(identifier: "UTC")
                 let updateData: [String: AnyJSON] = [
                     "is_completed": .bool(true),
-                    "updated_at": .string(istFormatter.string(from: Date()))
+                    "updated_at": .string(utcFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("daily_tasks")

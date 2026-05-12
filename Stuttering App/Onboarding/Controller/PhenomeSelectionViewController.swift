@@ -52,17 +52,22 @@ class PhonemesSelectionViewController: UIViewController {
         button.layer.shadowOpacity = 0.08
         button.layer.shadowRadius = 3
         
+        // Prevent the default system blue highlight flash
+        button.tintColor = .clear
+        
         updateButtonAppearance(button)
     }
 
     func updateButtonAppearance(_ button: UIButton) {
         let isSelected = button.isSelected
+        let purple = UIColor(named: "ButtonTheme") ?? UIColor(red: 151/255.0, green: 160/255.0, blue: 219/255.0, alpha: 1.0)
         let textColor: UIColor = isSelected ? .white : .black
         
-        button.backgroundColor = isSelected ? .systemBlue : UIColor(red: 0.92, green: 0.92, blue: 0.95, alpha: 1.0)
+        button.backgroundColor = isSelected ? purple : .white
         
         if #available(iOS 15.0, *), button.configuration != nil {
             button.configuration?.baseForegroundColor = textColor
+            button.configuration?.background.backgroundColor = isSelected ? purple : .white
             
             if let configAttr = button.configuration?.attributedTitle {
                 var newAttr = configAttr
@@ -85,7 +90,7 @@ class PhonemesSelectionViewController: UIViewController {
             button.setAttributedTitle(mutable, for: .highlighted)
         }
         
-        button.tintColor = textColor
+        button.tintColor = isSelected ? .white : .clear
     }
 
     func resetSpecialButtons() {

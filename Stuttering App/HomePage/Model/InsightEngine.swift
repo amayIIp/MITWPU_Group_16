@@ -29,17 +29,20 @@ struct OverallInsightContext {
 actor InsightEngine {
 
     static let shared = InsightEngine()
-    private var session: LanguageModelSession?
 
     private init() {}
     func dayInsight(context: DayInsightContext) async -> String {
+        if context.sessionCount == 0 {
+            return "Let's get started! Do some exercises and start practicing today."
+        }
+        
         // Tier 1: On-device Foundation Model
         if let aiInsight = await generateDayInsightAI(context: context) {
             return aiInsight
         }
-        // Tier 2: Gemini API (cloud fallback)
-        if let geminiInsight = await generateDayInsightGemini(context: context) {
-            return geminiInsight
+        // Tier 2: Groq API (cloud fallback)
+        if let groqInsight = await generateDayInsightGroq(context: context) {
+            return groqInsight
         }
         // Tier 3: Deterministic rule-based fallback
         return generateDayInsightRuleBased(context: context)
@@ -50,39 +53,116 @@ actor InsightEngine {
         if let aiHeadline = await generateOverallHeadlineAI(context: context) {
             return aiHeadline
         }
-        // Tier 2: Gemini API (cloud fallback)
-        if let geminiHeadline = await generateOverallHeadlineGemini(context: context) {
-            return geminiHeadline
+        // Tier 2: Groq API (cloud fallback)
+        if let groqHeadline = await generateOverallHeadlineGroq(context: context) {
+            return groqHeadline
         }
         // Tier 3: Deterministic rule-based fallback
         return generateOverallHeadlineRuleBased(context: context)
     }
 
+    // MARK: - Session-Specific Insight (for Reading Result screen)
+
+    /// Generates an insight about a single reading session, not the whole day.
+    func sessionInsight(report: StutterJSONReport) async -> String {
+        let prompt = buildSessionPrompt(report: report)
+
+        // Tier 1: On-device Foundation Model
+        let model = SystemLanguageModel.default
+        if model.availability == .available {
+            let session = LanguageModelSession(model: model, instructions: sessionSystemInstruction)
+            do {
+                let response = try await session.respond(to: prompt)
+                let text = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                if isValidInsight(text) { return text }
+            } catch {
+                print("InsightEngine: Session insight Foundation Model failed — \(error.localizedDescription)")
+            }
+        }
+
+        // Tier 2: Groq API
+        if let groqResult = await GroqService.shared.generate(
+            systemInstruction: sessionSystemInstruction, prompt: prompt
+        ), isValidInsight(groqResult) {
+            return groqResult
+        }
+
+        // Tier 3: Rule-based fallback
+        return sessionInsightRuleBased(report: report)
+    }
+
+    private let sessionSystemInstruction = """
+    You are a supportive speech therapy coach inside an app called Spasht.
+
+    Rules:
+    - Exactly 2 sentences, under 25 words total.
+    - Speak about THIS specific reading session only.
+    - Warm, encouraging, never clinical.
+    - Do not use any numbers or percentages.
+    - No emojis, no markdown, no bullet points.
+    - Output ONLY the insight text.
+    """
+
+    private func buildSessionPrompt(report: StutterJSONReport) -> String {
+        var parts: [String] = []
+        parts.append("Fluency score: \(report.fluencyScore)/100.")
+        parts.append("Block percentage: \(Int(report.percentages.blocks))%.")
+        parts.append("Accuracy: \(Int(report.percentages.correct))%.")
+        parts.append("Repetition percentage: \(Int(report.percentages.repetition))%.")
+        parts.append("Prolongation percentage: \(Int(report.percentages.prolongation))%.")
+
+        if !report.stutteredWords.isEmpty {
+            let topWords = report.stutteredWords.prefix(5).joined(separator: ", ")
+            parts.append("Troubled words: \(topWords).")
+        } else {
+            parts.append("No stuttered words detected.")
+        }
+
+        return """
+        Here is the user's data for this specific reading session:
+
+        \(parts.joined(separator: "\n"))
+
+        Write a short, warm, specific insight about this session. \
+        Maximum 2 sentences. Do not include any numbers.
+        """
+    }
+
+    private func sessionInsightRuleBased(report: StutterJSONReport) -> String {
+        if report.stutteredWords.isEmpty && report.fluencyScore >= 90 {
+            return "Excellent reading! Your speech was smooth and confident throughout."
+        }
+        if report.percentages.blocks > 30 {
+            return "Blocks were your main challenge this session. Try slow, deliberate starts on each sentence."
+        }
+        if report.percentages.correct < 60 {
+            return "Take your time with each sentence. Steady pacing helps build confidence."
+        }
+        if report.fluencyScore >= 80 {
+            return "Strong session! Your fluency shows real control. Keep building on this momentum."
+        }
+        if report.fluencyScore >= 50 {
+            return "Good effort! Every session strengthens your speaking skills."
+        }
+        return "You showed up and practiced — that's what counts. Keep going!"
+    }
+
     private func isValidInsight(_ text: String) -> Bool {
-        let sentences = text
-            .split(whereSeparator: { ".!?".contains($0) })
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-
-        guard sentences.count == 2 else { return false }
-
         let words = text.split { $0.isWhitespace }
-        guard words.count >= 40 && words.count <= 60 else { return false }
-
-        let firstCount = sentences[0].split { $0.isWhitespace }.count
-        let secondCount = sentences[1].split { $0.isWhitespace }.count
-
-        let difference = abs(firstCount - secondCount)
-        return difference <= 5
+        // The prompt asks for < 15 words, so let's allow up to 30 just to be safe.
+        return !words.isEmpty && words.count <= 30
     }
 
     
     private func generateDayInsightAI(context: DayInsightContext) async -> String? {
-        
-        guard let session = getOrCreateSession() else {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+            print("InsightEngine: Model not available")
             return nil
         }
-        
+
+        // Fresh session each time — insights are independent, not a conversation
+        let session = LanguageModelSession(model: model, instructions: dayInsightInstructions)
         let prompt = buildDayPrompt(context: context)
         
         do {
@@ -101,11 +181,13 @@ actor InsightEngine {
     }
 
     private func generateOverallHeadlineAI(context: OverallInsightContext) async -> String? {
-        
-        guard let session = getOrCreateSession() else {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+            print("InsightEngine: Model not available")
             return nil
         }
-        
+
+        let session = LanguageModelSession(model: model, instructions: dayInsightInstructions)
         let prompt = buildOverallPrompt(context: context)
         
         do {
@@ -123,41 +205,17 @@ actor InsightEngine {
         }
     }
 
-    private func getOrCreateSession() -> LanguageModelSession? {
-        
-        if let existing = session {
-            return existing
-        }
-        
-        let model = SystemLanguageModel.default
-        
-        guard model.availability == .available else {
-            print("InsightEngine: Model not available")
-            return nil
-        }
-        
-        let instructions = """
-        You are a supportive speech therapy coach inside an app called Spasht.
+    private let dayInsightInstructions = """
+    You are a supportive speech therapy coach.
 
-        Rules:
-        - Exactly 2 sentences.
-        - Total length must be less than 15 words.
-        - Both sentences must be similar length (roughly equal words).
-        - Be specific — use the exact numbers provided.
-        - Warm and encouraging, never clinical.
-        - No emojis, no markdown, no bullet points.
-        - If letter improvement data exists, lead with it.
-        - Output ONLY the insight text.
-        """
-        
-        let newSession = LanguageModelSession(
-            model: model,
-            instructions: instructions
-        )
-        
-        session = newSession
-        return newSession
-    }
+    Rules:
+    - Exactly 2 sentences, under 25 words total.
+    - Do not use any numbers or percentages in your response.
+    - Warm and encouraging, never clinical.
+    - No emojis, no markdown, no bullet points.
+    - If letter improvement data exists, lead with it.
+    - Output ONLY the insight text.
+    """
 
     private func buildDayPrompt(context: DayInsightContext) -> String {
 
@@ -191,7 +249,7 @@ actor InsightEngine {
             \(parts.joined(separator: "\n"))
 
             Write a short, warm, specific insight for this user about their day. \
-            Maximum 2 sentences. Use the actual numbers. \
+            Maximum 2 sentences. Do not include any numbers. \
             If letter improvement data is present, lead with that.
             """
     }
@@ -214,60 +272,60 @@ actor InsightEngine {
             \(parts.joined(separator: "\n"))
 
             Write a single motivating headline sentence (max 12 words) that captures \
-            their overall progress. Be specific to their numbers. \
+            their overall progress. Do not include any numbers. \
             Output only the sentence — no quotes, no label.
             """
     }
 
-    // MARK: - Tier 2: Gemini API Fallback
+    // MARK: - Tier 2: Groq API Fallback
 
-    private let geminiSystemInstruction = """
+    private let groqSystemInstruction = """
     You are a supportive speech therapy coach inside an app called Spasht.
 
     Rules:
     - Exactly 2 sentences.
     - Total length must be less than 15 words.
     - Both sentences must be similar length (roughly equal words).
-    - Be specific — use the exact numbers provided.
+    - Do not use any numbers or percentages in your response.
     - Warm and encouraging, never clinical.
     - No emojis, no markdown, no bullet points.
     - If letter improvement data exists, lead with it.
     - Output ONLY the insight text.
     """
 
-    private func generateDayInsightGemini(context: DayInsightContext) async -> String? {
+    private func generateDayInsightGroq(context: DayInsightContext) async -> String? {
         let prompt = buildDayPrompt(context: context)
 
-        guard let text = await GeminiService.shared.generate(
-            systemInstruction: geminiSystemInstruction,
+        guard let text = await GroqService.shared.generate(
+            systemInstruction: groqSystemInstruction,
             prompt: prompt
         ) else {
-            print("InsightEngine: Gemini day insight failed, falling back to rules")
+            print("InsightEngine: Groq day insight failed, falling back to rules")
             return nil
         }
 
         // Apply the same validation as the Foundation Model path
         guard isValidInsight(text) else {
-            print("InsightEngine: Gemini day insight failed validation")
+            print("InsightEngine: Groq day insight failed validation")
             return nil
         }
 
         return text
     }
 
-    private func generateOverallHeadlineGemini(context: OverallInsightContext) async -> String? {
+    private func generateOverallHeadlineGroq(context: OverallInsightContext) async -> String? {
         let prompt = buildOverallPrompt(context: context)
 
-        guard let text = await GeminiService.shared.generate(
-            systemInstruction: geminiSystemInstruction,
+        guard let text = await GroqService.shared.generate(
+            systemInstruction: groqSystemInstruction,
             prompt: prompt
         ) else {
-            print("InsightEngine: Gemini headline failed, falling back to rules")
+            print("InsightEngine: Groq headline failed, falling back to rules")
             return nil
         }
 
         guard !text.isEmpty, text.count < 150 else {
-            print("InsightEngine: Gemini headline failed validation")
+            print("InsightEngine: Groq headline failed validation")
             return nil
         }
 
@@ -281,7 +339,6 @@ actor InsightEngine {
         // 1. Letter improvement — most personal
         if !context.topImprovedLetters.isEmpty {
             let top    = context.topImprovedLetters.prefix(2)
-            let avgPct = top.map(\.improvementPct).reduce(0, +) / Double(top.count)
 
             let lettersStr: String
             if top.count == 1 {
@@ -289,22 +346,22 @@ actor InsightEngine {
             } else {
                 lettersStr = "'\(top[0].letter)' and '\(top[1].letter)'"
             }
-            return "Your \(lettersStr) sounds have improved \(Int(avgPct))% today!!"
+            return "Your \(lettersStr) sounds have improved today!!"
         }
 
         // 2. High blocks
         if context.avgBlock > 30 {
-            return "Blocks are your main challenge today (\(Int(context.avgBlock))%). Try slow, deliberate starts on each sentence."
+            return "Blocks are your main challenge today. Try slow, deliberate starts on each sentence."
         }
 
         // 3. Low accuracy
         if context.avgAccuracy < 60 {
-            return "Accuracy was lower today (\(Int(context.avgAccuracy))%). Focus on shorter passages and give yourself time to breathe."
+            return "Focus on shorter passages and give yourself time to breathe."
         }
 
         // 4. Fluency jump
         if context.fluencyGrowth > 5 {
-            return "Great progress! Your fluency jumped \(String(format: "%.1f", context.fluencyGrowth)) points today. Keep that momentum!"
+            return "Great progress! Your fluency jumped today. Keep that momentum!"
         }
 
         // 5. Fluency dip
@@ -314,12 +371,12 @@ actor InsightEngine {
 
         // 6. High session count
         if context.sessionCount >= 3 {
-            return "Solid consistency — \(context.sessionCount) sessions today! Multiple short sessions are one of the best ways to improve."
+            return "Solid consistency! Multiple short sessions are one of the best ways to improve."
         }
 
         // 7. High score
         if context.avgFluency >= 80 {
-            return "Excellent day! A fluency score of \(Int(context.avgFluency)) shows real control. Challenge yourself with a harder passage tomorrow."
+            return "Excellent day! Your fluency score shows real control. Challenge yourself with a harder passage tomorrow."
         }
 
         return "You showed up and practiced — that's what counts. Every session builds the habit. Keep going!"

@@ -56,7 +56,26 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        try? startRecording()
+        
+        // The WhisperKit model is bundled in the app — no download needed.
+        // awaitReady() returns almost instantly since the model loads from disk.
+        // AppDelegate already triggered the singleton at launch, so by the time
+        // the user reaches this screen it is typically already loaded.
+        Task {
+            await WhisperDetectionManager.shared.awaitReady()
+            
+            await MainActor.run {
+                SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
+                    DispatchQueue.main.async {
+                        if authStatus == .authorized {
+                            try? self?.startRecording()
+                        } else {
+                            print("Speech recognition not authorized.")
+                        }
+                    }
+                }
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -101,7 +120,6 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create request") }
         recognitionRequest.shouldReportPartialResults = true
-        if #available(iOS 13, *) { recognitionRequest.requiresOnDeviceRecognition = true }
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
@@ -111,7 +129,11 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
                     self.recordedSegments = result.bestTranscription.segments
                 }
             }
-            if error != nil { self.stopRecording() }
+            if let error = error {
+                print("Apple Speech Recognizer error/timeout: \(error.localizedDescription)")
+                // Do not call self.stopRecording() here, so that the audio tap continues
+                // writing to the tempAudioFile for Whisper to transcribe the full duration.
+            }
         }
         
         let recordingFormat = inputNode.outputFormat(forBus: 0)
@@ -262,7 +284,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         let restartAction = UIAlertAction(title: "Restart", style: .destructive) { [weak self] _ in
             self?.stopRecording()
             
-            self?.navigationController?.popViewController(animated: true)
+            self?.navigationController?.setNavigationBarHidden(true, animated: false)
         }
         
         alert.addAction(cancelAction)
@@ -277,14 +299,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         let duration = Date().timeIntervalSince(startTime ?? Date())
         let fullReferenceText = paragraphs.joined(separator: " ")
         
-        let spinnerView = UIView(frame: view.bounds)
-        spinnerView.backgroundColor = UIColor(white: 0, alpha: 0.5)
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.color = .white
-        spinner.center = spinnerView.center
-        spinner.startAnimating()
-        spinnerView.addSubview(spinner)
-        view.addSubview(spinnerView)
+        let loadingOverlay = WaveLoadingOverlay.showOnWindow(message: "Analysing your speech…")
         
         Task {
             var finalTranscript = self.recordedTranscript
@@ -308,7 +323,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             print("📊 Analysis Result: \(jsonResult)")
             
             await MainActor.run {
-                spinnerView.removeFromSuperview()
+                loadingOverlay.dismiss()
                 guard let jsonData = jsonResult.data(using: .utf8),
                       let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
                     print("❌ Error decoding report")
@@ -317,6 +332,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
                 let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
                 if let resultVC = storyboard.instantiateViewController(withIdentifier: "LastOnboardingViewController") as? LastOnboardingViewController {
                     resultVC.report = report // Pass data
+                    self.navigationController?.setNavigationBarHidden(false, animated: false)
                     self.navigationController?.pushViewController(resultVC, animated: true)
                 }
             }
@@ -373,7 +389,10 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     func updateButtonStates() {
-        nextButton.isEnabled = currentIndex < paragraphs.count
-        nextButton.alpha = nextButton.isEnabled ? 1.0 : 0.5
+        let enabled = currentIndex < paragraphs.count
+        nextButton.isEnabled = enabled
+        UIView.animate(withDuration: 0.2) {
+            self.nextButton.alpha = enabled ? 1.0 : 0.4
+        }
     }
 }

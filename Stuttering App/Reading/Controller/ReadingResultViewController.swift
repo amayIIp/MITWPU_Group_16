@@ -1,7 +1,8 @@
 import UIKit
 
 class ReadingResultViewController: UIViewController {
-    
+
+    // MARK: - IBOutlets (storyboard connections — do not rename)
     @IBOutlet weak var troubledWordsStackView: UIStackView!
     @IBOutlet weak var insightsLabel: UILabel!
     @IBOutlet weak var fluencyCircleView: UIView!
@@ -9,288 +10,341 @@ class ReadingResultViewController: UIViewController {
     @IBOutlet weak var prolongationPercentage: UILabel!
     @IBOutlet weak var blockPercentage: UILabel!
     @IBOutlet weak var readingTime: UILabel!
-    
+
+    // MARK: - Input — both set by DetailViewController before presenting
     var report: StutterJSONReport?
-    
+    /// Pre-fetched insight — set by caller so there is zero async pop-in on this screen.
+    var preloadedInsight: String?
+
+    // MARK: - Private state
     private var hasSavedSession = false
-    
+
+    private weak var scoreLabel: UILabel?
+
     let customBrandBlue = UIColor(named: "ButtonTheme") ?? UIColor(red: 0.21, green: 0.32, blue: 0.63, alpha: 1.0)
-    
+
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
         navigationItem.title = "Result"
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(didTapCloseResult))
-        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"), style: .plain,
+            target: self, action: #selector(didTapCloseResult)
+        )
+
+
+
         troubledWordsStackView.isHidden = false
         troubledWordsStackView.axis = .vertical
         troubledWordsStackView.spacing = 12
         troubledWordsStackView.alignment = .fill
         troubledWordsStackView.distribution = .fill
-        
-        // Ensure multiline label wraps properly inside stack views
+
         insightsLabel.numberOfLines = 0
         insightsLabel.lineBreakMode = .byWordWrapping
-        
+        insightsLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        insightsLabel.setContentHuggingPriority(.required, for: .vertical)
+
         if let report = report {
-            print("REPORT RECEIVED with score: \(report.fluencyScore)")
+            // Insight is pre-fetched — show it immediately with no placeholder
+            insightsLabel.text = preloadedInsight ?? "You showed up and practiced — that matters."
             setupUIWithReport(report)
         } else {
-            print("NO REPORT DATA RECEIVED")
             setupFluencyCircle(score: 0)
             insightsLabel.text = "No audio data recorded."
         }
+
+        // Hide all cards initially for staggered entry
+        cardViews().forEach { $0.alpha = 0; $0.transform = CGAffineTransform(translationX: 0, y: 28) }
+        fluencyCircleView.superview?.alpha = 0
+        fluencyCircleView.superview?.transform = CGAffineTransform(translationX: 0, y: 20)
     }
-    
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        animateContentIn()
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         let labelWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
         insightsLabel.preferredMaxLayoutWidth = labelWidth
     }
-    
-    private func updateInsightsLayout() {
-        // Recalculate the width for wrapping
-        let labelWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
-        insightsLabel.preferredMaxLayoutWidth = labelWidth
-        insightsLabel.invalidateIntrinsicContentSize()
-        
-        // Force the entire view hierarchy to re-layout
-        insightsLabel.superview?.setNeedsLayout()
-        insightsLabel.superview?.superview?.setNeedsLayout()
-        view.layoutIfNeeded()
+
+
+
+    // MARK: - Staggered Entry Animation
+
+    private func cardViews() -> [UIView] {
+        // Walk up from each IBOutlet to find the card container (2 levels up = card UIView)
+        var cards: [UIView] = []
+        func card(from view: UIView?) -> UIView? { view?.superview?.superview }
+        if let c = card(from: insightsLabel) { cards.append(c) }
+        if let c = card(from: blockPercentage) { cards.append(c) }
+        if let c = card(from: troubledWordsStackView) { cards.append(c) }
+        return cards
     }
-    
-    func setupUIWithReport(_ report: StutterJSONReport) {
-        
-        if !hasSavedSession {
-            LogManager.shared.saveReadingSession(report: report)
-            
-            // 👇 Analyze troubled words and update the database dynamically
-            analyzeAndSaveProblemPhonemes(from: report.stutteredWords)
-            
-            hasSavedSession = true
+
+    private func animateContentIn() {
+        // Score circle slides up first
+        UIView.animate(withDuration: 0.55, delay: 0.05,
+                       usingSpringWithDamping: 0.8, initialSpringVelocity: 0,
+                       options: .curveEaseOut) {
+            self.fluencyCircleView.superview?.alpha = 1
+            self.fluencyCircleView.superview?.transform = .identity
         }
-            
-        setupFluencyCircle(score: CGFloat(report.fluencyScore))
-        
-        Task {
-            if let dayReport = await LogManager.shared.getDayReport(for: Date()) {
-                await MainActor.run {
-                    self.insightsLabel.text = dayReport.insight
-                    self.updateInsightsLayout()
-                }
-            } else {
-                await MainActor.run {
-                    self.insightsLabel.text = "You showed up and practiced — that matters."
-                    self.updateInsightsLayout()
-                }
+
+        // Cards stagger in
+        for (i, card) in cardViews().enumerated() {
+            UIView.animate(withDuration: 0.5, delay: 0.18 + Double(i) * 0.12,
+                           usingSpringWithDamping: 0.82, initialSpringVelocity: 0,
+                           options: .curveEaseOut) {
+                card.alpha = 1
+                card.transform = .identity
             }
         }
-        
+
+        // Score count-up
+        if let report = report {
+            animateScoreCountUp(to: report.fluencyScore)
+        }
+    }
+
+    private func animateScoreCountUp(to finalScore: Int) {
+        guard let label = scoreLabel else { return }
+        let duration: TimeInterval = 1.2
+        let start = Date()
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak label] t in
+            let elapsed = Date().timeIntervalSince(start)
+            let progress = min(elapsed / duration, 1.0)
+            let eased = 1 - pow(1 - progress, 3)  // ease-out cubic
+            label?.text = "\(Int(Double(finalScore) * eased))"
+            if progress >= 1.0 {
+                t.invalidate()
+                label?.text = "\(finalScore)"
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    // MARK: - UI Setup
+
+    func setupUIWithReport(_ report: StutterJSONReport) {
+        if !hasSavedSession {
+            let sessionId = LogManager.shared.saveReadingSession(report: report)
+            analyzeAndSaveProblemPhonemes(from: report.stutteredWords)
+            hasSavedSession = true
+
+            // Store the pre-fetched insight in the DB for future recall — no UI block
+            if let sessionId = sessionId, let insight = preloadedInsight {
+                LogManager.shared.updateSessionInsight(sessionId: sessionId, insight: insight)
+            }
+        }
+
+        setupFluencyCircle(score: CGFloat(report.fluencyScore))
+
         readingTime.text = report.duration
         blockPercentage.text = "\(Int(report.percentages.blocks))"
         repetitionPercentage.text = "\(Int(report.percentages.repetition))"
         prolongationPercentage.text = "\(Int(report.percentages.prolongation))"
-        
-        loadTroubledWords(words: report.stutteredWords)
-        LogManager.shared.saveReadingSession(report: report)
-        LogManager.shared.debugPrintAllReadingSessions()
 
+        loadTroubledWords(words: report.stutteredWords)
+        LogManager.shared.debugPrintAllReadingSessions()
     }
-    
-    // MARK: - Phoneme Analysis Logic
+
+    private func updateInsightsLayout() {
+        let containerWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
+        insightsLabel.preferredMaxLayoutWidth = containerWidth - 28
+        insightsLabel.invalidateIntrinsicContentSize()
+        insightsLabel.superview?.setNeedsLayout()
+        insightsLabel.superview?.superview?.setNeedsLayout()
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+    }
+
+    // MARK: - Phoneme Analysis
+
     private func analyzeAndSaveProblemPhonemes(from words: [String]) {
         let cleanWords = words.filter { !$0.isEmpty }.map { $0.lowercased() }
-        if cleanWords.isEmpty { return }
+        guard !cleanWords.isEmpty else { return }
 
-        var plosiveCount = 0
-        var fricativeCount = 0
-        var vowelVoicedCount = 0
-
-        // Define our target groups based on your JSON setup
-        let plosives: Set<Character> = ["p", "b", "t", "d", "k", "g"]
-        let fricatives: Set<Character> = ["s", "f"]
+        let plosives: Set<Character>    = ["p", "b", "t", "d", "k", "g"]
+        let fricatives: Set<Character>  = ["s", "f"]
         let vowelsVoiced: Set<Character> = ["a", "e", "i", "o", "u", "m", "n", "l"]
 
-        // Tally up the starting letters of the stuttered words
+        var plosiveCount = 0, fricativeCount = 0, vowelVoicedCount = 0
+
         for word in cleanWords {
-            if word.hasPrefix("sh") || word.hasPrefix("th") {
-                fricativeCount += 1
-                continue
-            }
-            if let firstChar = word.first {
-                if plosives.contains(firstChar) {
-                    plosiveCount += 1
-                } else if fricatives.contains(firstChar) {
-                    fricativeCount += 1
-                } else if vowelsVoiced.contains(firstChar) {
-                    vowelVoicedCount += 1
-                }
+            if word.hasPrefix("sh") || word.hasPrefix("th") { fricativeCount += 1; continue }
+            if let first = word.first {
+                if plosives.contains(first)    { plosiveCount += 1 }
+                else if fricatives.contains(first) { fricativeCount += 1 }
+                else if vowelsVoiced.contains(first) { vowelVoicedCount += 1 }
             }
         }
 
         var problemPhonemes: [String] = []
+        if plosiveCount   > 0 { problemPhonemes.append("Plosives (P, B, T, D, K, G)") }
+        if fricativeCount > 0 { problemPhonemes.append("Fricatives (S, F, SH, TH)") }
+        if vowelVoicedCount > 0 { problemPhonemes.append("Vowels (A,E,I,O,U) & Voiced (M,N,L)") }
 
-        // If they struggled with a sound type during this session, add it to their problem list
-        if plosiveCount > 0 {
-            problemPhonemes.append("Plosives (P, B, T, D, K, G)")
-        }
-        if fricativeCount > 0 {
-            problemPhonemes.append("Fricatives (S, F, SH, TH)")
-        }
-        if vowelVoicedCount > 0 {
-            problemPhonemes.append("Vowels (A,E,I,O,U) & Voiced (M,N,L)")
-        }
-
-        // Only save if we actually detected recognizable phonemes
         if !problemPhonemes.isEmpty {
             DatabaseManager.shared.saveUserProblemPhonemes(phonemes: problemPhonemes)
-            print("Dynamically updated user phonemes based on reading report: \(problemPhonemes)")
         }
     }
 
-    // MARK: - Layout Methods
+    // MARK: - Troubled Words
+
     func loadTroubledWords(words: [String]) {
         troubledWordsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        
-        troubledWordsStackView.axis = .vertical
+        troubledWordsStackView.axis      = .vertical
         troubledWordsStackView.alignment = .leading
         troubledWordsStackView.distribution = .fill
-        troubledWordsStackView.spacing = 12
+        troubledWordsStackView.spacing   = 12
         troubledWordsStackView.setContentHuggingPriority(.required, for: .vertical)
-        
-        let cleanWords = words.filter({ !$0.isEmpty })
-        
+
+        let cleanWords = words.filter { !$0.isEmpty }
+
         if cleanWords.isEmpty {
             let noWordsLabel = UILabel()
-            noWordsLabel.text = "No Troubled Words."
+            noWordsLabel.text = "No troubled words detected."
             noWordsLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
             noWordsLabel.textColor = .secondaryLabel
-            noWordsLabel.textAlignment = .left
+            noWordsLabel.textAlignment = .center
             noWordsLabel.numberOfLines = 1
             troubledWordsStackView.alignment = .fill
             troubledWordsStackView.addArrangedSubview(noWordsLabel)
             return
         }
-        
-        let screenWidth: CGFloat
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-            screenWidth = windowScene.screen.bounds.width
-        } else {
-            screenWidth = 390
-        }
-        
-        // 20 leading on scrollView content + 20 leading inside the card = 40 each side = 80 total
+
+        let screenWidth: CGFloat = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }.first?.screen.bounds.width ?? 390
         let maxWidth = screenWidth - 80
         var currentWidth: CGFloat = 0
-        
+
         var currentRowView = createRowStack()
         troubledWordsStackView.addArrangedSubview(currentRowView)
-        
-        let displayWords = Array(cleanWords.prefix(12))
-        
-        for word in displayWords {
+
+        for word in Array(cleanWords.prefix(12)) {
             let label = createTagLabel(text: word)
             let labelWidth = label.intrinsicContentSize.width
-            
+
             if currentWidth + labelWidth > maxWidth && currentWidth > 0 {
+                let spacer = UIView()
+                spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+                currentRowView.addArrangedSubview(spacer)
                 currentRowView = createRowStack()
                 troubledWordsStackView.addArrangedSubview(currentRowView)
                 currentWidth = 0
             }
-            
+
             currentRowView.addArrangedSubview(label)
             currentWidth += (labelWidth + 8)
         }
+
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        currentRowView.addArrangedSubview(spacer)
     }
-    
+
     private func createRowStack() -> UIStackView {
         let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.distribution = .fill
-        stack.spacing = 8
+        stack.axis = .horizontal; stack.alignment = .center
+        stack.distribution = .fill; stack.spacing = 8
         return stack
     }
-    
+
     private func createTagLabel(text: String) -> PaddingLabel {
         let label = PaddingLabel()
         label.text = text
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-//        label.textColor = UIColor(red: 0.1, green: 0.2, blue: 0.2, alpha: 1.0)
-//        label.backgroundColor = UIColor(red: 0.88, green: 0.95, blue: 0.95, alpha: 1.0)
-//        
-        label.textColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
-        label.backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0).withAlphaComponent(0.12)
+        label.textColor = customBrandBlue
+        label.backgroundColor = customBrandBlue.withAlphaComponent(0.15)
         label.textAlignment = .center
         label.layer.cornerRadius = 12
         label.clipsToBounds = true
         return label
     }
-    
+
+    // MARK: - Fluency Circle
+
     func setupFluencyCircle(score: CGFloat) {
         fluencyCircleView.layoutIfNeeded()
         fluencyCircleView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-        
-        let center = CGPoint(x: fluencyCircleView.bounds.midX, y: fluencyCircleView.bounds.midY)
+        fluencyCircleView.subviews.forEach { $0.removeFromSuperview() }
+
+        let center    = CGPoint(x: fluencyCircleView.bounds.midX, y: fluencyCircleView.bounds.midY)
         let lineWidth: CGFloat = 26
-        let radius: CGFloat = min(fluencyCircleView.bounds.width, fluencyCircleView.bounds.height) / 2 - (lineWidth / 2 + 5)
-        
-        let circlePath = UIBezierPath(arcCenter: center, radius: radius, startAngle: -.pi / 2, endAngle: 1.5 * .pi, clockwise: true)
-        
-        let backgroundCircle = CAShapeLayer()
-        backgroundCircle.path = circlePath.cgPath
-        backgroundCircle.strokeColor = CGColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
-        backgroundCircle.lineWidth = lineWidth
-        backgroundCircle.fillColor = CGColor(red: 0.9294, green: 0.9098, blue: 0.9333, alpha: 1.0)
-        backgroundCircle.lineCap = .round
-        fluencyCircleView.layer.addSublayer(backgroundCircle)
-        
-        let progressCircle = CAShapeLayer()
-        progressCircle.path = circlePath.cgPath
-        progressCircle.strokeColor = customBrandBlue.cgColor
-        progressCircle.lineWidth = lineWidth
-        progressCircle.fillColor = UIColor.clear.cgColor
-        progressCircle.lineCap = .round
-        progressCircle.strokeEnd = 0
-        fluencyCircleView.layer.addSublayer(progressCircle)
-        
-        let animation = CABasicAnimation(keyPath: "strokeEnd")
-        animation.toValue = score / 100
-        animation.duration = 1.2
-        animation.fillMode = .forwards
-        animation.isRemovedOnCompletion = false
-        progressCircle.add(animation, forKey: "progressAnim")
-        
-        let scoreLabel = UILabel(frame: fluencyCircleView.bounds)
-        scoreLabel.text = "\(Int(score))"
-        scoreLabel.textAlignment = .center
-        scoreLabel.font = UIFont.boldSystemFont(ofSize: 42)
-        scoreLabel.textColor = .black
-        fluencyCircleView.addSubview(scoreLabel)
+        let radius    = min(fluencyCircleView.bounds.width, fluencyCircleView.bounds.height) / 2 - (lineWidth / 2 + 5)
+        let circlePath = UIBezierPath(arcCenter: center, radius: radius,
+                                      startAngle: -.pi / 2, endAngle: 1.5 * .pi, clockwise: true)
+
+        // Track
+        let trackLayer = CAShapeLayer()
+        trackLayer.path        = circlePath.cgPath
+        trackLayer.strokeColor = CGColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
+        trackLayer.lineWidth   = lineWidth
+        trackLayer.fillColor   = (UIColor(named: "bg") ?? UIColor(white: 0.96, alpha: 1)).cgColor
+        trackLayer.lineCap     = .round
+        fluencyCircleView.layer.addSublayer(trackLayer)
+
+        // Progress
+        let progressLayer = CAShapeLayer()
+        progressLayer.path        = circlePath.cgPath
+        progressLayer.strokeColor = customBrandBlue.cgColor
+        progressLayer.lineWidth   = lineWidth
+        progressLayer.fillColor   = UIColor.clear.cgColor
+        progressLayer.lineCap     = .round
+        progressLayer.strokeEnd   = 0
+        fluencyCircleView.layer.addSublayer(progressLayer)
+
+        let anim = CABasicAnimation(keyPath: "strokeEnd")
+        anim.toValue              = score / 100
+        anim.duration             = 1.2
+        anim.fillMode             = .forwards
+        anim.isRemovedOnCompletion = false
+        progressLayer.add(anim, forKey: "progressAnim")
+
+        // Score label — start at 0, count up in viewDidAppear
+        let label = UILabel(frame: fluencyCircleView.bounds)
+        label.text          = "0"
+        label.textAlignment = .center
+        label.font          = UIFont.systemFont(ofSize: 46, weight: .bold)
+        label.textColor     = .label
+        fluencyCircleView.addSubview(label)
+        scoreLabel = label  // keep a weak ref for the count-up animation
     }
-    
+
+    // MARK: - Navigation
+
     @objc func didTapCloseResult() {
         if let initialPresenter = self.presentingViewController?.presentingViewController {
-            initialPresenter.dismiss(animated: true, completion: nil)
+            initialPresenter.dismiss(animated: true)
+        } else {
+            dismiss(animated: true)
         }
     }
 }
 
+// MARK: - PaddingLabel
+
 class PaddingLabel: UILabel {
-    
-    var topInset: CGFloat = 6.0
-    var bottomInset: CGFloat = 6.0
-    var leftInset: CGFloat = 12.0
-    var rightInset: CGFloat = 12.0
+    var topInset:    CGFloat = 6
+    var bottomInset: CGFloat = 6
+    var leftInset:   CGFloat = 12
+    var rightInset:  CGFloat = 12
 
     override func drawText(in rect: CGRect) {
-        let insets = UIEdgeInsets(top: topInset, left: leftInset, bottom: bottomInset, right: rightInset)
-        super.drawText(in: rect.inset(by: insets))
+        super.drawText(in: rect.inset(by: UIEdgeInsets(
+            top: topInset, left: leftInset, bottom: bottomInset, right: rightInset
+        )))
     }
 
     override var intrinsicContentSize: CGSize {
-        let size = super.intrinsicContentSize
-        return CGSize(width: size.width + leftInset + rightInset,
-                      height: size.height + topInset + bottomInset)
+        let s = super.intrinsicContentSize
+        return CGSize(width: s.width + leftInset + rightInset,
+                      height: s.height + topInset + bottomInset)
     }
 }

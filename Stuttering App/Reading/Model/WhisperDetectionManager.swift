@@ -4,44 +4,61 @@ import WhisperKit
 class WhisperDetectionManager {
     static let shared = WhisperDetectionManager()
     
-    private var whisperKit: WhisperKit?
+    private var initTask: Task<WhisperKit, Error>?
     private(set) var isReady = false
     
     private init() {
-        Task {
-            do {
-                print("Loading WhisperKit model (small.en)...")
-                // Initializes and automatically downloads the model if it's not present
-                self.whisperKit = try await WhisperKit(model: "small.en")
-                self.isReady = true
-                print("WhisperKit is ready!")
-            } catch {
-                print("Failed to initialize WhisperKit: \(error.localizedDescription)")
+        initTask = Task {
+            // Locate the bundled model folder shipped inside the app bundle.
+            // The folder "openai_whisper-small.en" must be added to the Xcode
+            // project as a folder reference (blue folder icon) with "Copy items
+            // if needed" checked and the app target selected.
+            guard let modelFolderURL = Bundle.main.resourceURL?
+                .appendingPathComponent("openai_whisper-small.en") else {
+                print("❌ WhisperKit: bundled model folder not found in app bundle.")
+                throw NSError(
+                    domain: "WhisperDetectionManager",
+                    code: -3,
+                    userInfo: [NSLocalizedDescriptionKey: "Bundled model folder 'openai_whisper-small.en' not found. Make sure it is added to the Xcode target."]
+                )
             }
+
+            print("Loading WhisperKit from bundled model at: \(modelFolderURL.path)")
+            let config = WhisperKitConfig(
+                model: "openai_whisper-small.en",
+                modelFolder: modelFolderURL.path
+            )
+            let kit = try await WhisperKit(config)
+            self.isReady = true
+            print("✅ WhisperKit is ready (loaded from bundle)!")
+            return kit
         }
     }
     
-    /// Transcribes the audio file located at the specified URL using WhisperKit
+    /// Waits for WhisperKit to finish initialising (near-instant when bundled).
+    func awaitReady() async {
+        guard let initTask = initTask else { return }
+        _ = try? await initTask.value
+    }
+    
     func transcribe(audioURL: URL) async throws -> String? {
-        guard isReady, let whisperKit = whisperKit else {
-            throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit is not ready yet."])
+        guard let initTask = initTask else {
+            throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit initialization not started."])
         }
+        
+        // Wait for the model to finish loading before attempting transcription
+        let whisperKit = try await initTask.value
         
         let path = audioURL.path
         
         // WhisperKit provides an easy audioPath transcription taking care of resampling
         let transcriptionResult = try await whisperKit.transcribe(audioPath: path)
         
-        // WhisperKit transcribe returns an array of TranscriptionResult if chunked,
-        // or a single result depending on the library syntax.
-        // It's safest to map and joined if it's an array, or just use the first.
-        // Usually, in WhisperKit `.transcribe` returns `[TranscriptionResult]`.
         if let arrayResult = transcriptionResult as? [TranscriptionResult] {
             return arrayResult.map { $0.text }.joined(separator: " ")
         } else if let singleResult = transcriptionResult as? TranscriptionResult {
             return singleResult.text
-        } else if let genericArray = transcriptionResult as? [Any] { // Sometimes mapped loosely
-            // Best effort generic fallback for `.text` property resolution
+        } else if let genericArray = transcriptionResult as? [Any] {
             let stringValues = genericArray.compactMap { (item: Any) -> String? in
                 let mirror = Mirror(reflecting: item)
                 for child in mirror.children {
@@ -54,7 +71,6 @@ class WhisperDetectionManager {
             return stringValues.joined(separator: " ")
         }
         
-        // Fallback if the return type is an unexpected structural type containing a text property
         let mirror = Mirror(reflecting: transcriptionResult)
         for child in mirror.children {
             if child.label == "text", let text = child.value as? String {

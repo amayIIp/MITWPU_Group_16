@@ -22,22 +22,16 @@ class LoginViewController: UIViewController {
     private let client = SupabaseManager.shared.client
     var onSwitchToSignup: (() -> Void)?
     
-    private var loadingOverlay: UIView?
-    
-    private func showLoading() {
-        let overlay = UIView(frame: view.bounds)
-        overlay.backgroundColor = UIColor(white: 0, alpha: 0.5)
-        let indicator = UIActivityIndicatorView(style: .large)
-        indicator.color = .white
-        indicator.center = overlay.center
-        indicator.startAnimating()
-        overlay.addSubview(indicator)
-        view.addSubview(overlay)
+    private var loadingOverlay: WaveLoadingOverlay?
+
+    private func showLoading(message: String = "Signing you in…") {
+        guard loadingOverlay == nil else { return }
+        let overlay = WaveLoadingOverlay.show(in: view, message: message)
         loadingOverlay = overlay
     }
-    
+
     private func hideLoading() {
-        loadingOverlay?.removeFromSuperview()
+        loadingOverlay?.dismiss()
         loadingOverlay = nil
     }
 
@@ -51,6 +45,11 @@ class LoginViewController: UIViewController {
     func setupUI() {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
+        
+        // Hide "Continue as Guest" if they are already a guest upgrading their account
+        if SessionManager.shared.isGuestMode {
+            continueAsGuest?.isHidden = true
+        }
         
         passwordTextField.isSecureTextEntry = true
 
@@ -180,7 +179,7 @@ class LoginViewController: UIViewController {
         let rawNonce = AuthHelpers.randomNonceString()
         let hashedNonce = AuthHelpers.sha256(rawNonce)
 
-        showLoading()
+        showLoading(message: "Connecting with Google…")
 
         Task {
             do {
@@ -307,20 +306,28 @@ class LoginViewController: UIViewController {
         }
         
         // 2. Dismiss the active modal
-        self.dismiss(animated: true) {
-            // 3. Instantiate the next modal from your Storyboard
+        self.dismiss(animated: true) {// 1. Instantiate the next modal from your Storyboard
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
-            
-            // 4. (Optional) Apply modern iOS 26 sheet behaviors
-            nextModalVC.modalPresentationStyle = .pageSheet
-            if let sheet = nextModalVC.sheetPresentationController {
+
+            // 2. Wrap your destination in a Navigation Controller
+            // This enables the navigation bar for titles and action buttons.
+            let navController = UINavigationController(rootViewController: nextModalVC)
+
+            // 3. Enable Large Titles on the Navigation Bar
+            navController.navigationBar.prefersLargeTitles = true
+
+            // 4. Configure the Sheet (Modal) behavior
+            // We apply the presentation style to the navController to ensure the "card" look.
+            navController.modalPresentationStyle = .pageSheet
+            if let sheet = navController.sheetPresentationController {
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
+
+            // 5. Present the Navigation Controller from the underlying screen
+            presentingVC.present(navController, animated: true)
             
-            // 5. Present the new modal from the original underlying screen
-            presentingVC.present(nextModalVC, animated: true)
         }
     }
 }

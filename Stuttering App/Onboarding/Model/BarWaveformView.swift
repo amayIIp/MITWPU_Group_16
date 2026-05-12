@@ -4,9 +4,13 @@ class BarWaveformView: UIView {
     
     private let waveformLayer = CAShapeLayer()
     
-    @IBInspectable var barWidth: CGFloat = 0.8 { didSet { updateLayerProperties() } }
+    @IBInspectable var barWidth: CGFloat = 1.9 { didSet { updateLayerProperties() } }
     @IBInspectable var barSpacing: CGFloat = 3.0
-    @IBInspectable var waveformColor: UIColor = .systemRed { didSet { updateLayerProperties() } }
+    @IBInspectable var waveformColor: UIColor = UIColor(named: "ButtonTheme") ?? .systemRed {
+        didSet {
+            updateLayerProperties()
+        }
+    }
     
     var amplitudes: [CGFloat] = [] {
         didSet {
@@ -49,7 +53,7 @@ class BarWaveformView: UIView {
         
         let path = UIBezierPath()
         let centerY = bounds.height / 2.0
-        let maxBarHeight = bounds.height / 2.0
+        let maxBarHeight = bounds.height / 2.5
         let centerX = bounds.width
         let stepDistance = barWidth + barSpacing
         
