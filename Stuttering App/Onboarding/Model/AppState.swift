@@ -57,6 +57,13 @@ struct AppState {
         set { UserDefaults.standard.set(newValue, forKey: kConvoCompleted) }
     }
     
+    /// Call on logout or new user login to reset all module onboarding gates.
+    static func resetModuleOnboarding() {
+        isExercisesCompleted = false
+        isReadAloudCompleted = false
+        isConvoCompleted    = false
+    }
+    
     
     /// Whether the current session is in guest mode
     static var isGuestMode: Bool {

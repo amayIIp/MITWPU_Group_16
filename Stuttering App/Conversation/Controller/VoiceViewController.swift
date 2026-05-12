@@ -116,6 +116,41 @@ class VoiceViewController: UIViewController {
     private var topicChipViews: [UIView] = []
     private var selectedTopic: String?
     
+    // MARK: - Onboarding Gate
+    private func setupOnboardingOverlayIfNeeded() {
+        guard !AppState.isConvoCompleted else { return }
+        
+        let features = [
+            OnboardingFeature(iconName: "bubble.left.and.bubble.right.fill", title: "Topic-Based Practice", description: "Select specific topics from the interactive bubbles to start a focused discussion."),
+            OnboardingFeature(iconName: "waveform.circle.fill", title: "Real-Time Voice AI", description: "Engage in seamless, natural spoken conversations to simulate real-world scenarios."),
+            OnboardingFeature(iconName: "chart.bar.doc.horizontal", title: "Conversational Analytics", description: "Review detailed insights into your conversational fluency and trouble spots.")
+        ]
+        
+        let overlay = ModuleOnboardingOverlayView(
+            subtitle: "Master your speaking skills through real-time AI interaction and feedback.",
+            features: features,
+            footerText: "Progress is synced with your profile."
+        )
+        overlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(overlay)
+        
+        NSLayoutConstraint.activate([
+            overlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        overlay.onContinue = { [weak self] in
+            AppState.isConvoCompleted = true
+            UIView.animate(withDuration: 0.3, animations: {
+                overlay.alpha = 0
+            }) { _ in
+                overlay.removeFromSuperview()
+            }
+        }
+    }
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -129,21 +164,22 @@ class VoiceViewController: UIViewController {
         
         configureUI()
         feedbackGenerator.prepare()
+        setupOnboardingOverlayIfNeeded()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         if !viewModel.isModelReady {
-            Task {
-                await viewModel.prepareModel()
-            }
+            Task { await viewModel.prepareModel() }
         }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
         if isMovingFromParent || isBeingDismissed {
             viewModel.stopSession()
             viewModel.resetConversationHistory()

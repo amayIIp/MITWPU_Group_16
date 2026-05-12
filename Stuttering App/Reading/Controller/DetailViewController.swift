@@ -394,10 +394,9 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             // Step 5 — Everything ready: dismiss overlay, then present result
             await MainActor.run {
                 loadingOverlay.dismiss {
-                    guard let ResultVC = self.storyboard?.instantiateViewController(
-                        withIdentifier: "ReadingResultViewController"
-                    ) as? ReadingResultViewController else { return }
-
+                    // Using ReadingResultViewController2 (programmatic, no storyboard)
+                    // Switch back to ReadingResultViewController if needed
+                    let ResultVC = ReadingResultViewController2()
                     ResultVC.report = report
                     ResultVC.preloadedInsight = insightText
 

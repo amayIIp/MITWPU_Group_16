@@ -84,11 +84,25 @@ class HomePageViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        showcaseAnimationIfNeeded()
+        // showcaseAnimationIfNeeded()
+        requestNotificationPermissionIfNeeded()
+    }
+
+    /// Asks for notification permission exactly once — after the user first
+    /// lands on the Home screen, so the prompt feels contextually appropriate.
+    private func requestNotificationPermissionIfNeeded() {
+        let key = "hasRequestedNotificationPermission"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+
+        // Small delay so the home screen is fully settled before the system alert appears
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            NotificationManager.shared.requestAuthorization()
+        }
     }
     
     // MARK: - First-Launch Showcase Animation
-
+    /*
     // Durations (seconds) — slowed down for a premium feel
     private let showcaseDuration:     CFTimeInterval = 1.5  // rise to full
     private let showcaseHoldDuration: CFTimeInterval = 0.4  // pause at full
@@ -170,6 +184,7 @@ class HomePageViewController: UIViewController {
     private func sineEase(_ t: CGFloat) -> CGFloat {
         return (1 - cos(t * .pi)) / 2
     }
+    */
     
     private func syncFromCloudIfLoggedIn() {
         guard SessionManager.shared.isAccountMode else {
@@ -554,6 +569,44 @@ class HomePageViewController: UIViewController {
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let destinationVC = storyboard.instantiateViewController(withIdentifier: targetID)
         self.navigationController?.pushViewController(destinationVC, animated: true)
+    }
+
+    // MARK: - Tab Onboarding Gates
+
+    @IBAction func exerciseTapped(_ sender: UIButton) {
+        print("DEBUG [HomePageViewController]: exerciseTapped — isExercisesCompleted=\(AppState.isExercisesCompleted)")
+        if AppState.isExercisesCompleted {
+            // Already seen onboarding — go straight to Exercise tab
+            self.tabBarController?.selectedIndex = 1
+        } else {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "ExerciseOnboarding")
+            self.navigationController?.pushViewController(onboardingVC, animated: true)
+        }
+    }
+
+    @IBAction func readAloudTapped(_ sender: UIButton) {
+        print("DEBUG [HomePageViewController]: readAloudTapped — isReadAloudCompleted=\(AppState.isReadAloudCompleted)")
+        if AppState.isReadAloudCompleted {
+            // Already seen onboarding — go straight to Read Aloud tab
+            self.tabBarController?.selectedIndex = 2
+        } else {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "ReadAloudOnboarding")
+            self.navigationController?.pushViewController(onboardingVC, animated: true)
+        }
+    }
+
+    @IBAction func conversationTapped(_ sender: UIButton) {
+        print("DEBUG [HomePageViewController]: conversationTapped — isConvoCompleted=\(AppState.isConvoCompleted)")
+        if AppState.isConvoCompleted {
+            // Already seen onboarding — go straight to Conversation tab
+            self.tabBarController?.selectedIndex = 3
+        } else {
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "ConversationOnboarding")
+            self.navigationController?.pushViewController(onboardingVC, animated: true)
+        }
     }
 
 }

@@ -181,49 +181,87 @@ class LastOnboardingViewController: UIViewController {
     }
     
     func loadTroubledWords(words: [String]) {
-        troubledWords.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        let cleanWords = words.filter({ !$0.isEmpty })
-        
-        if cleanWords.isEmpty {
+        // Clear existing
+        troubledWords.arrangedSubviews.forEach {
+            troubledWords.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        let clean = words.filter { !$0.isEmpty }
+
+        if clean.isEmpty {
             let label = UILabel()
-            label.text = "None detected!"
+            label.text = "None detected"
             label.textColor = .secondaryLabel
-            label.font = UIFont.systemFont(ofSize: 16)
+            label.font = UIFont.systemFont(ofSize: 15)
             label.textAlignment = .center
             troubledWords.addArrangedSubview(label)
             return
         }
-        
-        let maxPerRow = 3
-        var currentRowStack: UIStackView?
-        let displayWords = Array(cleanWords.prefix(9))
-        
-        for (index, word) in displayWords.enumerated() {
-            if index % maxPerRow == 0 {
-                currentRowStack = UIStackView()
-                currentRowStack?.axis = .horizontal
-                currentRowStack?.alignment = .center
-                currentRowStack?.distribution = .fillProportionally
-                currentRowStack?.spacing = 8
-                troubledWords.addArrangedSubview(currentRowStack!)
+
+        // Text-width-based wrapping flow (same as ReadingResultViewController2)
+        let chipFont    = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        let chipHPad: CGFloat   = 24   // 12 left + 12 right
+        let chipSpacing: CGFloat = 8
+        let maxRowWidth = UIScreen.main.bounds.width - 48  // 24pt margin each side
+
+        var currentRow = makeChipRowStack()
+        troubledWords.addArrangedSubview(currentRow)
+        var rowWidth: CGFloat = 0
+
+        for word in Array(clean.prefix(14)) {
+            let textW = (word as NSString).size(withAttributes: [.font: chipFont]).width.rounded(.up)
+            let chipW = textW + chipHPad
+
+            if rowWidth > 0 && rowWidth + chipSpacing + chipW > maxRowWidth {
+                // Fill trailing space so chips stay left-aligned
+                let spacer = UIView()
+                spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+                currentRow.addArrangedSubview(spacer)
+
+                currentRow = makeChipRowStack()
+                troubledWords.addArrangedSubview(currentRow)
+                rowWidth = 0
             }
-            let chip = createChipLabel(text: word)
-            currentRowStack?.addArrangedSubview(chip)
+
+            currentRow.addArrangedSubview(makeChip(text: word))
+            rowWidth += (rowWidth == 0 ? 0 : chipSpacing) + chipW
         }
+
+        // Trailing spacer on last row
+        let trailing = UIView()
+        trailing.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        currentRow.addArrangedSubview(trailing)
     }
-    
-    func createChipLabel(text: String) -> UILabel {
+
+    private func makeChipRowStack() -> UIStackView {
+        let s = UIStackView()
+        s.axis = .horizontal
+        s.spacing = 8
+        s.alignment = .center
+        s.distribution = .fill
+        return s
+    }
+
+    private func makeChip(text: String) -> UIView {
         let label = UILabel()
-        label.text = "  \(text)  "
-        label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        label.text = text
+        label.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
         label.textColor = customBrandBlue
-        label.backgroundColor = customBrandBlue.withAlphaComponent(0.15)
-        label.textAlignment = .center
-        label.layer.cornerRadius = 14
-        label.layer.masksToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.heightAnchor.constraint(equalToConstant: 32).isActive = true
-        return label
+
+        let pill = UIView()
+        pill.backgroundColor = customBrandBlue.withAlphaComponent(0.12)
+        pill.layer.cornerRadius = 12
+        pill.clipsToBounds = true
+        pill.translatesAutoresizingMaskIntoConstraints = false
+        pill.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: pill.topAnchor, constant: 6),
+            label.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -6),
+            label.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: 12),
+            label.trailingAnchor.constraint(equalTo: pill.trailingAnchor, constant: -12)
+        ])
+        return pill
     }
 
     private func setupCustomBackButton() {
@@ -275,8 +313,8 @@ class LastOnboardingViewController: UIViewController {
     }
     
     @objc func didTapResetButton() {
-        let alert = UIAlertController(title: "Reset Test", message: "This will reset your current progress. Continue?", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Reset", style: .destructive) { [weak self] _ in
+        let alert = UIAlertController(title: "Retake Test", message: "This will reset your current progress. Continue?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Retake", style: .destructive) { [weak self] _ in
             self?.navigateHere()
         })
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))

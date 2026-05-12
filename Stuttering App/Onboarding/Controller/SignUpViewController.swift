@@ -23,6 +23,23 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         setupUI()
         setupTextField()
         googleSignIn.addTarget(self, action: #selector(googleSignInTapped), for: .touchUpInside)
+        setupDismissButtonIfNeeded()
+    }
+
+    private func setupDismissButtonIfNeeded() {
+        guard presentingViewController != nil else { return }
+        let closeButton = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"),
+            style: .plain,
+            target: self,
+            action: #selector(dismissSelf)
+        )
+        closeButton.tintColor = .label
+        navigationItem.leftBarButtonItem = closeButton
+    }
+
+    @objc private func dismissSelf() {
+        dismiss(animated: true)
     }
     
     func setupTextField() {

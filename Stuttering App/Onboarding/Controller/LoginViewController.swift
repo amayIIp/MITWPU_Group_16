@@ -40,6 +40,23 @@ class LoginViewController: UIViewController {
         setupUI()
         forgotPassword.addTarget(self, action: #selector(forgotPasswordTapped), for: .touchUpInside)
         googleSignIn.addTarget(self, action: #selector(googleSignInTapped), for: .touchUpInside)
+        setupDismissButtonIfNeeded()
+    }
+
+    private func setupDismissButtonIfNeeded() {
+        guard presentingViewController != nil else { return }
+        let closeButton = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"),
+            style: .plain,
+            target: self,
+            action: #selector(dismissSelf)
+        )
+        closeButton.tintColor = .label
+        navigationItem.leftBarButtonItem = closeButton
+    }
+
+    @objc private func dismissSelf() {
+        dismiss(animated: true)
     }
     
     func setupUI() {
@@ -108,6 +125,7 @@ class LoginViewController: UIViewController {
                 LogManager.shared.resetDatabaseForNewUser()
                 DatabaseManager.shared.resetDatabaseForNewUser()
                 AwardsManager.shared.resetDatabaseForNewUser()
+                AppState.resetModuleOnboarding()
                 LogManager.shared.initializeUserIfNeeded()
 
                 // Flat async chain — errors bubble to the single catch block below
@@ -221,6 +239,7 @@ class LoginViewController: UIViewController {
                 LogManager.shared.resetDatabaseForNewUser()
                 DatabaseManager.shared.resetDatabaseForNewUser()
                 AwardsManager.shared.resetDatabaseForNewUser()
+                AppState.resetModuleOnboarding()
                 LogManager.shared.initializeUserIfNeeded()
 
                 // Flat async chain — errors bubble to the single catch block below.
