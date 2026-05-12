@@ -277,6 +277,9 @@ class LogManager {
         
         // Update currentUserId
         currentUserId = newUserId
+
+        // Clear any cached insight that was generated under the guest identity
+        cachedHomeInsight = nil
     }
     
     func initializeUserIfNeeded() {
@@ -916,15 +919,20 @@ extension LogManager {
 
         let yesterday    = Calendar.current.date(byAdding: .day, value: -1, to: date)!
         let prevSessions = getSessionsForDay(yesterday)
+        let hasPreviousDay = !prevSessions.isEmpty
 
         var fluencyGrowth      = 0.0
         var improvementPercent = 0.0
 
-        if !prevSessions.isEmpty {
+        if hasPreviousDay {
             let prevAvg        = prevSessions.map { $0["fluencyScore"] as! Int }.reduce(0, +).asDouble / Double(prevSessions.count)
             fluencyGrowth      = avgFluency - prevAvg
             improvementPercent = prevAvg > 0 ? (fluencyGrowth / prevAvg) * 100 : 0
         }
+
+        // Detect first-ever session: total all-time sessions == today's sessions
+        let totalSessions = getTotalReadingSessions(userId: getCurrentUserId() ?? "")
+        let isFirstEverSession = totalSessions == sessions.count
 
         let context = DayInsightContext(
             avgFluency: avgFluency,
@@ -933,7 +941,9 @@ extension LogManager {
             fluencyGrowth: fluencyGrowth,
             improvementPercent: improvementPercent,
             sessionCount: sessions.count,
-            topImprovedLetters: buildTopImprovedLetters(for: date)
+            topImprovedLetters: buildTopImprovedLetters(for: date),
+            isFirstEverSession: isFirstEverSession,
+            hasPreviousDay: hasPreviousDay
         )
 
         let insight = await InsightEngine.shared.dayInsight(context: context)

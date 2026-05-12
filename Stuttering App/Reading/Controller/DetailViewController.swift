@@ -430,10 +430,10 @@ extension DetailViewController: WorkoutSheetDelegate {
     }
     
     func didTapShowResult() {
-        guard totalExerciseDuration > 0 else {
+        guard totalExerciseDuration >= 5 else {
             let alert = UIAlertController(
-                title: "No Reading Recorded",
-                message: "Please start reading before viewing your results.",
+                title: "Session Too Short",
+                message: "Please read for at least a few seconds so we can analyse your speech.",
                 preferredStyle: .alert
             )
             alert.addAction(UIAlertAction(title: "OK", style: .default))

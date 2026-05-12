@@ -46,7 +46,12 @@ class HomePageViewController: UIViewController {
     private var exerciseLogs: [ExerciseLog] = []
     private var readingLogs: [ExerciseLog] = []
     private var conversationLogs: [ExerciseLog] = []
-    
+
+    /// Stored handle for the active insight-loading task.
+    /// Cancelled before starting a new one to prevent race conditions
+    /// when the user switches tabs rapidly.
+    private var insightTask: Task<Void, Never>?
+
     var currentDailyTasks: [DailyTask] = []
     
     override func viewDidLoad() {
@@ -388,10 +393,14 @@ class HomePageViewController: UIViewController {
         // Show a placeholder immediately so the label doesn't appear blank
         self.insightLabel.text = "Loading your insight…"
 
-        Task {
+        // Cancel any previous in-flight task before starting a new one.
+        // Prevents multiple concurrent AI calls from rapid tab switching.
+        insightTask?.cancel()
+        insightTask = Task {
             let today = Date()
 
             if let todayReport = await LogManager.shared.getDayReport(for: today) {
+                guard !Task.isCancelled else { return }
                 LogManager.shared.cachedHomeInsight = todayReport.insight
                 await MainActor.run { self.insightLabel.text = todayReport.insight }
                 return
@@ -399,11 +408,13 @@ class HomePageViewController: UIViewController {
 
             if let lastDate = LogManager.shared.getMostRecentReadingSessionDate(),
                let lastReport = await LogManager.shared.getDayReport(for: lastDate) {
+                guard !Task.isCancelled else { return }
                 LogManager.shared.cachedHomeInsight = lastReport.insight
                 await MainActor.run { self.insightLabel.text = lastReport.insight }
                 return
             }
 
+            guard !Task.isCancelled else { return }
             let fallback = "Your speaking practice hasn't started yet today."
             LogManager.shared.cachedHomeInsight = fallback
             await MainActor.run { self.insightLabel.text = fallback }
