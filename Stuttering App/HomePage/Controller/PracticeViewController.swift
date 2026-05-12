@@ -13,6 +13,7 @@ class PracticeViewController: UIViewController, UITableViewDataSource, UITableVi
     @IBOutlet weak var emptyStateView: UIView!
 
     @IBOutlet weak var setGoals: UIBarButtonItem!
+    
     private var exerciseLogs: [ExerciseLog] = []
     private var readingLogs: [ExerciseLog] = []
     private var conversationLogs: [ExerciseLog] = []
@@ -28,8 +29,11 @@ class PracticeViewController: UIViewController, UITableViewDataSource, UITableVi
         
         tableView.dataSource = self
         tableView.delegate = self
-        self.navigationItem.largeTitleDisplayMode = .never
         
+        // --- FIX: Prevents rows from being selected or staying gray ---
+        tableView.allowsSelection = false
+        
+        self.navigationItem.largeTitleDisplayMode = .never
         emptyStateView.isHidden = true
     }
     
@@ -38,24 +42,21 @@ class PracticeViewController: UIViewController, UITableViewDataSource, UITableVi
     @IBAction func setGoalsTapped(_ sender: UIBarButtonItem) {
         let setGoalsStoryboard = UIStoryboard(name: "Profile", bundle: nil)
         
-        // Ensure "SetGoalsViewController" matches your actual class name
         if let setGoalsVC = setGoalsStoryboard.instantiateViewController(withIdentifier: "SetGoals") as? SetGoalsViewController {
             
             let navController = UINavigationController(rootViewController: setGoalsVC)
             
-            // 1. Configure the Sheet (The "Grabber")
             if let sheet = navController.sheetPresentationController {
                 sheet.detents = [.medium(), .large()]
                 sheet.prefersGrabberVisible = true
                 sheet.prefersScrollingExpandsWhenScrolledToEdge = false
             }
             
-            // 2. Add the Cross (Close) Button
             setGoalsVC.title = "Set Goals"
             setGoalsVC.navigationItem.rightBarButtonItem = UIBarButtonItem(
                 barButtonSystemItem: .close,
                 target: self,
-                action: #selector(dismissModal) // This now refers to the function below
+                action: #selector(dismissModal)
             )
             
             navController.modalPresentationStyle = .pageSheet
@@ -63,10 +64,10 @@ class PracticeViewController: UIViewController, UITableViewDataSource, UITableVi
         }
     }
 
-    // 3. Move this OUTSIDE of the setGoalsTapped function
     @objc func dismissModal() {
         self.dismiss(animated: true, completion: nil)
     }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadDataForCurrentDate()
@@ -125,6 +126,9 @@ class PracticeViewController: UIViewController, UITableViewDataSource, UITableVi
             return UITableViewCell()
         }
         
+        // --- FIX: Backup to ensure no selection highlight appears ---
+        cell.selectionStyle = .none
+        
         let log: ExerciseLog
         
         switch indexPath.section {
@@ -157,19 +161,14 @@ class PracticeViewController: UIViewController, UITableViewDataSource, UITableVi
         case 0 where !exerciseLogs.isEmpty:
             titleText = "Completed Exercises"
             titleText1 = ""
-            //titleText1 = "\(exerciseLogs.count)/\(exerciseTarget)"
             
         case 1 where !readingLogs.isEmpty:
-            let totalReadingMinutes = calculateTotalDuration(for: readingLogs)
             titleText = "Completed Read Aloud"
             titleText1 = ""
-            //titleText1 = "\(totalReadingMinutes)/\(readingTarget) mins"
             
         case 2 where !conversationLogs.isEmpty:
-            let totalConvoMinutes = calculateTotalDuration(for: conversationLogs)
             titleText = "Completed Conversations"
             titleText1 = ""
-            //titleText1 = "\(totalConvoMinutes)/\(conversationTarget) mins"
             
         default:
             break

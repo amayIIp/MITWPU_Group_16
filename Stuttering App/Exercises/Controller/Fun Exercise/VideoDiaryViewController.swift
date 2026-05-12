@@ -130,7 +130,7 @@ class VideoDiaryViewController: UIViewController, AVCaptureFileOutputRecordingDe
     }
 
     func styleUI() {
-        cameraCardView.layer.cornerRadius = 32
+        cameraCardView.layer.cornerRadius = 24
         cameraCardView.layer.cornerCurve = .continuous
         cameraCardView.clipsToBounds = true
         
@@ -148,8 +148,8 @@ class VideoDiaryViewController: UIViewController, AVCaptureFileOutputRecordingDe
     func updateButtonState(isRecording: Bool) {
         // 1. Use .filled() or .tinted() based on your preference (Images show tinted)
         var config = UIButton.Configuration.tinted()
-        config.baseForegroundColor = .systemRed
-        config.baseBackgroundColor = .systemRed
+        config.baseForegroundColor = .buttonTheme
+        config.baseBackgroundColor = .buttonTheme
         config.cornerStyle = .capsule
         
         // 2. Control the Logo Size explicitly
