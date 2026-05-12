@@ -3,6 +3,7 @@ import UIKit
 class ReadingResultViewController: UIViewController {
 
     // MARK: - IBOutlets (storyboard connections — do not rename)
+    @IBOutlet weak var TroubledWordsLabel: UILabel!
     @IBOutlet weak var troubledWordsStackView: UIStackView!
     @IBOutlet weak var insightsLabel: UILabel!
     @IBOutlet weak var fluencyCircleView: UIView!
@@ -106,27 +107,71 @@ class ReadingResultViewController: UIViewController {
             }
         }
 
-        // Score count-up
+        // Ring showcase + synced score count-up
         if let report = report {
-            animateScoreCountUp(to: report.fluencyScore)
+            animateRingAndScore(finalScore: CGFloat(report.fluencyScore))
         }
     }
 
-    private func animateScoreCountUp(to finalScore: Int) {
-        guard let label = scoreLabel else { return }
-        let duration: TimeInterval = 1.2
-        let start = Date()
-        let timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak label] t in
-            let elapsed = Date().timeIntervalSince(start)
-            let progress = min(elapsed / duration, 1.0)
-            let eased = 1 - pow(1 - progress, 3)  // ease-out cubic
-            label?.text = "\(Int(Double(finalScore) * eased))"
-            if progress >= 1.0 {
-                t.invalidate()
-                label?.text = "\(finalScore)"
-            }
+    // MARK: - Ring Showcase + Score Count-Up
+
+    private var scoreDisplayLink: CADisplayLink?
+    private var scoreAnimStartTime: CFTimeInterval = 0
+    private var scoreAnimFinalScore: Int = 0
+    private let ringRiseDuration:  CFTimeInterval = 1.4
+    private let ringHoldDuration:  CFTimeInterval = 0.4
+    private let ringFallDuration:  CFTimeInterval = 0.9
+
+    /// Animates the ring: 0 → full → actual score, and counts the label from 0 → actual score.
+    private func animateRingAndScore(finalScore: CGFloat) {
+        // Locate the progress CAShapeLayer (clear fill = arc, not the track)
+        let progressLayer = fluencyCircleView.layer.sublayers?
+            .compactMap { $0 as? CAShapeLayer }
+            .first { $0.fillColor == UIColor.clear.cgColor }
+        guard let progressLayer = progressLayer else { return }
+
+        let totalTime = ringRiseDuration + ringHoldDuration + ringFallDuration
+        let target    = finalScore / 100.0
+
+        // --- 3-phase CAKeyframeAnimation ---
+        let anim = CAKeyframeAnimation(keyPath: "strokeEnd")
+        anim.values   = [0.0, 1.0, 1.0, Double(target)]
+        anim.keyTimes = [
+            0,
+            NSNumber(value: ringRiseDuration / totalTime),
+            NSNumber(value: (ringRiseDuration + ringHoldDuration) / totalTime),
+            1.0
+        ]
+        anim.timingFunctions = [
+            CAMediaTimingFunction(name: .easeInEaseOut), // 0 → 1.0 smooth rise
+            CAMediaTimingFunction(name: .linear),         // hold at full
+            CAMediaTimingFunction(name: .easeInEaseOut)  // 1.0 → score smooth settle
+        ]
+        anim.duration              = totalTime
+        anim.fillMode              = .forwards
+        anim.isRemovedOnCompletion = false
+        progressLayer.add(anim, forKey: "showcaseRingAnim")
+
+        // --- CADisplayLink drives the score label (0 → finalScore) ---
+        scoreAnimFinalScore = Int(finalScore)
+        scoreAnimStartTime  = CACurrentMediaTime()
+        scoreDisplayLink?.invalidate()
+        let link = CADisplayLink(target: self, selector: #selector(scoreAnimTick))
+        link.add(to: .main, forMode: .common)
+        scoreDisplayLink = link
+    }
+
+    @objc private func scoreAnimTick() {
+        let elapsed   = CACurrentMediaTime() - scoreAnimStartTime
+        let totalTime = ringRiseDuration + ringHoldDuration + ringFallDuration
+        let t         = min(elapsed / totalTime, 1.0)
+        let eased     = 1 - pow(1 - t, 3)   // ease-out cubic
+        scoreLabel?.text = "\(Int(Double(scoreAnimFinalScore) * eased))"
+        if t >= 1.0 {
+            scoreDisplayLink?.invalidate()
+            scoreDisplayLink = nil
+            scoreLabel?.text = "\(scoreAnimFinalScore)"
         }
-        RunLoop.main.add(timer, forMode: .common)
     }
 
     // MARK: - UI Setup
@@ -290,22 +335,15 @@ class ReadingResultViewController: UIViewController {
         trackLayer.lineCap     = .round
         fluencyCircleView.layer.addSublayer(trackLayer)
 
-        // Progress
+        // Progress arc — starts at 0; animated by animateRingAndScore in viewDidAppear
         let progressLayer = CAShapeLayer()
         progressLayer.path        = circlePath.cgPath
         progressLayer.strokeColor = customBrandBlue.cgColor
         progressLayer.lineWidth   = lineWidth
         progressLayer.fillColor   = UIColor.clear.cgColor
         progressLayer.lineCap     = .round
-        progressLayer.strokeEnd   = 0
+        progressLayer.strokeEnd   = 0   // animation starts from viewDidAppear
         fluencyCircleView.layer.addSublayer(progressLayer)
-
-        let anim = CABasicAnimation(keyPath: "strokeEnd")
-        anim.toValue              = score / 100
-        anim.duration             = 1.2
-        anim.fillMode             = .forwards
-        anim.isRemovedOnCompletion = false
-        progressLayer.add(anim, forKey: "progressAnim")
 
         // Score label — start at 0, count up in viewDidAppear
         let label = UILabel(frame: fluencyCircleView.bounds)
