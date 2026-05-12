@@ -26,7 +26,7 @@ class LoginViewController: UIViewController {
 
     private func showLoading(message: String = "Signing you in…") {
         guard loadingOverlay == nil else { return }
-        let overlay = WaveLoadingOverlay.show(in: view, message: message)
+        let overlay = WaveLoadingOverlay.showOnWindow(message: message)
         loadingOverlay = overlay
     }
 

@@ -183,7 +183,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     private func showLoading(message: String = "Creating your account…") {
         guard loadingOverlay == nil else { return }
-        loadingOverlay = WaveLoadingOverlay.show(in: view, message: message)
+        loadingOverlay = WaveLoadingOverlay.showOnWindow(message: message)
     }
 
     private func hideLoading() {

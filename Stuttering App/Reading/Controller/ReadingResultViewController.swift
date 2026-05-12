@@ -136,7 +136,7 @@ class ReadingResultViewController: UIViewController {
         let target = finalScore / 100.0
         let isNearFull = finalScore >= 95  // overshoot looks bad when gap is tiny
 
-        let anim: CABasicAnimation
+        let anim: CAPropertyAnimation
         let totalTime: CFTimeInterval
 
         if isNearFull {
