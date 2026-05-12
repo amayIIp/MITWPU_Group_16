@@ -41,7 +41,6 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
     
     // MARK: - Data Loading
     
-    /// Builds a name→Exercise dictionary from the master exerciselogs.json catalogue.
     private func buildCatalogue() {
         guard let url = Bundle.main.url(forResource: "exerciselogs", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
@@ -64,25 +63,20 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
         }
     }
     
-    /// Loads exactly 5 exercises, phoneme-personalised if possible, otherwise static fallback.
     func loadExercises() {
         let dynamicNames = DatabaseManager.shared.fetchWarmupExercises()
         
         if !dynamicNames.isEmpty {
-            // Map names → Exercise structs using the catalogue.
-            // Any name not found in the catalogue is skipped (shouldn't happen in practice).
             let mapped = dynamicNames.compactMap { exerciseCatalogue[$0] }
             
             if mapped.count == dynamicNames.count {
                 exercises = mapped
                 print("🔥 [Warmup] Loaded \(exercises.count) phoneme-personalised exercises")
             } else {
-                // Some names didn't resolve — fill remaining slots from static list
-                print("⚠️ [Warmup] \(dynamicNames.count - mapped.count) exercises not found in catalogue. Using static fallback.")
+                print("⚠️ [Warmup] \(dynamicNames.count - mapped.count) exercises not found. Using fallback.")
                 exercises = loadStaticFallback()
             }
         } else {
-            // No phoneme data saved — show the default static list
             exercises = loadStaticFallback()
             print("🔥 [Warmup] No phoneme data. Using static WarmUp.json list.")
         }
@@ -90,7 +84,6 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
         tableView?.reloadData()
     }
     
-    /// Loads the original static WarmUp.json list (5 hand-picked exercises).
     private func loadStaticFallback() -> [Exercise] {
         guard let url = Bundle.main.url(forResource: "WarmUp", withExtension: "json"),
               let data = try? Data(contentsOf: url),
@@ -112,14 +105,28 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
             return UITableViewCell()
         }
         
+        // --- FIX: Prevents the cell from staying gray when tapped ---
+        cell.selectionStyle = .none
+        
         let exercise = exercises[indexPath.row]
         cell.configureForWarmUp(with: exercise)
         
+        // Handling tap on the specific play button
         cell.playButtonAction = { [weak self] in
             self?.navigateToExercise(with: exercise.name)
         }
         
         return cell
+    }
+
+    // This handles the row tap behavior
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // 1. Deselect immediately (just in case)
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        // 2. Trigger the navigation
+        let exercise = exercises[indexPath.row]
+        navigateToExercise(with: exercise.name)
     }
     
     // MARK: - Navigation

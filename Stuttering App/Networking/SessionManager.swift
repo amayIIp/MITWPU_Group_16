@@ -126,6 +126,9 @@ class SessionManager {
         AppState.isLoginCompleted = false
         AppState.isOnboardingCompleted = false
 
+        // Clear the in-memory insight cache so the next user never sees stale data
+        LogManager.shared.cachedHomeInsight = nil
+
         // Clear account-specific UserDefaults but PRESERVE deviceId
         let preservedDeviceId = deviceId
 

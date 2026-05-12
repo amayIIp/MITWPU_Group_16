@@ -159,8 +159,8 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
     func updateButtonState(isRecording: Bool) {
         // 1. Use .filled() or .tinted() based on your preference (Images show tinted)
         var config = UIButton.Configuration.tinted()
-        config.baseForegroundColor = .systemRed
-        config.baseBackgroundColor = .systemRed
+        config.baseForegroundColor = .buttonTheme
+        config.baseBackgroundColor = .buttonTheme
         config.cornerStyle = .capsule
         
         // 2. Control the Logo Size explicitly

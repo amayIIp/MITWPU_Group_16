@@ -46,7 +46,12 @@ class HomePageViewController: UIViewController {
     private var exerciseLogs: [ExerciseLog] = []
     private var readingLogs: [ExerciseLog] = []
     private var conversationLogs: [ExerciseLog] = []
-    
+
+    /// Stored handle for the active insight-loading task.
+    /// Cancelled before starting a new one to prevent race conditions
+    /// when the user switches tabs rapidly.
+    private var insightTask: Task<Void, Never>?
+
     var currentDailyTasks: [DailyTask] = []
     
     override func viewDidLoad() {
@@ -75,6 +80,95 @@ class HomePageViewController: UIViewController {
         
         // Background cloud sync on every home screen visit
         syncFromCloudIfLoggedIn()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        showcaseAnimationIfNeeded()
+    }
+    
+    // MARK: - First-Launch Showcase Animation
+
+    // Durations (seconds) — slowed down for a premium feel
+    private let showcaseDuration:     CFTimeInterval = 1.5  // rise to full
+    private let showcaseHoldDuration: CFTimeInterval = 0.4  // pause at full
+    private let showcaseFallDuration: CFTimeInterval = 1.2  // return to zero
+    // Stagger offset between consecutive progress bars
+    private let showcaseBarStagger:   CFTimeInterval = 0.2
+
+    private var displayLink: CADisplayLink?
+    private var showcaseStartTime: CFTimeInterval = 0
+
+    private func showcaseAnimationIfNeeded() {
+        let key = "hasShownHomeShowcase"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+
+        // Zero everything out before starting
+        radialChartView.updateProgress(for: "Daily Tasks", to: 0)
+        progressBar1.setProgress(0, animated: false)
+        progressBar2.setProgress(0, animated: false)
+        progressBar3.setProgress(0, animated: false)
+
+        showcaseStartTime = CACurrentMediaTime()
+        displayLink = CADisplayLink(target: self, selector: #selector(showcaseTick))
+        displayLink?.add(to: .main, forMode: .common)
+    }
+
+    @objc private func showcaseTick() {
+        let elapsed = CACurrentMediaTime() - showcaseStartTime
+
+        // Bar offsets: bar1 = 0s, bar2 = 0.2s, bar3 = 0.4s
+        // Ring follows bar1 (offset 0)
+        let barOffsets: [CFTimeInterval] = [0, showcaseBarStagger, showcaseBarStagger * 2]
+        let bars: [ProgressBarView?] = [progressBar1, progressBar2, progressBar3]
+
+        // Update radial ring (same phase as bar1)
+        radialChartView.updateProgress(for: "Daily Tasks", to: showcaseProgress(localTime: elapsed))
+
+        // Update each bar with its own staggered local time
+        for (i, bar) in bars.enumerated() {
+            let localTime = elapsed - barOffsets[i]
+            bar?.setProgress(showcaseProgress(localTime: localTime), animated: false)
+        }
+
+        // Animation is finished when the last bar (bar3) has completed its full cycle
+        let lastBarEnd = barOffsets[2] + showcaseDuration + showcaseHoldDuration + showcaseFallDuration
+        guard elapsed >= lastBarEnd else { return }
+
+        // Tear down and restore real data
+        displayLink?.invalidate()
+        displayLink = nil
+        radialChartView.updateProgress(for: "Daily Tasks", to: 0)
+        bars.forEach { $0?.setProgress(0, animated: false) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.loadProgressView()
+            self.updateTaskStatus()
+        }
+    }
+
+    /// Returns progress (0–1) for a given local time, applying the 3-phase curve.
+    private func showcaseProgress(localTime: CFTimeInterval) -> CGFloat {
+        guard localTime > 0 else { return 0 }
+
+        if localTime < showcaseDuration {
+            // Phase 1 — smooth sine ease-in-out rise
+            return sineEase(CGFloat(localTime / showcaseDuration))
+        } else if localTime < showcaseDuration + showcaseHoldDuration {
+            // Phase 2 — hold at full
+            return 1.0
+        } else if localTime < showcaseDuration + showcaseHoldDuration + showcaseFallDuration {
+            // Phase 3 — smooth sine ease-in-out fall
+            let t = CGFloat((localTime - showcaseDuration - showcaseHoldDuration) / showcaseFallDuration)
+            return 1.0 - sineEase(t)
+        } else {
+            return 0.0
+        }
+    }
+
+    /// Sine-based ease-in-out — much smoother than quadratic at entry/exit points.
+    private func sineEase(_ t: CGFloat) -> CGFloat {
+        return (1 - cos(t * .pi)) / 2
     }
     
     private func syncFromCloudIfLoggedIn() {
@@ -299,10 +393,14 @@ class HomePageViewController: UIViewController {
         // Show a placeholder immediately so the label doesn't appear blank
         self.insightLabel.text = "Loading your insight…"
 
-        Task {
+        // Cancel any previous in-flight task before starting a new one.
+        // Prevents multiple concurrent AI calls from rapid tab switching.
+        insightTask?.cancel()
+        insightTask = Task {
             let today = Date()
 
             if let todayReport = await LogManager.shared.getDayReport(for: today) {
+                guard !Task.isCancelled else { return }
                 LogManager.shared.cachedHomeInsight = todayReport.insight
                 await MainActor.run { self.insightLabel.text = todayReport.insight }
                 return
@@ -310,11 +408,13 @@ class HomePageViewController: UIViewController {
 
             if let lastDate = LogManager.shared.getMostRecentReadingSessionDate(),
                let lastReport = await LogManager.shared.getDayReport(for: lastDate) {
+                guard !Task.isCancelled else { return }
                 LogManager.shared.cachedHomeInsight = lastReport.insight
                 await MainActor.run { self.insightLabel.text = lastReport.insight }
                 return
             }
 
+            guard !Task.isCancelled else { return }
             let fallback = "Your speaking practice hasn't started yet today."
             LogManager.shared.cachedHomeInsight = fallback
             await MainActor.run { self.insightLabel.text = fallback }

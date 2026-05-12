@@ -25,6 +25,18 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
         super.viewDidLoad()
         setupCollectionView()
         setupButtons()
+        setupKeyboardDismiss()
+    }
+    
+    private func setupKeyboardDismiss() {
+        // Dismiss keyboard when tapping anywhere outside the text view
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     private func setupButtons() {
@@ -78,6 +90,7 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
         collectionView.isScrollEnabled = true
         collectionView.alwaysBounceVertical = true
         collectionView.showsVerticalScrollIndicator = true
+        collectionView.keyboardDismissMode = .onDrag
         
         collectionView.delegate = self
         collectionView.dataSource = self

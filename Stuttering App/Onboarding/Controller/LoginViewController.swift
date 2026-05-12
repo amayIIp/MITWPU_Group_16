@@ -26,7 +26,7 @@ class LoginViewController: UIViewController {
 
     private func showLoading(message: String = "Signing you in…") {
         guard loadingOverlay == nil else { return }
-        let overlay = WaveLoadingOverlay.show(in: view, message: message)
+        let overlay = WaveLoadingOverlay.showOnWindow(message: message)
         loadingOverlay = overlay
     }
 
@@ -50,6 +50,9 @@ class LoginViewController: UIViewController {
         if SessionManager.shared.isGuestMode {
             continueAsGuest?.isHidden = true
         }
+        
+        // --- Fat-finger fix: ensure minimum 44pt touch targets ---
+        continueAsGuest?.contentEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
         
         passwordTextField.isSecureTextEntry = true
 
@@ -300,6 +303,10 @@ class LoginViewController: UIViewController {
     }
     
     @IBAction func switchToSignupButtonTapped(_ sender: UIButton) {
+        // Fat-finger fix applied on first tap if not already set
+        if sender.contentEdgeInsets == .zero {
+            sender.contentEdgeInsets = UIEdgeInsets(top: 12, left: 8, bottom: 12, right: 8)
+        }
         guard let presentingVC = self.presentingViewController else {
             print("Error: No presenting view controller found.")
             return

@@ -334,25 +334,27 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KIY-DF-1T2">
                                 <rect key="frame" x="20" y="182.00000000000003" width="353" height="470.66666666666674"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="How was your day?" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v8A-cg-R1O">
-                                        <rect key="frame" x="100" y="429.66666666666663" width="153" height="21"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="How was your day?" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v8A-cg-R1O">
+                                        <rect key="frame" x="10" y="440.33333333333337" width="333" height="20.333333333333314"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vNc-m3-5Du">
-                                        <rect key="frame" x="20" y="20" width="313" height="389.66666666666669"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="353" height="430.33333333333331"/>
                                         <color key="backgroundColor" systemColor="systemGray5Color"/>
                                     </view>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstItem="vNc-m3-5Du" firstAttribute="leading" secondItem="KIY-DF-1T2" secondAttribute="leading" constant="20" id="EXf-qZ-F4K"/>
-                                    <constraint firstItem="v8A-cg-R1O" firstAttribute="top" secondItem="vNc-m3-5Du" secondAttribute="bottom" constant="20" id="bs7-Lh-mG1"/>
+                                    <constraint firstItem="vNc-m3-5Du" firstAttribute="leading" secondItem="KIY-DF-1T2" secondAttribute="leading" id="EXf-qZ-F4K"/>
+                                    <constraint firstItem="v8A-cg-R1O" firstAttribute="leading" secondItem="KIY-DF-1T2" secondAttribute="leading" constant="10" id="Syk-Sd-o8b"/>
+                                    <constraint firstAttribute="trailing" secondItem="v8A-cg-R1O" secondAttribute="trailing" constant="10" id="bbq-h6-dBm"/>
+                                    <constraint firstItem="v8A-cg-R1O" firstAttribute="top" secondItem="vNc-m3-5Du" secondAttribute="bottom" constant="10" id="bs7-Lh-mG1"/>
                                     <constraint firstItem="v8A-cg-R1O" firstAttribute="centerX" secondItem="KIY-DF-1T2" secondAttribute="centerX" id="cpL-4W-bsa"/>
-                                    <constraint firstAttribute="bottom" secondItem="v8A-cg-R1O" secondAttribute="bottom" constant="20" id="iOu-t6-7Bf"/>
-                                    <constraint firstAttribute="trailing" secondItem="vNc-m3-5Du" secondAttribute="trailing" constant="20" id="wl6-NN-5Vt"/>
-                                    <constraint firstItem="vNc-m3-5Du" firstAttribute="top" secondItem="KIY-DF-1T2" secondAttribute="top" constant="20" id="zXg-Ch-29b"/>
+                                    <constraint firstAttribute="bottom" secondItem="v8A-cg-R1O" secondAttribute="bottom" constant="10" id="iOu-t6-7Bf"/>
+                                    <constraint firstAttribute="trailing" secondItem="vNc-m3-5Du" secondAttribute="trailing" id="wl6-NN-5Vt"/>
+                                    <constraint firstItem="vNc-m3-5Du" firstAttribute="top" secondItem="KIY-DF-1T2" secondAttribute="top" id="zXg-Ch-29b"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -925,7 +927,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="DdQ-C1-2Dp"/>
+        <segue reference="HJ4-fi-6LL"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="1.1.1" width="1080" height="1080"/>
@@ -938,10 +940,10 @@
             <color red="0.32899999618530273" green="0.32400000095367432" blue="0.4779999852180481" alpha="0.33000001311302185" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="ButtonTheme">
-            <color red="0.20784313725490197" green="0.31372549019607843" blue="0.63137254901960782" alpha="0.93999999761581421" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.59215686274509804" green="0.62745098039215685" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="bg">
-            <color red="0.91764705882352937" green="0.94901960784313721" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.92941176470588238" green="0.90980392156862744" blue="0.93333333333333335" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="secondaryLabelColor">
             <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>

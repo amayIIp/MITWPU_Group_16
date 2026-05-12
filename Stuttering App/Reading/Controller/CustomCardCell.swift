@@ -60,7 +60,7 @@ class CustomCardCell: UICollectionViewCell {
         customTextView.translatesAutoresizingMaskIntoConstraints = false
         customTextView.layer.cornerRadius = 24
         customTextView.backgroundColor = .systemBackground
-        customTextView.font = UIFont.preferredFont(forTextStyle: .footnote)
+        customTextView.font = UIFont.preferredFont(forTextStyle: .body)
         customTextView.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         customTextView.placeholderText = "Enter your text here..."
         expandableContainer.addSubview(customTextView)

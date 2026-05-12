@@ -14,6 +14,14 @@ struct DayInsightContext {
     let improvementPercent: Double
     let sessionCount: Int
     let topImprovedLetters: [(letter: String, improvementPct: Double)]
+
+    /// True when this is the very first reading session ever recorded for this user.
+    /// Prevents the AI from making comparisons against non-existent prior data.
+    let isFirstEverSession: Bool
+
+    /// True only when yesterday has at least one recorded session.
+    /// Prevents the AI from saying "similar to yesterday" when there was no yesterday.
+    let hasPreviousDay: Bool
 }
 
 struct OverallInsightContext {
@@ -35,13 +43,19 @@ actor InsightEngine {
         if context.sessionCount == 0 {
             return "Let's get started! Do some exercises and start practicing today."
         }
-        
+
+        // First ever session — skip comparisons entirely
+        if context.isFirstEverSession {
+            return "Welcome! Great first session — we're just starting to learn your speech patterns."
+        }
+
         // Tier 1: On-device Foundation Model
         if let aiInsight = await generateDayInsightAI(context: context) {
             return aiInsight
         }
-        // Tier 2: Groq API (cloud fallback)
-        if let groqInsight = await generateDayInsightGroq(context: context) {
+        // Tier 2: Groq API (cloud fallback — skipped when offline)
+        if NetworkMonitor.shared.isConnected,
+           let groqInsight = await generateDayInsightGroq(context: context) {
             return groqInsight
         }
         // Tier 3: Deterministic rule-based fallback
@@ -53,8 +67,9 @@ actor InsightEngine {
         if let aiHeadline = await generateOverallHeadlineAI(context: context) {
             return aiHeadline
         }
-        // Tier 2: Groq API (cloud fallback)
-        if let groqHeadline = await generateOverallHeadlineGroq(context: context) {
+        // Tier 2: Groq API (cloud fallback — skipped when offline)
+        if NetworkMonitor.shared.isConnected,
+           let groqHeadline = await generateOverallHeadlineGroq(context: context) {
             return groqHeadline
         }
         // Tier 3: Deterministic rule-based fallback
@@ -80,10 +95,11 @@ actor InsightEngine {
             }
         }
 
-        // Tier 2: Groq API
-        if let groqResult = await GroqService.shared.generate(
-            systemInstruction: sessionSystemInstruction, prompt: prompt
-        ), isValidInsight(groqResult) {
+        // Tier 2: Groq API (skipped when offline)
+        if NetworkMonitor.shared.isConnected,
+           let groqResult = await GroqService.shared.generate(
+               systemInstruction: sessionSystemInstruction, prompt: prompt
+           ), isValidInsight(groqResult) {
             return groqResult
         }
 
@@ -233,12 +249,17 @@ actor InsightEngine {
         parts.append("Block percentage: \(Int(context.avgBlock))%.")
         parts.append("Accuracy: \(Int(context.avgAccuracy))%.")
 
-        if context.fluencyGrowth > 0 {
-            parts.append("Fluency improved by \(String(format: "%.1f", context.fluencyGrowth)) points vs yesterday.")
-        } else if context.fluencyGrowth < 0 {
-            parts.append("Fluency was \(String(format: "%.1f", abs(context.fluencyGrowth))) points lower than yesterday.")
+        // Only include growth data when there is a real previous day to compare against
+        if context.hasPreviousDay {
+            if context.fluencyGrowth > 0 {
+                parts.append("Fluency improved by \(String(format: "%.1f", context.fluencyGrowth)) points vs yesterday.")
+            } else if context.fluencyGrowth < 0 {
+                parts.append("Fluency was \(String(format: "%.1f", abs(context.fluencyGrowth))) points lower than yesterday.")
+            } else {
+                parts.append("Fluency was similar to yesterday.")
+            }
         } else {
-            parts.append("Fluency was similar to yesterday.")
+            parts.append("No previous day data available — do not make any day-over-day comparisons.")
         }
 
         parts.append("Sessions completed today: \(context.sessionCount).")
@@ -250,7 +271,8 @@ actor InsightEngine {
 
             Write a short, warm, specific insight for this user about their day. \
             Maximum 2 sentences. Do not include any numbers. \
-            If letter improvement data is present, lead with that.
+            If letter improvement data is present, lead with that. \
+            Do not make comparisons to previous days unless the data explicitly shows previous day data.
             """
     }
 
@@ -336,17 +358,16 @@ actor InsightEngine {
 
     func generateDayInsightRuleBased(context: DayInsightContext) -> String {
 
-        // 1. Letter improvement — most personal
+        // 1. Letter improvement — most personal signal
         if !context.topImprovedLetters.isEmpty {
-            let top    = context.topImprovedLetters.prefix(2)
-
+            let top = context.topImprovedLetters.prefix(2)
             let lettersStr: String
             if top.count == 1 {
                 lettersStr = "'\(top[0].letter)'"
             } else {
                 lettersStr = "'\(top[0].letter)' and '\(top[1].letter)'"
             }
-            return "Your \(lettersStr) sounds have improved today!!"
+            return "Your \(lettersStr) sounds have improved today! Keep focusing on those and you'll feel the difference."
         }
 
         // 2. High blocks
@@ -359,13 +380,13 @@ actor InsightEngine {
             return "Focus on shorter passages and give yourself time to breathe."
         }
 
-        // 4. Fluency jump
-        if context.fluencyGrowth > 5 {
+        // 4. Fluency jump — only when there is a real previous day to compare against
+        if context.hasPreviousDay && context.fluencyGrowth > 5 {
             return "Great progress! Your fluency jumped today. Keep that momentum!"
         }
 
-        // 5. Fluency dip
-        if context.fluencyGrowth < -5 {
+        // 5. Fluency dip — only when there is a real previous day to compare against
+        if context.hasPreviousDay && context.fluencyGrowth < -5 {
             return "Fluency dipped a little today — that's completely normal. A gentle warm-up before your next session will help."
         }
 

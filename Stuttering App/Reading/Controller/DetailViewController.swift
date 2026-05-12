@@ -87,7 +87,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func setupTextView() {
         guard let textView = textView else { return }
         
-        let baseFont = UIFont.preferredFont(forTextStyle: .body)
+        let baseFont = UIFont.preferredFont(forTextStyle: .title3)
         defaultAttributes = [.font: baseFont, .foregroundColor: UIColor.gray]
         highlightAttributes = [.font: baseFont, .foregroundColor: UIColor.black]
         
@@ -430,10 +430,10 @@ extension DetailViewController: WorkoutSheetDelegate {
     }
     
     func didTapShowResult() {
-        guard totalExerciseDuration > 0 else {
+        guard totalExerciseDuration >= 5 else {
             let alert = UIAlertController(
-                title: "No Reading Recorded",
-                message: "Please start reading before viewing your results.",
+                title: "Session Too Short",
+                message: "Please read for at least a few seconds so we can analyse your speech.",
                 preferredStyle: .alert
             )
             alert.addAction(UIAlertAction(title: "OK", style: .default))
