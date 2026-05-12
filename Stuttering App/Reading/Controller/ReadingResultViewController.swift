@@ -118,11 +118,14 @@ class ReadingResultViewController: UIViewController {
     private var scoreDisplayLink: CADisplayLink?
     private var scoreAnimStartTime: CFTimeInterval = 0
     private var scoreAnimFinalScore: Int = 0
+    private var scoreAnimTotalTime:  CFTimeInterval = 0  // set per-animation so label syncs with ring
     private let ringRiseDuration:  CFTimeInterval = 1.4
     private let ringHoldDuration:  CFTimeInterval = 0.4
     private let ringFallDuration:  CFTimeInterval = 0.9
 
     /// Animates the ring: 0 → full → actual score, and counts the label from 0 → actual score.
+    /// For scores ≥ 95 the overshoot-to-full showcase is skipped to avoid the ugly near-complete
+    /// ring rendering (tiny gap + round-cap overlap on the track).
     private func animateRingAndScore(finalScore: CGFloat) {
         // Locate the progress CAShapeLayer (clear fill = arc, not the track)
         let progressLayer = fluencyCircleView.layer.sublayers?
@@ -130,23 +133,39 @@ class ReadingResultViewController: UIViewController {
             .first { $0.fillColor == UIColor.clear.cgColor }
         guard let progressLayer = progressLayer else { return }
 
-        let totalTime = ringRiseDuration + ringHoldDuration + ringFallDuration
-        let target    = finalScore / 100.0
+        let target = finalScore / 100.0
+        let isNearFull = finalScore >= 95  // overshoot looks bad when gap is tiny
 
-        // --- 3-phase CAKeyframeAnimation ---
-        let anim = CAKeyframeAnimation(keyPath: "strokeEnd")
-        anim.values   = [0.0, 1.0, 1.0, Double(target)]
-        anim.keyTimes = [
-            0,
-            NSNumber(value: ringRiseDuration / totalTime),
-            NSNumber(value: (ringRiseDuration + ringHoldDuration) / totalTime),
-            1.0
-        ]
-        anim.timingFunctions = [
-            CAMediaTimingFunction(name: .easeInEaseOut), // 0 → 1.0 smooth rise
-            CAMediaTimingFunction(name: .linear),         // hold at full
-            CAMediaTimingFunction(name: .easeInEaseOut)  // 1.0 → score smooth settle
-        ]
+        let anim: CABasicAnimation
+        let totalTime: CFTimeInterval
+
+        if isNearFull {
+            // Simple straight rise: 0 → target — clean at any near-100 score
+            totalTime = ringRiseDuration
+            let basic = CABasicAnimation(keyPath: "strokeEnd")
+            basic.fromValue = 0.0
+            basic.toValue   = Double(target)
+            basic.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            anim = basic
+        } else {
+            // 3-phase showcase: 0 → full → hold → target
+            totalTime = ringRiseDuration + ringHoldDuration + ringFallDuration
+            let kf = CAKeyframeAnimation(keyPath: "strokeEnd")
+            kf.values   = [0.0, 1.0, 1.0, Double(target)]
+            kf.keyTimes = [
+                0,
+                NSNumber(value: ringRiseDuration / totalTime),
+                NSNumber(value: (ringRiseDuration + ringHoldDuration) / totalTime),
+                1.0
+            ]
+            kf.timingFunctions = [
+                CAMediaTimingFunction(name: .easeInEaseOut),
+                CAMediaTimingFunction(name: .linear),
+                CAMediaTimingFunction(name: .easeInEaseOut)
+            ]
+            anim = kf
+        }
+
         anim.duration              = totalTime
         anim.fillMode              = .forwards
         anim.isRemovedOnCompletion = false
@@ -154,6 +173,7 @@ class ReadingResultViewController: UIViewController {
 
         // --- CADisplayLink drives the score label (0 → finalScore) ---
         scoreAnimFinalScore = Int(finalScore)
+        scoreAnimTotalTime  = totalTime   // keep in sync with whichever path was taken
         scoreAnimStartTime  = CACurrentMediaTime()
         scoreDisplayLink?.invalidate()
         let link = CADisplayLink(target: self, selector: #selector(scoreAnimTick))
@@ -162,10 +182,9 @@ class ReadingResultViewController: UIViewController {
     }
 
     @objc private func scoreAnimTick() {
-        let elapsed   = CACurrentMediaTime() - scoreAnimStartTime
-        let totalTime = ringRiseDuration + ringHoldDuration + ringFallDuration
-        let t         = min(elapsed / totalTime, 1.0)
-        let eased     = 1 - pow(1 - t, 3)   // ease-out cubic
+        let elapsed = CACurrentMediaTime() - scoreAnimStartTime
+        let t       = min(elapsed / scoreAnimTotalTime, 1.0)
+        let eased   = 1 - pow(1 - t, 3)   // ease-out cubic
         scoreLabel?.text = "\(Int(Double(scoreAnimFinalScore) * eased))"
         if t >= 1.0 {
             scoreDisplayLink?.invalidate()
