@@ -110,6 +110,11 @@ class FirstPageAnimationViewController: UIViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.destination is OnboardingNameViewController {
+            // Nuke any stale data from previous accounts before starting fresh
+            LogManager.shared.resetDatabaseForNewUser()
+            DatabaseManager.shared.resetDatabaseForNewUser()
+            AwardsManager.shared.resetDatabaseForNewUser()
+            
             SessionManager.shared.startGuestSession()
             LogManager.shared.initializeGuestUser()
         }

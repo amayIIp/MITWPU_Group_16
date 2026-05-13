@@ -619,7 +619,7 @@ class SupabaseSyncManager {
                 
                 try await client
                     .from("reading_sessions")
-                    .upsert(sessionData)
+                    .upsert(sessionData, onConflict: "id")
                     .execute()
                 
                 for word in report.stutteredWords {
@@ -647,7 +647,8 @@ class SupabaseSyncManager {
                         "letter": .string(letter),
                         "stutter_count": .integer(count)
                     ]
-                    try await client.from("session_letter_stats").upsert(letterData).execute()
+                    // B-7 fix: explicit conflict target so duplicates are updated not inserted
+                    try await client.from("session_letter_stats").upsert(letterData, onConflict: "session_id, letter").execute()
                 }
                 print("Successfully pushed ReadingSession and its stats to Supabase")
             } catch {
@@ -668,7 +669,7 @@ class SupabaseSyncManager {
                 ]
                 try await client
                     .from("streaks")
-                    .upsert(streakData)
+                    .upsert(streakData, onConflict: "user_id")
                     .execute()
             } catch {
                 print("Failed to push Streak to Supabase: \(error)")
@@ -681,15 +682,25 @@ class SupabaseSyncManager {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
-                let profileData: [String: AnyJSON] = [
+                // B-10 fix: send null for nil fields instead of empty strings,
+                // so a blank push doesn't overwrite real cloud data with ""
+                var profileData: [String: AnyJSON] = [
                     "id": .string(userId.uuidString),
-                    "first_name": .string(profile.firstName ?? ""),
-                    "last_name": .string(profile.lastName ?? ""),
-                    "dob": .string(profile.dob ?? ""),
-                    "mobile": .string(profile.mobile ?? ""),
                     "is_onboarding_completed": .bool(profile.isOnboardingCompleted),
                     "updated_at": .string(istFormatter.string(from: Date()))
                 ]
+                if let firstName = profile.firstName, !firstName.isEmpty {
+                    profileData["first_name"] = .string(firstName)
+                }
+                if let lastName = profile.lastName, !lastName.isEmpty {
+                    profileData["last_name"] = .string(lastName)
+                }
+                if let dob = profile.dob, !dob.isEmpty {
+                    profileData["dob"] = .string(dob)
+                }
+                if let mobile = profile.mobile, !mobile.isEmpty {
+                    profileData["mobile"] = .string(mobile)
+                }
                 try await client
                     .from("profiles")
                     .upsert(profileData)
@@ -727,8 +738,13 @@ class SupabaseSyncManager {
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
+                // B-1 fix: use a deterministic composite id "<userId>_<awardId>"
+                // so repeated pushes resolve to the same row via UNIQUE(user_id, award_id).
+                // A random UUID would create a new row on every call because the PK
+                // never matches, making the onConflict clause useless.
+                let deterministicId = "\(userId.uuidString)_\(awardId)"
                 let awardData: [String: AnyJSON] = [
-                    "id": .string(UUID().uuidString),
+                    "id": .string(deterministicId),
                     "user_id": .string(userId.uuidString),
                     "award_id": .string(awardId),
                     "progress": .double(progress),
@@ -762,7 +778,7 @@ class SupabaseSyncManager {
                 ]
                 try await client
                     .from("exercise_logs")
-                    .upsert(logData)
+                    .upsert(logData, onConflict: "id")
                     .execute()
             } catch {
                 print("Failed to push ExerciseLog to Supabase: \(error)")
@@ -811,7 +827,7 @@ class SupabaseSyncManager {
                 ]
                 try await client
                     .from("daily_tasks")
-                    .upsert(taskData, onConflict: "id, user_id")
+                    .upsert(taskData, onConflict: "user_id, name")
                     .execute()
             } catch {
                 print("Failed to push DailyTask update to Supabase: \(error)")
@@ -859,7 +875,7 @@ class SupabaseSyncManager {
                 ]
                 try await client
                     .from("conversation_sessions")
-                    .upsert(data)
+                    .upsert(data, onConflict: "id")
                     .execute()
                 print("Successfully pushed ConversationSession to Supabase")
             } catch {

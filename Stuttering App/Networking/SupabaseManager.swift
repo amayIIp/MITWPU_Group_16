@@ -9,7 +9,7 @@ import Supabase
 class SupabaseManager {
     static let shared = SupabaseManager()
     
-    private let supabaseURL = URL(string: "https://zolaxhyjzkvupkmogdpo.supabase.co")!
+    private let supabaseURL = URL(string: "https://woatlzolrisargsmpeji.supabase.co")!
     private let supabaseKey = AppSecrets.supabaseKey
     
     let client: SupabaseClient

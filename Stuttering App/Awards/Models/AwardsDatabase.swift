@@ -282,12 +282,20 @@ extension AwardsManager {
                 .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
                 .appendingPathComponent("AwardsDB.sqlite")
             
-            if FileManager.default.fileExists(atPath: fileUrl.path) {
-                try FileManager.default.removeItem(at: fileUrl)
-                print("Old Awards database file permanently deleted.")
+            let pathsToDelete = [
+                fileUrl.path,
+                fileUrl.path + "-wal",
+                fileUrl.path + "-shm"
+            ]
+            
+            for path in pathsToDelete {
+                if FileManager.default.fileExists(atPath: path) {
+                    try FileManager.default.removeItem(atPath: path)
+                }
             }
+            print("Old Awards database and WAL files permanently deleted.")
         } catch {
-            print("Error deleting Awards database file: \(error)")
+            print("Error deleting Awards database files: \(error)")
         }
         
         // 3. Re-initialize and re-seed from JSON for the new user

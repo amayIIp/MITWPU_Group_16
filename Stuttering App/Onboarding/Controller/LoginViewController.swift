@@ -122,11 +122,15 @@ class LoginViewController: UIViewController {
                 }
                 SessionManager.shared.startAccountSession(userId: userId)
 
-                LogManager.shared.resetDatabaseForNewUser()
-                DatabaseManager.shared.resetDatabaseForNewUser()
-                AwardsManager.shared.resetDatabaseForNewUser()
-                AppState.resetModuleOnboarding()
-                LogManager.shared.initializeUserIfNeeded()
+                // B-9 fix: run all local DB resets and the user init on the main
+                // actor first, so SQLite rows exist before cloud sync writes into them.
+                await MainActor.run {
+                    LogManager.shared.resetDatabaseForNewUser()
+                    DatabaseManager.shared.resetDatabaseForNewUser()
+                    AwardsManager.shared.resetDatabaseForNewUser()
+                    AppState.resetModuleOnboarding()
+                    LogManager.shared.initializeUserIfNeeded()
+                }
 
                 // Flat async chain — errors bubble to the single catch block below
                 // so the loading overlay is always dismissed.
@@ -236,11 +240,14 @@ class LoginViewController: UIViewController {
                 }
                 SessionManager.shared.startAccountSession(userId: userId)
 
-                LogManager.shared.resetDatabaseForNewUser()
-                DatabaseManager.shared.resetDatabaseForNewUser()
-                AwardsManager.shared.resetDatabaseForNewUser()
-                AppState.resetModuleOnboarding()
-                LogManager.shared.initializeUserIfNeeded()
+                // B-9 fix: same as email login — init local DB before cloud sync.
+                await MainActor.run {
+                    LogManager.shared.resetDatabaseForNewUser()
+                    DatabaseManager.shared.resetDatabaseForNewUser()
+                    AwardsManager.shared.resetDatabaseForNewUser()
+                    AppState.resetModuleOnboarding()
+                    LogManager.shared.initializeUserIfNeeded()
+                }
 
                 // Flat async chain — errors bubble to the single catch block below.
                 try await SupabaseSyncManager.shared.syncAllDataFromCloud()

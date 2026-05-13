@@ -165,19 +165,31 @@ class SessionManager {
             return .guest
             
         case .account:
-            // Validate the Supabase session token
+            // B-8 fix: validate the stored Supabase session token.
+            // We now differentiate three outcomes:
+            //   1. Valid token  → restore as .account
+            //   2. Token exists but is expired → .none (force re-login)
+            //   3. No token at all (new install / after signOut) → .none (silent, not an error)
             do {
                 let session = try await SupabaseManager.shared.client.auth.session
                 if !session.isExpired {
                     print("🚪 [SESSION] Restored ACCOUNT session (token valid)")
                     return .account
                 } else {
-                    print("🚪 [SESSION] Account session expired — falling back to none")
+                    print("🚪 [SESSION] Account session token is expired — requiring re-login")
                     currentMode = .none
                     return .none
                 }
             } catch {
-                print("🚪 [SESSION] Failed to validate account session: \(error)")
+                // AuthError.sessionMissing (or equivalent) = no keychain entry.
+                // This is expected after a clean install or explicit sign-out.
+                // Any other error is still treated as invalid — fall through to .none.
+                let desc = error.localizedDescription.lowercased()
+                if desc.contains("missing") || desc.contains("no session") || desc.contains("not found") {
+                    print("🚪 [SESSION] No stored session token — showing landing page")
+                } else {
+                    print("🚪 [SESSION] Failed to validate account session: \(error)")
+                }
                 currentMode = .none
                 return .none
             }

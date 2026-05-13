@@ -1457,12 +1457,20 @@ extension LogManager {
                 .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
                 .appendingPathComponent(dbName)
             
-            if FileManager.default.fileExists(atPath: fileURL.path) {
-                try FileManager.default.removeItem(at: fileURL)
-                print("Old database file permanently deleted.")
+            let pathsToDelete = [
+                fileURL.path,
+                fileURL.path + "-wal",
+                fileURL.path + "-shm"
+            ]
+            
+            for path in pathsToDelete {
+                if FileManager.default.fileExists(atPath: path) {
+                    try FileManager.default.removeItem(atPath: path)
+                }
             }
+            print("Old database and WAL files permanently deleted.")
         } catch {
-            print("Error deleting database file: \(error)")
+            print("Error deleting database files: \(error)")
         }
         
         // 4. Re-initialize for the next user/guest session

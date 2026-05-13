@@ -511,12 +511,20 @@ class DatabaseManager {
                 .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
                 .appendingPathComponent("Spasht.sqlite")
             
-            if FileManager.default.fileExists(atPath: fileUrl.path) {
-                try FileManager.default.removeItem(at: fileUrl)
-                print("Old Spasht database file permanently deleted.")
+            let pathsToDelete = [
+                fileUrl.path,
+                fileUrl.path + "-wal",
+                fileUrl.path + "-shm"
+            ]
+            
+            for path in pathsToDelete {
+                if FileManager.default.fileExists(atPath: path) {
+                    try FileManager.default.removeItem(atPath: path)
+                }
             }
+            print("Old Spasht database and WAL files permanently deleted.")
         } catch {
-            print("Error deleting Spasht database file: \(error)")
+            print("Error deleting Spasht database files: \(error)")
         }
         
         openDatabase()

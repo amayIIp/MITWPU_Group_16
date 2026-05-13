@@ -122,13 +122,14 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     data: ["first_name": .string(name)]
                 )
 
-                // BUG-02 fix: after signUp, currentUser is nil when Supabase has
+                // B-3 fix: after signUp, currentUser is nil when Supabase has
                 // email confirmation enabled. Don't try to sign in or push data
                 // until the user confirms — show a clear message and stop here.
+                // Button re-enable is now guaranteed in the MainActor block.
                 guard SupabaseManager.shared.currentUser != nil else {
                     await MainActor.run {
                         self.hideLoading()
-                        self.SignUpButton.isEnabled = true
+                        self.SignUpButton.isEnabled = true   // B-3 fix: was missing on this path
                         self.showAlert(message: "Account created! Please check your email to confirm your account before logging in.")
                     }
                     return
@@ -250,6 +251,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
                 if let displayName = result.user.profile?.name { profile.firstName = displayName }
                 LogManager.shared.saveProfile(profile)
+
+                // B-4 fix: explicitly upsert the profile row into Supabase BEFORE
+                // pushing exercise_logs / reading_sessions, which have a FK on profiles.
+                // Without this, a brand-new Google user has no profiles row yet and
+                // all subsequent inserts throw a foreign-key violation.
+                let profileData: [String: AnyJSON] = [
+                    "id": .string(userId),
+                    "first_name": .string(profile.firstName ?? ""),
+                    "is_onboarding_completed": .bool(profile.isOnboardingCompleted)
+                ]
+                try await client.from("profiles").upsert(profileData).execute()
 
                 // ISSUE-09 fix: await push before navigating.
                 try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
