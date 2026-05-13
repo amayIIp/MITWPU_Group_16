@@ -11,6 +11,8 @@ class ExerciseTabViewController: UIViewController {
 
     @IBOutlet weak var exerciseCollectionView: UICollectionView!
     
+    @IBOutlet weak var libraryButton: UIBarButtonItem!
+    
     // MARK: - Section Management
     enum SectionType {
         case phonemes
@@ -44,11 +46,55 @@ class ExerciseTabViewController: UIViewController {
             name: NSNotification.Name("dailyTasksUpdated"),
             object: nil
         )
+        
+        setupOnboardingOverlayIfNeeded()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         forceRefreshUI()
+    }
+    
+    // MARK: - Onboarding Gate
+    private func setupOnboardingOverlayIfNeeded() {
+        guard !AppState.isExercisesCompleted else { return }
+        
+        // Hide the library button while onboarding is active
+        navigationItem.rightBarButtonItem?.isHidden = true
+        
+        let features = [
+            OnboardingFeature(iconName: "bolt.heart.fill", title: "Personalized Practice", description: "Exercises generated automatically based on words you struggled with previously."),
+            OnboardingFeature(iconName: "list.bullet.clipboard", title: "Guided Exercises", description: "Follow along with curated lessons to master different speaking techniques."),
+            OnboardingFeature(iconName: "chart.line.uptrend.xyaxis", title: "Progress Tracking", description: "Monitor your improvement as you complete daily exercises.")
+        ]
+        
+        let overlay = ModuleOnboardingOverlayView(
+            subtitle: "Targeted exercises to improve your speech fluency and confidence.",
+            features: features,
+            footerText: "Progress is synced with your profile. Manage goals in Settings."
+        )
+        overlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(overlay)
+        
+        NSLayoutConstraint.activate([
+            overlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        overlay.onContinue = { [weak self] in
+            AppState.isExercisesCompleted = true
+            
+            // Restore the library button
+            self?.navigationItem.rightBarButtonItem?.isHidden = false
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                overlay.alpha = 0
+            }) { _ in
+                overlay.removeFromSuperview()
+            }
+        }
     }
     
     deinit {

@@ -76,6 +76,9 @@ class ProfileTableViewController: UITableViewController {
     private func clearAllAppData() {
         print("--- Initiating Complete Session Teardown ---")
         
+        // Reset module onboarding flags so next session starts fresh
+        AppState.resetModuleOnboarding()
+        
         // Wipe and reboot all SQLite databases
         LogManager.shared.resetDatabaseForNewUser()
         DatabaseManager.shared.resetDatabaseForNewUser()

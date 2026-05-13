@@ -36,5 +36,11 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SPASHT needs microphone access to analyze your speech fluency and provide real-time feedback.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SPASHT requires speech recognition to transcribe your conversations and reading exercises to accurately measure your progress.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SPASHT needs permission to save your earned awards to your photo library.</string>
 </dict>
 </plist>

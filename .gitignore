@@ -109,3 +109,8 @@ Package.resolved
 ###############################
 Stuttering App/openai_whisper-small.en/
 Stuttering App/openai_whisper-tiny.en/
+
+###############################
+# API Keys & Secrets
+###############################
+Stuttering App/Networking/AppSecrets.swift

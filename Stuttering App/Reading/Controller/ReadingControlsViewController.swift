@@ -1,4 +1,5 @@
 import UIKit
+import AVFoundation
 
 
 protocol WorkoutSheetDelegate: AnyObject {
@@ -201,9 +202,18 @@ class ReadingControlsViewController: UIViewController {
         
         let menuActions = delayOptions.map { delay in
             UIAction(title: "\(delay)s", state: delay == currentDAFDelay ? .on : .off) { [weak self] action in
-                self?.currentDAFDelay = delay
-                self?.delegate?.didUpdateDAFDelay(delay)
-                self?.configureMenu()
+                guard let self = self else { return }
+
+                // Block activation if no Bluetooth / headphone device is connected
+                guard self.areHeadphonesConnected() else {
+                    self.showBluetoothRequiredAlert()
+                    self.configureMenu() // keep checkmarks unchanged
+                    return
+                }
+
+                self.currentDAFDelay = delay
+                self.delegate?.didUpdateDAFDelay(delay)
+                self.configureMenu()
             }
         }
         
@@ -217,5 +227,24 @@ class ReadingControlsViewController: UIViewController {
         
         dafButton.menu = menu
         dafButton.showsMenuAsPrimaryAction = true
+    }
+
+    // MARK: - Bluetooth / Headphone Check
+
+    private func areHeadphonesConnected() -> Bool {
+        let route = AVAudioSession.sharedInstance().currentRoute
+        return route.outputs.contains {
+            [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE, .usbAudio].contains($0.portType)
+        }
+    }
+
+    private func showBluetoothRequiredAlert() {
+        let alert = UIAlertController(
+            title: "Bluetooth Device Required",
+            message: "DAF (Delayed Auditory Feedback) needs headphones or a Bluetooth audio device to work.\n\nPlease connect a device and try again.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 }

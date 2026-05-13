@@ -1,4 +1,5 @@
 import UIKit
+import AVFoundation
 
 class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
@@ -20,12 +21,49 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
     // Selection Tracking
     var selectedSubcategoryIndex: Int? = nil
     var isCustomSelected = false
-    
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCollectionView()
         setupButtons()
         setupKeyboardDismiss()
+        setupOnboardingOverlayIfNeeded()
+    }
+    
+    // MARK: - Onboarding Gate
+    private func setupOnboardingOverlayIfNeeded() {
+        guard !AppState.isReadAloudCompleted else { return }
+        
+        let features = [
+            OnboardingFeature(iconName: "books.vertical.fill", title: "Topic-Based Reading", description: "Select from curated themes to practice articulation within a specific subject."),
+            OnboardingFeature(iconName: "pencil.and.outline", title: "Custom Text Input", description: "Add your own scripts, speeches, or notes to practice exactly what you need to say."),
+            OnboardingFeature(iconName: "ear.badge.waveform", title: "Real-Time DAF", description: "Utilize Delayed Auditory Feedback to monitor your fluency and pacing as you read."),
+            OnboardingFeature(iconName: "doc.text.magnifyingglass", title: "Integrated Reports", description: "Receive detailed performance analytics generated specifically from your reading sessions.")
+        ]
+        
+        let overlay = ModuleOnboardingOverlayView(
+            subtitle: "Practice your speaking skills by reading through the list of curated topics.",
+            features: features,
+            footerText: "Progress is synced with your profile."
+        )
+        overlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(overlay)
+        
+        NSLayoutConstraint.activate([
+            overlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        overlay.onContinue = { [weak self] in
+            AppState.isReadAloudCompleted = true
+            UIView.animate(withDuration: 0.3, animations: {
+                overlay.alpha = 0
+            }) { _ in
+                overlay.removeFromSuperview()
+            }
+        }
     }
     
     private func setupKeyboardDismiss() {
@@ -56,9 +94,18 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
         
         let menuActions = delayOptions.map { delay in
             UIAction(title: "\(delay)s", state: delay == currentDAFDelay ? .on : .off) { [weak self] action in
-                self?.currentDAFDelay = delay
-                self?.delegate?.didUpdateDAFDelay(delay)
-                self?.configureMenu()
+                guard let self = self else { return }
+
+                // Block activation if no Bluetooth / headphone device is connected
+                guard self.areHeadphonesConnected() else {
+                    self.showBluetoothRequiredAlert()
+                    self.configureMenu() // keep checkmarks unchanged
+                    return
+                }
+
+                self.currentDAFDelay = delay
+                self.delegate?.didUpdateDAFDelay(delay)
+                self.configureMenu()
             }
         }
         
@@ -72,6 +119,25 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
         
         DafButton?.menu = menu
         DafButton?.showsMenuAsPrimaryAction = true
+    }
+
+    // MARK: - Bluetooth / Headphone Check
+
+    private func areHeadphonesConnected() -> Bool {
+        let route = AVAudioSession.sharedInstance().currentRoute
+        return route.outputs.contains {
+            [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE, .usbAudio].contains($0.portType)
+        }
+    }
+
+    private func showBluetoothRequiredAlert() {
+        let alert = UIAlertController(
+            title: "Bluetooth Device Required",
+            message: "DAF (Delayed Auditory Feedback) needs headphones or a Bluetooth audio device to work.\n\nPlease connect a device and try again.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     private func setupCollectionView() {

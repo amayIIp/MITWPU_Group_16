@@ -28,8 +28,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Start loading the WhisperKit model in the background immediately
         _ = WhisperDetectionManager.shared
         
-        NotificationManager.shared.requestAuthorization()
-        
         return true
     }
 
