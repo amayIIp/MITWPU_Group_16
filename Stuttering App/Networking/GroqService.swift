@@ -13,8 +13,8 @@ class GroqService {
 
     static let shared = GroqService()
 
-    // TODO: Move to Secrets.xcconfig before production release
-    private let apiKey = "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"
+    // Read securely from AppSecrets
+    private let apiKey = AppSecrets.groqAPIKey
     private let model  = "llama-3.3-70b-versatile"
 
     private let baseURL = "https://api.groq.com/openai/v1/chat/completions"

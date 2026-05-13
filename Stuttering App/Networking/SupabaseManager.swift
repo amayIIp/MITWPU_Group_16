@@ -10,7 +10,7 @@ class SupabaseManager {
     static let shared = SupabaseManager()
     
     private let supabaseURL = URL(string: "https://zolaxhyjzkvupkmogdpo.supabase.co")!
-    private let supabaseKey = "sb_publishable_kqZYPg1jnKQEXEYn0OS1Lw_m8Z3aYKP"
+    private let supabaseKey = AppSecrets.supabaseKey
     
     let client: SupabaseClient
     

@@ -12,9 +12,8 @@ class GeminiService {
 
     static let shared = GeminiService()
 
-    // TODO: Move to Secrets.xcconfig before production release
-    //private let apiKey = "AIzaSyCfnymFZk7hNphydaKhNPhJUwDv1HvSEV0"
-    private let apiKey = "AIzaSyAMIzqsMXTPLGB0hOE93Oeyn-zPmuf4Bm4"
+    // Read securely from AppSecrets (which is ignored by Git)
+    private let apiKey = AppSecrets.geminiAPIKey
     private let model  = "gemini-3.0-flash"
 
     private var baseURL: String {

@@ -534,6 +534,15 @@ class HomePageViewController: UIViewController {
         if AppState.isDailyProgressCompleted {
             let storyboard = UIStoryboard(name: "Home", bundle: nil)
             if let detailVC = storyboard.instantiateViewController(withIdentifier: "PracticeViewController") as? PracticeViewController {
+                
+                // 1. Enable Large Titles on your current navigation controller
+                self.navigationController?.navigationBar.prefersLargeTitles = true
+                
+                // 2. (Optional but recommended) Ensure this specific screen shows the large title,
+                // especially if the previous screen used a standard small title.
+                detailVC.navigationItem.largeTitleDisplayMode = .always
+                
+                // 3. Push the view controller as you originally did
                 self.navigationController?.pushViewController(detailVC, animated: true)
             }
         } else {
