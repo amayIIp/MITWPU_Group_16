@@ -132,15 +132,24 @@ class LoginViewController: UIViewController {
                 // so the loading overlay is always dismissed.
                 try await SupabaseSyncManager.shared.syncAllDataFromCloud()
 
+                // Step 1: Restore cloud completions FIRST, before checkForNewDay.
+                // reapplyDailyTaskCompletions marks the locally-inserted tasks as
+                // completed so that checkForNewDay sees a non-empty, partially-done
+                // list and does NOT wipe it.
+                await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
+
+                // Step 2: Now checkForNewDay. If today's tasks were just restored
+                // from the cloud they will already exist locally, so the guard in
+                // checkForNewDay will bail out early (no reset, no cloud push).
                 await MainActor.run {
                     let logic = LogicMaker()
                     logic.checkForNewDay(isFromLogin: true)
                 }
 
-                await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
-
+                // Step 3: Navigate — do NOT push daily tasks back to cloud here.
+                // The cloud is already the source of truth; pushing at this point
+                // would overwrite completed=true rows with completed=false.
                 await MainActor.run {
-                    DatabaseManager.shared.syncLocalDailyTasksToCloud()
                     self.continueButton.isEnabled = true
                     self.hideLoading()
                     self.performLoginTransition()
