@@ -20,6 +20,20 @@ class LogicMaker {
         
         let lastDate = defaults.object(forKey: kLastRefreshDate) as? Date ?? Date.distantPast
         
+        // If we are coming from login, check if the cloud sync already restored today's tasks
+        if isFromLogin {
+            let existingTasks = DatabaseManager.shared.fetchDailyTasks()
+            if !existingTasks.isEmpty {
+                // Cloud restored today's tasks successfully. Do not reset them.
+                defaults.set(Date(), forKey: kLastRefreshDate)
+                print("LogicMaker: Restored today's tasks from cloud. No reset needed.")
+                
+                // Force UI update
+                NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
+                return
+            }
+        }
+        
         if !calendar.isDateInToday(lastDate) || isFromLogin {
             print("LogicMaker: New Day Detected. Resetting tasks...")
             
