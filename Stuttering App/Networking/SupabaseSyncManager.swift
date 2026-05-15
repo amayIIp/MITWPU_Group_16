@@ -249,21 +249,22 @@ class SupabaseSyncManager {
     private func fetchAndRestoreGoals(userId: String) async throws {
         // --- Journey ---
         struct JourneyRow: Decodable {
+            let journey_id: Int
             let name: String
             let is_completed: Bool
         }
         let journeys: [JourneyRow] = try await client
             .from("journeys")
-            .select("name, is_completed")
+            .select("journey_id, name, is_completed")
             .eq("user_id", value: userId)
             .execute()
             .value
         
         for j in journeys where j.is_completed {
-            let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE name = ?"
+            let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE id = ?"
             var stmt: OpaquePointer?
             if sqlite3_prepare_v2(DatabaseManager.shared.db, updateJourney, -1, &stmt, nil) == SQLITE_OK {
-                sqlite3_bind_text(stmt, 1, (j.name as NSString).utf8String, -1, nil)
+                sqlite3_bind_int(stmt, 1, Int32(j.journey_id))
                 sqlite3_step(stmt)
             }
             sqlite3_finalize(stmt)
@@ -276,23 +277,44 @@ class SupabaseSyncManager {
             let description: String?
             let duration: Int?
             let is_completed: Bool
+            let updated_at: String?
         }
         let tasks: [DailyTaskRow] = try await client
             .from("daily_tasks")
-            .select("id, name, description, duration, is_completed")
+            .select("id, name, description, duration, is_completed, updated_at")
             .eq("user_id", value: userId)
-            .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
         
-        for t in tasks where t.is_completed {
-            let updateTask = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
-            var stmt: OpaquePointer?
-            if sqlite3_prepare_v2(DatabaseManager.shared.db, updateTask, -1, &stmt, nil) == SQLITE_OK {
-                sqlite3_bind_text(stmt, 1, (t.name as NSString).utf8String, -1, nil)
-                sqlite3_step(stmt)
+        // Use UTC start-of-day for comparison
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(identifier: "UTC")!
+        let todayUTCStart = utcCalendar.startOfDay(for: Date())
+        let utcFormatter = ISO8601DateFormatter()
+        utcFormatter.timeZone = TimeZone(identifier: "UTC")
+        
+        let todaysTasks = tasks.filter { task in
+            guard let updatedAtStr = task.updated_at,
+                  let updatedAt = utcFormatter.date(from: updatedAtStr) else { return false }
+            return updatedAt >= todayUTCStart
+        }
+        
+        if !todaysTasks.isEmpty {
+            DatabaseManager.shared.clearDailyTasks()
+            for t in todaysTasks {
+                let insert = "INSERT INTO DailyTasks (id, name, description, duration, isCompleted) VALUES (?, ?, ?, ?, ?)"
+                var stmt: OpaquePointer?
+                if sqlite3_prepare_v2(DatabaseManager.shared.db, insert, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_int(stmt, 1, Int32(t.id))
+                    sqlite3_bind_text(stmt, 2, (t.name as NSString).utf8String, -1, nil)
+                    let desc = t.description ?? ""
+                    sqlite3_bind_text(stmt, 3, (desc as NSString).utf8String, -1, nil)
+                    sqlite3_bind_int(stmt, 4, Int32(t.duration ?? 60))
+                    sqlite3_bind_int(stmt, 5, t.is_completed ? 1 : 0)
+                    sqlite3_step(stmt)
+                }
+                sqlite3_finalize(stmt)
             }
-            sqlite3_finalize(stmt)
         }
         
         // --- Streak ---
@@ -770,20 +792,21 @@ class SupabaseSyncManager {
         }
     }
     
-    func pushJourneyUpdate(name: String, isCompleted: Bool) {
+    func pushJourneyUpdate(id: Int, name: String, isCompleted: Bool) {
         guard guardAccountMode() else { return }
         Task {
             guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let journeyData: [String: AnyJSON] = [
                     "user_id": .string(userId.uuidString),
+                    "journey_id": .integer(id),
                     "name": .string(name),
                     "is_completed": .bool(isCompleted),
                     "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("journeys")
-                    .upsert(journeyData, onConflict: "user_id, name")
+                    .upsert(journeyData, onConflict: "user_id, journey_id")
                     .execute()
             } catch {
                 print("Failed to push Journey update to Supabase: \(error)")

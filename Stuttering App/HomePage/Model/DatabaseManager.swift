@@ -97,14 +97,18 @@ class DatabaseManager {
     }
     
     func fetchNextFiveFromJourney() -> [String] {
-        let query = "SELECT name FROM Journey WHERE isCompleted = 0 ORDER BY id ASC LIMIT 5"
+        let query = "SELECT name FROM Journey WHERE isCompleted = 0 ORDER BY id ASC"
         var statement: OpaquePointer?
         var names: [String] = []
 
         if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
             while sqlite3_step(statement) == SQLITE_ROW {
                 if let cString = sqlite3_column_text(statement, 0) {
-                    names.append(String(cString: cString))
+                    let name = String(cString: cString)
+                    if !names.contains(name) {
+                        names.append(name)
+                    }
+                    if names.count == 5 { break }
                 }
             }
         }
@@ -187,23 +191,40 @@ class DatabaseManager {
     func markTaskComplete(taskName: String) {
         let trimmedName = taskName.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 1. Update all state tables using LIKE and TRIM for safety
+        // 1. Update DailyTasks
         let updateDaily = "UPDATE DailyTasks SET isCompleted = 1 WHERE TRIM(name) LIKE ?"
-        let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE TRIM(name) LIKE ?"
+        executeNameUpdate(query: updateDaily, name: trimmedName)
         
-        // 2. Increment the analytics count
+        // 2. Find and update the FIRST uncompleted Journey item
+        var journeyIdToUpdate: Int? = nil
+        let findJourneySQL = "SELECT id FROM Journey WHERE TRIM(name) LIKE ? AND isCompleted = 0 ORDER BY id ASC LIMIT 1"
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, findJourneySQL, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (trimmedName as NSString).utf8String, -1, SQLITE_TRANSIENT)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                journeyIdToUpdate = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
         
+        if let jId = journeyIdToUpdate {
+            let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE id = ?"
+            if sqlite3_prepare_v2(db, updateJourney, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_int(stmt, 1, Int32(jId))
+                sqlite3_step(stmt)
+            }
+            sqlite3_finalize(stmt)
+        }
+        
+        // 3. Increment the analytics count
         let updateExerciseStats = """
         UPDATE Exercises 
         SET completionCount = completionCount + 1, lastCompleted = CURRENT_TIMESTAMP 
         WHERE TRIM(name) LIKE ?
         """
-        
-        executeNameUpdate(query: updateDaily, name: trimmedName)
-        executeNameUpdate(query: updateJourney, name: trimmedName)
         executeNameUpdate(query: updateExerciseStats, name: trimmedName)
         
-        // 3. Force a cross-check immediately
+        // 4. Force a cross-check immediately
         syncLegacyJourneyCompletions()
         
         updateDailyGoalCompletionStatus()
@@ -212,33 +233,48 @@ class DatabaseManager {
             updateStreakIfEligible()
         }
 
-        // 4. Notify UI to refresh 'Try New' and 'Go-To'
+        // 5. Notify UI to refresh 'Try New' and 'Go-To'
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
         
         if SessionManager.shared.isAccountMode {
-            SupabaseSyncManager.shared.pushJourneyUpdate(name: trimmedName, isCompleted: true)
+            if let jId = journeyIdToUpdate {
+                SupabaseSyncManager.shared.pushJourneyUpdate(id: jId, name: trimmedName, isCompleted: true)
+            }
             // syncLocalDailyTasksToCloud handles a full push of all tasks including this one;
-            // calling markDailyTaskCompletedInCloud separately was a redundant double-write.
             syncLocalDailyTasksToCloud()
         }
     }
+    
     func markExComplete(taskName: String) {
         let trimmedName = taskName.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 1. Update all state tables using LIKE and TRIM for safety
+        // 1. Find and update the FIRST uncompleted Journey item
+        var journeyIdToUpdate: Int? = nil
+        let findJourneySQL = "SELECT id FROM Journey WHERE TRIM(name) LIKE ? AND isCompleted = 0 ORDER BY id ASC LIMIT 1"
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, findJourneySQL, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (trimmedName as NSString).utf8String, -1, SQLITE_TRANSIENT)
+            if sqlite3_step(stmt) == SQLITE_ROW {
+                journeyIdToUpdate = Int(sqlite3_column_int(stmt, 0))
+            }
+        }
+        sqlite3_finalize(stmt)
         
-        let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE TRIM(name) LIKE ?"
+        if let jId = journeyIdToUpdate {
+            let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE id = ?"
+            if sqlite3_prepare_v2(db, updateJourney, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_int(stmt, 1, Int32(jId))
+                sqlite3_step(stmt)
+            }
+            sqlite3_finalize(stmt)
+        }
         
         // 2. Increment the analytics count
-        
         let updateExerciseStats = """
         UPDATE Exercises 
         SET completionCount = completionCount + 1, lastCompleted = CURRENT_TIMESTAMP 
         WHERE TRIM(name) LIKE ?
         """
-        
-        
-        executeNameUpdate(query: updateJourney, name: trimmedName)
         executeNameUpdate(query: updateExerciseStats, name: trimmedName)
         
         // 3. Force a cross-check immediately
@@ -253,11 +289,10 @@ class DatabaseManager {
         // 4. Notify UI to refresh 'Try New' and 'Go-To'
         NotificationCenter.default.post(name: NSNotification.Name("dailyTasksUpdated"), object: nil)
         
-        // NOTE: Do NOT call markDailyTaskCompletedInCloud or syncLocalDailyTasksToCloud here.
-        // This path (Exercise tab) must never write to the daily_tasks Supabase table.
-        // Only journey progression and exercise analytics are synced to the cloud.
         if SessionManager.shared.isAccountMode {
-            SupabaseSyncManager.shared.pushJourneyUpdate(name: trimmedName, isCompleted: true)
+            if let jId = journeyIdToUpdate {
+                SupabaseSyncManager.shared.pushJourneyUpdate(id: jId, name: trimmedName, isCompleted: true)
+            }
         }
     }
 
