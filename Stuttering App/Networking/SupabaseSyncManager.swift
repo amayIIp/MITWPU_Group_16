@@ -162,12 +162,9 @@ class SupabaseSyncManager {
             utcCalendar.timeZone = TimeZone(identifier: "UTC")!
             let todayUTCStart = utcCalendar.startOfDay(for: Date())
 
-            let utcFormatter = ISO8601DateFormatter()
-            utcFormatter.timeZone = TimeZone(identifier: "UTC")
-
             let todaysTasks = tasks.filter { task in
                 guard let updatedAtStr = task.updated_at,
-                      let updatedAt = utcFormatter.date(from: updatedAtStr) else { return false }
+                      let updatedAt = self.parseSupabaseDate(updatedAtStr) else { return false }
                 return updatedAt >= todayUTCStart
             }
 
@@ -177,7 +174,7 @@ class SupabaseSyncManager {
                 let sql = "UPDATE DailyTasks SET isCompleted = 1 WHERE name = ?"
                 var stmt: OpaquePointer?
                 if sqlite3_prepare_v2(DatabaseManager.shared.db, sql, -1, &stmt, nil) == SQLITE_OK {
-                    sqlite3_bind_text(stmt, 1, (t.name as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 1, (t.name as NSString).utf8String, -1, DatabaseManager.shared.SQLITE_TRANSIENT)
                     let result = sqlite3_step(stmt)
                     let changes = sqlite3_changes(DatabaseManager.shared.db)
                     if result == SQLITE_DONE {
@@ -290,12 +287,10 @@ class SupabaseSyncManager {
         var utcCalendar = Calendar(identifier: .gregorian)
         utcCalendar.timeZone = TimeZone(identifier: "UTC")!
         let todayUTCStart = utcCalendar.startOfDay(for: Date())
-        let utcFormatter = ISO8601DateFormatter()
-        utcFormatter.timeZone = TimeZone(identifier: "UTC")
         
         let todaysTasks = tasks.filter { task in
             guard let updatedAtStr = task.updated_at,
-                  let updatedAt = utcFormatter.date(from: updatedAtStr) else { return false }
+                  let updatedAt = self.parseSupabaseDate(updatedAtStr) else { return false }
             return updatedAt >= todayUTCStart
         }
         
@@ -306,9 +301,9 @@ class SupabaseSyncManager {
                 var stmt: OpaquePointer?
                 if sqlite3_prepare_v2(DatabaseManager.shared.db, insert, -1, &stmt, nil) == SQLITE_OK {
                     sqlite3_bind_int(stmt, 1, Int32(t.id))
-                    sqlite3_bind_text(stmt, 2, (t.name as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 2, (t.name as NSString).utf8String, -1, DatabaseManager.shared.SQLITE_TRANSIENT)
                     let desc = t.description ?? ""
-                    sqlite3_bind_text(stmt, 3, (desc as NSString).utf8String, -1, nil)
+                    sqlite3_bind_text(stmt, 3, (desc as NSString).utf8String, -1, DatabaseManager.shared.SQLITE_TRANSIENT)
                     sqlite3_bind_int(stmt, 4, Int32(t.duration ?? 60))
                     sqlite3_bind_int(stmt, 5, t.is_completed ? 1 : 0)
                     sqlite3_step(stmt)
@@ -927,5 +922,22 @@ class SupabaseSyncManager {
                 print("Failed to push UserGoal: \(error)")
             }
         }
+    }
+    
+    // MARK: - Date Parsing Helper
+    private func parseSupabaseDate(_ dateString: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: dateString) { return date }
+        
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: dateString) { return date }
+        
+        let fallback = DateFormatter()
+        fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
+        if let date = fallback.date(from: dateString) { return date }
+        
+        fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        return fallback.date(from: dateString)
     }
 }
