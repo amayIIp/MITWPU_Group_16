@@ -122,18 +122,27 @@ Everything runs on-device using Apple's `SFSpeechRecognizer`, `AVAudioEngine`, a
 Spasht/
 ├── AppDelegate.swift
 ├── SceneDelegate.swift
-├── Onboarding/          # User registration, login, and baseline speech test
-├── HomePage/            # Dashboard: streaks, daily tasks, progress bars, awards
-├── Exercises/           # Structured exercises, warm-ups, fun exercises (Story Cubes, Video Diary)
-├── Reading/             # Guided paragraph reading with real-time waveform
-├── Conversation/        # Free-form voice session recording and analysis
-├── Summary/             # Post-session analytics report
-├── Awards/              # Achievement system and badge gallery
-├── Profile/             # User profile management
-└── Networking/          # Supabase client, session manager, bidirectional sync engine
+├── Model/               # Feature models, managers, persistence, networking
+│   ├── Awards/
+│   ├── Exercises/
+│   ├── HomePage/
+│   ├── Networking/
+│   ├── Onboarding/
+│   └── Reading/
+├── View/                # Storyboards, cells, UIKit views, and view controllers
+│   ├── Awards/
+│   ├── Conversation/
+│   ├── Exercises/
+│   ├── HomePage/
+│   ├── Onboarding/
+│   ├── Profile/
+│   ├── Reading/
+│   └── Summary/
+└── ViewModel/           # Feature view models
+    └── Conversation/
 ```
 
-The app follows an **MVC pattern** with each module containing `Controller/`, `Model/`, and `View/` subdirectories. Shared managers (`LogManager`, `DatabaseManager`, `AwardsManager`, `SessionManager`, `SupabaseSyncManager`) are singletons accessed across modules.
+The app now follows an **MVVM-first folder structure**: `Model/`, `View/`, and `ViewModel/` sit at the top level, then each layer is split by feature. Shared managers (`LogManager`, `DatabaseManager`, `AwardsManager`, `SessionManager`, `SupabaseSyncManager`) remain singletons accessed across modules.
 
 ---
 

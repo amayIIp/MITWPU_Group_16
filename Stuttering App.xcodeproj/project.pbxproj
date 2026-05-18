@@ -7,14 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		192A5D122F7A917E00DB8C96 /* SpeakerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D112F7A917E00DB8C96 /* SpeakerKit */; };
-		192A5D142F7A917E00DB8C96 /* TTSKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D132F7A917E00DB8C96 /* TTSKit */; };
 		192A5D162F7A917E00DB8C96 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D152F7A917E00DB8C96 /* WhisperKit */; };
 		1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08A2F69460700C78634 /* GoogleSignIn */; };
-		1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08C2F69460700C78634 /* GoogleSignInSwift */; };
-		1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08F2F69462B00C78634 /* RiveRuntime */; };
 		19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 19B7F8C42F5E961600E02FB6 /* Supabase */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BC9F2A1C2FBC0001007B13C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 19EB3D2B2ED6ED290003B76D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 19EB3D322ED6ED290003B76D;
+			remoteInfo = "Stuttering App";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		BCCE180C2FB1F0030032D5FE /* Embed Frameworks */ = {
@@ -32,6 +38,7 @@
 /* Begin PBXFileReference section */
 		194C02B42F21D937009DB06D /* Stuttering App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stuttering App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		19EB3DD42ED71B340003B76D /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		BC9F2A1B2FBC0001007B13C /* Stuttering AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Stuttering AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -53,6 +60,11 @@
 			path = "Stuttering App";
 			sourceTree = "<group>";
 		};
+		BC9F2A1A2FBC0001007B13C /* Stuttering AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Stuttering AppTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,13 +72,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */,
-				1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */,
 				19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */,
-				192A5D142F7A917E00DB8C96 /* TTSKit in Frameworks */,
-				192A5D122F7A917E00DB8C96 /* SpeakerKit in Frameworks */,
 				1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */,
 				192A5D162F7A917E00DB8C96 /* WhisperKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC9F2A172FBC0001007B13C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,7 +93,9 @@
 			children = (
 				19EB3DD42ED71B340003B76D /* .gitignore */,
 				19EB3D352ED6ED290003B76D /* Stuttering App */,
+				BC9F2A1A2FBC0001007B13C /* Stuttering AppTests */,
 				194C02B42F21D937009DB06D /* Stuttering App.app */,
+				BC9F2A1B2FBC0001007B13C /* Stuttering AppTests.xctest */,
 				BCCE18022FB1F0030032D5FE /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -114,15 +131,34 @@
 			packageProductDependencies = (
 				19B7F8C42F5E961600E02FB6 /* Supabase */,
 				1993B08A2F69460700C78634 /* GoogleSignIn */,
-				1993B08C2F69460700C78634 /* GoogleSignInSwift */,
-				1993B08F2F69462B00C78634 /* RiveRuntime */,
-				192A5D112F7A917E00DB8C96 /* SpeakerKit */,
-				192A5D132F7A917E00DB8C96 /* TTSKit */,
 				192A5D152F7A917E00DB8C96 /* WhisperKit */,
 			);
 			productName = "Stuttering App";
 			productReference = 194C02B42F21D937009DB06D /* Stuttering App.app */;
 			productType = "com.apple.product-type.application";
+		};
+		BC9F2A192FBC0001007B13C /* Stuttering AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC9F2A1F2FBC0001007B13C /* Build configuration list for PBXNativeTarget "Stuttering AppTests" */;
+			buildPhases = (
+				BC9F2A162FBC0001007B13C /* Sources */,
+				BC9F2A172FBC0001007B13C /* Frameworks */,
+				BC9F2A182FBC0001007B13C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BC9F2A1D2FBC0001007B13C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BC9F2A1A2FBC0001007B13C /* Stuttering AppTests */,
+			);
+			name = "Stuttering AppTests";
+			packageProductDependencies = (
+			);
+			productName = "Stuttering AppTests";
+			productReference = BC9F2A1B2FBC0001007B13C /* Stuttering AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -136,6 +172,10 @@
 				TargetAttributes = {
 					19EB3D322ED6ED290003B76D = {
 						CreatedOnToolsVersion = 26.1.1;
+					};
+					BC9F2A192FBC0001007B13C = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = 19EB3D322ED6ED290003B76D;
 					};
 				};
 			};
@@ -151,7 +191,6 @@
 			packageReferences = (
 				19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
-				1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */,
 				192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -160,12 +199,20 @@
 			projectRoot = "";
 			targets = (
 				19EB3D322ED6ED290003B76D /* Stuttering App */,
+				BC9F2A192FBC0001007B13C /* Stuttering AppTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		19EB3D312ED6ED290003B76D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC9F2A182FBC0001007B13C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -204,7 +251,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BC9F2A162FBC0001007B13C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BC9F2A1D2FBC0001007B13C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 19EB3D322ED6ED290003B76D /* Stuttering App */;
+			targetProxy = BC9F2A1C2FBC0001007B13C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		19EB3D472ED6ED2A0003B76D /* Debug */ = {
@@ -414,6 +476,54 @@
 			};
 			name = Release;
 		};
+		BC9F2A202FBC0001007B13C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JGBU3XBL5N;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spasht.appTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Stuttering App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Stuttering App";
+			};
+			name = Debug;
+		};
+		BC9F2A212FBC0001007B13C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JGBU3XBL5N;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spasht.appTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Stuttering App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Stuttering App";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -431,6 +541,15 @@
 			buildConfigurations = (
 				19EB3D472ED6ED2A0003B76D /* Debug */,
 				19EB3D482ED6ED2A0003B76D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BC9F2A1F2FBC0001007B13C /* Build configuration list for PBXNativeTarget "Stuttering AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC9F2A202FBC0001007B13C /* Debug */,
+				BC9F2A212FBC0001007B13C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -454,14 +573,6 @@
 				minimumVersion = 9.1.0;
 			};
 		};
-		1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/rive-app/rive-ios";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.17.0;
-			};
-		};
 		19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift";
@@ -473,16 +584,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		192A5D112F7A917E00DB8C96 /* SpeakerKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
-			productName = SpeakerKit;
-		};
-		192A5D132F7A917E00DB8C96 /* TTSKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
-			productName = TTSKit;
-		};
 		192A5D152F7A917E00DB8C96 /* WhisperKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
@@ -492,16 +593,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
-		};
-		1993B08C2F69460700C78634 /* GoogleSignInSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
-			productName = GoogleSignInSwift;
-		};
-		1993B08F2F69462B00C78634 /* RiveRuntime */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */;
-			productName = RiveRuntime;
 		};
 		19B7F8C42F5E961600E02FB6 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
