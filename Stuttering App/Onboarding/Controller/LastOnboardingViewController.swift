@@ -202,7 +202,7 @@ class LastOnboardingViewController: UIViewController {
         let chipFont    = UIFont.systemFont(ofSize: 13, weight: .semibold)
         let chipHPad: CGFloat   = 24   // 12 left + 12 right
         let chipSpacing: CGFloat = 8
-        let maxRowWidth = UIScreen.main.bounds.width - 48  // 24pt margin each side
+        let maxRowWidth = view.bounds.width - 48  // 24pt margin each side
 
         var currentRow = makeChipRowStack()
         troubledWords.addArrangedSubview(currentRow)

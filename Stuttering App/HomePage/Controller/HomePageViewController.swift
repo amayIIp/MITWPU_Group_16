@@ -202,6 +202,13 @@ class HomePageViewController: UIViewController {
 
                 try await SupabaseSyncManager.shared.syncAllDataFromCloud()
                 await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
+                let didGenerateJourney = JourneyGenerationEngine.shared.runIfNeeded()
+
+                if didGenerateJourney && DatabaseManager.shared.fetchDailyTasks().isEmpty {
+                    let logic = LogicMaker()
+                    logic.resetDailyTasks(isFromLogin: true)
+                    DatabaseManager.shared.syncLocalDailyTasksToCloud()
+                }
 
                 await MainActor.run {
                     self.loadTaskName()
@@ -468,7 +475,7 @@ class HomePageViewController: UIViewController {
             
             if task.isCompleted {
                 iconViews[index]?.image = checkmarkIcon
-                iconViews[index]?.tintColor = UIColor(named: "green")
+                iconViews[index]?.tintColor = UIColor(named: "CompletedGreen")
                 completedCount += 1
             } else {
                 iconViews[index]?.image = circleIcon

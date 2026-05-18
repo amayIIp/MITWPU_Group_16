@@ -273,7 +273,7 @@
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PeJ-KY-GVj">
                                                     <rect key="frame" x="0.0" y="0.0" width="353" height="320"/>
                                                     <subviews>
-                                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8dw-9g-dvO" customClass="PlaceholderTextView" customModule="Stuttering_App" customModuleProvider="target">
+                                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" adjustsFontForContentSizeCategory="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8dw-9g-dvO" customClass="PlaceholderTextView" customModule="Stuttering_App" customModuleProvider="target">
                                                             <rect key="frame" x="10" y="10" width="333" height="300"/>
                                                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                             <color key="textColor" systemColor="labelColor"/>
@@ -340,7 +340,7 @@
                                             <constraint firstAttribute="width" secondItem="aNv-b0-udD" secondAttribute="height" multiplier="1:1" id="mmj-9r-jg8"/>
                                         </constraints>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="filled" image="ear.and.waveform" catalog="system" cornerStyle="capsule"/>
+                                        <buttonConfiguration key="configuration" style="filled" image="ear.badge.waveform" catalog="system" cornerStyle="capsule"/>
                                     </button>
                                 </subviews>
                             </stackView>
@@ -659,7 +659,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="9E7-wA-HPt">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="ReadingPromptCell" id="9E7-wA-HPt">
                                         <rect key="frame" x="72" y="0.0" width="249" height="128"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="r2g-Q5-aqP">
@@ -668,7 +668,7 @@
                                         </collectionViewCellContentView>
                                         <size key="customSize" width="249" height="128"/>
                                     </collectionViewCell>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="6DU-Py-x8K">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="ReadingDetailCell" id="6DU-Py-x8K">
                                         <rect key="frame" x="72" y="138" width="249" height="128"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Pa4-Jx-rCG">
@@ -708,7 +708,7 @@
                                             <constraint firstAttribute="width" constant="51" id="pKc-WF-jqn"/>
                                         </constraints>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="filled" image="ear.and.waveform" catalog="system" cornerStyle="capsule"/>
+                                        <buttonConfiguration key="configuration" style="filled" image="ear.badge.waveform" catalog="system" cornerStyle="capsule"/>
                                     </button>
                                 </subviews>
                             </stackView>
@@ -739,7 +739,7 @@
         <!--Read Aloud-->
         <scene sceneID="5Bx-79-k4R">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="smr-Ds-zoE" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ReadAloudNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="smr-Ds-zoE" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Read Aloud" image="book.pages" catalog="system" id="WfU-c5-Ihs"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="gOG-ez-8dz">
@@ -778,7 +778,7 @@
     <resources>
         <image name="book.pages" catalog="system" width="107" height="128"/>
         <image name="circlebadge" catalog="system" width="128" height="122"/>
-        <image name="ear.and.waveform" catalog="system" width="103" height="128"/>
+        <image name="ear.badge.waveform" catalog="system" width="103" height="128"/>
         <image name="ear.badge.checkmark" catalog="system" width="114" height="128"/>
         <image name="hare.fill" catalog="system" width="128" height="88"/>
         <image name="pause" catalog="system" width="88" height="128"/>

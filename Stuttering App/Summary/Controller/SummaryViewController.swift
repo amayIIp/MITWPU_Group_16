@@ -54,8 +54,6 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         updateButtonStyles()
         updateSummaryViewsVisibility()
         
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        
         emptyStateView.isHidden = true
     }
     

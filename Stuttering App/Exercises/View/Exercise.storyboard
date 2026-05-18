@@ -288,7 +288,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="JZR-h5-6gC">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="ExercisePrototypeCell" id="JZR-h5-6gC">
                                         <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="128"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="fca-vU-RYS">
@@ -418,7 +418,7 @@
         <!--Exercises-->
         <scene sceneID="dmF-So-6Al">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="N4R-4i-pcX" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ExercisesNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="N4R-4i-pcX" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Exercises" image="person.wave.2" catalog="system" id="AG3-nD-lhO"/>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="TXW-Ah-k1c"/>
@@ -438,7 +438,7 @@
         <!--Navigation Controller-->
         <scene sceneID="mMk-oN-LNe">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="0kd-S3-XOM" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ExerciseInstructionNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="0kd-S3-XOM" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="EiA-xx-7nn">
                         <rect key="frame" x="0.0" y="118" width="393" height="54"/>
@@ -638,7 +638,7 @@
         <!--Navigation Controller-->
         <scene sceneID="vRa-Dw-T0l">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="DYZ-gI-dAY" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ExerciseListNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="DYZ-gI-dAY" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Glq-kT-5Hn">
                         <rect key="frame" x="0.0" y="118" width="393" height="54"/>

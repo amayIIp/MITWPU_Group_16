@@ -123,7 +123,7 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
     }
 
     private func updateUIForStep(at index: Int) {
-        guard let exercise = currentExercise, index < steps.count else { return }
+        guard currentExercise != nil, index < steps.count else { return }
         
         let step = steps[index]
         let currentStepNumber = index + 1

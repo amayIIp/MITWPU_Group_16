@@ -7,6 +7,7 @@
 
 import UIKit
 import Supabase
+import GoogleSignIn
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -87,9 +88,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let logic = LogicMaker()
         logic.checkForNewDay()
+
+        if SessionManager.shared.isGuestMode {
+            _ = JourneyGenerationEngine.shared.runIfNeeded()
+        }
         
+    }
+
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else { return }
+        GIDSignIn.sharedInstance.handle(url)
     }
     
     func sceneDidEnterBackground(_ scene: UIScene) {}
 }
-

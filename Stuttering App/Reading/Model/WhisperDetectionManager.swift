@@ -4,11 +4,12 @@ import WhisperKit
 class WhisperDetectionManager {
     static let shared = WhisperDetectionManager()
     
-    private var initTask: Task<WhisperKit, Error>?
+    private var initTask: Task<Void, Error>?
+    private var whisperKit: WhisperKit?
     private(set) var isReady = false
     
     private init() {
-        initTask = Task {
+        initTask = Task { @MainActor in
             // Locate the bundled model folder shipped inside the app bundle.
             // The folder "openai_whisper-small.en" must be added to the Xcode
             // project as a folder reference (blue folder icon) with "Copy items
@@ -28,10 +29,9 @@ class WhisperDetectionManager {
                 model: "openai_whisper-small.en",
                 modelFolder: modelFolderURL.path
             )
-            let kit = try await WhisperKit(config)
+            whisperKit = try await WhisperKit(config)
             self.isReady = true
             print("✅ WhisperKit is ready (loaded from bundle)!")
-            return kit
         }
     }
     
@@ -47,37 +47,16 @@ class WhisperDetectionManager {
         }
         
         // Wait for the model to finish loading before attempting transcription
-        let whisperKit = try await initTask.value
+        try await initTask.value
+        guard let whisperKit else {
+            throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit initialization did not finish."])
+        }
         
         let path = audioURL.path
         
         // WhisperKit provides an easy audioPath transcription taking care of resampling
         let transcriptionResult = try await whisperKit.transcribe(audioPath: path)
         
-        if let arrayResult = transcriptionResult as? [TranscriptionResult] {
-            return arrayResult.map { $0.text }.joined(separator: " ")
-        } else if let singleResult = transcriptionResult as? TranscriptionResult {
-            return singleResult.text
-        } else if let genericArray = transcriptionResult as? [Any] {
-            let stringValues = genericArray.compactMap { (item: Any) -> String? in
-                let mirror = Mirror(reflecting: item)
-                for child in mirror.children {
-                    if child.label == "text", let text = child.value as? String {
-                        return text
-                    }
-                }
-                return nil
-            }
-            return stringValues.joined(separator: " ")
-        }
-        
-        let mirror = Mirror(reflecting: transcriptionResult)
-        for child in mirror.children {
-            if child.label == "text", let text = child.value as? String {
-                return text
-            }
-        }
-        
-        throw NSError(domain: "WhisperDetectionManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "Unrecognized WhisperKit response format."])
+        return transcriptionResult.map { $0.text }.joined(separator: " ")
     }
 }

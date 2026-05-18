@@ -239,7 +239,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="ZHj-1e-BGJ">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="AwardPrototypeCell" id="ZHj-1e-BGJ">
                                         <rect key="frame" x="88.666666666666671" y="0.0" width="216" height="128"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="gcF-07-F49">
@@ -276,7 +276,7 @@
         <!--Navigation Controller-->
         <scene sceneID="wLH-Pn-cP8">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Qek-pC-tfv" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="AwardsNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="Qek-pC-tfv" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="noQ-g5-GNK">
                         <rect key="frame" x="0.0" y="118" width="393" height="106"/>

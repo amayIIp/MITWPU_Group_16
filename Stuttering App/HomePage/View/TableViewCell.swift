@@ -19,7 +19,7 @@ class TableViewCell: UITableViewCell {
     
     func setCompleted(_ completed: Bool) {
         if completed {
-            playButton.tintColor = UIColor(named: "green")
+            playButton.tintColor = UIColor(named: "CompletedGreen")
             let checkmarkIcon = UIImage(systemName: "checkmark.circle.fill")
             playButton.setImage(checkmarkIcon, for: .normal)
             
@@ -56,4 +56,3 @@ class TableViewCell: UITableViewCell {
         playButtonAction?()
     }
 }
-

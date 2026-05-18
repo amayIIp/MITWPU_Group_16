@@ -141,7 +141,7 @@ class VoiceViewController: UIViewController {
             overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-        overlay.onContinue = { [weak self] in
+        overlay.onContinue = {
             AppState.isConvoCompleted = true
             UIView.animate(withDuration: 0.3, animations: {
                 overlay.alpha = 0
@@ -872,4 +872,3 @@ extension VoiceViewController: UITabBarControllerDelegate {
         tabBarController?.selectedViewController = destination
     }
 }
-

@@ -61,7 +61,34 @@ class SupabaseSyncManager {
             }
         }
 
+        let readingSessions = LogManager.shared.getAllReadingSessionSyncRecords(for: userId)
+        for session in readingSessions {
+            let troubledWords = LogManager.shared.getTroubledWordSyncRecords(sessionId: session.id)
+            let sessionLetterStats = LogManager.shared.getSessionLetterStatSyncRecords(sessionId: session.id)
+            pushReadingSessionRecord(
+                sessionId: session.id,
+                userId: userId,
+                date: session.date,
+                duration: session.duration,
+                fluencyScore: session.fluencyScore,
+                repetitionPercent: session.repetitionPercent,
+                prolongationPercent: session.prolongationPercent,
+                blockPercent: session.blockPercent,
+                correctPercent: session.correctPercent,
+                repetitionCount: session.repetitionCount,
+                prolongationCount: session.prolongationCount,
+                blockCount: session.blockCount,
+                stutteredWordCount: session.stutteredWordCount,
+                longestSmoothParagraph: session.longestSmoothParagraph,
+                insight: session.insight,
+                troubledWords: troubledWords,
+                sessionLetterStats: sessionLetterStats
+            )
+        }
+        pushLetterStats(userId: userId)
+
         // 3. Daily Tasks & Journey & Goals & Streak
+        pushFullJourneyToCloud()
         DatabaseManager.shared.syncLocalDailyTasksToCloud()
 
         let streak = DatabaseManager.shared.fetchCurrentStreak()
@@ -256,15 +283,19 @@ class SupabaseSyncManager {
             .eq("user_id", value: userId)
             .execute()
             .value
-        
-        for j in journeys where j.is_completed {
-            let updateJourney = "UPDATE Journey SET isCompleted = 1 WHERE id = ?"
-            var stmt: OpaquePointer?
-            if sqlite3_prepare_v2(DatabaseManager.shared.db, updateJourney, -1, &stmt, nil) == SQLITE_OK {
-                sqlite3_bind_int(stmt, 1, Int32(j.journey_id))
-                sqlite3_step(stmt)
-            }
-            sqlite3_finalize(stmt)
+
+        if !journeys.isEmpty {
+            let restoredJourney = journeys
+                .sorted { $0.journey_id < $1.journey_id }
+                .map {
+                    JourneyRecord(
+                        id: $0.journey_id,
+                        name: $0.name,
+                        isCompleted: $0.is_completed
+                    )
+                }
+            DatabaseManager.shared.replaceJourney(with: restoredJourney)
+            JourneyGenerationEngine.shared.markActivatedFromRestoreIfNeeded(journeyCount: restoredJourney.count)
         }
         
         // --- Daily Tasks ---
@@ -409,11 +440,16 @@ class SupabaseSyncManager {
             let prolongation_percent: Double?
             let block_percent: Double?
             let correct_percent: Double?
+            let repetition_count: Int?
+            let prolongation_count: Int?
+            let block_count: Int?
+            let stuttered_word_count: Int?
             let longest_smooth_paragraph: Int?
+            let insight: String?
         }
         let readings: [ReadingRow] = try await client
             .from("reading_sessions")
-            .select("id, date, duration, fluency_score, repetition_percent, prolongation_percent, block_percent, correct_percent, longest_smooth_paragraph")
+            .select("id, date, duration, fluency_score, repetition_percent, prolongation_percent, block_percent, correct_percent, repetition_count, prolongation_count, block_count, stuttered_word_count, longest_smooth_paragraph, insight")
             .eq("user_id", value: userId)
             .gt("updated_at", value: lastSyncDateString)
             .execute()
@@ -423,8 +459,10 @@ class SupabaseSyncManager {
             INSERT OR REPLACE INTO ReadingSessions
             (id, userId, date, duration, fluencyScore,
             repetitionPercent, prolongationPercent,
-            blockPercent, correctPercent, longestSmoothParagraph)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            blockPercent, correctPercent, repetitionCount,
+            prolongationCount, blockCount, stutteredWordCount,
+            longestSmoothParagraph, insight)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
         for rs in readings {
             var stmt: OpaquePointer?
@@ -438,7 +476,16 @@ class SupabaseSyncManager {
                 sqlite3_bind_double(stmt, 7, rs.prolongation_percent ?? 0.0)
                 sqlite3_bind_double(stmt, 8, rs.block_percent ?? 0.0)
                 sqlite3_bind_double(stmt, 9, rs.correct_percent ?? 0.0)
-                sqlite3_bind_int(stmt, 10, Int32(rs.longest_smooth_paragraph ?? 0))
+                sqlite3_bind_int(stmt, 10, Int32(rs.repetition_count ?? 0))
+                sqlite3_bind_int(stmt, 11, Int32(rs.prolongation_count ?? 0))
+                sqlite3_bind_int(stmt, 12, Int32(rs.block_count ?? 0))
+                sqlite3_bind_int(stmt, 13, Int32(rs.stuttered_word_count ?? 0))
+                sqlite3_bind_int(stmt, 14, Int32(rs.longest_smooth_paragraph ?? 0))
+                if let insight = rs.insight {
+                    sqlite3_bind_text(stmt, 15, (insight as NSString).utf8String, -1, nil)
+                } else {
+                    sqlite3_bind_null(stmt, 15)
+                }
                 sqlite3_step(stmt)
             }
             sqlite3_finalize(stmt)
@@ -616,59 +663,82 @@ class SupabaseSyncManager {
     
     // MARK: - Push Local Changes to Cloud (Local-First Sync)
     
-    func pushReadingSession(_ report: StutterJSONReport, duration: TimeInterval, sessionId: String, longestSmoothParagraph: Int = 0) {
+    func pushReadingSession(_ report: StutterJSONReport,
+                            sessionId: String,
+                            date: TimeInterval,
+                            duration: TimeInterval,
+                            longestSmoothParagraph: Int = 0,
+                            insight: String? = nil) {
+        guard guardAccountMode() else { return }
+        guard let userId = client.auth.currentUser?.id.uuidString else { return }
+
+        let troubledWords = report.stutteredWords.map { word in
+            let lowerWord = word.lowercased()
+            let type: String
+            if report.breakdown.repetition.contains(where: { $0.lowercased() == lowerWord }) {
+                type = "repetition"
+            } else if report.breakdown.prolongation.contains(where: { $0.lowercased() == lowerWord }) {
+                type = "prolongation"
+            } else {
+                type = "block"
+            }
+
+            return TroubledWordSyncRecord(
+                id: UUID().uuidString,
+                sessionId: sessionId,
+                userId: userId,
+                word: word,
+                type: type,
+                firstLetter: String(word.prefix(1)).uppercased()
+            )
+        }
+
+        let sessionLetterStats = report.letterAnalysis.map { entry in
+            SessionLetterStatSyncRecord(
+                sessionId: sessionId,
+                userId: userId,
+                letter: entry.key,
+                stutterCount: entry.value
+            )
+        }
+
+        pushReadingSessionRecord(
+            sessionId: sessionId,
+            userId: userId,
+            date: date,
+            duration: duration,
+            fluencyScore: report.fluencyScore,
+            repetitionPercent: report.percentages.repetition,
+            prolongationPercent: report.percentages.prolongation,
+            blockPercent: report.percentages.blocks,
+            correctPercent: report.percentages.correct,
+            repetitionCount: report.breakdown.repetition.count,
+            prolongationCount: report.breakdown.prolongation.count,
+            blockCount: report.breakdown.blocks,
+            stutteredWordCount: report.stutteredWords.count,
+            longestSmoothParagraph: longestSmoothParagraph,
+            insight: insight,
+            troubledWords: troubledWords,
+            sessionLetterStats: sessionLetterStats
+        )
+    }
+
+    func pushReadingSessionInsight(sessionId: String, insight: String) {
         guard guardAccountMode() else { return }
         Task {
-            guard let userId = client.auth.currentUser?.id else { return }
             do {
-                let sessionData: [String: AnyJSON] = [
-                    "id": .string(sessionId),
-                    "user_id": .string(userId.uuidString),
-                    "date": .double(Date().timeIntervalSince1970), // Epochs remain universal
-                    "duration": .double(duration),
-                    "fluency_score": .integer(report.fluencyScore),
-                    "repetition_percent": .double(report.percentages.repetition),
-                    "prolongation_percent": .double(report.percentages.prolongation),
-                    "block_percent": .double(report.percentages.blocks),
-                    "correct_percent": .double(report.percentages.correct),
-                    "longest_smooth_paragraph": .integer(longestSmoothParagraph)
+                let updateData: [String: AnyJSON] = [
+                    "insight": .string(insight),
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
-                
                 try await client
                     .from("reading_sessions")
-                    .upsert(sessionData)
+                    .update(updateData)
+                    .eq("id", value: sessionId)
                     .execute()
-                
-                for word in report.stutteredWords {
-                    let type: String
-                    let lowerWord = word.lowercased()
-                    if report.breakdown.repetition.contains(where: { $0.lowercased() == lowerWord }) { type = "repetition" }
-                    else if report.breakdown.prolongation.contains(where: { $0.lowercased() == lowerWord }) { type = "prolongation" }
-                    else { type = "block" }
-                    
-                    let wordData: [String: AnyJSON] = [
-                        "id": .string(UUID().uuidString),
-                        "session_id": .string(sessionId),
-                        "user_id": .string(userId.uuidString),
-                        "word": .string(word),
-                        "type": .string(type),
-                        "first_letter": .string(String(word.prefix(1)).uppercased())
-                    ]
-                    try await client.from("troubled_words").upsert(wordData).execute()
-                }
-                
-                for (letter, count) in report.letterAnalysis {
-                    let letterData: [String: AnyJSON] = [
-                        "session_id": .string(sessionId),
-                        "user_id": .string(userId.uuidString),
-                        "letter": .string(letter),
-                        "stutter_count": .integer(count)
-                    ]
-                    try await client.from("session_letter_stats").upsert(letterData).execute()
-                }
-                print("Successfully pushed ReadingSession and its stats to Supabase")
+                print("Successfully pushed ReadingSession insight to Supabase")
             } catch {
-                print("Failed to push ReadingSession to Supabase: \(error)")
+                print("Failed to push ReadingSession insight to Supabase: \(error)")
             }
         }
     }
@@ -808,6 +878,38 @@ class SupabaseSyncManager {
             }
         }
     }
+
+    func pushFullJourneyToCloud() {
+        guard guardAccountMode() else { return }
+        Task {
+            guard let userId = client.auth.currentUser?.id else { return }
+            do {
+                try await client
+                    .from("journeys")
+                    .delete()
+                    .eq("user_id", value: userId.uuidString)
+                    .execute()
+
+                let journeyRows = DatabaseManager.shared.fetchAllJourneyRecords()
+                for row in journeyRows {
+                    let journeyData: [String: AnyJSON] = [
+                        "user_id": .string(userId.uuidString),
+                        "journey_id": .integer(row.id),
+                        "name": .string(row.name),
+                        "is_completed": .bool(row.isCompleted),
+                        "updated_at": .string(istFormatter.string(from: Date()))
+                    ]
+                    try await client
+                        .from("journeys")
+                        .upsert(journeyData, onConflict: "user_id, journey_id")
+                        .execute()
+                }
+                print("☁️ Successfully replaced Journey snapshot in Supabase")
+            } catch {
+                print("☁️ Failed to replace Journey snapshot in Supabase: \(error)")
+            }
+        }
+    }
     
     func pushDailyTaskUpdate(id: Int, name: String, description: String, duration: Int, isCompleted: Bool) {
         guard guardAccountMode() else { return }
@@ -873,7 +975,8 @@ class SupabaseSyncManager {
                     "date": .double(Date().timeIntervalSince1970), // Epochs remain universal
                     "duration": .double(duration),
                     "filler_word_percent": .double(fillerWordPercent),
-                    "longest_smooth_talk": .integer(longestSmoothTalk)
+                    "longest_smooth_talk": .integer(longestSmoothTalk),
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("conversation_sessions")
@@ -896,7 +999,8 @@ class SupabaseSyncManager {
                     let data: [String: AnyJSON] = [
                         "user_id": .string(userId),
                         "letter": .string(letter),
-                        "count": .integer(count)
+                        "count": .integer(count),
+                        "updated_at": .string(istFormatter.string(from: Date()))
                     ]
                     try await client.from("letter_stats").upsert(data, onConflict: "user_id, letter").execute()
                 }
@@ -920,6 +1024,88 @@ class SupabaseSyncManager {
                 try await client.from("user_goals").upsert(data, onConflict: "user_id, goal_name").execute()
             } catch {
                 print("Failed to push UserGoal: \(error)")
+            }
+        }
+    }
+
+    private func pushReadingSessionRecord(sessionId: String,
+                                          userId: String,
+                                          date: TimeInterval,
+                                          duration: TimeInterval,
+                                          fluencyScore: Int,
+                                          repetitionPercent: Double,
+                                          prolongationPercent: Double,
+                                          blockPercent: Double,
+                                          correctPercent: Double,
+                                          repetitionCount: Int,
+                                          prolongationCount: Int,
+                                          blockCount: Int,
+                                          stutteredWordCount: Int,
+                                          longestSmoothParagraph: Int,
+                                          insight: String?,
+                                          troubledWords: [TroubledWordSyncRecord],
+                                          sessionLetterStats: [SessionLetterStatSyncRecord]) {
+        guard guardAccountMode() else { return }
+        Task {
+            do {
+                var sessionData: [String: AnyJSON] = [
+                    "id": .string(sessionId),
+                    "user_id": .string(userId),
+                    "date": .double(date),
+                    "duration": .double(duration),
+                    "fluency_score": .integer(fluencyScore),
+                    "repetition_percent": .double(repetitionPercent),
+                    "prolongation_percent": .double(prolongationPercent),
+                    "block_percent": .double(blockPercent),
+                    "correct_percent": .double(correctPercent),
+                    "repetition_count": .integer(repetitionCount),
+                    "prolongation_count": .integer(prolongationCount),
+                    "block_count": .integer(blockCount),
+                    "stuttered_word_count": .integer(stutteredWordCount),
+                    "longest_smooth_paragraph": .integer(longestSmoothParagraph),
+                    "updated_at": .string(istFormatter.string(from: Date()))
+                ]
+
+                if let insight, !insight.isEmpty {
+                    sessionData["insight"] = .string(insight)
+                }
+
+                try await client
+                    .from("reading_sessions")
+                    .upsert(sessionData)
+                    .execute()
+
+                for troubledWord in troubledWords {
+                    let wordData: [String: AnyJSON] = [
+                        "id": .string(troubledWord.id),
+                        "session_id": .string(troubledWord.sessionId),
+                        "user_id": .string(userId),
+                        "word": .string(troubledWord.word),
+                        "type": .string(troubledWord.type),
+                        "first_letter": .string(troubledWord.firstLetter)
+                    ]
+                    try await client
+                        .from("troubled_words")
+                        .upsert(wordData)
+                        .execute()
+                }
+
+                for stat in sessionLetterStats {
+                    let letterData: [String: AnyJSON] = [
+                        "session_id": .string(stat.sessionId),
+                        "user_id": .string(userId),
+                        "letter": .string(stat.letter),
+                        "stutter_count": .integer(stat.stutterCount)
+                    ]
+                    try await client
+                        .from("session_letter_stats")
+                        .upsert(letterData)
+                        .execute()
+                }
+
+                print("Successfully pushed ReadingSession and its stats to Supabase")
+            } catch {
+                print("Failed to push ReadingSession to Supabase: \(error)")
             }
         }
     }

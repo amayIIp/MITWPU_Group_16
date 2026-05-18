@@ -52,6 +52,9 @@ class LogicMaker {
     
     func resetDailyTasks(isFromLogin: Bool = false) {
         let db = DatabaseManager.shared
+        if SessionManager.shared.isGuestMode || isFromLogin {
+            _ = JourneyGenerationEngine.shared.runIfNeeded()
+        }
         let nextExercises = db.fetchNextFiveFromJourney()
         
         if nextExercises.isEmpty {
