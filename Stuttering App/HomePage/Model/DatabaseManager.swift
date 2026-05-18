@@ -172,14 +172,15 @@ class DatabaseManager {
         
         if names.isEmpty {
             let fallbackQuery = "SELECT name FROM Exercises ORDER BY lastCompleted DESC LIMIT 3"
-            if sqlite3_prepare_v2(db, fallbackQuery, -1, &statement, nil) == SQLITE_OK {
-                while sqlite3_step(statement) == SQLITE_ROW {
-                    if let cString = sqlite3_column_text(statement, 0) {
+            var fallbackStatement: OpaquePointer?
+            if sqlite3_prepare_v2(db, fallbackQuery, -1, &fallbackStatement, nil) == SQLITE_OK {
+                while sqlite3_step(fallbackStatement) == SQLITE_ROW {
+                    if let cString = sqlite3_column_text(fallbackStatement, 0) {
                         names.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
                     }
                 }
             }
-            sqlite3_finalize(statement)
+            sqlite3_finalize(fallbackStatement)
         }
         
         print("DEBUG SQL: Found \(names.count) Go-To exercises in DB.")
@@ -686,15 +687,16 @@ class DatabaseManager {
         
         print("🔍 Falling back to 'Explore Again' (most recent)...")
         let exploreAgainQuery = "SELECT name FROM Exercises ORDER BY lastCompleted DESC LIMIT 1"
-        if sqlite3_prepare_v2(db, exploreAgainQuery, -1, &statement, nil) == SQLITE_OK {
-            if sqlite3_step(statement) == SQLITE_ROW {
-                let name = String(cString: sqlite3_column_text(statement, 0)).trimmingCharacters(in: .whitespacesAndNewlines)
-                sqlite3_finalize(statement)
+        var fallbackStatement: OpaquePointer?
+        if sqlite3_prepare_v2(db, exploreAgainQuery, -1, &fallbackStatement, nil) == SQLITE_OK {
+            if sqlite3_step(fallbackStatement) == SQLITE_ROW {
+                let name = String(cString: sqlite3_column_text(fallbackStatement, 0)).trimmingCharacters(in: .whitespacesAndNewlines)
+                sqlite3_finalize(fallbackStatement)
                 print("   ✅ Explore Again: '\(name)'")
                 return ("Explore Again", name)
             }
         }
-        sqlite3_finalize(statement)
+        sqlite3_finalize(fallbackStatement)
         
         print("   ❌ No exercises found at all!")
         return ("Explore Again", nil)

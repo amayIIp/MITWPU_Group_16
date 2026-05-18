@@ -58,6 +58,8 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         let format = audioEngine.inputNode.outputFormat(forBus: 0)
         audioEngine.connect(audioEngine.inputNode, to: delayNode, format: format)
         audioEngine.connect(delayNode, to: audioEngine.mainMixerNode, format: format)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioRouteChange(_:)), name: AVAudioSession.routeDidChangeNotification, object: nil)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -370,12 +372,16 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             }
 
             // Step 2 — Analyze
-            let jsonResult = StutterAnalyzer.analyze(
-                reference: self.textToDisplay,
-                transcript: finalTranscript,
-                segments: self.recordedSegments,
-                duration: duration
-            )
+            let referenceText = self.textToDisplay
+            let segments = self.recordedSegments
+            let jsonResult = await Task.detached(priority: .userInitiated) {
+                return StutterAnalyzer.analyze(
+                    reference: referenceText,
+                    transcript: finalTranscript,
+                    segments: segments,
+                    duration: duration
+                )
+            }.value
 
             guard let jsonData = jsonResult.data(using: .utf8),
                   let report = try? JSONDecoder().decode(StutterJSONReport.self, from: jsonData) else {
@@ -413,6 +419,43 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func logReadingActivity() {
         self.exerciseDuration = Int(totalExerciseDuration)
         LogManager.shared.addLog(exerciseName: titleToDisplay, source: .reading, exerciseDuration: self.exerciseDuration)
+    }
+    
+    @objc private func handleAudioRouteChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
+        
+        print("🔊 [DetailViewController] Audio route changed. Reason: \(reasonValue)")
+        
+        if reason == .oldDeviceUnavailable || reason == .newDeviceAvailable {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                let headphonesConnected = self.areHeadphonesConnected()
+                print("🔊 [DetailViewController] Headphones connected: \(headphonesConnected)")
+                
+                if headphonesConnected && self.selectedDAFDelay > 0 {
+                    self.delayNode.delayTime = self.selectedDAFDelay
+                    self.delayNode.wetDryMix = 100
+                    self.audioEngine.mainMixerNode.outputVolume = 1.0
+                } else {
+                    self.delayNode.wetDryMix = 0
+                    self.audioEngine.mainMixerNode.outputVolume = 0.0
+                }
+                
+                if self.isPlaying {
+                    print("🔊 [DetailViewController] Re-initializing audio engine for new route...")
+                    self.stopRecording()
+                    let inputNode = self.audioEngine.inputNode
+                    let format = inputNode.outputFormat(forBus: 0)
+                    self.audioEngine.disconnectNodeInput(self.delayNode)
+                    self.audioEngine.disconnectNodeInput(self.audioEngine.mainMixerNode)
+                    self.audioEngine.connect(inputNode, to: self.delayNode, format: format)
+                    self.audioEngine.connect(self.delayNode, to: self.audioEngine.mainMixerNode, format: format)
+                    self.startRecording()
+                }
+            }
+        }
     }
 }
 
