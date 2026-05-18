@@ -6,7 +6,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
 
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
-    @IBOutlet weak var SignUpButton: UIButton!
+    @IBOutlet weak var signUpButton: UIButton!
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var googleSignIn: UIButton!
     @IBOutlet weak var continueAsGuest: UIButton!
@@ -111,7 +111,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             return
         }
 
-        SignUpButton.isEnabled = false
+        signUpButton.isEnabled = false
         showLoading()
 
         Task {
@@ -128,7 +128,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 guard SupabaseManager.shared.currentUser != nil else {
                     await MainActor.run {
                         self.hideLoading()
-                        self.SignUpButton.isEnabled = true
+                        self.signUpButton.isEnabled = true
                         self.showAlert(message: "Account created! Please check your email to confirm your account before logging in.")
                     }
                     return
@@ -153,13 +153,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
 
                 await MainActor.run {
                     self.hideLoading()
-                    self.SignUpButton.isEnabled = true
+                    self.signUpButton.isEnabled = true
                     self.handleNavigationLogic()
                 }
             } catch {
                 await MainActor.run {
                     self.hideLoading()
-                    self.SignUpButton.isEnabled = true
+                    self.signUpButton.isEnabled = true
                     self.showAlert(message: error.localizedDescription)
                 }
             }
@@ -280,30 +280,41 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     }
     
     func handleNavigationLogic() {
-        if AppState.isOnboardingCompleted {
-            if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
-               let window = sceneDelegate.window {
-                let storyboard = UIStoryboard(name: "Home", bundle: nil)
-                window.rootViewController = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+        let executeTransition = {
+            if AppState.isOnboardingCompleted {
+                if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
+                    let storyboard = UIStoryboard(name: "Home", bundle: nil)
+                    window.rootViewController = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+                }
+            } else {
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+                if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
+                    window.backgroundColor = .systemBackground
+                    UIView.animate(withDuration: 0.3, animations: { window.rootViewController?.view.alpha = 0 }) { _ in
+                        onboardingVC.view.alpha = 0
+                        window.rootViewController = onboardingVC
+                        UIView.animate(withDuration: 0.3) { onboardingVC.view.alpha = 1 }
+                    }
+                }
+            }
+        }
+
+        if let presenting = self.presentingViewController {
+            presenting.dismiss(animated: false) {
+                executeTransition()
             }
         } else {
-            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
-            guard let window = view.window else { return }
-            window.backgroundColor = .systemBackground
-            UIView.animate(withDuration: 0.3, animations: { window.rootViewController?.view.alpha = 0 }) { _ in
-                onboardingVC.view.alpha = 0
-                window.rootViewController = onboardingVC
-                UIView.animate(withDuration: 0.3) { onboardingVC.view.alpha = 1 }
-            }
+            executeTransition()
         }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.destination is OnboardingNameViewController {
-            // startGuestSession() now internally calls initializeGuestUser(),
-            // so we only need one call here.
-            SessionManager.shared.startGuestSession()
+            // startGuestSession() is now called in OnboardingNameViewController
+            // only after the user successfully enters their name.
         }
     }
 }

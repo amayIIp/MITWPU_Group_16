@@ -53,9 +53,13 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
     }
 
     @objc private func backButtonTapped() {
-        self.dismiss(animated: true) {
-            print("🚪 [SESSION] Backed out of guest mode")
-            // Optional: SessionManager.shared.clearSession() if you need to reset guest state
+        Task {
+            await SessionManager.shared.endSession()  // cancel the premature guest session
+            await MainActor.run {
+                self.dismiss(animated: true) {
+                    print("🚪 [SESSION] Backed out of guest mode")
+                }
+            }
         }
     }
     
@@ -90,6 +94,8 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
               !name.trimmingCharacters(in: .whitespaces).isEmpty else {
             return
         }
+        
+        SessionManager.shared.startGuestSession()
         
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
                 

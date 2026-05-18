@@ -117,7 +117,7 @@ class SessionManager {
     /// End the current session (sign-out).
     /// Invalidates the Supabase JWT keychain token so that restoreSession()
     /// cannot silently resurrect a session the user explicitly ended.
-    func endSession() {
+    func endSession() async {
         print("🚪 [SESSION] Ending session (was: \(currentMode.rawValue))")
         currentMode = .none
         lastUserId = nil
@@ -149,7 +149,7 @@ class SessionManager {
 
         // Invalidate the Supabase JWT stored in the keychain so that
         // restoreSession() cannot restore this session on next launch.
-        Task { try? await SupabaseManager.shared.client.auth.signOut() }
+        try? await SupabaseManager.shared.client.auth.signOut()
 
         print("🚪 [SESSION] Session ended. DeviceId preserved: \(preservedDeviceId)")
     }

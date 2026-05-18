@@ -120,6 +120,11 @@ class LoginViewController: UIViewController {
                 guard let userId = SupabaseManager.shared.currentUser?.id.uuidString else {
                     throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID after login"])
                 }
+                if SessionManager.shared.isGuestMode {
+                    LogManager.shared.migrateGuestData(to: userId)
+                    try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
+                }
+
                 SessionManager.shared.startAccountSession(userId: userId)
 
                 LogManager.shared.resetDatabaseForNewUser()
@@ -127,6 +132,8 @@ class LoginViewController: UIViewController {
                 AwardsManager.shared.resetDatabaseForNewUser()
                 AppState.resetModuleOnboarding()
                 LogManager.shared.initializeUserIfNeeded()
+                
+                AppState.isOnboardingCompleted = false
 
                 // Flat async chain — errors bubble to the single catch block below
                 // so the loading overlay is always dismissed.
@@ -243,6 +250,11 @@ class LoginViewController: UIViewController {
                 guard let userId = SupabaseManager.shared.currentUser?.id.uuidString else {
                     throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID after Google login"])
                 }
+                if SessionManager.shared.isGuestMode {
+                    LogManager.shared.migrateGuestData(to: userId)
+                    try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
+                }
+
                 SessionManager.shared.startAccountSession(userId: userId)
 
                 LogManager.shared.resetDatabaseForNewUser()
@@ -250,19 +262,19 @@ class LoginViewController: UIViewController {
                 AwardsManager.shared.resetDatabaseForNewUser()
                 AppState.resetModuleOnboarding()
                 LogManager.shared.initializeUserIfNeeded()
+                
+                AppState.isOnboardingCompleted = false
 
                 // Flat async chain — errors bubble to the single catch block below.
                 try await SupabaseSyncManager.shared.syncAllDataFromCloud()
+                await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
 
                 await MainActor.run {
                     let logic = LogicMaker()
                     logic.checkForNewDay(isFromLogin: true)
                 }
 
-                await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
-
                 await MainActor.run {
-                    DatabaseManager.shared.syncLocalDailyTasksToCloud()
                     self.hideLoading()
                     self.performLoginTransition()
                 }
@@ -279,48 +291,56 @@ class LoginViewController: UIViewController {
     func performLoginTransition() {
         AppState.isLoginCompleted = true
         
-        if AppState.isOnboardingCompleted {
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
+        let executeTransition = {
+            if AppState.isOnboardingCompleted {
+                let storyboard = UIStoryboard(name: "Home", bundle: nil)
+                let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
 
-            if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
-               let window = sceneDelegate.window {
-                
-                // Set a background color so the transition isn't harsh
-                window.backgroundColor = .systemBackground
-                
-                // Step 1: Fade out the current root view controller
-                UIView.animate(withDuration: 0.3, animations: {
-                    window.rootViewController?.view.alpha = 0
-                }) { _ in
-                    // Step 2: Swap the root view controller while it's invisible
-                    homeVC.view.alpha = 0
-                    window.rootViewController = homeVC
+                if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
                     
-                    // Step 3: Fade in the new root view controller
-                    UIView.animate(withDuration: 0.3) {
-                        homeVC.view.alpha = 1
+                    window.backgroundColor = .systemBackground
+                    
+                    UIView.animate(withDuration: 0.3, animations: {
+                        window.rootViewController?.view.alpha = 0
+                    }) { _ in
+                        homeVC.view.alpha = 0
+                        window.rootViewController = homeVC
+                        
+                        UIView.animate(withDuration: 0.3) {
+                            homeVC.view.alpha = 1
+                        }
+                    }
+                }
+            } else {
+                let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+                let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
+                
+                if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
+
+                    window.backgroundColor = .systemBackground
+
+                    UIView.animate(withDuration: 0.3, animations: {
+                        window.rootViewController?.view.alpha = 0
+                    }) { _ in
+                        onboardingVC.view.alpha = 0
+                        window.rootViewController = onboardingVC
+                        
+                        UIView.animate(withDuration: 0.3) {
+                            onboardingVC.view.alpha = 1
+                        }
                     }
                 }
             }
-        } else {
-            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
-            
-            guard let window = view.window else { return }
-
-            window.backgroundColor = .systemBackground
-
-            UIView.animate(withDuration: 0.3, animations: {
-                window.rootViewController?.view.alpha = 0
-            }) { _ in
-                onboardingVC.view.alpha = 0
-                window.rootViewController = onboardingVC
-                
-                UIView.animate(withDuration: 0.3) {
-                    onboardingVC.view.alpha = 1
-                }
+        }
+        
+        if let presenting = self.presentingViewController {
+            presenting.dismiss(animated: false) {
+                executeTransition()
             }
+        } else {
+            executeTransition()
         }
     }
     

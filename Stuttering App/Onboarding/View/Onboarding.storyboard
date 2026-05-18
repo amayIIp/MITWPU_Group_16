@@ -126,7 +126,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="IFc-88-9x7"/>
                     <connections>
-                        <outlet property="SignUpButton" destination="0mP-7F-HIq" id="Mtp-Qg-oEn"/>
+                        <outlet property="signUpButton" destination="0mP-7F-HIq" id="Mtp-Qg-oEn"/>
                         <outlet property="SigninButton" destination="bZ6-NB-0Tu" id="NVP-aw-4Ax"/>
                         <outlet property="buttonView" destination="IBB-4Q-b5v" id="r7g-af-A9X"/>
                         <outlet property="headerLabel" destination="5SD-em-ehy" id="IGp-Lu-LB2"/>
@@ -417,7 +417,7 @@
                     </view>
                     <navigationItem key="navigationItem" title="Create Account" id="a48-1k-Pnu"/>
                     <connections>
-                        <outlet property="SignUpButton" destination="cnZ-jG-hAN" id="OE4-bS-iUa"/>
+                        <outlet property="signUpButton" destination="cnZ-jG-hAN" id="OE4-bS-iUa"/>
                         <outlet property="continueAsGuest" destination="Yio-ca-6iA" id="zqq-wO-wF2"/>
                         <outlet property="emailTextField" destination="366-Yt-WOk" id="LiA-TU-Pok"/>
                         <outlet property="googleSignIn" destination="sy9-1f-Ug4" id="pot-gi-7rc"/>

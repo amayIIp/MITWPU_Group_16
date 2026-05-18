@@ -40,20 +40,10 @@ class ProfileTableViewController: UITableViewController {
     
     func performLogout() {
         Task {
-            do {
-                // Only sign out of Supabase if we were in account mode
-                if SessionManager.shared.isAccountMode {
-                    try await SupabaseManager.shared.client.auth.signOut()
-                    print("🚪 [SESSION] Successfully signed out of Supabase.")
-                }
-            } catch {
-                print("🚪 [SESSION] Failed to sign out of Supabase: \(error)")
-            }
+            // endSession handles the Supabase signOut internally
+            await SessionManager.shared.endSession()
             
-            DispatchQueue.main.async {
-                // End the session — this clears AppState flags and preserves deviceId
-                SessionManager.shared.endSession()
-                
+            await MainActor.run {
                 let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
                 
                 guard let landingNav = storyboard.instantiateViewController(withIdentifier: "LandingNav") as? UINavigationController else {

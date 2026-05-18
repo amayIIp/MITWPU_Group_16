@@ -86,6 +86,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {
         AwardsManager.shared.seedDatabaseIfNeeded()
         
+        guard SessionManager.shared.hasActiveSession else { return }
+        
         let logic = LogicMaker()
         logic.checkForNewDay()
 

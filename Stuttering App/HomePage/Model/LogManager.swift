@@ -312,6 +312,16 @@ class LogManager {
                 sqlite3_finalize(stmt)
             }
             print("🔄 [MIGRATE] All guest data tables migrated to userId: \(newUserId)")
+            
+            let deleteOldLogs = "DELETE FROM ExerciseLog;"
+            sqlite3_exec(db, deleteOldLogs, nil, nil, nil)
+            
+            let deleteGuestUser = "DELETE FROM Users WHERE id = ?;"
+            if sqlite3_prepare_v2(db, deleteGuestUser, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (guestId as NSString).utf8String, -1, nil)
+                sqlite3_step(stmt)
+            }
+            sqlite3_finalize(stmt)
         } else {
             print("🔄 [MIGRATE] No guest data found to migrate")
         }

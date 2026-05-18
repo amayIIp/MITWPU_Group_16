@@ -766,10 +766,9 @@ class SupabaseSyncManager {
     func pushProfile(_ profile: UserProfile) {
         guard guardAccountMode() else { return }
         Task {
-            guard let userId = client.auth.currentUser?.id else { return }
             do {
                 let profileData: [String: AnyJSON] = [
-                    "id": .string(userId.uuidString),
+                    "id": .string(profile.id),
                     "first_name": .string(profile.firstName ?? ""),
                     "last_name": .string(profile.lastName ?? ""),
                     "dob": .string(profile.dob ?? ""),
@@ -796,7 +795,7 @@ class SupabaseSyncManager {
                 let data: [String: AnyJSON] = [
                     "id": .string(userId.uuidString),
                     "is_onboarding_completed": .bool(isCompleted),
-                    "updated_at": .string(ISO8601DateFormatter().string(from: Date()))
+                    "updated_at": .string(istFormatter.string(from: Date()))
                 ]
                 try await client
                     .from("profiles")
