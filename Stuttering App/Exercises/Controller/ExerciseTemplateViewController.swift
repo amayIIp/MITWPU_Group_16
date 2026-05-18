@@ -230,15 +230,21 @@ class ExerciseTemplateViewController: UIViewController, ExerciseStarting, UIShee
         loadStepUI()
         containerView.layoutIfNeeded()
 
-        UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseInOut, animations: {
-            snapshot.transform = exitTransform
-            snapshot.alpha = 0
+        UIView.animate(
+            withDuration: 0.4,
+            delay: 0,
+            options: .curveEaseInOut,
+            animations: {
+                snapshot.transform = exitTransform
+                snapshot.alpha = 0
 
-            self.contentStackView.transform = .identity
-            self.contentStackView.alpha = 1
-        }) { _ in
-            snapshot.removeFromSuperview()
-        }
+                self.contentStackView.transform = .identity
+                self.contentStackView.alpha = 1
+            },
+            completion: { _ in
+                snapshot.removeFromSuperview()
+            }
+        )
     }
 
     private func loadStepUI() {

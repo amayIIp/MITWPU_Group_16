@@ -165,31 +165,43 @@ class ExerciseResultViewController: UIViewController {
 
         waveView.targetFillLevel = 0.35
 
-        UIView.animate(withDuration: 0.8, delay: 0.5, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
-            self.titleLabel.alpha = 1.0
-            self.titleLabel.transform = .identity
+        UIView.animate(
+            withDuration: 0.8,
+            delay: 0.5,
+            usingSpringWithDamping: 0.8,
+            initialSpringVelocity: 0,
+            options: .curveEaseOut,
+            animations: {
+                self.titleLabel.alpha = 1.0
+                self.titleLabel.transform = .identity
 
-            self.subtitleLabel.alpha = 1.0
-            self.subtitleLabel.transform = .identity
-        }) { _ in
-            // Stay for 2.5 seconds, then transition out
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                self.dissolveSplash()
+                self.subtitleLabel.alpha = 1.0
+                self.subtitleLabel.transform = .identity
+            },
+            completion: { _ in
+                // Stay for 2.5 seconds, then transition out
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    self.dissolveSplash()
+                }
             }
-        }
+        )
     }
 
     private func dissolveSplash() {
         waveView.targetFillLevel = 0.0
 
-        UIView.animate(withDuration: 0.6, animations: {
-            self.titleLabel.alpha = 0
-            self.subtitleLabel.alpha = 0
-        }) { _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                self.goToMainScreen()
+        UIView.animate(
+            withDuration: 0.6,
+            animations: {
+                self.titleLabel.alpha = 0
+                self.subtitleLabel.alpha = 0
+            },
+            completion: { _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    self.goToMainScreen()
+                }
             }
-        }
+        )
     }
 
     func goToMainScreen() {

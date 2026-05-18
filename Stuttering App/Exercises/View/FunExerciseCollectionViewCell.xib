@@ -58,7 +58,7 @@
                 <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
             </userDefinedRuntimeAttributes>
             <connections>
-                <outlet property="ExerciseThumbnail" destination="uD5-rU-huG" id="BiX-6t-ZfI"/>
+                <outlet property="exerciseThumbnail" destination="uD5-rU-huG" id="BiX-6t-ZfI"/>
                 <outlet property="descriptionLabel" destination="mfb-6E-j7N" id="J8l-xR-5px"/>
                 <outlet property="titleLabel" destination="fZH-8F-fm7" id="NUv-Qr-0n3"/>
             </connections>

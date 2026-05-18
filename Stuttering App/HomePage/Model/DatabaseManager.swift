@@ -38,7 +38,15 @@ class DatabaseManager {
     }
 
     func openDatabase() {
-        let fileUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("Spasht.sqlite")
+        let fileUrl: URL
+        do {
+            fileUrl = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent("Spasht.sqlite")
+        } catch {
+            print("Error locating database: \(error)")
+            return
+        }
         print("Spasht Database Created")
         if sqlite3_open(fileUrl.path, &db) != SQLITE_OK {
             print("Error opening database")

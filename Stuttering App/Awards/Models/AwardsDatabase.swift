@@ -13,7 +13,15 @@ class AwardsManager {
     var db: OpaquePointer?
 
     func openDatabase() {
-        let fileUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("AwardsDB.sqlite")
+        let fileUrl: URL
+        do {
+            fileUrl = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent("AwardsDB.sqlite")
+        } catch {
+            print("Error locating Awards database: \(error)")
+            return
+        }
 
         print("Awards Database Created \n Database Path: \(fileUrl.path)")
 

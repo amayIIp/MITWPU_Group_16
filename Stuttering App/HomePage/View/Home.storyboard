@@ -908,7 +908,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="SOD-In-6gs"/>
                     <connections>
-                        <outlet property="RadialCardWidthConstraint" destination="pjx-ZP-j4F" id="ua6-Po-lJG"/>
+                        <outlet property="radialCardWidthConstraint" destination="pjx-ZP-j4F" id="ua6-Po-lJG"/>
                         <outlet property="achievedAwardDescription" destination="8cX-ej-wjK" id="1dk-ta-ybB"/>
                         <outlet property="achievedAwardImage" destination="clT-iS-fjS" id="T4v-E7-bfd"/>
                         <outlet property="achievedAwardName" destination="JMC-o8-3vb" id="2DJ-Vg-Vya"/>

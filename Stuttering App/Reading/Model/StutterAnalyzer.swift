@@ -56,9 +56,9 @@ class StutterAnalyzer {
         let refWords   = normalize(reference)
         let transWords = normalize(transcript)
 
-        // Whitelist: only surface stutter events on words that exist in the
+        // Allowlist: only surface stutter events on words that exist in the
         // reference paragraph — prevents filler sounds / ASR artefacts leaking in.
-        let paragraphWordsWhitelist = Set(refWords)
+        let paragraphWordsAllowlist = Set(refWords)
 
         // ── Levenshtein alignment ─────────────────────────────────────────────
         let ops = levenshteinAlignment(ref: refWords, hyp: transWords)
@@ -149,8 +149,8 @@ class StutterAnalyzer {
         }
 
         // Apply case-insensitive whitelist filter for repetitions and prolongations.
-        let repetitions     = rawRepetitions.filter { paragraphWordsWhitelist.contains($0.lowercased()) }
-        let prolongations   = rawProlongations.filter { paragraphWordsWhitelist.contains($0.lowercased()) }
+        let repetitions     = rawRepetitions.filter { paragraphWordsAllowlist.contains($0.lowercased()) }
+        let prolongations   = rawProlongations.filter { paragraphWordsAllowlist.contains($0.lowercased()) }
 
         // ── BLOCK DETECTION ───────────────────────────────────────────────────
         // A "block" = a word the speaker took significantly longer to say than
@@ -191,23 +191,21 @@ class StutterAnalyzer {
             let avgRatio       = ratios.reduce(0, +) / Double(ratios.count)
             let blockRatioThreshold = avgRatio * 1.8   // adaptive, length-normalised
 
-            for (segment, ratio) in zip(validSegments, ratios) {
-                if ratio > blockRatioThreshold {
-                    let rawWord = segment.substring
-                        .lowercased()
-                        .trimmingCharacters(in: .punctuationCharacters)
+            for (segment, ratio) in zip(validSegments, ratios) where ratio > blockRatioThreshold {
+                let rawWord = segment.substring
+                    .lowercased()
+                    .trimmingCharacters(in: .punctuationCharacters)
 
-                    if paragraphWordsWhitelist.contains(rawWord) {
-                        let durationStr = String(format: "%.2f", segment.duration)
-                        detectedBlocks.append("\(rawWord) (Duration: \(durationStr)s)")
-                        rawAllStuttered.append(rawWord)
-                    }
+                if paragraphWordsAllowlist.contains(rawWord) {
+                    let durationStr = String(format: "%.2f", segment.duration)
+                    detectedBlocks.append("\(rawWord) (Duration: \(durationStr)s)")
+                    rawAllStuttered.append(rawWord)
                 }
             }
         }
 
         // ── DEDUPLICATE TROUBLE WORDS ─────────────────────────────────────────
-        let rawFiltered = rawAllStuttered.filter { paragraphWordsWhitelist.contains($0.lowercased()) }
+        let rawFiltered = rawAllStuttered.filter { paragraphWordsAllowlist.contains($0.lowercased()) }
         var uniqueStuttered = [String]()
         var seenWords = Set<String>()
         for word in rawFiltered {

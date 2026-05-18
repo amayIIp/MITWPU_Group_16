@@ -89,11 +89,15 @@ class ExerciseTabViewController: UIViewController {
             // Restore the library button
             self?.navigationItem.rightBarButtonItem?.isHidden = false
 
-            UIView.animate(withDuration: 0.3, animations: {
-                overlay.alpha = 0
-            }) { _ in
-                overlay.removeFromSuperview()
-            }
+            UIView.animate(
+                withDuration: 0.3,
+                animations: {
+                    overlay.alpha = 0
+                },
+                completion: { _ in
+                    overlay.removeFromSuperview()
+                }
+            )
         }
     }
 
@@ -317,12 +321,22 @@ extension ExerciseTabViewController: UICollectionViewDataSource, UICollectionVie
         }
 
         if sectionType == .fun {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FunExerciseCollectionViewCell.identifier, for: indexPath) as! FunExerciseCollectionViewCell
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: FunExerciseCollectionViewCell.identifier,
+                for: indexPath
+            ) as? FunExerciseCollectionViewCell else {
+                return UICollectionViewCell()
+            }
             cell.configure(with: currentExercise)
             return cell
         }
 
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ExerciseCollectionViewCell.identifier, for: indexPath) as! ExerciseCollectionViewCell
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: ExerciseCollectionViewCell.identifier,
+            for: indexPath
+        ) as? ExerciseCollectionViewCell else {
+            return UICollectionViewCell()
+        }
         cell.configure(with: currentExercise)
 
         cell.didTapButton = { [weak self] in

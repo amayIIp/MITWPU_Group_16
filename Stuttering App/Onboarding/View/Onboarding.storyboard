@@ -127,7 +127,7 @@
                     <navigationItem key="navigationItem" id="IFc-88-9x7"/>
                     <connections>
                         <outlet property="signUpButton" destination="0mP-7F-HIq" id="Mtp-Qg-oEn"/>
-                        <outlet property="SigninButton" destination="bZ6-NB-0Tu" id="NVP-aw-4Ax"/>
+                        <outlet property="signinButton" destination="bZ6-NB-0Tu" id="NVP-aw-4Ax"/>
                         <outlet property="buttonView" destination="IBB-4Q-b5v" id="r7g-af-A9X"/>
                         <outlet property="headerLabel" destination="5SD-em-ehy" id="IGp-Lu-LB2"/>
                         <outlet property="infoLabel" destination="Mls-Qx-OPB" id="In5-Kb-K1s"/>

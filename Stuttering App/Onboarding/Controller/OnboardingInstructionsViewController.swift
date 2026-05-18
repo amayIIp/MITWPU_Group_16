@@ -59,18 +59,30 @@ class OnboardingInstructionsViewController: UIViewController {
         let isForward = true
         let transitionOffset: CGFloat = isForward ? 40 : -40
 
-        UIView.animate(withDuration: 0.2, animations: {
-            self.instructionLabel.alpha = 0
-            self.instructionLabel.transform = CGAffineTransform(translationX: -transitionOffset, y: 0)
-        }) { _ in
-            self.instructionLabel.text = self.instructions[self.currentPage]
-            self.instructionLabel.transform = CGAffineTransform(translationX: transitionOffset, y: 0)
+        UIView.animate(
+            withDuration: 0.2,
+            animations: {
+                self.instructionLabel.alpha = 0
+                self.instructionLabel.transform = CGAffineTransform(translationX: -transitionOffset, y: 0)
+            },
+            completion: { _ in
+                self.instructionLabel.text = self.instructions[self.currentPage]
+                self.instructionLabel.transform = CGAffineTransform(translationX: transitionOffset, y: 0)
 
-            UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: .curveEaseOut, animations: {
-                self.instructionLabel.alpha = 1
-                self.instructionLabel.transform = .identity
-            }, completion: nil)
-        }
+                UIView.animate(
+                    withDuration: 0.4,
+                    delay: 0,
+                    usingSpringWithDamping: 0.8,
+                    initialSpringVelocity: 0.5,
+                    options: .curveEaseOut,
+                    animations: {
+                        self.instructionLabel.alpha = 1
+                        self.instructionLabel.transform = .identity
+                    },
+                    completion: nil
+                )
+            }
+        )
 
         let isLastPage = (currentPage == instructions.count - 1)
         let buttonTitle = isLastPage ? "Start the test" : "Next"
@@ -106,17 +118,31 @@ class OnboardingInstructionsViewController: UIViewController {
         self.instructionLabel.alpha = 0
         self.instructionLabel.transform = CGAffineTransform(scaleX: 0.3, y: 0.3)
 
-        UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .curveEaseOut, animations: {
-            self.instructionLabel.alpha = 1
-            self.instructionLabel.transform = .identity
-        }) { _ in
-            UIView.animate(withDuration: 0.4, delay: 0.2, options: .curveEaseIn, animations: {
-                self.instructionLabel.alpha = 0
-                self.instructionLabel.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
-            }) { _ in
-                self.animateSequence(numbers: numbers, index: index + 1)
+        UIView.animate(
+            withDuration: 0.4,
+            delay: 0,
+            usingSpringWithDamping: 0.7,
+            initialSpringVelocity: 0.5,
+            options: .curveEaseOut,
+            animations: {
+                self.instructionLabel.alpha = 1
+                self.instructionLabel.transform = .identity
+            },
+            completion: { _ in
+                UIView.animate(
+                    withDuration: 0.4,
+                    delay: 0.2,
+                    options: .curveEaseIn,
+                    animations: {
+                        self.instructionLabel.alpha = 0
+                        self.instructionLabel.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
+                    },
+                    completion: { _ in
+                        self.animateSequence(numbers: numbers, index: index + 1)
+                    }
+                )
             }
-        }
+        )
     }
 
     func navigateToTestVC() {

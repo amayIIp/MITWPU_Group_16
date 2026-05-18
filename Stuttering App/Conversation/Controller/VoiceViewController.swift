@@ -143,11 +143,15 @@ class VoiceViewController: UIViewController {
 
         overlay.onContinue = {
             AppState.isConvoCompleted = true
-            UIView.animate(withDuration: 0.3, animations: {
-                overlay.alpha = 0
-            }) { _ in
-                overlay.removeFromSuperview()
-            }
+            UIView.animate(
+                withDuration: 0.3,
+                animations: {
+                    overlay.alpha = 0
+                },
+                completion: { _ in
+                    overlay.removeFromSuperview()
+                }
+            )
         }
     }
 
@@ -398,14 +402,18 @@ class VoiceViewController: UIViewController {
         selectedTopic = chipView.accessibilityLabel
 
         // Scale-only feedback — no background color change to avoid color persistence bug
-        UIView.animate(withDuration: 0.1, animations: {
-            chipView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
-        }) { _ in
-            UIView.animate(withDuration: 0.1) {
-                chipView.transform = .identity
+        UIView.animate(
+            withDuration: 0.1,
+            animations: {
+                chipView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+            },
+            completion: { _ in
+                UIView.animate(withDuration: 0.1) {
+                    chipView.transform = .identity
+                }
+                self.beginConversationWithSelectedTopic()
             }
-            self.beginConversationWithSelectedTopic()
-        }
+        )
     }
 
     @objc private func startTalkingTapped() {
@@ -415,13 +423,21 @@ class VoiceViewController: UIViewController {
 
     private func beginConversationWithSelectedTopic() {
         chatStackView.isHidden = false
-        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0, options: .curveEaseInOut, animations: {
-            self.topicSelectionView.alpha = 0
-            self.topicSelectionView.transform = CGAffineTransform(translationX: 0, y: -30)
-            self.chatStackView.alpha = 1.0
-        }) { _ in
-            self.topicSelectionView.isHidden = true
-        }
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 0.85,
+            initialSpringVelocity: 0,
+            options: .curveEaseInOut,
+            animations: {
+                self.topicSelectionView.alpha = 0
+                self.topicSelectionView.transform = CGAffineTransform(translationX: 0, y: -30)
+                self.chatStackView.alpha = 1.0
+            },
+            completion: { _ in
+                self.topicSelectionView.isHidden = true
+            }
+        )
 
         startSessionTimer()
 
@@ -572,12 +588,16 @@ class VoiceViewController: UIViewController {
     private func trimOldBubbles() {
         while displayedBubbles.count > maxVisibleMessages {
             let oldest = displayedBubbles.removeFirst()
-            UIView.animate(withDuration: 0.3, animations: {
-                oldest.alpha = 0
-                oldest.isHidden = true
-            }) { _ in
-                oldest.removeFromSuperview()
-            }
+            UIView.animate(
+                withDuration: 0.3,
+                animations: {
+                    oldest.alpha = 0
+                    oldest.isHidden = true
+                },
+                completion: { _ in
+                    oldest.removeFromSuperview()
+                }
+            )
         }
     }
 
@@ -663,13 +683,13 @@ class VoiceViewController: UIViewController {
     @IBAction func didTapEnd(_ sender: UIButton) {
         feedbackGenerator.impactOccurred()
         viewModel.pauseSpeaking()
-        
+
         let alert = UIAlertController(
             title: "End Conversation?",
             message: "Are you sure you want to end this session?",
             preferredStyle: .alert
         )
-        
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
             self?.viewModel.resumeSpeaking()
         })
@@ -682,13 +702,13 @@ class VoiceViewController: UIViewController {
 
     private func showResetConfirmation() {
         viewModel.pauseSpeaking()
-        
+
         let alert = UIAlertController(
             title: "Restart Conversation?",
             message: "This will end the current conversation and take you back to topic selection.",
             preferredStyle: .alert
         )
-        
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
             self?.viewModel.resumeSpeaking()
         })
@@ -846,10 +866,10 @@ extension VoiceViewController: UITabBarControllerDelegate {
 
     private func showExitConversationAlert() {
         viewModel.pauseSpeaking()
-        
+
         let alert = UIAlertController(title: "End Conversation?", message: "You're currently in an active conversation.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in 
-            self?.pendingTabViewController = nil 
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.pendingTabViewController = nil
             self?.viewModel.resumeSpeaking()
         })
         alert.addAction(UIAlertAction(title: "Exit", style: .destructive) { [weak self] _ in

@@ -112,20 +112,26 @@ class LastOnboardingViewController: UIViewController {
     private func dissolveSplash() {
         waveView.targetFillLevel = 0.0
 
-        UIView.animate(withDuration: 0.7, delay: 0, options: .curveEaseInOut, animations: {
-            self.splashContainer.alpha = 0.0
-            self.titleLabel.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-        }) { _ in
-            self.waveView.stop()
-            self.splashContainer.removeFromSuperview()
+        UIView.animate(
+            withDuration: 0.7,
+            delay: 0,
+            options: .curveEaseInOut,
+            animations: {
+                self.splashContainer.alpha = 0.0
+                self.titleLabel.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+            },
+            completion: { _ in
+                self.waveView.stop()
+                self.splashContainer.removeFromSuperview()
 
-            self.navigationController?.setNavigationBarHidden(false, animated: true)
+                self.navigationController?.setNavigationBarHidden(false, animated: true)
 
-            UIView.animate(withDuration: 0.6) {
-                self.scrollView.alpha = 1.0
-                self.getStartedButton.alpha = 1.0
+                UIView.animate(withDuration: 0.6) {
+                    self.scrollView.alpha = 1.0
+                    self.getStartedButton.alpha = 1.0
+                }
             }
-        }
+        )
     }
 
     // MARK: - Logic & Actions
@@ -303,13 +309,17 @@ class LastOnboardingViewController: UIViewController {
         guard let window = view.window else { return }
         window.backgroundColor = .systemBackground
 
-        UIView.animate(withDuration: 0.3, animations: {
-            window.rootViewController?.view.alpha = 0
-        }) { _ in
-            homeVC.view.alpha = 0
-            window.rootViewController = homeVC
-            UIView.animate(withDuration: 0.3) { homeVC.view.alpha = 1 }
-        }
+        UIView.animate(
+            withDuration: 0.3,
+            animations: {
+                window.rootViewController?.view.alpha = 0
+            },
+            completion: { _ in
+                homeVC.view.alpha = 0
+                window.rootViewController = homeVC
+                UIView.animate(withDuration: 0.3) { homeVC.view.alpha = 1 }
+            }
+        )
     }
 
     @objc func didTapResetButton() {

@@ -137,19 +137,19 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             print("VoiceViewModel: Failed to deactivate audio session - \(error)")
         }
     }
-    
+
     func pauseSpeaking() {
         if synthesizer.isSpeaking && !synthesizer.isPaused {
             synthesizer.pauseSpeaking(at: .immediate)
         }
     }
-    
+
     func resumeSpeaking() {
         if synthesizer.isPaused {
             synthesizer.continueSpeaking()
         }
     }
-    
+
     func resetConversation() {
         stopSession()
         conversationHistory.removeAll()
@@ -471,7 +471,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             // ── Groq API path ───────────────────────────────────────────
             Task { [weak self] in
                 guard let self = self else { return }
-                
+
                 let groqHistory: [(role: String, text: String)] = self.conversationHistory
                     .dropLast()
                     .suffix(10)
@@ -500,7 +500,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             // ── Foundation Model path (on-device) ────────────────────────
             Task { [weak self] in
                 guard let self = self else { return }
-                
+
                 guard let session = self.session else {
                     // Foundation Model session is nil — fall back to Groq
                     print("VoiceViewModel: Foundation Model session lost, falling back to Groq")
@@ -517,7 +517,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                         .suffix(6)
                         .map { "\($0.speaker): \($0.text)" }
                         .joined(separator: "\n")
-                    
+
                     let responseContent = try await withThrowingTaskGroup(of: String.self) { group in
                         group.addTask {
                             let response = try await session.respond(to: prompt)
@@ -531,7 +531,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                         group.cancelAll()
                         return firstResult
                     }
-                    
+
                     await MainActor.run {
                         guard self.state == .thinking else { return }
                         self.speak(responseContent)

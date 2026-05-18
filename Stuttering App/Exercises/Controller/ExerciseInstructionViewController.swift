@@ -170,21 +170,25 @@ class ExerciseInstructionViewController: UIViewController, ExerciseStarting {
 
         containerView.layoutIfNeeded()
 
-        UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseInOut, animations: {
+        UIView.animate(
+            withDuration: 0.4,
+            delay: 0,
+            options: .curveEaseInOut,
+            animations: {
+                snapshot.transform = exitTransform
+                snapshot.alpha = 0
 
-            snapshot.transform = exitTransform
-            snapshot.alpha = 0
-
-            self.contentStackView.transform = .identity
-            self.contentStackView.alpha = 1
-
-        }) { _ in
-            snapshot.removeFromSuperview()
-        }
+                self.contentStackView.transform = .identity
+                self.contentStackView.alpha = 1
+            },
+            completion: { _ in
+                snapshot.removeFromSuperview()
+            }
+        )
     }
 
     private func handleTextOnlyExercise(step: ExerciseStep) {
-        guard let _ = currentExercise else { return }
+        guard currentExercise != nil else { return }
 
         updateStackLayout(imageViewHidden: true, labelHidden: false)
 

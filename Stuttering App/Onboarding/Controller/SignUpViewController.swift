@@ -293,11 +293,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
                    let window = sceneDelegate.window {
                     window.backgroundColor = .systemBackground
-                    UIView.animate(withDuration: 0.3, animations: { window.rootViewController?.view.alpha = 0 }) { _ in
-                        onboardingVC.view.alpha = 0
-                        window.rootViewController = onboardingVC
-                        UIView.animate(withDuration: 0.3) { onboardingVC.view.alpha = 1 }
-                    }
+                    UIView.animate(
+                        withDuration: 0.3,
+                        animations: {
+                            window.rootViewController?.view.alpha = 0
+                        },
+                        completion: { _ in
+                            onboardingVC.view.alpha = 0
+                            window.rootViewController = onboardingVC
+                            UIView.animate(withDuration: 0.3) { onboardingVC.view.alpha = 1 }
+                        }
+                    )
                 }
             }
         }

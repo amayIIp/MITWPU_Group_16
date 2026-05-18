@@ -3,7 +3,7 @@ import UIKit
 class ReadingResultViewController: UIViewController {
 
     // MARK: - IBOutlets (storyboard connections — do not rename)
-    @IBOutlet weak var TroubledWordsLabel: UILabel!
+    @IBOutlet weak var troubledWordsLabel: UILabel!
     @IBOutlet weak var troubledWordsStackView: UIStackView!
     @IBOutlet weak var insightsLabel: UILabel!
     @IBOutlet weak var fluencyCircleView: UIView!

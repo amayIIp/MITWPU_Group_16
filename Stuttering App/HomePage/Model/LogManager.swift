@@ -153,9 +153,15 @@ class LogManager {
     }
 
     private func openDatabase() {
-        let fileURL = try! FileManager.default
-            .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-            .appendingPathComponent(dbName)
+        let fileURL: URL
+        do {
+            fileURL = try FileManager.default
+                .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent(dbName)
+        } catch {
+            print("Error: Unable to locate database path: \(error)")
+            return
+        }
         print("ExerciseLog Database Created")
         if sqlite3_open(fileURL.path, &db) != SQLITE_OK {
             print("Error: Unable to open database.")
@@ -309,10 +315,10 @@ class LogManager {
                 sqlite3_finalize(stmt)
             }
             print("🔄 [MIGRATE] All guest data tables migrated to userId: \(newUserId)")
-            
+
             let deleteOldLogs = "DELETE FROM ExerciseLog;"
             sqlite3_exec(db, deleteOldLogs, nil, nil, nil)
-            
+
             let deleteGuestUser = "DELETE FROM Users WHERE id = ?;"
             if sqlite3_prepare_v2(db, deleteGuestUser, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_text(stmt, 1, (guestId as NSString).utf8String, -1, nil)
@@ -1082,9 +1088,12 @@ extension LogManager {
         guard !sessions.isEmpty else { return nil }
 
         let count       = Double(sessions.count)
-        let avgFluency  = sessions.map { $0["fluencyScore"] as! Int }.reduce(0, +).asDouble / count
-        let avgBlock    = sessions.map { $0["blockPercent"] as! Double }.reduce(0, +) / count
-        let avgAccuracy = sessions.map { $0["correctPercent"] as! Double }.reduce(0, +) / count
+        let fluencyScores = sessions.compactMap { $0["fluencyScore"] as? Int }
+        let blockPercents = sessions.compactMap { $0["blockPercent"] as? Double }
+        let accuracyPercents = sessions.compactMap { $0["correctPercent"] as? Double }
+        let avgFluency  = fluencyScores.reduce(0, +).asDouble / count
+        let avgBlock    = blockPercents.reduce(0, +) / count
+        let avgAccuracy = accuracyPercents.reduce(0, +) / count
 
         let yesterday    = Calendar.current.date(byAdding: .day, value: -1, to: date)!
         let prevSessions = getSessionsForDay(yesterday)
@@ -1094,7 +1103,8 @@ extension LogManager {
         var improvementPercent = 0.0
 
         if hasPreviousDay {
-            let prevAvg        = prevSessions.map { $0["fluencyScore"] as! Int }.reduce(0, +).asDouble / Double(prevSessions.count)
+            let previousFluencyScores = prevSessions.compactMap { $0["fluencyScore"] as? Int }
+            let prevAvg        = previousFluencyScores.reduce(0, +).asDouble / Double(prevSessions.count)
             fluencyGrowth      = avgFluency - prevAvg
             improvementPercent = prevAvg > 0 ? (fluencyGrowth / prevAvg) * 100 : 0
         }
@@ -1164,8 +1174,12 @@ extension LogManager {
             .map { $0 }
     }
 
-    private func fetchLetterAvgs(sql: String, userId: String,
-                                  start: Double, end: Double) -> [String: Double] {
+    private func fetchLetterAvgs(
+        sql: String,
+        userId: String,
+        start: Double,
+        end: Double
+    ) -> [String: Double] {
         var stmt: OpaquePointer?
         var result: [String: Double] = [:]
         if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {

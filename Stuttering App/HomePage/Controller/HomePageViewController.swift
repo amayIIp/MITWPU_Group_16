@@ -41,7 +41,7 @@ class HomePageViewController: UIViewController {
     @IBOutlet weak var insightLabel: UILabel!
     @IBOutlet weak var streakCount: UILabel!
 
-    @IBOutlet weak var RadialCardWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var radialCardWidthConstraint: NSLayoutConstraint!
 
     private var exerciseLogs: [ExerciseLog] = []
     private var readingLogs: [ExerciseLog] = []
@@ -59,7 +59,7 @@ class HomePageViewController: UIViewController {
 
         setupRadialChart()
         loadTaskName()
-        AchievedAwardsUpdate()
+        achievedAwardsUpdate()
         configureNavigationBar()
         displayRandomQuote()
         setupNotificationCentre()
@@ -74,7 +74,7 @@ class HomePageViewController: UIViewController {
         updateTaskStatus()
         loadProgressView()
         loadTaskName()
-        AchievedAwardsUpdate()
+        achievedAwardsUpdate()
         loadHomeInsight()
         setupRightBarButtons()
 
@@ -213,7 +213,7 @@ class HomePageViewController: UIViewController {
                 await MainActor.run {
                     self.loadTaskName()
                     self.loadProgressView()
-                    self.AchievedAwardsUpdate()
+                    self.achievedAwardsUpdate()
                     self.setupRightBarButtons()
                     let streak = DatabaseManager.shared.fetchCurrentStreak()
                     self.streakCount.text = String(streak)
@@ -260,7 +260,7 @@ class HomePageViewController: UIViewController {
     func setupRadialChart() {
         let screenWidth = view.bounds.width
         let dimensions = getRadialChartDimensions(for: screenWidth)
-        RadialCardWidthConstraint.constant = dimensions.cardWidth
+        radialCardWidthConstraint.constant = dimensions.cardWidth
 
         let initialChartData: [RadialData] = [
             RadialData(
@@ -627,7 +627,7 @@ class HomePageViewController: UIViewController {
 }
 
 extension HomePageViewController {
-    func AchievedAwardsUpdate() {
+    func achievedAwardsUpdate() {
         if let award = AwardsManager.shared.getTopAchievedAward() {
             achievedAwardImage.image = UIImage(named: award.id)
             achievedAwardName.text = award.name

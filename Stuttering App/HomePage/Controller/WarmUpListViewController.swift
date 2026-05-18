@@ -142,9 +142,9 @@ class WarmUpListViewController: UIViewController, UITableViewDataSource, UITable
         vc.startingSource = .warmup
         vc.exerciseName = exerciseName
 
-        let ResultNav = UINavigationController(rootViewController: vc)
-        ResultNav.modalPresentationStyle = .fullScreen
-        self.present(ResultNav, animated: true, completion: nil)
+        let resultNav = UINavigationController(rootViewController: vc)
+        resultNav.modalPresentationStyle = .fullScreen
+        self.present(resultNav, animated: true, completion: nil)
     }
 
 }

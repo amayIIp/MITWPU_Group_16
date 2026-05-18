@@ -6,7 +6,7 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
     @IBOutlet weak var collectionView: UICollectionView!
 
     @IBOutlet weak var startButton: UIButton!
-    @IBOutlet weak var DafButton: UIButton!
+    @IBOutlet weak var dafButton: UIButton!
 
     weak var delegate: WorkoutSheetDelegate?
     var currentDAFDelay: Double = 0.0
@@ -58,11 +58,15 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
 
         overlay.onContinue = {
             AppState.isReadAloudCompleted = true
-            UIView.animate(withDuration: 0.3, animations: {
-                overlay.alpha = 0
-            }) { _ in
-                overlay.removeFromSuperview()
-            }
+            UIView.animate(
+                withDuration: 0.3,
+                animations: {
+                    overlay.alpha = 0
+                },
+                completion: { _ in
+                    overlay.removeFromSuperview()
+                }
+            )
         }
     }
 
@@ -78,8 +82,8 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
     }
 
     private func setupButtons() {
-        DafButton?.configuration = .glass()
-        DafButton?.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
+        dafButton?.configuration = .glass()
+        dafButton?.setImage(UIImage(systemName: "ear.badge.checkmark"), for: .normal)
         configureMenu()
     }
 
@@ -117,8 +121,8 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
             children: [offAction, delaysMenu]
         )
 
-        DafButton?.menu = menu
-        DafButton?.showsMenuAsPrimaryAction = true
+        dafButton?.menu = menu
+        dafButton?.showsMenuAsPrimaryAction = true
     }
 
     // MARK: - Bluetooth / Headphone Check
@@ -177,7 +181,12 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
         if indexPath.item == 0 {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "RandomCardCell", for: indexPath) as! RandomCardCell
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: "RandomCardCell",
+                for: indexPath
+            ) as? RandomCardCell else {
+                return UICollectionViewCell()
+            }
 
             cell.setExpanded(isRandomExpanded, animated: false)
 
@@ -214,7 +223,12 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
             return cell
 
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCardCell", for: indexPath) as! CustomCardCell
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: "CustomCardCell",
+                for: indexPath
+            ) as? CustomCardCell else {
+                return UICollectionViewCell()
+            }
 
             // Custom is always the exact opposite of Random
             cell.setExpanded(!isRandomExpanded, animated: false)
@@ -386,11 +400,23 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
 
         if kind == UICollectionView.elementKindSectionHeader {
-            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: TitleHeaderView.identifier, for: indexPath) as! TitleHeaderView
+            guard let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: TitleHeaderView.identifier,
+                for: indexPath
+            ) as? TitleHeaderView else {
+                return UICollectionReusableView()
+            }
             return header
 
         } else if kind == UICollectionView.elementKindSectionFooter {
-            let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CaptionFooterView.identifier, for: indexPath) as! CaptionFooterView
+            guard let footer = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: CaptionFooterView.identifier,
+                for: indexPath
+            ) as? CaptionFooterView else {
+                return UICollectionReusableView()
+            }
             return footer
         }
 

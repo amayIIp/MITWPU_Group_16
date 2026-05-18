@@ -132,7 +132,7 @@ class LoginViewController: UIViewController {
                 AwardsManager.shared.resetDatabaseForNewUser()
                 AppState.resetModuleOnboarding()
                 LogManager.shared.initializeUserIfNeeded()
-                
+
                 AppState.isOnboardingCompleted = false
 
                 // Flat async chain — errors bubble to the single catch block below
@@ -262,7 +262,7 @@ class LoginViewController: UIViewController {
                 AwardsManager.shared.resetDatabaseForNewUser()
                 AppState.resetModuleOnboarding()
                 LogManager.shared.initializeUserIfNeeded()
-                
+
                 AppState.isOnboardingCompleted = false
 
                 // Flat async chain — errors bubble to the single catch block below.
@@ -290,7 +290,7 @@ class LoginViewController: UIViewController {
 
     func performLoginTransition() {
         AppState.isLoginCompleted = true
-        
+
         let executeTransition = {
             if AppState.isOnboardingCompleted {
                 let storyboard = UIStoryboard(name: "Home", bundle: nil)
@@ -298,43 +298,51 @@ class LoginViewController: UIViewController {
 
                 if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
                    let window = sceneDelegate.window {
-                    
+
                     window.backgroundColor = .systemBackground
-                    
-                    UIView.animate(withDuration: 0.3, animations: {
-                        window.rootViewController?.view.alpha = 0
-                    }) { _ in
-                        homeVC.view.alpha = 0
-                        window.rootViewController = homeVC
-                        
-                        UIView.animate(withDuration: 0.3) {
-                            homeVC.view.alpha = 1
+
+                    UIView.animate(
+                        withDuration: 0.3,
+                        animations: {
+                            window.rootViewController?.view.alpha = 0
+                        },
+                        completion: { _ in
+                            homeVC.view.alpha = 0
+                            window.rootViewController = homeVC
+
+                            UIView.animate(withDuration: 0.3) {
+                                homeVC.view.alpha = 1
+                            }
                         }
-                    }
+                    )
                 }
             } else {
                 let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
                 let onboardingVC = storyboard.instantiateViewController(withIdentifier: "PhonemesSelectionViewController")
-                
+
                 if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
                    let window = sceneDelegate.window {
 
                     window.backgroundColor = .systemBackground
 
-                    UIView.animate(withDuration: 0.3, animations: {
-                        window.rootViewController?.view.alpha = 0
-                    }) { _ in
-                        onboardingVC.view.alpha = 0
-                        window.rootViewController = onboardingVC
-                        
-                        UIView.animate(withDuration: 0.3) {
-                            onboardingVC.view.alpha = 1
+                    UIView.animate(
+                        withDuration: 0.3,
+                        animations: {
+                            window.rootViewController?.view.alpha = 0
+                        },
+                        completion: { _ in
+                            onboardingVC.view.alpha = 0
+                            window.rootViewController = onboardingVC
+
+                            UIView.animate(withDuration: 0.3) {
+                                onboardingVC.view.alpha = 1
+                            }
                         }
-                    }
+                    )
                 }
             }
         }
-        
+
         if let presenting = self.presentingViewController {
             presenting.dismiss(animated: false) {
                 executeTransition()

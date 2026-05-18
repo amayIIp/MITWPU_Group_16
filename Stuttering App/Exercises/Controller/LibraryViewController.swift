@@ -125,9 +125,9 @@ class LibraryViewController: UIViewController {
         vc.startingSource = .exercises
         vc.exerciseName = exerciseName
 
-        let ResultNav = UINavigationController(rootViewController: vc)
-        ResultNav.modalPresentationStyle = .fullScreen
-        self.present(ResultNav, animated: true, completion: nil)
+        let resultNav = UINavigationController(rootViewController: vc)
+        resultNav.modalPresentationStyle = .fullScreen
+        self.present(resultNav, animated: true, completion: nil)
     }
 }
 
@@ -152,7 +152,12 @@ extension LibraryViewController: UICollectionViewDataSource, UICollectionViewDel
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
         if indexPath.section == standardGroups.count {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FunExerciseCollectionViewCell.identifier, for: indexPath) as! FunExerciseCollectionViewCell
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: FunExerciseCollectionViewCell.identifier,
+                for: indexPath
+            ) as? FunExerciseCollectionViewCell else {
+                return UICollectionViewCell()
+            }
 
             if let exercise = funSection?.groups.first?.exercises[indexPath.row] {
                 cell.configure(with: exercise)
@@ -160,7 +165,12 @@ extension LibraryViewController: UICollectionViewDataSource, UICollectionViewDel
             return cell
         }
 
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ExerciseCollectionViewCell.identifier, for: indexPath) as! ExerciseCollectionViewCell
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: ExerciseCollectionViewCell.identifier,
+            for: indexPath
+        ) as? ExerciseCollectionViewCell else {
+            return UICollectionViewCell()
+        }
 
         let group = standardGroups[indexPath.section]
         let exercise = group.exercises[indexPath.row]

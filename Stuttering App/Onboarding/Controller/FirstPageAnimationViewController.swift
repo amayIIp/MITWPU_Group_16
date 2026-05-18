@@ -6,8 +6,8 @@ class FirstPageAnimationViewController: UIViewController {
     @IBOutlet weak var infoLabel: UIStackView!
     @IBOutlet weak var buttonView: UIView! // This is your card
 
-    @IBOutlet weak var SignUpButton: UIButton!
-    @IBOutlet weak var SigninButton: UIButton!
+    @IBOutlet weak var signUpButton: UIButton!
+    @IBOutlet weak var signinButton: UIButton!
 
     var hasSetInitialState = false
 

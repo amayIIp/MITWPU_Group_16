@@ -13,7 +13,7 @@ class FunExerciseCollectionViewCell: UICollectionViewCell {
     static let nibName = "FunExerciseCollectionViewCell"
 
     @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var ExerciseThumbnail: UIImageView!
+    @IBOutlet weak var exerciseThumbnail: UIImageView!
     @IBOutlet weak var descriptionLabel: UILabel!
 
     override func awakeFromNib() {
@@ -33,14 +33,14 @@ class FunExerciseCollectionViewCell: UICollectionViewCell {
         self.clipsToBounds = false
         self.contentView.clipsToBounds = false
 
-        ExerciseThumbnail.clipsToBounds = true
-        ExerciseThumbnail.layer.cornerRadius = 20
-        ExerciseThumbnail.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        exerciseThumbnail.clipsToBounds = true
+        exerciseThumbnail.layer.cornerRadius = 20
+        exerciseThumbnail.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
     }
 
     func configure(with exercise: Exercise) {
         titleLabel.text = exercise.name
         descriptionLabel.text = exercise.description
-        ExerciseThumbnail.image = UIImage(named: exercise.name) ?? UIImage(systemName: "dumbbell")
+        exerciseThumbnail.image = UIImage(named: exercise.name) ?? UIImage(systemName: "dumbbell")
     }
 }

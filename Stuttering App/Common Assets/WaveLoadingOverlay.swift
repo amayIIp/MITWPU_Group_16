@@ -195,13 +195,17 @@ class WaveLoadingOverlay: UIView {
     private func performDismiss(animated: Bool, completion: (() -> Void)?) {
         waveView.targetFillLevel = 0.0
         if animated {
-            UIView.animate(withDuration: 0.35, animations: {
-                self.alpha = 0
-            }) { _ in
-                self.waveView.stop()
-                self.removeFromSuperview()
-                completion?()
-            }
+            UIView.animate(
+                withDuration: 0.35,
+                animations: {
+                    self.alpha = 0
+                },
+                completion: { _ in
+                    self.waveView.stop()
+                    self.removeFromSuperview()
+                    completion?()
+                }
+            )
         } else {
             waveView.stop()
             removeFromSuperview()

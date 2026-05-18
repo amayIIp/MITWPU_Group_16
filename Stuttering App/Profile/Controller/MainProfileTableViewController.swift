@@ -50,7 +50,7 @@ class MainProfileTableViewController: UITableViewController {
         datePicker.datePickerMode = .date
         datePicker.preferredDatePickerStyle = .wheels
         datePicker.maximumDate = Date()
-        
+
         dobField.inputView = datePicker
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
     }

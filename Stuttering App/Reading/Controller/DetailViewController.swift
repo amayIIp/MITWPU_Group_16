@@ -247,7 +247,11 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
 
     func togglePlayPause() {
-        isPlaying ? pausePlayback() : startPlayback()
+        if isPlaying {
+            pausePlayback()
+        } else {
+            startPlayback()
+        }
     }
 
     func startPlayback() {
@@ -402,13 +406,13 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
                 loadingOverlay.dismiss {
                     // Using ReadingResultViewController2 (programmatic, no storyboard)
                     // Switch back to ReadingResultViewController if needed
-                    let ResultVC = ReadingResultViewController2()
-                    ResultVC.report = report
-                    ResultVC.preloadedInsight = insightText
+                    let resultVC = ReadingResultViewController2()
+                    resultVC.report = report
+                    resultVC.preloadedInsight = insightText
 
-                    let ResultNav = UINavigationController(rootViewController: ResultVC)
-                    ResultNav.modalPresentationStyle = .fullScreen
-                    self.present(ResultNav, animated: true)
+                    let resultNav = UINavigationController(rootViewController: resultVC)
+                    resultNav.modalPresentationStyle = .fullScreen
+                    self.present(resultNav, animated: true)
                     self.logReadingActivity()
                 }
             }

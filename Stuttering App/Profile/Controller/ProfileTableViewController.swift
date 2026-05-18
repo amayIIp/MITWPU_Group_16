@@ -39,7 +39,7 @@ class ProfileTableViewController: UITableViewController {
         Task {
             // endSession handles the Supabase signOut internally
             await SessionManager.shared.endSession()
-            
+
             await MainActor.run {
                 let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
 

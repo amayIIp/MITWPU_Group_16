@@ -86,9 +86,9 @@ class DailyTasksViewController: UIViewController, UITableViewDataSource, UITable
         vc.startingSource = .dailyTasks
         vc.exerciseName = exerciseName
 
-        let ResultNav = UINavigationController(rootViewController: vc)
-        ResultNav.modalPresentationStyle = .fullScreen
-        self.present(ResultNav, animated: true, completion: nil)
+        let resultNav = UINavigationController(rootViewController: vc)
+        resultNav.modalPresentationStyle = .fullScreen
+        self.present(resultNav, animated: true, completion: nil)
     }
 
     func firstIncompleteTaskIndex() -> Int? {

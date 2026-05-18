@@ -100,12 +100,22 @@ extension AwardMainViewController: UICollectionViewDataSource, UICollectionViewD
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.section == 0 {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "WeeklyChallengeCell", for: indexPath) as! WeeklyChallengeCell
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: "WeeklyChallengeCell",
+                for: indexPath
+            ) as? WeeklyChallengeCell else {
+                return UICollectionViewCell()
+            }
             cell.delegate = self
             cell.configure(with: weeklyAward)
             return cell
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AwardStandardCell", for: indexPath) as! AwardStandardCell
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: "AwardStandardCell",
+                for: indexPath
+            ) as? AwardStandardCell else {
+                return UICollectionViewCell()
+            }
             cell.delegate = self
             if indexPath.item == 0 {
                 cell.configureAsAchieved(with: achievedAward)

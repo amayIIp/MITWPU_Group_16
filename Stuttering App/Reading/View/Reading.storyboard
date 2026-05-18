@@ -359,7 +359,7 @@
                     </view>
                     <navigationItem key="navigationItem" title="Read Aloud" id="HoA-l0-QKa"/>
                     <connections>
-                        <outlet property="DafButton" destination="aNv-b0-udD" id="k6N-0K-rRy"/>
+                        <outlet property="dafButton" destination="aNv-b0-udD" id="k6N-0K-rRy"/>
                         <outlet property="startButton" destination="z4t-vA-Pnh" id="axh-wm-Uro"/>
                         <outlet property="tableView" destination="exy-tk-j0e" id="SA9-fW-33L"/>
                     </connections>
@@ -627,7 +627,7 @@
                     </view>
                     <navigationItem key="navigationItem" title="Result" id="ktz-5O-LEv"/>
                     <connections>
-                        <outlet property="TroubledWordsLabel" destination="ImP-0t-lT4" id="lnX-hu-5w8"/>
+                        <outlet property="troubledWordsLabel" destination="ImP-0t-lT4" id="lnX-hu-5w8"/>
                         <outlet property="blockPercentage" destination="ePt-2l-B6Q" id="y2k-zL-XPM"/>
                         <outlet property="fluencyCircleView" destination="7iJ-3z-EIt" id="455-kC-lim"/>
                         <outlet property="insightsLabel" destination="8Kw-PC-H9s" id="q5X-CT-n2i"/>
@@ -727,7 +727,7 @@
                     </view>
                     <navigationItem key="navigationItem" title="Read Aloud" id="iyZ-DC-N7P"/>
                     <connections>
-                        <outlet property="DafButton" destination="j9a-d7-e0p" id="sMD-yt-3z4"/>
+                        <outlet property="dafButton" destination="j9a-d7-e0p" id="sMD-yt-3z4"/>
                         <outlet property="collectionView" destination="4GO-mI-3uC" id="9eM-Px-3WH"/>
                         <outlet property="startButton" destination="IzY-aj-M1H" id="pXR-t5-NFi"/>
                     </connections>

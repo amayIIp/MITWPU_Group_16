@@ -94,9 +94,9 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
               !name.trimmingCharacters(in: .whitespaces).isEmpty else {
             return
         }
-        
+
         SessionManager.shared.startGuestSession()
-        
+
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
 
         var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
