@@ -1,8 +1,16 @@
-
-
 # Spasht: Real-Time Speech Therapy App
 
-> An iOS app that delivers immediate, on-device feedback to people with stuttering disfluencies. Spasht listens to your speech, aligns it to reference text in real time using Dynamic Time Warping, and gives you detailed fluency metrics — all without a single byte leaving your phone.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cef2abff-da21-4821-b782-4900c5a155ea" width="120"/>
+  <img src="https://github.com/user-attachments/assets/2701d49f-8325-401e-b89d-58255aa77dd9" width="120"/>
+  <img src="https://github.com/user-attachments/assets/74304498-e948-4f73-a15b-08761795f55e" width="120"/>
+  <img src="https://github.com/user-attachments/assets/6fcc67ec-d159-402c-afd4-24f9ca4fb4ac" width="120"/>
+  <img src="https://github.com/user-attachments/assets/68c85f4e-4632-432e-b192-629edf961c28" width="120"/>
+</p>
+
+# Spasht — Real-Time Speech Therapy App
+
+> An iOS app that helps people who stutter practice speech independently, receive fluency feedback, and track improvement over time.
 
 ---
 
@@ -14,6 +22,7 @@
 - [Module Breakdown](#module-breakdown)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
+- [WhisperKit Model Setup](#whisperkit-model-setup)
 - [Data & Privacy](#data--privacy)
 - [Team](#team)
 - [License](#license)
@@ -22,83 +31,138 @@
 
 ## Overview
 
-Spasht (meaning *clear* or *articulate* in Sanskrit) is a clinically-inspired speech therapy companion built for people who stutter. The app guides users through a structured daily routine of warm-up exercises, reading sessions, and open-ended conversations, then uses a custom stutter-analysis pipeline to surface exactly which words are causing difficulty and why.
+Spasht, meaning *clear* or *articulate* in Sanskrit, is a clinically-inspired iOS speech practice app built for people who stutter.
 
-Everything runs on-device using Apple's `SFSpeechRecognizer`, `AVAudioEngine`, and a WhisperKit fallback, so there is no cloud processing latency and no privacy trade-off.
+Many people who stutter find it difficult to practice alone because they do not get instant feedback. Spasht solves this by providing guided speech exercises, AI-generated reading practice, open-ended conversation mode, and detailed fluency analytics.
+
+The app records the user's speech, transcribes it, compares it with the expected text, and detects possible repetitions, prolongations, and blocks. It then gives a fluency score, troubled words, and progress insights.
 
 ---
 
 ## Key Features
 
-### 🎤 Real-Time Stutter Detection
-- Captures raw PCM audio via a live `AVAudioEngine` tap.
-- Runs speech recognition on-device using `SFSpeechRecognizer` with `requiresOnDeviceRecognition = true`.
-- A WhisperKit model is invoked as a higher-accuracy fallback when a session ends.
-- A custom `StutterAnalyzer` compares the recognized transcript against the reference text using Dynamic Time Warping (DTW) to pinpoint repetitions, prolongations, and blocks with timestamp-level precision.
+### Real-Time Stutter Detection
 
-### 📊 Fluency Analytics
-- Each reading session produces a `StutterJSONReport` containing:
-  - **Fluency Score** (0–100)
-  - Per-category breakdown: repetitions, prolongations, blocks, correct words
-  - **Troubled Words** list with disfluency type and first-letter analysis
-  - **Longest smooth paragraph** streak
-- Conversation sessions track filler-word percentage and longest uninterrupted speech run.
-- A bar waveform view running at 60 fps via `CADisplayLink` gives instant visual feedback during recording.
+- Captures speech using `AVAudioEngine`.
+- Uses Apple `SFSpeechRecognizer` for speech recognition.
+- Uses WhisperKit as a higher-accuracy fallback transcription model.
+- Compares the user's transcript with the reference text.
+- Detects:
+  - repetitions
+  - prolongations
+  - blocks
+  - troubled words
+  - difficult starting letters
 
-### 📅 Daily Task System
-- Five personalized daily tasks are generated each session.
-- A radial progress chart and three colour-coded progress bars (Exercises / Reading / Conversation) visualize goal completion.
-- Daily streaks are tracked and displayed with an animated flame badge.
+### Fluency Analytics
 
-### 🧩 Exercises & Warm-Ups
-- A **Library** of structured speech exercises with instruction screens and a results summary.
-- **Fun Exercises**: Story Cubes (creative spoken storytelling) and a Video Diary feature.
-- Exercises are categorised by source (`exercises`, `warmup`, `dailyTasks`) and duration.
+Each reading session produces a `StutterJSONReport` containing:
 
-### 📖 Guided Reading Sessions
-- Paragraph-by-paragraph reading prompts with smooth scroll alignment.
-- Real-time waveform feedback during recording.
-- Post-session analysis drives the per-letter stutter heatmap.
+- fluency score from 0 to 100
+- repetition percentage
+- prolongation percentage
+- block percentage
+- correct speech percentage
+- troubled words
+- first-letter analysis
+- session duration
 
-### 💬 Open Conversation Mode
-- Free-form voice recording via `VoiceViewController`.
-- Filler-word detection and longest-smooth-talk metrics are stored per session.
+### Daily Task System
 
-### 🏆 Awards & Gamification
-- An `AwardsManager` tracks progress across multiple achievement categories.
-- Weekly challenges unlock new badge tiers.
-- The most recently achieved award is featured on the Home screen.
+- Generates five daily practice tasks.
+- Tracks daily completion.
+- Maintains streaks.
+- Shows progress for:
+  - exercises
+  - reading
+  - conversation
 
-### ☁️ Optional Cloud Sync (Supabase)
-- Account mode enables full bidirectional sync via Supabase.
-- A delta-sync mechanism (`hasPendingCloudChanges`) avoids unnecessary full pulls.
-- Guest mode keeps all data 100% local with zero network calls.
-- A strict `guardAccountMode()` guard prevents accidental writes in guest mode.
+### Exercises & Warm-Ups
 
-### 🧪 Onboarding & Baseline Assessment
-- An animated onboarding flow collects user name, phoneme preferences, and records a baseline reading session.
-- The `StutterAnalyzer` generates an initial report that seeds the user's personal profile.
+Includes structured fluency exercises such as:
+
+- Airflow Practice
+- Gentle Onset
+- Flexible Pacing
+- Light Contacts
+- Prolongation
+- Preparatory Set
+- Pull-Out
+- Block Correction
+
+Also includes fun exercises like:
+
+- Story Cubes
+- Video Diary
+- Tongue Twisters
+- Mirror Routine
+
+### Guided Reading Mode
+
+- Generates AI paragraphs based on selected topics.
+- Can include words starting with the user's difficult phonemes.
+- Highlights text while the user reads.
+- Records audio and gives post-session fluency feedback.
+- Uses the stuttering detection algorithm to generate a detailed report.
+
+### Conversation Mode
+
+- Lets users speak with an AI conversation partner.
+- Uses speech-to-text for user input.
+- Uses text-to-speech for AI replies.
+- Keeps responses short and supportive.
+- Helps users practice spontaneous speaking.
+
+### Awards & Gamification
+
+- Tracks achievements.
+- Supports weekly challenges.
+- Rewards consistency.
+- Encourages users to keep practicing regularly.
+
+### Optional Cloud Sync
+
+- Guest mode stores everything locally.
+- Account mode enables Supabase sync.
+- Syncs structured analytics only.
+- Raw audio is not uploaded.
 
 ---
 
 ## Architecture
 
-```
+```text
 Spasht/
 ├── AppDelegate.swift
 ├── SceneDelegate.swift
-├── Onboarding/          # User registration, login, and baseline speech test
-├── HomePage/            # Dashboard: streaks, daily tasks, progress bars, awards
-├── Exercises/           # Structured exercises, warm-ups, fun exercises (Story Cubes, Video Diary)
-├── Reading/             # Guided paragraph reading with real-time waveform
-├── Conversation/        # Free-form voice session recording and analysis
-├── Summary/             # Post-session analytics report
-├── Awards/              # Achievement system and badge gallery
-├── Profile/             # User profile management
-└── Networking/          # Supabase client, session manager, bidirectional sync engine
+├── Onboarding/
+├── HomePage/
+├── Exercises/
+├── Reading/
+├── Conversation/
+├── Summary/
+├── Awards/
+├── Profile/
+└── Networking/
 ```
 
-The app follows an **MVC pattern** with each module containing `Controller/`, `Model/`, and `View/` subdirectories. Shared managers (`LogManager`, `DatabaseManager`, `AwardsManager`, `SessionManager`, `SupabaseSyncManager`) are singletons accessed across modules.
+The app follows an MVC-style structure.
+
+Each major feature is divided into:
+
+- `Controller`
+- `Model`
+- `View`
+
+Shared managers are used across the app:
+
+- `LogManager`
+- `DatabaseManager`
+- `AwardsManager`
+- `SessionManager`
+- `SupabaseSyncManager`
+- `GeminiService`
+- `WhisperDetectionManager`
 
 ---
 
@@ -106,16 +170,86 @@ The app follows an **MVC pattern** with each module containing `Controller/`, `M
 
 | Module | Key Files | Responsibility |
 |---|---|---|
-| **Onboarding** | `TestViewController`, `LastOnboardingViewController`, `LoginViewController`, `SignUpViewController` | Baseline speech test, DTW analysis, account creation |
-| **Home** | `HomePageViewController`, `PracticeViewController`, `DailyTasksViewController` | Dashboard, streak display, daily goal tracking |
-| **Exercises** | `ExerciseTemplateViewController`, `ExerciseTabViewController`, `LibraryViewController` | Exercise playback, instruction screens, results |
-| **Fun Exercises** | `StoryCubesViewController`, `VideoDiaryViewController` | Creative spoken exercises |
-| **Reading** | `ReadingViewController` (in `Controller/`) | Paragraph reading with waveform and scoring |
-| **Conversation** | `VoiceViewController` | Free-form recording with filler-word analysis |
-| **Summary** | `SummaryViewController` | Session-end analytics report |
-| **Awards** | `AwardMainViewController`, `AwardsBaseViewController` | Achievement gallery, weekly challenges |
-| **Profile** | Profile screens | User info, goals, account settings |
-| **Networking** | `SupabaseSyncManager`, `SessionManager`, `SupabaseManager` | Delta cloud sync, auth guard, Supabase client |
+| Onboarding | `TestViewController`, `LoginViewController`, `SignUpViewController` | Baseline test, login, signup |
+| Home | `HomePageViewController`, `DailyTasksViewController` | Dashboard, streaks, daily goals |
+| Exercises | `ExerciseTemplateViewController`, `LibraryViewController` | Guided fluency exercises |
+| Reading | `DetailViewController`, `ReadingResultViewController`, `StutterAnalyzer` | Reading practice and fluency scoring |
+| Conversation | `VoiceViewController`, `VoiceViewModel` | AI voice conversation |
+| Awards | `AwardsManager`, `AwardsEvaluator` | Achievement tracking |
+| Profile | Profile controllers | User details and goals |
+| Networking | `SupabaseSyncManager`, `SessionManager`, `SupabaseManager` | Auth and cloud sync |
+
+---
+
+## Stuttering Detection Algorithm
+
+The core stuttering detection logic is implemented in `StutterAnalyzer.swift`.
+
+The pipeline works as follows:
+
+1. The app records the user's speech.
+2. Speech is converted into text using Apple Speech Recognition or WhisperKit.
+3. The reference paragraph and transcript are normalized.
+4. The app aligns both word sequences using dynamic programming.
+5. It classifies differences as:
+   - repetition
+   - prolongation
+   - block
+6. It calculates a weighted fluency score.
+7. It returns a structured JSON report.
+
+### Repetition Detection
+
+If the user repeats the same word immediately, it is marked as a repetition.
+
+Example:
+
+```text
+Reference: I want to go
+Spoken:    I I want to go
+```
+
+Detected repetition:
+
+```text
+I
+```
+
+### Prolongation Detection
+
+If the spoken word does not match the expected word, or an extra non-repeated word appears, it is treated as a prolongation-like disfluency.
+
+### Block Detection
+
+Blocks are detected using word timing.
+
+The app calculates:
+
+```text
+duration per character = word duration / number of characters
+```
+
+Then it compares each word with the user's average speaking pace.
+
+A word is marked as a block if it takes significantly longer than the user's average duration-per-character.
+
+This avoids false positives for long words.
+
+### Fluency Score
+
+The app applies weighted penalties:
+
+```text
+repetition   = 1.0
+prolongation = 1.5
+block        = 2.0
+```
+
+Formula:
+
+```text
+fluencyScore = 100 - ((weightedPenalty / totalReferenceWords) * 100)
+```
 
 ---
 
@@ -123,16 +257,18 @@ The app follows an **MVC pattern** with each module containing `Controller/`, `M
 
 | Layer | Technology |
 |---|---|
-| **Language** | Swift 5.9+ |
-| **UI Framework** | UIKit (Storyboard + programmatic views) |
-| **Speech Recognition** | `SFSpeechRecognizer` (Apple, on-device) |
-| **Audio Engine** | `AVAudioEngine` + `AVAudioFile` |
-| **ML / Transcription** | WhisperKit (on-device Whisper model fallback) |
-| **Alignment Algorithm** | Custom Swift DTW implementation |
-| **Local Database** | SQLite3 (via direct C API) |
-| **Cloud Backend** | Supabase (Auth + Postgres) |
-| **Minimum iOS** | iOS 16.0 |
-| **Xcode** | 14.0 or newer |
+| Language | Swift |
+| UI Framework | UIKit, Storyboards |
+| Audio | AVAudioEngine, AVAudioSession, AVAudioFile |
+| Speech Recognition | SFSpeechRecognizer |
+| Transcription Fallback | WhisperKit |
+| AI Generation | Apple Foundation Models / Gemini fallback |
+| Text-to-Speech | AVSpeechSynthesizer |
+| Local Database | SQLite3 |
+| Cloud Backend | Supabase Auth + Postgres |
+| Authentication | Supabase, Google Sign-In |
+| Platform | iOS |
+| IDE | Xcode |
 
 ---
 
@@ -140,45 +276,158 @@ The app follows an **MVC pattern** with each module containing `Controller/`, `M
 
 ### Prerequisites
 
-- **Xcode 14.0+** installed on macOS
-- A **physical iPhone** running **iOS 16.0 or later**
-  > ⚠️ A real device is strongly recommended. The iOS Simulator's microphone pipeline is unreliable for live audio analysis.
+- macOS
+- Xcode 14 or later
+- iPhone running iOS 16 or later
+- Internet connection for first-time model download
+- Python 3 recommended for model setup
 
-### Installation
+A physical iPhone is recommended because the iOS simulator microphone pipeline can be unreliable for live speech analysis.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/amayIIp/MITWPU_Group_16.git
-   cd MITWPU_Group_16
-   ```
+---
 
-2. **Open in Xcode**
-   ```bash
-   open "Stuttering App.xcodeproj"
-   ```
+## Installation
 
-3. **Configure signing**
-   - Select the project in the navigator.
-   - Under *Signing & Capabilities*, set your Apple Developer Team.
+### 1. Clone the repository
 
-4. **Connect your iPhone** and select it as the run destination.
+```bash
+git clone https://github.com/amayIIp/MITWPU_Group_16.git
+cd MITWPU_Group_16
+```
 
-5. **Build & Run**
-   ```
-   Cmd + R
-   ```
+### 2. Set up the WhisperKit model
 
-6. **Grant permissions** when prompted:
-   - Microphone access (required for all recording features)
-   - Speech Recognition access (required for on-device transcription)
+If the folder below already exists, you can skip this step:
 
-### First Launch
+```text
+Stuttering App/openai_whisper-small.en
+```
 
-On first launch, you will be taken through the onboarding flow:
-1. Enter your name and select the phoneme sounds you find most challenging.
-2. Complete a baseline reading test (three paragraphs).
-3. The app analyses your speech and generates your initial fluency profile.
-4. You can optionally create an account to enable cloud sync across devices.
+If it does not exist, follow the model setup section below.
+
+### 3. Open the project in Xcode
+
+```bash
+open "Stuttering App.xcodeproj"
+```
+
+### 4. Configure signing
+
+In Xcode:
+
+1. Select the project.
+2. Go to **Signing & Capabilities**.
+3. Select your Apple Developer Team.
+4. Connect your iPhone.
+5. Choose your iPhone as the run destination.
+
+### 5. Build and run
+
+Press:
+
+```text
+Cmd + R
+```
+
+### 6. Grant permissions
+
+When prompted, allow:
+
+- Microphone access
+- Speech Recognition access
+
+---
+
+## WhisperKit Model Setup
+
+Spasht uses the WhisperKit model folder:
+
+```text
+openai_whisper-small.en
+```
+
+The app expects the model at:
+
+```text
+Stuttering App/openai_whisper-small.en
+```
+
+This model is used for offline transcription fallback.
+
+---
+
+### Option 1: If You Have Python Installed
+
+Run this from the repository root:
+
+```bash
+python3 setup_model.py
+```
+
+If your system uses `python` instead of `python3`, run:
+
+```bash
+python setup_model.py
+```
+
+The script will:
+
+- check if `huggingface_hub` is installed
+- install it automatically if missing
+- download the WhisperKit model
+- copy it into the Xcode project folder
+
+---
+
+### Option 2: If You Do Not Have Python Installed
+
+Run:
+
+```bash
+bash setup_model.sh
+```
+
+This script will:
+
+- check whether Python 3 is available
+- install Python 3 using Homebrew if missing
+- run `setup_model.py`
+- download the WhisperKit model automatically
+
+This may take a few minutes because the model is several hundred MB.
+
+---
+
+### Xcode Model Check
+
+After downloading, make sure this folder is visible in Xcode:
+
+```text
+openai_whisper-small.en
+```
+
+It should be added as a folder reference to the app target.
+
+If the app cannot find the model, remove and re-add the folder in Xcode:
+
+1. Right-click the project.
+2. Choose **Add Files to "Stuttering App"**.
+3. Select `openai_whisper-small.en`.
+4. Enable **Copy items if needed**.
+5. Select the app target.
+6. Add it as a folder reference.
+
+---
+
+## First Launch
+
+On first launch:
+
+1. Enter your name.
+2. Select phonemes or sounds you find difficult.
+3. Complete a baseline reading test.
+4. The app generates your initial fluency profile.
+5. You can continue as guest or create an account.
 
 ---
 
@@ -186,11 +435,22 @@ On first launch, you will be taken through the onboarding flow:
 
 | Concern | How Spasht Handles It |
 |---|---|
-| Audio storage | Audio is written to a **temporary file** during a session and processed locally. It is never uploaded. |
-| Speech recognition | Uses `requiresOnDeviceRecognition = true` — no audio leaves the device for transcription. |
-| Analytics | All session data is stored in a local **SQLite database** on the device. |
-| Cloud sync | Only **structured analytics** (scores, word lists, counts) are synced to Supabase — never raw audio. Cloud sync is **opt-in** and requires account creation. |
-| Guest mode | In guest mode, the `guardAccountMode()` guard blocks every Supabase write call, ensuring zero network traffic. |
+| Audio storage | Audio is stored temporarily during a session and processed locally. |
+| Speech recognition | Uses Apple Speech Recognition and WhisperKit for transcription. |
+| Local analytics | Session data is stored in SQLite on the device. |
+| Cloud sync | Only structured analytics are synced to Supabase. |
+| Raw audio | Raw audio is not uploaded. |
+| Guest mode | Guest users remain local-only. |
+| Account mode | Supabase sync is enabled only after login/signup. |
+
+---
+
+## Limitations
+
+- The app is not a medical diagnostic tool.
+- Detection accuracy depends on transcription quality.
+- Background noise can affect speech recognition.
+- The stuttering detection algorithm is indicative and should be clinically validated before medical use.
 
 ---
 
@@ -198,16 +458,17 @@ On first launch, you will be taken through the onboarding flow:
 
 Built by **MIT-WPU Group 16** as part of a project submission.
 
-
-
-| Naitik Rathore  |
-| Prathamesh Patil  |
+| Team Members |
+|---|
+| Naitik Rathore |
+| Prathamesh Patil |
 | Amay Puthiyedath |
 | Krish Jain |
 
-
+---
 
 ## License
 
-This project is intended for **educational and clinical research purposes only**.  
+This project is intended for educational and clinical research purposes only.
+
 Not cleared for medical or diagnostic use. All analysis is indicative only.
