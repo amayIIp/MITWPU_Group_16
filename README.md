@@ -1,13 +1,3 @@
-# Spasht: Real-Time Speech Therapy App
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/cef2abff-da21-4821-b782-4900c5a155ea" width="120"/>
-  <img src="https://github.com/user-attachments/assets/2701d49f-8325-401e-b89d-58255aa77dd9" width="120"/>
-  <img src="https://github.com/user-attachments/assets/74304498-e948-4f73-a15b-08761795f55e" width="120"/>
-  <img src="https://github.com/user-attachments/assets/6fcc67ec-d159-402c-afd4-24f9ca4fb4ac" width="120"/>
-  <img src="https://github.com/user-attachments/assets/68c85f4e-4632-432e-b192-629edf961c28" width="120"/>
-</p>
-
 # Spasht — Real-Time Speech Therapy App
 
 > An iOS app that helps people who stutter practice speech independently, receive fluency feedback, and track improvement over time.
