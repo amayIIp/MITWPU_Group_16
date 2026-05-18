@@ -159,7 +159,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func setupAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.allowBluetoothHFP, .allowBluetoothA2DP, .defaultToSpeaker])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch { print("Audio Session Setup Error: \(error)") }
     }
@@ -176,6 +176,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else { return }
         recognitionRequest.shouldReportPartialResults = true
+        recognitionRequest.requiresOnDeviceRecognition = true
         
         if startTime == nil { startTime = Date() }
         
@@ -375,7 +376,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             let referenceText = self.textToDisplay
             let segments = self.recordedSegments
             let jsonResult = await Task.detached(priority: .userInitiated) {
-                return StutterAnalyzer.analyze(
+                return await StutterAnalyzer.analyze(
                     reference: referenceText,
                     transcript: finalTranscript,
                     segments: segments,

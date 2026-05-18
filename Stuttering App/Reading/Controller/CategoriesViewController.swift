@@ -56,7 +56,7 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
             overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-        overlay.onContinue = { [weak self] in
+        overlay.onContinue = {
             AppState.isReadAloudCompleted = true
             UIView.animate(withDuration: 0.3, animations: {
                 overlay.alpha = 0

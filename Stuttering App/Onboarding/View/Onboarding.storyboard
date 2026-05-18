@@ -394,7 +394,7 @@
                                         </constraints>
                                         <color key="tintColor" systemColor="systemGray2Color"/>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="tinted" image="google-5" title="Sign in with Google" imagePadding="17" cornerStyle="capsule">
+                                        <buttonConfiguration key="configuration" style="tinted" image="google-5" title="Sign Up with Google" imagePadding="17" cornerStyle="capsule">
                                             <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="3" scale="small"/>
                                             <color key="baseForegroundColor" systemColor="labelColor"/>
                                         </buttonConfiguration>
@@ -521,7 +521,7 @@
                                     <action selector="continueButtonTapped:" destination="ddt-Di-a0D" eventType="touchUpInside" id="lit-d9-s6R"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0h5-AS-7fF">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0h5-AS-7fF">
                                 <rect key="frame" x="32" y="386.66666666666669" width="329" height="79"/>
                                 <string key="text">label
 </string>
@@ -1923,7 +1923,7 @@ to say?</string>
         <!--Navigation Controller-->
         <scene sceneID="yoR-gk-Btf">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="knh-60-rFP" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="LoginNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="knh-60-rFP" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="Iyy-n8-Gtd">
                         <rect key="frame" x="0.0" y="118" width="393" height="106"/>
@@ -1963,7 +1963,6 @@ to say?</string>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="JMr-IO-r3c" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="lmC-DR-rqm">
-                        <rect key="frame" x="0.0" y="16" width="393" height="106"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1978,10 +1977,9 @@ to say?</string>
         <!--Navigation Controller-->
         <scene sceneID="mnt-G6-JMo">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="1Os-i5-dul" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="SignupNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="1Os-i5-dul" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="Q96-iv-28q">
-                        <rect key="frame" x="0.0" y="118" width="393" height="106"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1996,7 +1994,7 @@ to say?</string>
         <!--Navigation Controller-->
         <scene sceneID="71t-sE-wiJ">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="8oH-cB-KOC" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="OnboardingNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="8oH-cB-KOC" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="3Pj-kX-THw">
                         <rect key="frame" x="0.0" y="118" width="393" height="106"/>

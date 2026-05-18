@@ -192,7 +192,7 @@
         <!--View Controller-->
         <scene sceneID="ZFz-ku-lLh">
             <objects>
-                <viewController id="dJ2-O4-rNn" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ProfilePlaceholderViewController" id="dJ2-O4-rNn" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8Ca-bm-d7g">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

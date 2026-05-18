@@ -283,7 +283,7 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let req = recognitionRequest else { return }
         req.shouldReportPartialResults = true
-        req.requiresOnDeviceRecognition = false
+        req.requiresOnDeviceRecognition = true
         
         let inputNode = audioEngine.inputNode
         recognitionTask = speechRecognizer?.recognitionTask(with: req) { [weak self] result, error in

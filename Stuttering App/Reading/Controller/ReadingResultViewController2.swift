@@ -330,7 +330,7 @@ class ReadingResultViewController2: UIViewController {
         let chipFont = UIFont.systemFont(ofSize: 13, weight: .semibold)
         let chipHPad: CGFloat = 24   // 12 left + 12 right inside pill
         let chipSpacing: CGFloat = 8
-        let maxRowWidth = UIScreen.main.bounds.width - 40 - 36
+        let maxRowWidth = view.bounds.width - 40 - 36
 
         var currentRow = makeChipRow()
         troubledFlowStack.addArrangedSubview(currentRow)

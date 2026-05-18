@@ -259,7 +259,7 @@
                                                                                         <stackView opaque="NO" contentMode="scaleToFill" alignment="bottom" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="nd4-Ec-SMy">
                                                                                             <rect key="frame" x="0.0" y="0.0" width="45.666666666666664" height="24"/>
                                                                                             <subviews>
-                                                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="76" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hQv-Kc-pI9">
+                                                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="76" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hQv-Kc-pI9">
                                                                                                     <rect key="frame" x="0.0" y="0.0" width="28.666666666666668" height="24"/>
                                                                                                     <constraints>
                                                                                                         <constraint firstAttribute="height" constant="24" id="480-e2-26d"/>
@@ -279,7 +279,7 @@
                                                                                                 </label>
                                                                                             </subviews>
                                                                                         </stackView>
-                                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fluency Growth" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2sN-zm-7af">
+                                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fluency Growth" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2sN-zm-7af">
                                                                                             <rect key="frame" x="0.0" y="24" width="103.66666666666667" height="16"/>
                                                                                             <constraints>
                                                                                                 <constraint firstAttribute="height" constant="16" id="YdG-M0-amL"/>
@@ -579,7 +579,7 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Summary" id="lxG-QW-HfZ">
                         <rightBarButtonItems>
-                            <barButtonItem style="plain" id="777-Rv-BLF">
+                            <barButtonItem id="777-Rv-BLF">
                                 <imageReference key="image" image="calendar" catalog="system" symbolScale="default"/>
                                 <connections>
                                     <segue destination="h0h-cw-Ka0" kind="presentation" identifier="showCalendar" id="s9a-5I-fhK"/>
@@ -617,7 +617,7 @@
         <!--Navigation Controller-->
         <scene sceneID="hAY-bo-qfw">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Iqz-XB-FqJ" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="SummaryNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="Iqz-XB-FqJ" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="ufs-L1-fBq">
                         <rect key="frame" x="0.0" y="118" width="393" height="54"/>

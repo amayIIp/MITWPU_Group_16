@@ -166,8 +166,8 @@ The app follows an **MVC pattern** with each module containing `Controller/`, `M
 | **Alignment Algorithm** | Custom Swift DTW implementation |
 | **Local Database** | SQLite3 (via direct C API) |
 | **Cloud Backend** | Supabase (Auth + Postgres) |
-| **Minimum iOS** | iOS 16.0 |
-| **Xcode** | 14.0 or newer |
+| **Minimum iOS** | iOS 26.0 |
+| **Xcode** | 26.0 or newer |
 
 ---
 
@@ -175,8 +175,8 @@ The app follows an **MVC pattern** with each module containing `Controller/`, `M
 
 ### Prerequisites
 
-- **Xcode 14.0+** installed on macOS
-- A **physical iPhone** running **iOS 16.0 or later**
+- **Xcode 26.0+** installed on macOS
+- A **physical iPhone** running **iOS 26.0 or later**
   > ⚠️ A real device is strongly recommended. The iOS Simulator's microphone pipeline is unreliable for live audio analysis.
 
 ### Installation

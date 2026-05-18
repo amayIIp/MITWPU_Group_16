@@ -11,7 +11,7 @@
         <!--View Controller-->
         <scene sceneID="HnH-PF-2rO">
             <objects>
-                <viewController id="sJF-HH-OlI" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="MainPlaceholderViewController" id="sJF-HH-OlI" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IsO-Z7-fhf">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

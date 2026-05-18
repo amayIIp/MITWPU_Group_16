@@ -148,7 +148,7 @@ class OnboardingInstructionsViewController: UIViewController {
     }
 
     private func requestMicrophonePermission() {
-        AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
+        AVAudioApplication.requestRecordPermission { [weak self] granted in
             DispatchQueue.main.async {
                 if granted {
                     self?.startCountdown()

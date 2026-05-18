@@ -475,7 +475,7 @@ class HomePageViewController: UIViewController {
             
             if task.isCompleted {
                 iconViews[index]?.image = checkmarkIcon
-                iconViews[index]?.tintColor = UIColor(named: "green")
+                iconViews[index]?.tintColor = UIColor(named: "CompletedGreen")
                 completedCount += 1
             } else {
                 iconViews[index]?.image = circleIcon

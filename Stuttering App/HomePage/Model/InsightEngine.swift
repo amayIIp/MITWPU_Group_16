@@ -54,7 +54,7 @@ actor InsightEngine {
             return aiInsight
         }
         // Tier 2: Groq API (cloud fallback — skipped when offline)
-        if NetworkMonitor.shared.isConnected,
+        if await NetworkMonitor.shared.isConnected,
            let groqInsight = await generateDayInsightGroq(context: context) {
             return groqInsight
         }
@@ -68,7 +68,7 @@ actor InsightEngine {
             return aiHeadline
         }
         // Tier 2: Groq API (cloud fallback — skipped when offline)
-        if NetworkMonitor.shared.isConnected,
+        if await NetworkMonitor.shared.isConnected,
            let groqHeadline = await generateOverallHeadlineGroq(context: context) {
             return groqHeadline
         }
@@ -96,7 +96,7 @@ actor InsightEngine {
         }
 
         // Tier 2: Groq API (skipped when offline)
-        if NetworkMonitor.shared.isConnected,
+        if await NetworkMonitor.shared.isConnected,
            let groqResult = await GroqService.shared.generate(
                systemInstruction: sessionSystemInstruction, prompt: prompt
            ), isValidInsight(groqResult) {

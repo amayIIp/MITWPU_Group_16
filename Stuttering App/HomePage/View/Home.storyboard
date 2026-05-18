@@ -1363,7 +1363,7 @@
         <!--Navigation Controller-->
         <scene sceneID="F6i-iR-egK">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="5rr-EJ-8LL" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="HomeNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="5rr-EJ-8LL" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="p14-Av-zzq">
                         <rect key="frame" x="0.0" y="118" width="393" height="106"/>
@@ -1527,7 +1527,7 @@
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Practice" id="Kj0-W8-aT7">
-                        <barButtonItem key="rightBarButtonItem" title="Set Goals" style="plain" id="nz0-ha-w87">
+                        <barButtonItem key="rightBarButtonItem" title="Set Goals" id="nz0-ha-w87">
                             <connections>
                                 <action selector="setGoalsTapped:" destination="SRV-V4-yYd" id="TMj-Ye-XhV"/>
                             </connections>
@@ -1547,7 +1547,7 @@
         <!--Navigation Controller-->
         <scene sceneID="wId-At-A1w">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="X1U-H5-qZY" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="GoalsNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="X1U-H5-qZY" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="ySe-yC-Tnm">
                         <rect key="frame" x="0.0" y="118" width="393" height="106"/>

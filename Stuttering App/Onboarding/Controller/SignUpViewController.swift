@@ -57,7 +57,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         }
         
         // --- Fat-finger fix: ensure minimum 44pt touch targets ---
-        continueAsGuest?.contentEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        applyButtonInsets(to: continueAsGuest, top: 12, leading: 16, bottom: 12, trailing: 16)
         
         // --- Password Toggle Config ---
         passwordTextField.isSecureTextEntry = true
@@ -168,9 +168,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         
     @IBAction func switchToSigninButtonTapped(_ sender: UIButton) {
         // Fat-finger fix applied on first tap if not already set
-        if sender.contentEdgeInsets == .zero {
-            sender.contentEdgeInsets = UIEdgeInsets(top: 12, left: 8, bottom: 12, right: 8)
-        }
+        applyButtonInsetsIfNeeded(to: sender, top: 12, leading: 8, bottom: 12, trailing: 8)
         guard let presentingVC = self.presentingViewController else { return }
         self.dismiss(animated: true) {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
@@ -198,7 +196,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Helpers & Navigation (Existing)
     
-    private func showLoading(message: String = "Creating your account…") {
+    private func showLoading(message: String = "Creating your account") {
         guard loadingOverlay == nil else { return }
         loadingOverlay = WaveLoadingOverlay.showOnWindow(message: message)
     }
@@ -213,6 +211,19 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
         return emailPred.evaluate(with: email)
     }
+
+    private func applyButtonInsets(to button: UIButton?, top: CGFloat, leading: CGFloat, bottom: CGFloat, trailing: CGFloat) {
+        guard let button else { return }
+        var configuration = button.configuration ?? .plain()
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
+        button.configuration = configuration
+    }
+
+    private func applyButtonInsetsIfNeeded(to button: UIButton, top: CGFloat, leading: CGFloat, bottom: CGFloat, trailing: CGFloat) {
+        let currentInsets = button.configuration?.contentInsets ?? .zero
+        guard currentInsets == .zero else { return }
+        applyButtonInsets(to: button, top: top, leading: leading, bottom: bottom, trailing: trailing)
+    }
     
     func showAlert(message: String) {
         let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
@@ -225,7 +236,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @objc private func googleSignInTapped() {
         let rawNonce = AuthHelpers.randomNonceString()
         let hashedNonce = AuthHelpers.sha256(rawNonce)
-        showLoading(message: "Connecting with Google…")
+        showLoading(message: "Connecting with Google")
         Task {
             do {
                 let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: self, hint: nil, additionalScopes: nil, nonce: hashedNonce)

@@ -120,6 +120,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create request") }
         recognitionRequest.shouldReportPartialResults = true
+        recognitionRequest.requiresOnDeviceRecognition = true
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
@@ -299,7 +300,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         let duration = Date().timeIntervalSince(startTime ?? Date())
         let fullReferenceText = paragraphs.joined(separator: " ")
         
-        let loadingOverlay = WaveLoadingOverlay.showOnWindow(message: "Analysing your speech…")
+        let loadingOverlay = WaveLoadingOverlay.showOnWindow(message: "Analysing your speech")
         
         Task {
             var finalTranscript = self.recordedTranscript
