@@ -667,6 +667,7 @@ class VoiceViewController: UIViewController {
     
     @IBAction func didTapEnd(_ sender: UIButton) {
         feedbackGenerator.impactOccurred()
+        viewModel.pauseSpeaking()
         
         let alert = UIAlertController(
             title: "End Conversation?",
@@ -674,7 +675,9 @@ class VoiceViewController: UIViewController {
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.viewModel.resumeSpeaking()
+        })
         alert.addAction(UIAlertAction(title: "End", style: .destructive) { [weak self] _ in
             self?.executeEndSession()
         })
@@ -683,13 +686,17 @@ class VoiceViewController: UIViewController {
     }
     
     private func showResetConfirmation() {
+        viewModel.pauseSpeaking()
+        
         let alert = UIAlertController(
             title: "Restart Conversation?",
             message: "This will end the current conversation and take you back to topic selection.",
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.viewModel.resumeSpeaking()
+        })
         alert.addAction(UIAlertAction(title: "Restart", style: .destructive) { [weak self] _ in
             guard let self = self else { return }
             let finalDuration = Int(self.sessionDuration)
@@ -845,8 +852,13 @@ extension VoiceViewController: UITabBarControllerDelegate {
     }
     
     private func showExitConversationAlert() {
+        viewModel.pauseSpeaking()
+        
         let alert = UIAlertController(title: "End Conversation?", message: "You're currently in an active conversation.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in self?.pendingTabViewController = nil })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in 
+            self?.pendingTabViewController = nil 
+            self?.viewModel.resumeSpeaking()
+        })
         alert.addAction(UIAlertAction(title: "Exit", style: .destructive) { [weak self] _ in
             self?.executeEndSession()
             self?.switchToPendingTab()
