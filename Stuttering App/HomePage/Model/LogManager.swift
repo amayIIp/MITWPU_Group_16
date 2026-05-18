@@ -70,6 +70,40 @@ struct WeeklyPoint {
     let avgFluency: Double
 }
 
+struct TroubledWordSyncRecord {
+    let id: String
+    let sessionId: String
+    let userId: String
+    let word: String
+    let type: String
+    let firstLetter: String
+}
+
+struct SessionLetterStatSyncRecord {
+    let sessionId: String
+    let userId: String
+    let letter: String
+    let stutterCount: Int
+}
+
+struct ReadingSessionSyncRecord {
+    let id: String
+    let userId: String
+    let date: Double
+    let duration: Double
+    let fluencyScore: Int
+    let repetitionPercent: Double
+    let prolongationPercent: Double
+    let blockPercent: Double
+    let correctPercent: Double
+    let repetitionCount: Int
+    let prolongationCount: Int
+    let blockCount: Int
+    let stutteredWordCount: Int
+    let longestSmoothParagraph: Int
+    let insight: String?
+}
+
 
 class LogManager {
 
@@ -137,7 +171,7 @@ class LogManager {
         let createStutterStats = "CREATE TABLE IF NOT EXISTS StutterStats (letter TEXT PRIMARY KEY, count INTEGER);"
         let createUsers = "CREATE TABLE IF NOT EXISTS Users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, createdAt REAL);"
         let createProfiles = "CREATE TABLE IF NOT EXISTS Profiles (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, dob TEXT, mobile TEXT, isOnboardingCompleted INTEGER DEFAULT 0, FOREIGN KEY(id) REFERENCES Users(id));"
-        let createReadingSessions = "CREATE TABLE IF NOT EXISTS ReadingSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fluencyScore INTEGER, repetitionPercent REAL, prolongationPercent REAL, blockPercent REAL, correctPercent REAL, longestSmoothParagraph INTEGER DEFAULT 0, FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createReadingSessions = "CREATE TABLE IF NOT EXISTS ReadingSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fluencyScore INTEGER, repetitionPercent REAL, prolongationPercent REAL, blockPercent REAL, correctPercent REAL, repetitionCount INTEGER DEFAULT 0, prolongationCount INTEGER DEFAULT 0, blockCount INTEGER DEFAULT 0, stutteredWordCount INTEGER DEFAULT 0, longestSmoothParagraph INTEGER DEFAULT 0, insight TEXT, FOREIGN KEY(userId) REFERENCES Users(id));"
         let createTroubledWords = "CREATE TABLE IF NOT EXISTS TroubledWords (id TEXT PRIMARY KEY, sessionId TEXT, userId TEXT, word TEXT, type TEXT, firstLetter TEXT, FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
         let createLetterStats = "CREATE TABLE IF NOT EXISTS LetterStats (userId TEXT, letter TEXT, count INTEGER, PRIMARY KEY(userId, letter), FOREIGN KEY(userId) REFERENCES Users(id));"
         let createSessionLetterStats = "CREATE TABLE IF NOT EXISTS SessionLetterStats (sessionId TEXT, userId TEXT, letter TEXT, stutterCount INTEGER, PRIMARY KEY(sessionId, letter), FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
@@ -156,10 +190,17 @@ class LogManager {
         
         print("10 Tables created in ExerciseLogs\n")
         
-        // Migration: add insight column to ReadingSessions for caching per-session insights
-        if !columnExists(tableName: "ReadingSessions", columnName: "insight") {
-            sqlite3_exec(db, "ALTER TABLE ReadingSessions ADD COLUMN insight TEXT;", nil, nil, nil)
-            print("Migration: Added 'insight' column to ReadingSessions.")
+        let readingSessionMigrations: [(String, String)] = [
+            ("repetitionCount", "ALTER TABLE ReadingSessions ADD COLUMN repetitionCount INTEGER DEFAULT 0;"),
+            ("prolongationCount", "ALTER TABLE ReadingSessions ADD COLUMN prolongationCount INTEGER DEFAULT 0;"),
+            ("blockCount", "ALTER TABLE ReadingSessions ADD COLUMN blockCount INTEGER DEFAULT 0;"),
+            ("stutteredWordCount", "ALTER TABLE ReadingSessions ADD COLUMN stutteredWordCount INTEGER DEFAULT 0;"),
+            ("insight", "ALTER TABLE ReadingSessions ADD COLUMN insight TEXT;")
+        ]
+
+        for (columnName, sql) in readingSessionMigrations where !columnExists(tableName: "ReadingSessions", columnName: columnName) {
+            sqlite3_exec(db, sql, nil, nil, nil)
+            print("Migration: Added '\(columnName)' column to ReadingSessions.")
         }
     }
 
@@ -531,14 +572,21 @@ class LogManager {
         }
 
         let sessionId = UUID().uuidString
-        let now       = Date().timeIntervalSince1970
+        let now = Date().timeIntervalSince1970
+        let resolvedDuration = duration > 0 ? duration : Self.parseDurationString(report.duration)
+        let repetitionCount = report.breakdown.repetition.count
+        let prolongationCount = report.breakdown.prolongation.count
+        let blockCount = report.breakdown.blocks
+        let stutteredWordCount = report.stutteredWords.count
 
         let sql = """
             INSERT INTO ReadingSessions
             (id, userId, date, duration, fluencyScore,
              repetitionPercent, prolongationPercent,
-             blockPercent, correctPercent, longestSmoothParagraph, insight)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+             blockPercent, correctPercent, repetitionCount,
+             prolongationCount, blockCount, stutteredWordCount,
+             longestSmoothParagraph, insight)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
 
         var statement: OpaquePointer?
@@ -546,17 +594,21 @@ class LogManager {
             sqlite3_bind_text(statement, 1,   (sessionId as NSString).utf8String, -1, nil)
             sqlite3_bind_text(statement, 2,   (userId as NSString).utf8String, -1, nil)
             sqlite3_bind_double(statement, 3, now)
-            sqlite3_bind_double(statement, 4, duration)
+            sqlite3_bind_double(statement, 4, resolvedDuration)
             sqlite3_bind_int(statement, 5,    Int32(report.fluencyScore))
             sqlite3_bind_double(statement, 6, report.percentages.repetition)
             sqlite3_bind_double(statement, 7, report.percentages.prolongation)
             sqlite3_bind_double(statement, 8, report.percentages.blocks)
             sqlite3_bind_double(statement, 9, report.percentages.correct)
-            sqlite3_bind_int(statement, 10,   Int32(longestSmoothParagraph))
+            sqlite3_bind_int(statement, 10,   Int32(repetitionCount))
+            sqlite3_bind_int(statement, 11,   Int32(prolongationCount))
+            sqlite3_bind_int(statement, 12,   Int32(blockCount))
+            sqlite3_bind_int(statement, 13,   Int32(stutteredWordCount))
+            sqlite3_bind_int(statement, 14,   Int32(longestSmoothParagraph))
             if let insight = insight {
-                sqlite3_bind_text(statement, 11, (insight as NSString).utf8String, -1, nil)
+                sqlite3_bind_text(statement, 15, (insight as NSString).utf8String, -1, nil)
             } else {
-                sqlite3_bind_null(statement, 11)
+                sqlite3_bind_null(statement, 15)
             }
 
             if sqlite3_step(statement) == SQLITE_DONE {
@@ -573,7 +625,14 @@ class LogManager {
         print("Saved reading session for user: \(userId)")
         
         if SessionManager.shared.isAccountMode {
-            SupabaseSyncManager.shared.pushReadingSession(report, duration: duration, sessionId: sessionId, longestSmoothParagraph: longestSmoothParagraph)
+            SupabaseSyncManager.shared.pushReadingSession(
+                report,
+                sessionId: sessionId,
+                date: now,
+                duration: resolvedDuration,
+                longestSmoothParagraph: longestSmoothParagraph,
+                insight: insight
+            )
             SupabaseSyncManager.shared.pushLetterStats(userId: userId)
         } else {
             print("📋 [GUEST] Reading session saved locally only (guest mode)")
@@ -595,6 +654,10 @@ class LogManager {
             sqlite3_step(stmt)
         }
         sqlite3_finalize(stmt)
+
+        if SessionManager.shared.isAccountMode {
+            SupabaseSyncManager.shared.pushReadingSessionInsight(sessionId: sessionId, insight: insight)
+        }
     }
     
     /// Retrieves the stored insight for a specific session.
@@ -713,6 +776,115 @@ class LogManager {
                     let count = Int(sqlite3_column_int(statement, 1))
                     stats[letter] = count
                 }
+            }
+        }
+        sqlite3_finalize(statement)
+        return stats
+    }
+
+    func getAllReadingSessionSyncRecords(for userId: String) -> [ReadingSessionSyncRecord] {
+        let sql = """
+            SELECT id, userId, date, duration, fluencyScore,
+                   repetitionPercent, prolongationPercent, blockPercent, correctPercent,
+                   repetitionCount, prolongationCount, blockCount, stutteredWordCount,
+                   longestSmoothParagraph, insight
+            FROM ReadingSessions
+            WHERE userId = ?
+            ORDER BY date ASC;
+            """
+        var statement: OpaquePointer?
+        var sessions: [ReadingSessionSyncRecord] = []
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            while sqlite3_step(statement) == SQLITE_ROW {
+                guard let idCStr = sqlite3_column_text(statement, 0),
+                      let userIdCStr = sqlite3_column_text(statement, 1) else { continue }
+
+                sessions.append(
+                    ReadingSessionSyncRecord(
+                        id: String(cString: idCStr),
+                        userId: String(cString: userIdCStr),
+                        date: sqlite3_column_double(statement, 2),
+                        duration: sqlite3_column_double(statement, 3),
+                        fluencyScore: Int(sqlite3_column_int(statement, 4)),
+                        repetitionPercent: sqlite3_column_double(statement, 5),
+                        prolongationPercent: sqlite3_column_double(statement, 6),
+                        blockPercent: sqlite3_column_double(statement, 7),
+                        correctPercent: sqlite3_column_double(statement, 8),
+                        repetitionCount: Int(sqlite3_column_int(statement, 9)),
+                        prolongationCount: Int(sqlite3_column_int(statement, 10)),
+                        blockCount: Int(sqlite3_column_int(statement, 11)),
+                        stutteredWordCount: Int(sqlite3_column_int(statement, 12)),
+                        longestSmoothParagraph: Int(sqlite3_column_int(statement, 13)),
+                        insight: sqlite3_column_text(statement, 14).map { String(cString: $0) }
+                    )
+                )
+            }
+        }
+        sqlite3_finalize(statement)
+        return sessions
+    }
+
+    func getTroubledWordSyncRecords(sessionId: String) -> [TroubledWordSyncRecord] {
+        let sql = """
+            SELECT id, sessionId, userId, word, type, firstLetter
+            FROM TroubledWords
+            WHERE sessionId = ?;
+            """
+        var statement: OpaquePointer?
+        var words: [TroubledWordSyncRecord] = []
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (sessionId as NSString).utf8String, -1, nil)
+            while sqlite3_step(statement) == SQLITE_ROW {
+                guard let idCStr = sqlite3_column_text(statement, 0),
+                      let sessionIdCStr = sqlite3_column_text(statement, 1),
+                      let userIdCStr = sqlite3_column_text(statement, 2),
+                      let wordCStr = sqlite3_column_text(statement, 3),
+                      let typeCStr = sqlite3_column_text(statement, 4),
+                      let firstLetterCStr = sqlite3_column_text(statement, 5) else { continue }
+
+                words.append(
+                    TroubledWordSyncRecord(
+                        id: String(cString: idCStr),
+                        sessionId: String(cString: sessionIdCStr),
+                        userId: String(cString: userIdCStr),
+                        word: String(cString: wordCStr),
+                        type: String(cString: typeCStr),
+                        firstLetter: String(cString: firstLetterCStr)
+                    )
+                )
+            }
+        }
+        sqlite3_finalize(statement)
+        return words
+    }
+
+    func getSessionLetterStatSyncRecords(sessionId: String) -> [SessionLetterStatSyncRecord] {
+        let sql = """
+            SELECT sessionId, userId, letter, stutterCount
+            FROM SessionLetterStats
+            WHERE sessionId = ?;
+            """
+        var statement: OpaquePointer?
+        var stats: [SessionLetterStatSyncRecord] = []
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (sessionId as NSString).utf8String, -1, nil)
+            while sqlite3_step(statement) == SQLITE_ROW {
+                guard let sessionIdCStr = sqlite3_column_text(statement, 0),
+                      let userIdCStr = sqlite3_column_text(statement, 1),
+                      let letterCStr = sqlite3_column_text(statement, 2) else { continue }
+
+                stats.append(
+                    SessionLetterStatSyncRecord(
+                        sessionId: String(cString: sessionIdCStr),
+                        userId: String(cString: userIdCStr),
+                        letter: String(cString: letterCStr),
+                        stutterCount: Int(sqlite3_column_int(statement, 3))
+                    )
+                )
             }
         }
         sqlite3_finalize(statement)
@@ -1147,6 +1319,18 @@ extension LogManager {
     private func getTotalReadingSessions(userId: String) -> Int {
         let sql = "SELECT COUNT(*) FROM ReadingSessions WHERE userId = ?;"
         return singleIntQuery(sql: sql, userId: userId)
+    }
+
+    private static func parseDurationString(_ duration: String) -> TimeInterval {
+        let minuteMatch = duration.range(of: #"(\d+)\s*min"#, options: .regularExpression)
+        let secondMatch = duration.range(of: #"(\d+)\s*sec"#, options: .regularExpression)
+
+        let minutes = minuteMatch
+            .flatMap { Int(duration[$0].components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) } ?? 0
+        let seconds = secondMatch
+            .flatMap { Int(duration[$0].components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) } ?? 0
+
+        return TimeInterval((minutes * 60) + seconds)
     }
 
     private func getTotalConversationSessions(userId: String) -> Int {

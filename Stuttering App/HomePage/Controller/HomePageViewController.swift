@@ -202,6 +202,13 @@ class HomePageViewController: UIViewController {
 
                 try await SupabaseSyncManager.shared.syncAllDataFromCloud()
                 await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
+                let didGenerateJourney = JourneyGenerationEngine.shared.runIfNeeded()
+
+                if didGenerateJourney && DatabaseManager.shared.fetchDailyTasks().isEmpty {
+                    let logic = LogicMaker()
+                    logic.resetDailyTasks(isFromLogin: true)
+                    DatabaseManager.shared.syncLocalDailyTasksToCloud()
+                }
 
                 await MainActor.run {
                     self.loadTaskName()

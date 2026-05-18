@@ -8,8 +8,19 @@
 import Foundation
 import SQLite3
 
+struct JourneyRecord {
+    let id: Int
+    let name: String
+    let isCompleted: Bool
+}
+
 class DatabaseManager {
     static let shared = DatabaseManager()
+    static let initialJourneyNames = [
+        "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction", "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction"
+    ]
+    static var initialJourneySeedCount: Int { initialJourneyNames.count }
+
     private(set) var isDailyGoalCompleted: Bool = false
     var db: OpaquePointer?
     
@@ -74,15 +85,11 @@ class DatabaseManager {
         
         if count == 0 {
             print("Journey table empty. Populating initial sequence...")
-            let exercises = [
-                "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction", "Airflow Practice", "Gentle Onset", "Flexible Pacing", "Light Contacts", "Prolongation", "Preparatory Set", "Block Correction", "Prolongation", "Flexible Pacing", "Light Contacts", "Preparatory Set", "Pull-Out", "Block Correction"
-            ]
-            
             let insertQuery = "INSERT INTO Journey (name, isCompleted) VALUES (?, 0)"
             var insertStmt: OpaquePointer?
             
             if sqlite3_prepare_v2(db, insertQuery, -1, &insertStmt, nil) == SQLITE_OK {
-                for name in exercises {
+                for name in Self.initialJourneyNames {
                     sqlite3_bind_text(insertStmt, 1, (name as NSString).utf8String, -1, SQLITE_TRANSIENT)
                     if sqlite3_step(insertStmt) != SQLITE_DONE {
                         print("Error inserting \(name)")
@@ -114,6 +121,75 @@ class DatabaseManager {
         }
         sqlite3_finalize(statement)
         return names
+    }
+
+    func fetchAllJourneyRecords() -> [JourneyRecord] {
+        let query = "SELECT id, name, isCompleted FROM Journey ORDER BY id ASC"
+        var statement: OpaquePointer?
+        var records: [JourneyRecord] = []
+
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            while sqlite3_step(statement) == SQLITE_ROW {
+                let id = Int(sqlite3_column_int(statement, 0))
+                let name = String(cString: sqlite3_column_text(statement, 1))
+                let isCompleted = sqlite3_column_int(statement, 2) == 1
+                records.append(JourneyRecord(id: id, name: name, isCompleted: isCompleted))
+            }
+        }
+        sqlite3_finalize(statement)
+        return records
+    }
+
+    func replaceJourney(with records: [JourneyRecord]) {
+        sqlite3_exec(db, "DELETE FROM Journey", nil, nil, nil)
+
+        let insert = "INSERT INTO Journey (id, name, isCompleted) VALUES (?, ?, ?)"
+        var statement: OpaquePointer?
+        if sqlite3_prepare_v2(db, insert, -1, &statement, nil) == SQLITE_OK {
+            for record in records.sorted(by: { $0.id < $1.id }) {
+                sqlite3_reset(statement)
+                sqlite3_clear_bindings(statement)
+                sqlite3_bind_int(statement, 1, Int32(record.id))
+                sqlite3_bind_text(statement, 2, (record.name as NSString).utf8String, -1, SQLITE_TRANSIENT)
+                sqlite3_bind_int(statement, 3, record.isCompleted ? 1 : 0)
+                sqlite3_step(statement)
+            }
+        }
+        sqlite3_finalize(statement)
+    }
+
+    func replacePendingJourney(with exerciseNames: [String]) {
+        let cleanedNames = exerciseNames
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        guard !cleanedNames.isEmpty else { return }
+
+        sqlite3_exec(db, "DELETE FROM Journey WHERE isCompleted = 0", nil, nil, nil)
+
+        let maxIdQuery = "SELECT COALESCE(MAX(id), 0) FROM Journey"
+        var maxIdStmt: OpaquePointer?
+        var nextId = 1
+
+        if sqlite3_prepare_v2(db, maxIdQuery, -1, &maxIdStmt, nil) == SQLITE_OK,
+           sqlite3_step(maxIdStmt) == SQLITE_ROW {
+            nextId = Int(sqlite3_column_int(maxIdStmt, 0)) + 1
+        }
+        sqlite3_finalize(maxIdStmt)
+
+        let insert = "INSERT INTO Journey (id, name, isCompleted) VALUES (?, ?, 0)"
+        var insertStmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, insert, -1, &insertStmt, nil) == SQLITE_OK {
+            for name in cleanedNames {
+                sqlite3_reset(insertStmt)
+                sqlite3_clear_bindings(insertStmt)
+                sqlite3_bind_int(insertStmt, 1, Int32(nextId))
+                sqlite3_bind_text(insertStmt, 2, (name as NSString).utf8String, -1, SQLITE_TRANSIENT)
+                sqlite3_step(insertStmt)
+                nextId += 1
+            }
+        }
+        sqlite3_finalize(insertStmt)
     }
 
     func clearDailyTasks() {
@@ -172,14 +248,15 @@ class DatabaseManager {
         
         if names.isEmpty {
             let fallbackQuery = "SELECT name FROM Exercises ORDER BY lastCompleted DESC LIMIT 3"
-            if sqlite3_prepare_v2(db, fallbackQuery, -1, &statement, nil) == SQLITE_OK {
-                while sqlite3_step(statement) == SQLITE_ROW {
-                    if let cString = sqlite3_column_text(statement, 0) {
+            var fallbackStatement: OpaquePointer?
+            if sqlite3_prepare_v2(db, fallbackQuery, -1, &fallbackStatement, nil) == SQLITE_OK {
+                while sqlite3_step(fallbackStatement) == SQLITE_ROW {
+                    if let cString = sqlite3_column_text(fallbackStatement, 0) {
                         names.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
                     }
                 }
             }
-            sqlite3_finalize(statement)
+            sqlite3_finalize(fallbackStatement)
         }
         
         print("DEBUG SQL: Found \(names.count) Go-To exercises in DB.")
@@ -530,6 +607,22 @@ class DatabaseManager {
         sqlite3_finalize(stmt)
         return count
     }
+
+    func fetchUserProblemPhonemes() -> [String] {
+        let query = "SELECT phoneme FROM UserPhonemes ORDER BY id ASC"
+        var statement: OpaquePointer?
+        var phonemes: [String] = []
+
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            while sqlite3_step(statement) == SQLITE_ROW {
+                if let cString = sqlite3_column_text(statement, 0) {
+                    phonemes.append(String(cString: cString).trimmingCharacters(in: .whitespacesAndNewlines))
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+        return phonemes
+    }
     
     func resetDatabaseForNewUser() {
         if db != nil {
@@ -540,6 +633,7 @@ class DatabaseManager {
         }
         
         isDailyGoalCompleted = false
+        JourneyGenerationEngine.shared.resetState()
         
         do {
             let fileUrl = try FileManager.default
@@ -686,15 +780,16 @@ class DatabaseManager {
         
         print("🔍 Falling back to 'Explore Again' (most recent)...")
         let exploreAgainQuery = "SELECT name FROM Exercises ORDER BY lastCompleted DESC LIMIT 1"
-        if sqlite3_prepare_v2(db, exploreAgainQuery, -1, &statement, nil) == SQLITE_OK {
-            if sqlite3_step(statement) == SQLITE_ROW {
-                let name = String(cString: sqlite3_column_text(statement, 0)).trimmingCharacters(in: .whitespacesAndNewlines)
-                sqlite3_finalize(statement)
+        var fallbackStatement: OpaquePointer?
+        if sqlite3_prepare_v2(db, exploreAgainQuery, -1, &fallbackStatement, nil) == SQLITE_OK {
+            if sqlite3_step(fallbackStatement) == SQLITE_ROW {
+                let name = String(cString: sqlite3_column_text(fallbackStatement, 0)).trimmingCharacters(in: .whitespacesAndNewlines)
+                sqlite3_finalize(fallbackStatement)
                 print("   ✅ Explore Again: '\(name)'")
                 return ("Explore Again", name)
             }
         }
-        sqlite3_finalize(statement)
+        sqlite3_finalize(fallbackStatement)
         
         print("   ❌ No exercises found at all!")
         return ("Explore Again", nil)

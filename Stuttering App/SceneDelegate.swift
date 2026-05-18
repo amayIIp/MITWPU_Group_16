@@ -87,9 +87,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let logic = LogicMaker()
         logic.checkForNewDay()
+
+        if SessionManager.shared.isGuestMode {
+            _ = JourneyGenerationEngine.shared.runIfNeeded()
+        }
         
     }
     
     func sceneDidEnterBackground(_ scene: UIScene) {}
 }
-
