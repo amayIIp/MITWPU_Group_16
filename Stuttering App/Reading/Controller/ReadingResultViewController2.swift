@@ -291,12 +291,9 @@ class ReadingResultViewController2: UIViewController {
         }
 
         if !hasSavedSession {
-            let sessionId = LogManager.shared.saveReadingSession(report: r)
+            _ = LogManager.shared.saveReadingSession(report: r, insight: preloadedInsight)
             analyzeAndSaveProblemPhonemes(from: r.stutteredWords)
             hasSavedSession = true
-            if let sid = sessionId, let insight = preloadedInsight {
-                LogManager.shared.updateSessionInsight(sessionId: sid, insight: insight)
-            }
         }
 
         insightLabel.text = preloadedInsight ?? "You showed up and practiced — that matters."
