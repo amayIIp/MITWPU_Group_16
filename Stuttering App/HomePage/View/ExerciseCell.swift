@@ -6,15 +6,15 @@ class ExerciseCell: UITableViewCell {
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var timeLabel: UILabel!
-    
+
     var playButtonAction: (() -> Void)?
-        
+
     func configure(with exercise: Exercise) {
         nameLabel.text = exercise.name
         descriptionLabel.text = exercise.description
         timeLabel.text = formatDuration(exercise.short_time)
     }
-    
+
     func formatDuration(_ seconds: Int) -> String {
         if seconds < 60 {
             return String("\(seconds)s")
@@ -23,7 +23,7 @@ class ExerciseCell: UITableViewCell {
             return String("\(minutes)m")
         }
     }
-    
+
     @IBAction func playButtonTapped(_ sender: UIButton) {
         playButtonAction?()
     }

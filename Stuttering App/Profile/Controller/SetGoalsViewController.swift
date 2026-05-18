@@ -72,8 +72,8 @@ class SetGoalsViewController: UIViewController {
 
     @objc private func saveTapped() {
         // Persist all three values only when the user explicitly confirms
-        LogManager.shared.updateGoal(name: LogManager.GoalKeys.exercise,     value: exerciseTarget)
-        LogManager.shared.updateGoal(name: LogManager.GoalKeys.reading,      value: readingTarget)
+        LogManager.shared.updateGoal(name: LogManager.GoalKeys.exercise, value: exerciseTarget)
+        LogManager.shared.updateGoal(name: LogManager.GoalKeys.reading, value: readingTarget)
         LogManager.shared.updateGoal(name: LogManager.GoalKeys.conversation, value: conversationTarget)
         NotificationCenter.default.post(name: NSNotification.Name("ProgressDataUpdated"), object: nil)
         dismiss(animated: true)
@@ -119,4 +119,3 @@ class SetGoalsViewController: UIViewController {
         updateAllLabels()
     }
 }
-

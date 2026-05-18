@@ -8,7 +8,7 @@ class PlaceholderTextView: UITextView {
             updatePlaceholderVisibility()
         }
     }
-    
+
     @IBInspectable var placeholderColor: UIColor = .tertiaryLabel {
         didSet {
             placeholderLabel.textColor = placeholderColor
@@ -23,7 +23,7 @@ class PlaceholderTextView: UITextView {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     // Store constraints so we can update them dynamically
     private var placeholderTopConstraint: NSLayoutConstraint!
     private var placeholderLeadingConstraint: NSLayoutConstraint!
@@ -45,7 +45,7 @@ class PlaceholderTextView: UITextView {
 
     private func setup() {
         addSubview(placeholderLabel)
-        
+
         placeholderLabel.font = self.font
         placeholderLabel.text = placeholderText
         placeholderLabel.textColor = placeholderColor
@@ -74,7 +74,7 @@ class PlaceholderTextView: UITextView {
     // This is the critical fix: Update constraint constants whenever the layout changes
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+
         placeholderTopConstraint.constant = textContainerInset.top + contentInset.top
         placeholderLeadingConstraint.constant = textContainerInset.left + contentInset.left + textContainer.lineFragmentPadding
         placeholderTrailingConstraint.constant = -(textContainerInset.right + contentInset.right + textContainer.lineFragmentPadding)
@@ -85,7 +85,7 @@ class PlaceholderTextView: UITextView {
             placeholderLabel.font = font
         }
     }
-    
+
     override var text: String! {
         didSet {
             textDidChange()
@@ -101,7 +101,7 @@ class PlaceholderTextView: UITextView {
     @objc private func textDidChange() {
         updatePlaceholderVisibility()
     }
-    
+
     private func updatePlaceholderVisibility() {
         placeholderLabel.isHidden = !self.text.isEmpty
     }

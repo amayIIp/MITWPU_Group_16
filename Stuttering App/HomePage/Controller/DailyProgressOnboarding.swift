@@ -9,21 +9,15 @@ import UIKit
 
 class DailyProgressOnboarding: UIViewController {
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-    }
-    
     @IBAction func proceedToNextScreenTapped(_ sender: UIButton) {
         AppState.isDailyProgressCompleted = true
-        
+
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         guard let nextVC = storyboard.instantiateViewController(withIdentifier: "PracticeViewController") as? PracticeViewController else {
             print("Error: Could not instantiate SummaryViewController")
             return
         }
-        
+
         guard let navigationController = self.navigationController else { return }
         var currentStack = navigationController.viewControllers
         currentStack.removeAll { $0 === self }

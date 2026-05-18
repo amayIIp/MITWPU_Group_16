@@ -15,13 +15,13 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var continueButton: UIButton!
     @IBOutlet weak var forgotPassword: UIButton!
-    
+
     @IBOutlet weak var passwordToggleButton: UIButton!
     @IBOutlet weak var googleSignIn: UIButton!
     @IBOutlet weak var continueAsGuest: UIButton!
     private let client = SupabaseManager.shared.client
     var onSwitchToSignup: (() -> Void)?
-    
+
     private var loadingOverlay: WaveLoadingOverlay?
 
     private func showLoading(message: String = "Signing you in") {
@@ -58,19 +58,19 @@ class LoginViewController: UIViewController {
     @objc private func dismissSelf() {
         dismiss(animated: true)
     }
-    
+
     func setupUI() {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
-        
+
         // Hide "Continue as Guest" if they are already a guest upgrading their account
         if SessionManager.shared.isGuestMode {
             continueAsGuest?.isHidden = true
         }
-        
+
         // --- Fat-finger fix: ensure minimum 44pt touch targets ---
         applyButtonInsets(to: continueAsGuest, top: 12, leading: 16, bottom: 12, trailing: 16)
-        
+
         passwordTextField.isSecureTextEntry = true
 
         // 1. Create a small configuration
@@ -87,15 +87,15 @@ class LoginViewController: UIViewController {
     }
     @IBAction func togglePasswordVisibility(_ sender: UIButton) {
         passwordTextField.isSecureTextEntry.toggle()
-            
+
             // 2. Prepare the small configuration again
             let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium, scale: .small)
             let imageName = passwordTextField.isSecureTextEntry ? "eye.slash" : "eye"
-            
+
             // 3. Update the image with the config
             let updatedIcon = UIImage(systemName: imageName, withConfiguration: config)
             sender.setImage(updatedIcon, for: .normal)
-            
+
             // 4. Standard iOS fix for cursor/font jumping
             if let text = passwordTextField.text {
                 passwordTextField.text = nil
@@ -174,7 +174,7 @@ class LoginViewController: UIViewController {
             }
         }
     }
-    
+
     @objc private func forgotPasswordTapped() {
         let alert = UIAlertController(
             title: "Reset Password",
@@ -194,7 +194,7 @@ class LoginViewController: UIViewController {
         })
         present(alert, animated: true)
     }
-    
+
     private func sendPasswordReset(email: String) {
         Task {
             do {
@@ -209,9 +209,9 @@ class LoginViewController: UIViewController {
             }
         }
     }
-    
+
     // MARK: - Nonce helpers are in AuthHelpers.swift
-    
+
     @objc private func googleSignInTapped() {
         let rawNonce = AuthHelpers.randomNonceString()
         let hashedNonce = AuthHelpers.sha256(rawNonce)
@@ -287,7 +287,7 @@ class LoginViewController: UIViewController {
             }
         }
     }
-  
+
     func performLoginTransition() {
         AppState.isLoginCompleted = true
         
@@ -343,7 +343,7 @@ class LoginViewController: UIViewController {
             executeTransition()
         }
     }
-    
+
     func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -362,7 +362,7 @@ class LoginViewController: UIViewController {
         guard currentInsets == .zero else { return }
         applyButtonInsets(to: button, top: top, leading: leading, bottom: bottom, trailing: trailing)
     }
-    
+
     @IBAction func switchToSignupButtonTapped(_ sender: UIButton) {
         // Fat-finger fix applied on first tap if not already set
         applyButtonInsetsIfNeeded(to: sender, top: 12, leading: 8, bottom: 12, trailing: 8)
@@ -370,7 +370,7 @@ class LoginViewController: UIViewController {
             print("Error: No presenting view controller found.")
             return
         }
-        
+
         // 2. Dismiss the active modal
         self.dismiss(animated: true) {// 1. Instantiate the next modal from your Storyboard
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
@@ -393,7 +393,7 @@ class LoginViewController: UIViewController {
 
             // 5. Present the Navigation Controller from the underlying screen
             presentingVC.present(navController, animated: true)
-            
+
         }
     }
 }

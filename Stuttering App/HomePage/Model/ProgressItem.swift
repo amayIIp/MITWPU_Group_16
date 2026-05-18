@@ -11,7 +11,7 @@ import UIKit
 struct ProgressItem {
     let progress: CGFloat
     let color: UIColor
-    
+
     init(progress: CGFloat, color: UIColor) {
         self.progress = max(0.0, min(1.0, progress))
         self.color = color

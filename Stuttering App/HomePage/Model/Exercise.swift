@@ -52,7 +52,7 @@ struct DailyTask {
     let id: Int
     let name: String
     let description: String
-    let duration: Int 
+    let duration: Int
     var isCompleted: Bool
 }
 

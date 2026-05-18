@@ -9,17 +9,17 @@ import Foundation
 import UIKit
 
 class RadialProgressView: UIView {
-    
+
     var chartData: [RadialData] = [] {
         didSet {
             // Tells the system the view needs to be redrawn (calls draw(_:))
             setNeedsDisplay()
         }
     }
-    
+
     override func draw(_ rect: CGRect) {
         super.draw(rect)
-        
+
         let center = CGPoint(x: rect.midX, y: rect.midY)
         // Start angle at the top (12 o'clock position)
         let startAngle: CGFloat = 3 * .pi / 2
@@ -33,10 +33,10 @@ class RadialProgressView: UIView {
 
     private func drawBackgroundRings(center: CGPoint, startAngle: CGFloat) {
         let backgroundColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
-        
+
         for ring in chartData {
             let fullCircle: CGFloat = 2 * .pi // Full circle
-            
+
             let path = UIBezierPath(
                 arcCenter: center,
                 radius: ring.radius,
@@ -44,14 +44,14 @@ class RadialProgressView: UIView {
                 endAngle: startAngle + fullCircle,
                 clockwise: true
             )
-            
+
             path.lineWidth = ring.lineWidth
             path.lineCapStyle = .butt // Flat ends for background
             backgroundColor.setStroke()
             path.stroke()
         }
     }
-    
+
     private func drawProgressRings(center: CGPoint, startAngle: CGFloat) {
         // Draw the innermost ring first so outer rings are not obscured
         let sortedData = chartData.sorted { $0.order > $1.order }
@@ -67,19 +67,19 @@ class RadialProgressView: UIView {
                 endAngle: endAngle,
                 clockwise: true
             )
-            
+
             // Apply styling
             path.lineWidth = ring.lineWidth
             path.lineCapStyle = .round // Gives the rounded ends
             ring.color.setStroke()
-            
+
             // Draw the arc
             path.stroke()
         }
     }
-    
+
     // MARK: - Percentage Update Function
-    
+
     /**
      Updates the progress of a specific radial arc and redraws the chart.
      - Parameters:
@@ -91,10 +91,10 @@ class RadialProgressView: UIView {
             print("Error: Task '\(title)' not found.")
             return
         }
-        
+
         // Update the progress value
         chartData[index].progress = min(max(percentage, 0.0), 1.0) // Clamp between 0 and 1
-        
+
         // The didSet on chartData will automatically call setNeedsDisplay()
     }
 }

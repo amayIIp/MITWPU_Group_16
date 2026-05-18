@@ -24,4 +24,3 @@ var initialChartData: [RadialData] = [
 var initialChartData1: [RadialData] = [
     RadialData(title: "Daily Tasks", color: UIColor(red: 0.28, green: 0.35, blue: 0.63, alpha: 1.0), progress: 0.75, radius: 90, lineWidth: 30, order: 0)
 ]
-

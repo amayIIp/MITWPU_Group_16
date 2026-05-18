@@ -1,7 +1,7 @@
 import Foundation
 
 struct PhonemeContent {
-    
+
     static let practiceSentences: [String: [String]] = [
         "A": [
         "Attentive assistants always arrange all the available appointments for the afternoon.",
@@ -348,13 +348,13 @@ struct PhonemeContent {
             "Zany zebras zigzag zero."
         ]
     ]
-    
+
     static func generateParagraph(for letters: [String]) -> String {
         var combinedSentences: [String] = []
         let defaultLetter = "S"
-        
+
         let targetLetters = letters.isEmpty ? [defaultLetter] : letters
-        
+
         for letter in targetLetters {
             let upperCaseLetter = letter.uppercased()
             if let sentences = practiceSentences[upperCaseLetter] {
@@ -363,7 +363,7 @@ struct PhonemeContent {
                 combinedSentences.append(contentsOf: shuffled.prefix(count))
             }
         }
-        
+
         if combinedSentences.count < 3 {
              if let sentences = practiceSentences["S"] {
                  combinedSentences.append(contentsOf: sentences.prefix(2))
@@ -372,43 +372,42 @@ struct PhonemeContent {
                 combinedSentences.append(contentsOf: sentences.prefix(1))
             }
         }
-        
+
         return combinedSentences.joined(separator: " ")
     }
-
 
     static func generateLongFormContent(for letters: [String]) -> String {
         let totalSentencesNeeded = 300 // Increased for 10-minute density
         var combinedSentences: [String] = []
         let defaultLetter = "S"
         let targetLetters = letters.isEmpty ? [defaultLetter] : letters
-        
+
         var targetedPool: [String] = []
         for letter in targetLetters {
             if let sentences = practiceSentences[letter.uppercased()] {
                 targetedPool.append(contentsOf: sentences)
             }
         }
-        
+
         let genericPool = SentenceCorpus.genericSentences
-        
+
         let targetCount = Int(Double(totalSentencesNeeded) * 0.4)
         let genericCount = totalSentencesNeeded - targetCount
-        
+
         for _ in 0..<targetCount {
             if let sentence = targetedPool.randomElement() {
                 combinedSentences.append(sentence)
             }
         }
-        
+
         for _ in 0..<genericCount {
             if let sentence = genericPool.randomElement() {
                 combinedSentences.append(sentence)
             }
         }
-        
+
         combinedSentences.shuffle()
-        
+
         var paragraphs: [String] = []
         let sentencesPerParagraph = 10
         for i in stride(from: 0, to: combinedSentences.count, by: sentencesPerParagraph) {
@@ -416,45 +415,45 @@ struct PhonemeContent {
             let paragraphSentences = combinedSentences[i..<endIndex]
             paragraphs.append(paragraphSentences.joined(separator: " "))
         }
-        
+
         return paragraphs.joined(separator: "\n\n")
     }
-    
+
     static func injectPhonemePractice(into content: String, for letters: [String]) -> String {
         var practicePool: [String] = []
         let targetLetters = letters.isEmpty ? ["S", "R"] : letters
-        
+
         for letter in targetLetters {
             if let sentences = practiceSentences[letter.uppercased()] {
                 practicePool.append(contentsOf: sentences)
             }
         }
         practicePool.shuffle()
-        
+
         if practicePool.isEmpty { return content }
-        
+
         var paragraphs = content.components(separatedBy: "\n\n")
         if paragraphs.count <= 1 {
             paragraphs = content.components(separatedBy: "\n")
         }
-        
+
         var enrichedParagraphs: [String] = []
         var poolIndex = 0
-        
+
         for para in paragraphs {
             let trimmed = para.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty { continue }
-            
+
             enrichedParagraphs.append(trimmed)
-            
+
             if poolIndex < practicePool.count {
                 let injection = practicePool[poolIndex]
-                
+
                 enrichedParagraphs.append("Challenge: \(injection)")
                 poolIndex = (poolIndex + 1) % practicePool.count
             }
         }
-        
+
         return enrichedParagraphs.joined(separator: "\n\n")
     }
 }

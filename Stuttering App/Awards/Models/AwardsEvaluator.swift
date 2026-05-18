@@ -15,11 +15,11 @@ class AwardsEvaluator {
     private let logManager    = LogManager.shared
 
     func evaluateAllAwards() {
-        
+
         evaluateNormalAwards()
         evaluateWeeklyAwards()
     }
-    
+
     private func evaluateNormalAwards() {
 
         let exerciseLogs     = logManager.getLogs(for: .exercises)
@@ -334,8 +334,8 @@ class AwardsEvaluator {
         let goalCvSec  = logManager.getGoal(name: LogManager.GoalKeys.conversation) * 60
         let calendar   = Calendar.current
 
-        let exByDay = Dictionary(grouping: exerciseLogs)     { calendar.startOfDay(for: $0.completionDate) }
-        let rdByDay = Dictionary(grouping: readingLogs)      { calendar.startOfDay(for: $0.completionDate) }
+        let exByDay = Dictionary(grouping: exerciseLogs) { calendar.startOfDay(for: $0.completionDate) }
+        let rdByDay = Dictionary(grouping: readingLogs) { calendar.startOfDay(for: $0.completionDate) }
         let cvByDay = Dictionary(grouping: conversationLogs) { calendar.startOfDay(for: $0.completionDate) }
 
         let allDays = Set(exByDay.keys).union(rdByDay.keys).union(cvByDay.keys)
@@ -362,8 +362,8 @@ class AwardsEvaluator {
         let goalCvSec  = logManager.getGoal(name: LogManager.GoalKeys.conversation) * 60
         let calendar   = Calendar.current
 
-        let exByDay = Dictionary(grouping: exerciseLogs)     { calendar.startOfDay(for: $0.completionDate) }
-        let rdByDay = Dictionary(grouping: readingLogs)      { calendar.startOfDay(for: $0.completionDate) }
+        let exByDay = Dictionary(grouping: exerciseLogs) { calendar.startOfDay(for: $0.completionDate) }
+        let rdByDay = Dictionary(grouping: readingLogs) { calendar.startOfDay(for: $0.completionDate) }
         let cvByDay = Dictionary(grouping: conversationLogs) { calendar.startOfDay(for: $0.completionDate) }
 
         let allDays = Set(exByDay.keys).union(rdByDay.keys).union(cvByDay.keys)
@@ -397,7 +397,7 @@ class AwardsEvaluator {
         }
         return false
     }
-    
+
     private func currentWeekMonday() -> Date {
         var calendar        = Calendar.current
         calendar.firstWeekday = 2 // Monday

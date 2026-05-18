@@ -13,18 +13,18 @@ enum SummaryFilter: Int {
 class SummaryViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var tableView: UITableView!
-    
+
     @IBOutlet weak var allButton: UIButton!
     @IBOutlet weak var dailyTasksButton: UIButton!
     @IBOutlet weak var exercisesButton: UIButton!
     @IBOutlet weak var readingButton: UIButton!
     @IBOutlet weak var conversationButton: UIButton!
-    
+
     @IBOutlet weak var summaryView1: UIView!
     @IBOutlet weak var summaryView2: UIView!
-    
+
     @IBOutlet weak var emptyStateView: UIView!
-    
+
     @IBOutlet weak var fluencyGrowth: UILabel!
     @IBOutlet weak var blocks: UILabel!
     @IBOutlet weak var averageAccuracy: UILabel!
@@ -32,7 +32,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var insightsLabel: UILabel!
     private var allFilterButtons: [UIButton] = []
     private var currentDateFilter: Date = Date()
-    
+
     private var activeFilter: SummaryFilter = .all
 
     private var dailyTaskLogs: [ExerciseLog] = []
@@ -42,31 +42,31 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     var exerciseTarget = LogManager.shared.getGoal(name: LogManager.GoalKeys.exercise)
     var readingTarget = LogManager.shared.getGoal(name: LogManager.GoalKeys.reading)
     var conversationTarget = LogManager.shared.getGoal(name: LogManager.GoalKeys.conversation)
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         tableView.dataSource = self
         tableView.delegate = self
         self.navigationItem.largeTitleDisplayMode = .never
         allFilterButtons = [allButton, dailyTasksButton, exercisesButton, readingButton, conversationButton]
-        
+
         updateButtonStyles()
         updateSummaryViewsVisibility()
-        
+
         emptyStateView.isHidden = true
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadDataForCurrentDate()
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateTableHeaderHeight()
     }
-    
+
     @IBAction func filterButtonTapped(_ sender: UIButton) {
         let newFilter = SummaryFilter(rawValue: sender.tag) ?? .all
         self.activeFilter = newFilter
@@ -76,39 +76,39 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         tableView.reloadData()
 
     }
-    
+
     private func loadAnalyticsSummary() {
-        
+
         Task {
             let dayReport = await LogManager.shared.getDayReport(for: currentDateFilter)
             let overall   = await LogManager.shared.getOverallProgressReport()
 
             DispatchQueue.main.async {
-                
+
                 if let overall = overall {
                     self.fluencyGrowth.text = "\(Int(overall.fluencyGrowthPercent))"
                 } else {
                     self.fluencyGrowth.text = "--"
                 }
-                
+
                 if let overall = overall {
                     self.blocks.text = "\(Int(overall.avgBlockPercent))"
                 } else {
                     self.blocks.text = "--"
                 }
-                
+
                 if let overall = overall {
                     self.averageAccuracy.text = "\(Int(overall.avgAccuracy))"
                 } else {
                     self.averageAccuracy.text = "--"
                 }
-                
+
                 if let overall = overall {
                     self.improvement.text = "\(Int(overall.improvementPercent))"
                 } else {
                     self.improvement.text = "--"
                 }
-                
+
                 if let dayReport = dayReport {
                     self.insightsLabel.text = dayReport.insight
                 } else {
@@ -117,20 +117,20 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             }
         }
     }
-    
+
     private func updateFilterButtonsVisibility() {
         dailyTasksButton.isHidden = dailyTaskLogs.isEmpty
         exercisesButton.isHidden = exerciseLogs.isEmpty
         readingButton.isHidden = readingLogs.isEmpty
         conversationButton.isHidden = conversationLogs.isEmpty
-        
+
         let hasAnyData = !dailyTaskLogs.isEmpty ||
                          !exerciseLogs.isEmpty ||
                          !readingLogs.isEmpty ||
                          !conversationLogs.isEmpty
-        
+
         allButton.isHidden = !hasAnyData
-        
+
         if self.view.window != nil {
             UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
                 self.view.layoutIfNeeded()
@@ -138,17 +138,16 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
 
-
     func updateTableHeaderHeight() {
         guard let header = tableView.tableHeaderView else { return }
         let newSize = header.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-        
+
         if header.frame.height != newSize.height {
             header.frame.size.height = newSize.height
             tableView.tableHeaderView = header
         }
     }
-    
+
     private func loadDataForCurrentDate() {
         dailyTaskLogs = Array(LogManager.shared.getLogs(for: .dailyTasks, on: self.currentDateFilter).reversed())
         exerciseLogs = Array(LogManager.shared.getLogs(for: .exercises, on: self.currentDateFilter).reversed())
@@ -159,14 +158,13 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         updateFilterButtonsVisibility()
         updateEmptyState()
         tableView.reloadData()
-        
+
         loadAnalyticsSummary()
     }
 
-    
     private func updateButtonStyles() {
         let activeTag = activeFilter.rawValue
-        
+
         for button in allFilterButtons {
             guard var config = button.configuration else { continue }
             var textAttributes = AttributeContainer()
@@ -179,10 +177,10 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             } else {
                 config.baseBackgroundColor = .systemBackground
                 config.baseForegroundColor = .label
-                
+
                 textAttributes.font = UIFont.preferredFont(forTextStyle: .caption1)
             }
-            
+
             if let title = config.title {
                 config.attributedTitle = AttributedString(title, attributes: textAttributes)
             }
@@ -190,7 +188,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             button.configuration = config
         }
     }
-    
+
     private func updateSummaryViewsVisibility() {
         if self.activeFilter == .all {
             self.summaryView1.isHidden = false
@@ -200,16 +198,16 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             self.summaryView2.isHidden = true
         }
     }
-    
+
     private func calculateTotalDuration(for logs: [ExerciseLog]) -> Int {
         let totalSeconds = logs.reduce(0) { (runningTotal, log) -> Int in
             return runningTotal + log.exerciseDuration
         }
-        
+
         let totalMinutes = Int((Double(totalSeconds) / 60.0).rounded())
         return totalMinutes
     }
-    
+
     func numberOfSections(in tableView: UITableView) -> Int {
         if activeFilter == .all {
             return 4
@@ -217,7 +215,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             return 1
         }
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 
         switch activeFilter {
@@ -245,15 +243,14 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
 
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            
+
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "LogCell", for: indexPath) as? LogSummaryCell else {
             return UITableViewCell()
         }
-        
+
         let log: ExerciseLog
-        
+
         switch activeFilter {
         case .all:
             switch indexPath.section {
@@ -273,13 +270,13 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         case .conversation:
             log = conversationLogs[indexPath.row]
         }
-        
+
         cell.exerciseNameLabel.text = log.exerciseName
         cell.durationLabel.text = formatDuration(log.exerciseDuration)
 
         return cell
     }
-    
+
     func formatDuration(_ seconds: Int) -> String {
         if seconds < 60 {
             return String("\(seconds) sec")
@@ -288,7 +285,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
             return String("\(minutes) min")
         }
     }
-    
+
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
 
         var titleText: String?
@@ -311,7 +308,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
                 let totalReadingMinutes = calculateTotalDuration(for: readingLogs)
                 titleText = "Reading"
                 titleText1 = "\(totalReadingMinutes)/\(readingTarget) mins"
-                
+
             case 3 where !conversationLogs.isEmpty:
                 let totalConvoMinutes = calculateTotalDuration(for: conversationLogs)
                 titleText = "Conversation"
@@ -382,8 +379,6 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
         return headerView
     }
 
-
-    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let isEmpty: Bool
 
@@ -412,7 +407,7 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return CGFloat.leastNormalMagnitude
     }
-    
+
     private func updateEmptyState() {
         let hasAnyData =
             !dailyTaskLogs.isEmpty ||
@@ -427,26 +422,26 @@ class SummaryViewController: UIViewController, UITableViewDataSource, UITableVie
 }
 
 extension SummaryViewController: CalendarDateDelegate {
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showCalendar" {
-            
+
             // 1. Safely unwrap the Navigation Controller as the primary destination
             guard let navController = segue.destination as? UINavigationController,
                   // 2. Extract the CalendarViewController from inside the Navigation Controller
                   let calendarVC = navController.topViewController as? CalendarViewController else {
                 return
             }
-            
+
             // 3. Inject dependencies
             calendarVC.delegate = self
             calendarVC.selectedDate = self.currentDateFilter
         }
     }
-    
+
     func didSelectDate(_ date: Date) {
         self.currentDateFilter = date
-        
+
         // Modern iOS date formatting
         self.title = date.formatted(date: .abbreviated, time: .omitted)
         loadDataForCurrentDate()

@@ -1,23 +1,23 @@
 import UIKit
 
 class AwardStandardCell: UICollectionViewCell {
-    
+
     @IBOutlet weak var cardTitleLabel: UILabel!
     @IBOutlet weak var awardImage: UIImageView!
     @IBOutlet weak var awardName: UILabel!
     @IBOutlet weak var awardDescription: UILabel!
     @IBOutlet weak var showAllButton: UIButton!
-    
+
     weak var delegate: AwardCellDelegate?
     private var currentAward: AwardModel?
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
         setupCardStyle()
         setupImageTapGesture()
         setupButtonAction()
     }
-    
+
     private func setupCardStyle() {
         contentView.backgroundColor = .systemBackground
         contentView.layer.cornerRadius = 20
@@ -28,7 +28,7 @@ class AwardStandardCell: UICollectionViewCell {
         layer.shadowRadius = 10
         layer.masksToBounds = false
     }
-    
+
     private func setupImageTapGesture() {
         awardImage.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
@@ -38,7 +38,7 @@ class AwardStandardCell: UICollectionViewCell {
     private func setupButtonAction() {
         showAllButton.addTarget(self, action: #selector(showAllTapped), for: .touchUpInside)
     }
-    
+
     @objc private func imageTapped() {
         delegate?.didTapAwardImage(with: currentAward)
     }
@@ -46,12 +46,12 @@ class AwardStandardCell: UICollectionViewCell {
     @objc private func showAllTapped() {
         delegate?.didTapShowAll(in: self)
     }
-    
+
     func configureAsAchieved(with award: AwardModel?) {
         self.currentAward = award
         cardTitleLabel.text = "Achieved"
         awardImage.alpha = 1.0
-        
+
         if let award = award {
             awardImage.image = UIImage(named: award.id)
             awardImage.tintColor = .clear
@@ -70,7 +70,7 @@ class AwardStandardCell: UICollectionViewCell {
             awardDescription.textColor = .secondaryLabel
         }
     }
-    
+
     func configureAsLocked(with award: AwardModel?) {
         self.currentAward = award
         cardTitleLabel.text = "Locked"

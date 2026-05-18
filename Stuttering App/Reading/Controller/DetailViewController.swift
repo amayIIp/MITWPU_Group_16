@@ -3,9 +3,9 @@ import Speech
 import AVFoundation
 
 class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
-    
+
     @IBOutlet weak var textView: UITextView!
-    
+
     var textToDisplay: String = ""
     var titleToDisplay: String = ""
     var exerciseDuration: Int = 0
@@ -14,7 +14,6 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     var initialDAFDelay: Double = 0.0
     private var currentPlaybackSpeed: Double = 1.0
 
-    
     private let wordsPerHighlight = 3
     private var highlightDuration: TimeInterval = 1.7
     private let minDuration: TimeInterval = 0.3
@@ -26,17 +25,17 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     private var defaultAttributes: [NSAttributedString.Key: Any] = [:]
     private var highlightAttributes: [NSAttributedString.Key: Any] = [:]
     private weak var sheetVC: ReadingControlsViewController?
-    
+
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
     private let delayNode = AVAudioUnitDelay()
     private var selectedDAFDelay: Double = 0.0
-    
+
     var recordedTranscript = ""
     var recordedSegments: [SFTranscriptionSegment] = []
-    
+
     private var totalSegmentsCaptured: [SFTranscriptionSegment] = []
 
     private var tempAudioFile: AVAudioFile?
@@ -44,64 +43,64 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = UIColor(named: "bg")
         textView?.backgroundColor = UIColor(named: "bg")
-        
+
         self.selectedDAFDelay = self.initialDAFDelay
         audioEngine.attach(delayNode)
-        
+
         setupTextView()
         setupPermissions()
         setupAudioSession()
-        
+
         let format = audioEngine.inputNode.outputFormat(forBus: 0)
         audioEngine.connect(audioEngine.inputNode, to: delayNode, format: format)
         audioEngine.connect(delayNode, to: audioEngine.mainMixerNode, format: format)
-        
+
         NotificationCenter.default.addObserver(self, selector: #selector(handleAudioRouteChange(_:)), name: AVAudioSession.routeChangeNotification, object: nil)
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         presentWorkoutSheet()
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         if isPlaying { pausePlayback() }
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
     }
-    
+
     func updatePlaybackSpeed() {
         highlightDuration = max(minDuration, min(maxDuration, 1.7 / currentPlaybackSpeed))
-        
+
         if isPlaying {
             startTimer()
         }
     }
-    
+
     func setupTextView() {
         guard let textView = textView else { return }
-        
+
         let baseFont = UIFont.preferredFont(forTextStyle: .title3)
         defaultAttributes = [.font: baseFont, .foregroundColor: UIColor.gray]
         highlightAttributes = [.font: baseFont, .foregroundColor: UIColor.black]
-        
+
         let attributedString = NSMutableAttributedString(string: textToDisplay, attributes: defaultAttributes)
         self.wordRanges = calculateWordRanges(for: textToDisplay)
-        
+
         textView.attributedText = attributedString
         textView.isEditable = false
         textView.textAlignment = .left
         textView.layoutManager.allowsNonContiguousLayout = true
     }
-    
+
     private func calculateWordRanges(for text: String) -> [NSRange] {
         var ranges: [NSRange] = []
         let nsText = text as NSString
@@ -111,7 +110,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
         return ranges
     }
-    
+
     private var totalExerciseDuration: TimeInterval {
         var total = accumulatedDuration
         if isPlaying, let start = startTime {
@@ -122,15 +121,15 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
 
     private func presentWorkoutSheet() {
         guard let sheetVC = storyboard?.instantiateViewController(withIdentifier: "ReadingControlsViewController") as? ReadingControlsViewController else { return }
-        
+
         sheetVC.delegate = self
         self.sheetVC = sheetVC
         sheetVC.isModalInPresentation = true
         sheetVC.currentDAFDelay = self.selectedDAFDelay
-        
+
         if let sheet = sheetVC.sheetPresentationController {
             sheet.delegate = self
-            
+
             sheet.detents = [
                 .custom(identifier: .init("quarter")) { context in 0.18 * context.maximumDetentValue },
                 .custom(identifier: .init("half")) { context in 0.40 * context.maximumDetentValue }
@@ -141,12 +140,12 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             sheet.largestUndimmedDetentIdentifier = .init("quarter")
             sheet.preferredCornerRadius = 20
         }
-        
+
         sheetVC.view.layer.cornerRadius = 20
         sheetVC.view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         sheetVC.view.clipsToBounds = true
         sheetVC.screenHeight = view.frame.height * 0.18
-        
+
         present(sheetVC, animated: true) {
             sheetVC.toggleDoneButtonVisibility(isHidden: true)
         }
@@ -155,7 +154,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     func setupPermissions() {
         SFSpeechRecognizer.requestAuthorization { _ in }
     }
-    
+
     func setupAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
@@ -163,25 +162,25 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch { print("Audio Session Setup Error: \(error)") }
     }
-    
+
     func startRecording() {
         if recognitionTask != nil {
             recognitionTask?.cancel()
             recognitionTask = nil
         }
-        
+
         let inputNode = audioEngine.inputNode
         inputNode.removeTap(onBus: 0)
-        
+
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else { return }
         recognitionRequest.shouldReportPartialResults = true
         recognitionRequest.requiresOnDeviceRecognition = true
-        
+
         if startTime == nil { startTime = Date() }
-        
+
         let format = inputNode.outputFormat(forBus: 0)
-        
+
         let tempDir = FileManager.default.temporaryDirectory
         tempAudioURL = tempDir.appendingPathComponent("reading_\(UUID().uuidString).wav")
         do {
@@ -189,7 +188,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         } catch {
             print("Error creating temp audio file: \(error)")
         }
-        
+
         if selectedDAFDelay > 0 && areHeadphonesConnected() {
             delayNode.delayTime = selectedDAFDelay
             delayNode.wetDryMix = 100
@@ -198,7 +197,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             delayNode.wetDryMix = 0
             audioEngine.mainMixerNode.outputVolume = 0.0
         }
-        
+
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             guard let self = self else { return }
             if let result = result {
@@ -207,16 +206,16 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             }
             if error != nil { self.stopRecording() }
         }
-        
+
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { (buffer, _) in
             self.recognitionRequest?.append(buffer)
             try? self.tempAudioFile?.write(from: buffer)
         }
-        
+
         audioEngine.prepare()
         try? audioEngine.start()
     }
-    
+
     func stopRecording() {
         if audioEngine.isRunning {
             audioEngine.stop()
@@ -225,14 +224,14 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             tempAudioFile = nil
         }
     }
-    
+
     func areHeadphonesConnected() -> Bool {
         let route = AVAudioSession.sharedInstance().currentRoute
         return route.outputs.contains { port in
             [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE, .usbAudio].contains(port.portType)
         }
     }
-    
+
     private func startTimer() {
         highlightTimer?.invalidate()
         highlightTimer = Timer.scheduledTimer(withTimeInterval: highlightDuration, repeats: true) { [weak self] _ in
@@ -246,25 +245,25 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             }
         }
     }
-    
+
     func togglePlayPause() {
         isPlaying ? pausePlayback() : startPlayback()
     }
-    
+
     func startPlayback() {
         if currentWordBlockIndex * wordsPerHighlight >= wordRanges.count {
             currentWordBlockIndex = 0
             highlightBlock(at: -1, isFinalReset: true)
         }
-        
+
         isPlaying = true
         startTime = Date()
-        
+
         startRecording()
         startTimer()
         highlightBlock(at: currentWordBlockIndex)
         currentWordBlockIndex += 1
-        
+
         notifySheetOfStateChange()
         animateSheet(to: .init("quarter"))
     }
@@ -274,48 +273,48 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             accumulatedDuration += Date().timeIntervalSince(start)
             startTime = nil
         }
-        
+
         isPlaying = false
         stopRecording()
         highlightTimer?.invalidate()
         highlightTimer = nil
-        
+
         notifySheetOfStateChange()
         animateSheet(to: .init("half"))
     }
-    
+
     func decreaseSpeed() {
         highlightDuration = max(minDuration, highlightDuration - 0.1)
         if isPlaying { startTimer() }
     }
-    
+
     func increaseSpeed() {
         highlightDuration = min(maxDuration, highlightDuration + 0.1)
         if isPlaying { startTimer() }
     }
-    
+
     func resetReading() {
         pausePlayback()
         accumulatedDuration = 0.0
         startTime = nil
         currentWordBlockIndex = 0
-        
+
         highlightBlock(at: -1, isFinalReset: true)
         textView.setContentOffset(.zero, animated: true)
         recordedTranscript = ""
         recordedSegments = []
-        
+
         sheetVC?.resetTimer()
         notifySheetOfStateChange()
     }
-    
+
     private func animateSheet(to detentIdentifier: UISheetPresentationController.Detent.Identifier) {
         guard let sheet = sheetVC?.sheetPresentationController else { return }
-        
+
         sheet.animateChanges {
             sheet.selectedDetentIdentifier = detentIdentifier
         }
-        
+
         let isExpanded = (detentIdentifier == .init("half"))
         sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
     }
@@ -324,36 +323,36 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         let finished = currentWordBlockIndex * wordsPerHighlight >= wordRanges.count
         sheetVC?.updatePlaybackState(isPlaying: isPlaying, hasFinished: finished, currentTime: totalExerciseDuration)
     }
-    
+
     private func highlightBlock(at blockIndex: Int, isFinalReset: Bool = false) {
         guard !wordRanges.isEmpty else { return }
         let mutableAttributedText = NSMutableAttributedString(attributedString: textView.attributedText)
         let fullRange = NSRange(location: 0, length: mutableAttributedText.length)
         mutableAttributedText.setAttributes(defaultAttributes, range: fullRange)
-        
+
         if isFinalReset {
             textView.attributedText = mutableAttributedText
             return
         }
-        
+
         let startIndex = blockIndex * wordsPerHighlight
         let endIndex = min(startIndex + wordsPerHighlight, wordRanges.count)
-        
+
         if startIndex < wordRanges.count {
             let startRange = wordRanges[startIndex]
             let endRange = wordRanges[min(endIndex - 1, wordRanges.count - 1)]
             let hRange = NSRange(location: startRange.location, length: endRange.location + endRange.length - startRange.location)
-            
+
             mutableAttributedText.addAttributes(highlightAttributes, range: hRange)
             textView.attributedText = mutableAttributedText
-            
+
             let rect = textView.layoutManager.boundingRect(forGlyphRange: endRange, in: textView.textContainer)
             let targetY = rect.minY - (textView.bounds.height / 2.0) + (rect.height / 2.0)
             let finalY = min(max(0, textView.contentSize.height - textView.bounds.height), max(0, targetY))
             textView.setContentOffset(CGPoint(x: 0, y: finalY), animated: true)
         }
     }
-    
+
     func didTapOpenButton() {
         let duration = totalExerciseDuration
 
@@ -416,25 +415,24 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
     }
 
-    
     func logReadingActivity() {
         self.exerciseDuration = Int(totalExerciseDuration)
         LogManager.shared.addLog(exerciseName: titleToDisplay, source: .reading, exerciseDuration: self.exerciseDuration)
     }
-    
+
     @objc private func handleAudioRouteChange(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
               let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
-        
+
         print("🔊 [DetailViewController] Audio route changed. Reason: \(reasonValue)")
-        
+
         if reason == .oldDeviceUnavailable || reason == .newDeviceAvailable {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 let headphonesConnected = self.areHeadphonesConnected()
                 print("🔊 [DetailViewController] Headphones connected: \(headphonesConnected)")
-                
+
                 if headphonesConnected && self.selectedDAFDelay > 0 {
                     self.delayNode.delayTime = self.selectedDAFDelay
                     self.delayNode.wetDryMix = 100
@@ -443,7 +441,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
                     self.delayNode.wetDryMix = 0
                     self.audioEngine.mainMixerNode.outputVolume = 0.0
                 }
-                
+
                 if self.isPlaying {
                     print("🔊 [DetailViewController] Re-initializing audio engine for new route...")
                     self.stopRecording()
@@ -462,16 +460,16 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
 
 extension DetailViewController: WorkoutSheetDelegate {
     func didTapPlayPause() { togglePlayPause() }
-    
+
     func didChangeSpeed(_ speed: Double) {
             currentPlaybackSpeed = speed
             updatePlaybackSpeed()
         }
-    
+
     func didTapReset() {
         resetReading()
     }
-    
+
     func didTapShowResult() {
         guard totalExerciseDuration >= 5 else {
             let alert = UIAlertController(
@@ -486,7 +484,7 @@ extension DetailViewController: WorkoutSheetDelegate {
         pausePlayback()
         self.dismiss(animated: true) { self.didTapOpenButton() }
     }
-    
+
     func didUpdateDAFDelay(_ delay: Double) {
         self.selectedDAFDelay = delay
         if areHeadphonesConnected() && delay > 0 {
@@ -502,10 +500,10 @@ extension DetailViewController: WorkoutSheetDelegate {
 
 extension DetailViewController: UISheetPresentationControllerDelegate {
     func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheetPresentationController: UISheetPresentationController) {
-        
+
         let isExpanded = sheetPresentationController.selectedDetentIdentifier == .init("half")
         sheetVC?.toggleDoneButtonVisibility(isHidden: !isExpanded)
-        
+
         if isExpanded {
             if isPlaying {
                 isPlaying = false

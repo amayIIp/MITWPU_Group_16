@@ -29,7 +29,6 @@ class InfoViewController: UIViewController {
     @objc private func dismissSelf() {
         dismiss(animated: true)
     }
-    
 
     /*
     // MARK: - Navigation

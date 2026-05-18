@@ -2,7 +2,7 @@ import UIKit
 
 // MARK: - LastOnboardingViewController
 class LastOnboardingViewController: UIViewController {
-    
+
     // MARK: - IBOutlets
     @IBOutlet weak var blocks: UILabel!
     @IBOutlet weak var repitition: UILabel!
@@ -16,21 +16,21 @@ class LastOnboardingViewController: UIViewController {
     private let waveView = WaveBackgroundView() // This will now use the existing definition from your project
     private let titleLabel = UILabel()
     private let completedLabel = UILabel()
-    
+
     // MARK: - Properties
     var report: StutterJSONReport?
     private var hasSavedData = false
     let customBrandBlue = UIColor(named: "ButtonTheme") ?? UIColor(red: 0.21, green: 0.32, blue: 0.63, alpha: 1.0)
-    
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.largeTitleDisplayMode = .always
-        
+
         setupCustomBackButton()
         setupInitialState()
-        
+
         if let report = report {
             setupResults(report: report)
         } else {
@@ -39,7 +39,7 @@ class LastOnboardingViewController: UIViewController {
             prolongation.text = "0%"
         }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         performEntryAnimation()
@@ -50,7 +50,7 @@ class LastOnboardingViewController: UIViewController {
         getStartedButton.alpha = 0.0
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
-    
+
     // MARK: - UI Setup
     private func setupWaveUI() {
         splashContainer.frame = view.bounds
@@ -70,7 +70,7 @@ class LastOnboardingViewController: UIViewController {
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
         titleLabel.alpha = 0
-        
+
         completedLabel.text = "Your personalized report is ready"
         completedLabel.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         completedLabel.textColor = .secondaryLabel
@@ -88,15 +88,15 @@ class LastOnboardingViewController: UIViewController {
             stack.centerYAnchor.constraint(equalTo: splashContainer.centerYAnchor, constant: -60)
         ])
     }
-    
+
     private func performEntryAnimation() {
         setupWaveUI()
-        
+
         titleLabel.transform = CGAffineTransform(translationX: 0, y: 20)
         completedLabel.transform = CGAffineTransform(translationX: 0, y: 20)
-        
+
         waveView.targetFillLevel = 0.40
-        
+
         UIView.animate(withDuration: 0.8, delay: 0.3, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
             self.titleLabel.alpha = 1.0
             self.titleLabel.transform = .identity
@@ -108,40 +108,40 @@ class LastOnboardingViewController: UIViewController {
             }
         }
     }
-    
+
     private func dissolveSplash() {
         waveView.targetFillLevel = 0.0
-        
+
         UIView.animate(withDuration: 0.7, delay: 0, options: .curveEaseInOut, animations: {
             self.splashContainer.alpha = 0.0
             self.titleLabel.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
         }) { _ in
             self.waveView.stop()
             self.splashContainer.removeFromSuperview()
-            
+
             self.navigationController?.setNavigationBarHidden(false, animated: true)
-            
+
             UIView.animate(withDuration: 0.6) {
                 self.scrollView.alpha = 1.0
                 self.getStartedButton.alpha = 1.0
             }
         }
     }
-    
+
     // MARK: - Logic & Actions
     func setupResults(report: StutterJSONReport) {
         blocks.text = "\(Int(report.percentages.blocks))%"
         repitition.text = "\(Int(report.percentages.repetition))%"
         prolongation.text = "\(Int(report.percentages.prolongation))%"
         loadTroubledWords(words: report.stutteredWords)
-        
+
         if !hasSavedData {
             LogManager.shared.saveReadingSession(report: report)
             analyzeAndSaveProblemPhonemes(from: report.stutteredWords)
             hasSavedData = true
         }
     }
-    
+
     private func analyzeAndSaveProblemPhonemes(from words: [String]) {
         let cleanWords = words.filter { !$0.isEmpty }.map { $0.lowercased() }
         if cleanWords.isEmpty { return }
@@ -179,7 +179,7 @@ class LastOnboardingViewController: UIViewController {
             DatabaseManager.shared.saveUserProblemPhonemes(phonemes: problemPhonemes)
         }
     }
-    
+
     func loadTroubledWords(words: [String]) {
         // Clear existing
         troubledWords.arrangedSubviews.forEach {
@@ -270,7 +270,7 @@ class LastOnboardingViewController: UIViewController {
         let imageConfig = UIImage.SymbolConfiguration(weight: .semibold)
         config.image = UIImage(systemName: "chevron.backward", withConfiguration: imageConfig)
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        
+
         let backButton = UIButton(configuration: config)
         backButton.addTarget(self, action: #selector(didTapResetButton), for: .touchUpInside)
         let customBarButtonItem = UIBarButtonItem(customView: backButton)
@@ -281,22 +281,22 @@ class LastOnboardingViewController: UIViewController {
         if !SessionManager.shared.isAccountMode {
             SessionManager.shared.startGuestSession()
         }
-        
+
         AppState.isOnboardingCompleted = true
         AppState.isLoginCompleted = true
         AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
-        
+
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
         var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
         profile.isOnboardingCompleted = true
         LogManager.shared.saveProfile(profile)
-        
+
         if SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushProfile(profile)
         }
-        
+
         LogicMaker().checkForNewDay(isFromLogin: true)
-            
+
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
 
@@ -311,7 +311,7 @@ class LastOnboardingViewController: UIViewController {
             UIView.animate(withDuration: 0.3) { homeVC.view.alpha = 1 }
         }
     }
-    
+
     @objc func didTapResetButton() {
         let alert = UIAlertController(title: "Retake Test", message: "This will reset your current progress. Continue?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Retake", style: .destructive) { [weak self] _ in

@@ -3,11 +3,11 @@ import WhisperKit
 
 class WhisperDetectionManager {
     static let shared = WhisperDetectionManager()
-    
+
     private var initTask: Task<Void, Error>?
     private var whisperKit: WhisperKit?
     private(set) var isReady = false
-    
+
     private init() {
         initTask = Task { @MainActor in
             // Locate the bundled model folder shipped inside the app bundle.
@@ -34,29 +34,29 @@ class WhisperDetectionManager {
             print("✅ WhisperKit is ready (loaded from bundle)!")
         }
     }
-    
+
     /// Waits for WhisperKit to finish initialising (near-instant when bundled).
     func awaitReady() async {
         guard let initTask = initTask else { return }
         _ = try? await initTask.value
     }
-    
+
     func transcribe(audioURL: URL) async throws -> String? {
         guard let initTask = initTask else {
             throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit initialization not started."])
         }
-        
+
         // Wait for the model to finish loading before attempting transcription
         try await initTask.value
         guard let whisperKit else {
             throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit initialization did not finish."])
         }
-        
+
         let path = audioURL.path
-        
+
         // WhisperKit provides an easy audioPath transcription taking care of resampling
         let transcriptionResult = try await whisperKit.transcribe(audioPath: path)
-        
+
         return transcriptionResult.map { $0.text }.joined(separator: " ")
     }
 }

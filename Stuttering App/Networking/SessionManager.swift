@@ -9,16 +9,16 @@ import Foundation
 import Supabase
 
 class SessionManager {
-    
+
     static let shared = SessionManager()
-    
+
     // MARK: - User Mode
     enum UserMode: String {
         case guest
         case account
         case none  // No session yet (first launch or after sign-out)
     }
-    
+
     // MARK: - UserDefaults Keys
     private enum Keys {
         static let userMode        = "session.userMode"
@@ -26,9 +26,9 @@ class SessionManager {
         static let lastUserId      = "session.lastUserId"
         static let lastSyncDate    = "LastDeltaSyncDate"
     }
-    
+
     // MARK: - Properties
-    
+
     /// Current operating mode — persisted across app launches
     private(set) var currentMode: UserMode {
         get {
@@ -40,7 +40,7 @@ class SessionManager {
             print("🚪 [SESSION] Mode changed → \(newValue.rawValue)")
         }
     }
-    
+
     /// Unique device identifier — generated once per install, survives sign-outs
     var deviceId: String {
         if let existing = UserDefaults.standard.string(forKey: Keys.deviceId) {
@@ -51,7 +51,7 @@ class SessionManager {
         print("🚪 [SESSION] Generated new deviceId: \(newId)")
         return newId
     }
-    
+
     /// The active user ID — Supabase UUID for accounts, deviceId for guests.
     /// In account mode the fallback chain ends at the stored lastUserId or
     /// the live Supabase session; it does NOT fall through to deviceId so
@@ -67,31 +67,31 @@ class SessionManager {
             return deviceId
         }
     }
-    
+
     /// Last synced Supabase user ID (for session restore)
     var lastUserId: String? {
         get { UserDefaults.standard.string(forKey: Keys.lastUserId) }
         set { UserDefaults.standard.set(newValue, forKey: Keys.lastUserId) }
     }
-    
+
     /// Last sync timestamp — used for delta sync
     var lastSyncTimestamp: String {
         get { UserDefaults.standard.string(forKey: Keys.lastSyncDate) ?? "1970-01-01T00:00:00Z" }
         set { UserDefaults.standard.set(newValue, forKey: Keys.lastSyncDate) }
     }
-    
+
     // MARK: - Convenience
-    
+
     var isAccountMode: Bool { currentMode == .account }
-    var isGuestMode: Bool   { currentMode == .guest }
+    var isGuestMode: Bool { currentMode == .guest }
     var hasActiveSession: Bool { currentMode != .none }
-    
+
     private init() {
         print("🚪 [SESSION] Initialized — mode: \(currentMode.rawValue), deviceId: \(deviceId)")
     }
-    
+
     // MARK: - Session Lifecycle
-    
+
     /// Start a fresh guest session (local-only, no Supabase).
     /// Always pairs with LogManager guest initialisation so that
     /// getCurrentUserId() never returns nil for a guest user.
@@ -104,16 +104,16 @@ class SessionManager {
         // Ensure guest user is always initialised in SQLite
         LogManager.shared.initializeGuestUser()
     }
-    
+
     /// Transition to account session after successful Supabase auth
     func startAccountSession(userId: String) {
         print("🚪 [SESSION] Starting ACCOUNT session for userId: \(userId)")
         currentMode = .account
         lastUserId = userId
-        
+
         AppState.isLoginCompleted = true
     }
-    
+
     /// End the current session (sign-out).
     /// Invalidates the Supabase JWT keychain token so that restoreSession()
     /// cannot silently resurrect a session the user explicitly ended.
@@ -153,17 +153,17 @@ class SessionManager {
 
         print("🚪 [SESSION] Session ended. DeviceId preserved: \(preservedDeviceId)")
     }
-    
+
     /// Restore session on app launch — determines which mode to enter
     func restoreSession() async -> UserMode {
         print("🚪 [SESSION] Restoring session... stored mode: \(currentMode.rawValue)")
-        
+
         switch currentMode {
         case .guest:
             // Guest sessions restore instantly — no network needed
             print("🚪 [SESSION] Restored GUEST session")
             return .guest
-            
+
         case .account:
             // Validate the Supabase session token
             do {
@@ -181,20 +181,20 @@ class SessionManager {
                 currentMode = .none
                 return .none
             }
-            
+
         case .none:
             print("🚪 [SESSION] No previous session found")
             return .none
         }
     }
-    
+
     // MARK: - Sync Helpers
-    
+
     /// Whether a Supabase call is allowed right now
     func canAccessSupabase() -> Bool {
         return isAccountMode
     }
-    
+
     /// Log a blocked Supabase call attempt (for debugging)
     func logBlockedSupabaseCall(_ functionName: String) {
         print("🚫 [GUARD] Supabase call BLOCKED in \(currentMode.rawValue) mode: \(functionName)")

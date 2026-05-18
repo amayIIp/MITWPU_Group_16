@@ -13,7 +13,7 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
     @IBOutlet weak var recordButton: UIButton!
     @IBOutlet weak var durationLabel: UILabel!
     @IBOutlet weak var targetLabel: UILabel!
-    
+
     var audioRecorder: AVAudioRecorder?
     var recordingSession: AVAudioSession!
     var currentExercise = "Voice Diary"
@@ -32,14 +32,14 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
         updateButtonState(isRecording: false)
         targetLabel.text = targetWord
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setupAudioSession()
         impactFeedback.prepare()
         notificationFeedback.prepare()
     }
-    
+
     // MARK: - Audio Setup
     func setupAudioSession() {
         // ✅ Session is already active (pre-warmed by parent screen).
@@ -50,7 +50,7 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
             }
         }
     }
-    
+
     func showPermissionDeniedAlert() {
         DispatchQueue.main.async {
             let alert = UIAlertController(
@@ -58,14 +58,14 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
                 message: "To record your voice diary, please enable microphone access in Settings.",
                 preferredStyle: .alert
             )
-            
+
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             alert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { _ in
                 if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(settingsURL)
                 }
             }))
-            
+
             self.present(alert, animated: true, completion: nil)
         }
     }
@@ -84,7 +84,7 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
                 impactFeedback.impactOccurred()
             }
     }
-    
+
     @IBAction func tapToMainScreen(_ sender: Any) {
         if let initialPresenter = self.navigationController?.presentingViewController {
             initialPresenter.dismiss(animated: true, completion: nil)
@@ -129,11 +129,11 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
         secondsRecorded = 0
         durationLabel.text = "00:00"
         durationLabel.isHidden = false
-        
+
         recordingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             self.secondsRecorded += 1
-            
+
             let minutes = self.secondsRecorded / 60
             let seconds = self.secondsRecorded % 60
             self.durationLabel.text = String(format: "%02d:%02d", minutes, seconds)
@@ -149,44 +149,42 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
     // MARK: - UI & Styling
     func styleUI() {
         // Note: You can add a static microphone icon or waveform image inside this view in Storyboard
-        
+
         durationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 18, weight: .semibold)
         durationLabel.textColor = .label
     }
-    
-   
-    
+
     func updateButtonState(isRecording: Bool) {
         // 1. Use .filled() or .tinted() based on your preference (Images show tinted)
         var config = UIButton.Configuration.tinted()
         config.baseForegroundColor = .buttonTheme
         config.baseBackgroundColor = .buttonTheme
         config.cornerStyle = .capsule
-        
+
         // 2. Control the Logo Size explicitly
         // Lowering the pointSize (e.g. 24) prevents it from taking over the button
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 24, weight: .bold)
-        
+
         if isRecording {
             // --- STOP STATE (Circle) ---
             config.image = UIImage(systemName: "square.fill", withConfiguration: iconConfig)
             config.title = "" // No text
-            
+
             // 3. Add ample padding to create the "Circle" shape with space around the square
             // High even values (top/bottom/leading/trailing) ensure the button is much larger than the icon
             config.contentInsets = NSDirectionalEdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
-            
+
         } else {
             // --- START STATE (Capsule) ---
             config.image = UIImage(systemName: "mic.fill", withConfiguration: iconConfig)
             config.title = "Start Recording"
             config.imagePadding = 12 // Space between Mic and Text
-            
+
             // 4. Add "Fat" padding for a touch-friendly main button
             // Extra horizontal padding (leading/trailing) makes it look like a proper pill
             config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 32, bottom: 16, trailing: 32)
         }
-        
+
         // Smoothly animate the size change
         UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
             self.recordButton.configuration = config
@@ -200,21 +198,21 @@ class StoryCubesViewController: UIViewController, AVAudioRecorderDelegate {
             print("⚠️ Recording failed to finish successfully.")
             return
         }
-        
+
         let fileManager = FileManager.default
         let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
         let destinationURL = documentsURL.appendingPathComponent("\(currentFileID).m4a")
-        
+
         do {
             try fileManager.moveItem(at: recorder.url, to: destinationURL)
             let finalDuration = Double(self.secondsRecorded)
-            
+
             // Assuming you have an AudioLog struct mirroring VideoLog
             let newLog = AudioLog(id: currentFileID, heading: self.targetWord, date: Date(), duration: finalDuration)
             AudioMetadataManager.shared.saveLog(newLog)
-            
+
             print("✅ Successfully saved audio and metadata to: \(destinationURL)")
-            
+
         } catch {
             print("⚠️ Error saving file: \(error.localizedDescription)")
         }

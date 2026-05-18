@@ -10,10 +10,10 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var googleSignIn: UIButton!
     @IBOutlet weak var continueAsGuest: UIButton!
-    
+
     // NEW OUTLET: Connect this to your button in Storyboard
     @IBOutlet weak var passwordToggleButton: UIButton!
-    
+
     private let client = SupabaseManager.shared.client
     var onSwitchToSignin: (() -> Void)?
     private var loadingOverlay: WaveLoadingOverlay?
@@ -41,32 +41,32 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @objc private func dismissSelf() {
         dismiss(animated: true)
     }
-    
+
     func setupTextField() {
         nameTextField.delegate = self
         nameTextField.returnKeyType = .done
     }
-    
+
     func setupUI() {
         let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
-        
+
         // Hide "Continue as Guest" if they are already a guest upgrading their account
         if SessionManager.shared.isGuestMode {
             continueAsGuest?.isHidden = true
         }
-        
+
         // --- Fat-finger fix: ensure minimum 44pt touch targets ---
         applyButtonInsets(to: continueAsGuest, top: 12, leading: 16, bottom: 12, trailing: 16)
-        
+
         // --- Password Toggle Config ---
         passwordTextField.isSecureTextEntry = true
-        
+
         // Configure the eye icon (Small scale, Secondary Label color)
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium, scale: .small)
         passwordToggleButton.setImage(UIImage(systemName: "eye.slash", withConfiguration: config), for: .normal)
         passwordToggleButton.tintColor = .secondaryLabel
-        
+
         // Attach to text field
         passwordTextField.rightView = passwordToggleButton
         passwordTextField.rightViewMode = .always
@@ -75,11 +75,11 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     // NEW ACTION: Connect your button's "Touch Up Inside" to this
     @IBAction func togglePasswordVisibility(_ sender: UIButton) {
         passwordTextField.isSecureTextEntry.toggle()
-        
+
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium, scale: .small)
         let imageName = passwordTextField.isSecureTextEntry ? "eye.slash" : "eye"
         sender.setImage(UIImage(systemName: imageName, withConfiguration: config), for: .normal)
-        
+
         // Cursor fix
         if let text = passwordTextField.text {
             passwordTextField.text = nil
@@ -165,7 +165,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
-        
+
     @IBAction func switchToSigninButtonTapped(_ sender: UIButton) {
         // Fat-finger fix applied on first tap if not already set
         applyButtonInsetsIfNeeded(to: sender, top: 12, leading: 8, bottom: 12, trailing: 8)
@@ -193,9 +193,9 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             presentingVC.present(navController, animated: true)
         }
     }
-    
+
     // MARK: - Helpers & Navigation (Existing)
-    
+
     private func showLoading(message: String = "Creating your account") {
         guard loadingOverlay == nil else { return }
         loadingOverlay = WaveLoadingOverlay.showOnWindow(message: message)
@@ -208,7 +208,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
 
     func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
+        let emailPred = NSPredicate(format: "SELF MATCHES %@", emailRegEx)
         return emailPred.evaluate(with: email)
     }
 
@@ -224,15 +224,15 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         guard currentInsets == .zero else { return }
         applyButtonInsets(to: button, top: top, leading: leading, bottom: bottom, trailing: trailing)
     }
-    
+
     func showAlert(message: String) {
         let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
     }
-    
+
     // MARK: - Nonce helpers are in AuthHelpers.swift
-    
+
     @objc private func googleSignInTapped() {
         let rawNonce = AuthHelpers.randomNonceString()
         let hashedNonce = AuthHelpers.sha256(rawNonce)
@@ -278,7 +278,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
-    
+
     func handleNavigationLogic() {
         let executeTransition = {
             if AppState.isOnboardingCompleted {
@@ -310,7 +310,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             executeTransition()
         }
     }
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.destination is OnboardingNameViewController {
             // startGuestSession() is now called in OnboardingNameViewController

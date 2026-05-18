@@ -13,7 +13,7 @@ class AchievedViewController: AwardsBaseViewController {
         super.viewDidLoad()
         title = "Achieved"
     }
-    
+
     override func loadData() {
         // Fetch awards where progress is 100% (1.0)
         let query = "SELECT * FROM Awards WHERE progress >= 1.0"

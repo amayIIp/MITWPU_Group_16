@@ -158,9 +158,9 @@ class ReadingResultViewController2: UIViewController {
         hStack.spacing = 10
         hStack.translatesAutoresizingMaskIntoConstraints = false
 
-        hStack.addArrangedSubview(makeStatTile(valueLabel: repValueLabel, name: "Repetition",   color: brandColor))
+        hStack.addArrangedSubview(makeStatTile(valueLabel: repValueLabel, name: "Repetition", color: brandColor))
         hStack.addArrangedSubview(makeStatTile(valueLabel: proValueLabel, name: "Prolongation", color: brandColor))
-        hStack.addArrangedSubview(makeStatTile(valueLabel: blkValueLabel, name: "Blocks",        color: brandColor))
+        hStack.addArrangedSubview(makeStatTile(valueLabel: blkValueLabel, name: "Blocks", color: brandColor))
 
         let vStack = UIStackView(arrangedSubviews: [title, hStack])
         vStack.axis = .vertical
@@ -543,17 +543,15 @@ class ReadingResultViewController2: UIViewController {
         let clean = words.filter { !$0.isEmpty }.map { $0.lowercased() }
         guard !clean.isEmpty else { return }
 
-        let plosives:    Set<Character> = ["p","b","t","d","k","g"]
-        let fricatives:  Set<Character> = ["s","f"]
-        let vowelsVoiced: Set<Character> = ["a","e","i","o","u","m","n","l"]
+        let plosives: Set<Character> = ["p", "b", "t", "d", "k", "g"]
+        let fricatives: Set<Character> = ["s", "f"]
+        let vowelsVoiced: Set<Character> = ["a", "e", "i", "o", "u", "m", "n", "l"]
 
         var plos = 0, fric = 0, vowV = 0
         for word in clean {
             if word.hasPrefix("sh") || word.hasPrefix("th") { fric += 1; continue }
             if let c = word.first {
-                if plosives.contains(c)    { plos += 1 }
-                else if fricatives.contains(c) { fric += 1 }
-                else if vowelsVoiced.contains(c) { vowV += 1 }
+                if plosives.contains(c) { plos += 1 } else if fricatives.contains(c) { fric += 1 } else if vowelsVoiced.contains(c) { vowV += 1 }
             }
         }
         var phonemes: [String] = []
@@ -599,6 +597,5 @@ class ReadingResultViewController2: UIViewController {
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }
-
 
 }

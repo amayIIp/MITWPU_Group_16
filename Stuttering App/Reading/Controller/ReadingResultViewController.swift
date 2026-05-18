@@ -35,8 +35,6 @@ class ReadingResultViewController: UIViewController {
             target: self, action: #selector(didTapCloseResult)
         )
 
-
-
         troubledWordsStackView.isHidden = false
         troubledWordsStackView.axis = .vertical
         troubledWordsStackView.spacing = 12
@@ -73,8 +71,6 @@ class ReadingResultViewController: UIViewController {
         let labelWidth = insightsLabel.superview?.bounds.width ?? (view.bounds.width - 72)
         insightsLabel.preferredMaxLayoutWidth = labelWidth
     }
-
-
 
     // MARK: - Staggered Entry Animation
 
@@ -118,10 +114,10 @@ class ReadingResultViewController: UIViewController {
     private var scoreDisplayLink: CADisplayLink?
     private var scoreAnimStartTime: CFTimeInterval = 0
     private var scoreAnimFinalScore: Int = 0
-    private var scoreAnimTotalTime:  CFTimeInterval = 0  // set per-animation so label syncs with ring
-    private let ringRiseDuration:  CFTimeInterval = 1.4
-    private let ringHoldDuration:  CFTimeInterval = 0.4
-    private let ringFallDuration:  CFTimeInterval = 0.9
+    private var scoreAnimTotalTime: CFTimeInterval = 0  // set per-animation so label syncs with ring
+    private let ringRiseDuration: CFTimeInterval = 1.4
+    private let ringHoldDuration: CFTimeInterval = 0.4
+    private let ringFallDuration: CFTimeInterval = 0.9
 
     /// Animates the ring: 0 → full → actual score, and counts the label from 0 → actual score.
     /// For scores ≥ 95 the overshoot-to-full showcase is skipped to avoid the ugly near-complete
@@ -243,9 +239,7 @@ class ReadingResultViewController: UIViewController {
         for word in cleanWords {
             if word.hasPrefix("sh") || word.hasPrefix("th") { fricativeCount += 1; continue }
             if let first = word.first {
-                if plosives.contains(first)    { plosiveCount += 1 }
-                else if fricatives.contains(first) { fricativeCount += 1 }
-                else if vowelsVoiced.contains(first) { vowelVoicedCount += 1 }
+                if plosives.contains(first) { plosiveCount += 1 } else if fricatives.contains(first) { fricativeCount += 1 } else if vowelsVoiced.contains(first) { vowelVoicedCount += 1 }
             }
         }
 
@@ -388,10 +382,10 @@ class ReadingResultViewController: UIViewController {
 // MARK: - PaddingLabel
 
 class PaddingLabel: UILabel {
-    var topInset:    CGFloat = 6
+    var topInset: CGFloat = 6
     var bottomInset: CGFloat = 6
-    var leftInset:   CGFloat = 12
-    var rightInset:  CGFloat = 12
+    var leftInset: CGFloat = 12
+    var rightInset: CGFloat = 12
 
     override func drawText(in rect: CGRect) {
         super.drawText(in: rect.inset(by: UIEdgeInsets(

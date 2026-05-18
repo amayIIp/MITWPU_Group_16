@@ -27,7 +27,7 @@ struct AnimationSubstep {
     let type: AnimationType
     let duration: TimeInterval
     let delay: TimeInterval
-    
+
     init(type: AnimationType, duration: TimeInterval = 1.0, delay: TimeInterval = 0.0) {
         self.type = type
         self.duration = duration
@@ -40,7 +40,7 @@ struct StepAnimationConfig {
     let showImage: Bool
     let substeps: [AnimationSubstep]
     let autoAdvance: Bool
-    
+
     init(stepNumber: Int, showImage: Bool = false, substeps: [AnimationSubstep], autoAdvance: Bool = false) {
         self.stepNumber = stepNumber
         self.showImage = showImage
@@ -56,16 +56,16 @@ struct ExerciseAnimationTemplate {
 }
 
 class ExerciseAnimationRegistry {
-    
+
     static let shared = ExerciseAnimationRegistry()
     private var templates: [String: ExerciseAnimationTemplate] = [:]
-    
+
     private init() {
         registerAllExercises()
     }
-    
+
     private func registerAllExercises() {
-        
+
         // ==========================================
         // EXERCISE 1.1 - Image-Based (Traditional)
         // ==========================================
@@ -74,7 +74,7 @@ class ExerciseAnimationRegistry {
             exerciseType: .imageBased,
             stepConfigs: []  // No animation configs needed
         )
-        
+
         // ==========================================
         // EXERCISE 1.2 - Animation-Based
         // Input: "Ba-by"
@@ -115,7 +115,7 @@ class ExerciseAnimationRegistry {
                 )
             ]
         )
-        
+
         // ==========================================
         // EXERCISE 2.1 - Hybrid (Image + Animations)
         // Step 1: Image shown, no text
@@ -154,7 +154,7 @@ class ExerciseAnimationRegistry {
                 )
             ]
         )
-        
+
         // ==========================================
         // EXERCISE 2.2 - Image-Based (Traditional)
         // ==========================================
@@ -163,7 +163,7 @@ class ExerciseAnimationRegistry {
             exerciseType: .imageBased,
             stepConfigs: []
         )
-        
+
         // ==========================================
         // EXERCISE 2.3 - Animation-Based
         // Step 1: "Baby" -> "Baaaa..."
@@ -193,7 +193,7 @@ class ExerciseAnimationRegistry {
                 )
             ]
         )
-        
+
         // ==========================================
         // EXERCISES 3.1, 3.2, 3.3 - Toolkit
         // ==========================================
@@ -202,38 +202,38 @@ class ExerciseAnimationRegistry {
             exerciseType: .textOnly,
             stepConfigs: []
         )
-        
+
         templates["Pull-Out"] = ExerciseAnimationTemplate(
             exerciseTitle: "Pull-Out",
             exerciseType: .textOnly,
             stepConfigs: []
         )
-        
+
         templates["Block Correction"] = ExerciseAnimationTemplate(
             exerciseTitle: "Block Correction",
             exerciseType: .textOnly,
             stepConfigs: []
         )
-        
+
         templates["Tongue Twisters"] = ExerciseAnimationTemplate(
             exerciseTitle: "Tongue Twisters",
             exerciseType: .textOnly,
             stepConfigs: []
         )
-        
+
         templates["Video Diary"] = ExerciseAnimationTemplate(
             exerciseTitle: "Video Diary",
             exerciseType: .textOnly,
             stepConfigs: []
         )
-        
+
         templates["Story Cubes"] = ExerciseAnimationTemplate(
             exerciseTitle: "Story Cubes",
             exerciseType: .textOnly,
             stepConfigs: []
         )
     }
-    
+
     func getTemplate(for exerciseTitle: String) -> ExerciseAnimationTemplate? {
         return templates[exerciseTitle]
     }

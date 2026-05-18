@@ -61,7 +61,7 @@ actor InsightEngine {
         // Tier 3: Deterministic rule-based fallback
         return generateDayInsightRuleBased(context: context)
     }
-    
+
     func overallHeadline(context: OverallInsightContext) async -> String {
         // Tier 1: On-device Foundation Model
         if let aiHeadline = await generateOverallHeadlineAI(context: context) {
@@ -169,7 +169,6 @@ actor InsightEngine {
         return !words.isEmpty && words.count <= 30
     }
 
-    
     private func generateDayInsightAI(context: DayInsightContext) async -> String? {
         let model = SystemLanguageModel.default
         guard model.availability == .available else {
@@ -180,7 +179,7 @@ actor InsightEngine {
         // Fresh session each time — insights are independent, not a conversation
         let session = LanguageModelSession(model: model, instructions: dayInsightInstructions)
         let prompt = buildDayPrompt(context: context)
-        
+
         do {
             let response = try await session.respond(to: prompt)
             let text = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -188,7 +187,7 @@ actor InsightEngine {
             guard !text.isEmpty, isValidInsight(text) else {
                 return nil
             }
-            
+
             return text
         } catch {
             print("InsightEngine: Model failed — \(error.localizedDescription)")
@@ -205,15 +204,15 @@ actor InsightEngine {
 
         let session = LanguageModelSession(model: model, instructions: dayInsightInstructions)
         let prompt = buildOverallPrompt(context: context)
-        
+
         do {
             let response = try await session.respond(to: prompt)
             let text = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
             guard !text.isEmpty, text.count < 150 else {
                 return nil
             }
-            
+
             return text
         } catch {
             print("InsightEngine: Model failed — \(error.localizedDescription)")

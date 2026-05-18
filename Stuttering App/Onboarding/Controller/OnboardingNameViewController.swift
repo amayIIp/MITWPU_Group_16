@@ -8,10 +8,10 @@
 import UIKit
 
 class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate {
-    
+
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var continueButton: UIButton!
-        
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackButton()
@@ -19,32 +19,32 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
         setupDismissKeyboardGesture()
         setupAppleNativeUI()
     }
-    
+
     // MARK: - Native Apple Polish
     private func setupAppleNativeUI() {
         // Auto-focus the text field so the keyboard is ready immediately
         nameTextField.becomeFirstResponder()
-        
+
         // Setup dynamic button state based on text input
         updateContinueButtonState()
         nameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
-    
+
     @objc private func textFieldDidChange() {
         updateContinueButtonState()
     }
-    
+
     private func updateContinueButtonState() {
         let text = nameTextField.text?.trimmingCharacters(in: .whitespaces) ?? ""
         let isValid = !text.isEmpty
-        
+
         continueButton.isEnabled = isValid
         // Visually fade the button if it's disabled, native Apple style
         UIView.animate(withDuration: 0.2) {
             self.continueButton.alpha = isValid ? 1.0 : 0.5
         }
     }
-    
+
     // MARK: - Navigation Setup
     private func setupBackButton() {
         let backImage = UIImage(systemName: "chevron.left")
@@ -62,19 +62,19 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
             }
         }
     }
-    
+
     // MARK: - Text Field & Gestures
     func setupTextField() {
         nameTextField.delegate = self
         nameTextField.returnKeyType = .done
-        
+
         nameTextField.autocorrectionType = .no
         nameTextField.spellCheckingType = .no
         nameTextField.smartDashesType = .no
         nameTextField.smartQuotesType = .no
         nameTextField.smartInsertDeleteType = .no
     }
-    
+
     func setupDismissKeyboardGesture() {
         let tapGesture = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         tapGesture.cancelsTouchesInView = false
@@ -98,15 +98,15 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
         SessionManager.shared.startGuestSession()
         
         guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
-                
+
         var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
         profile.firstName = name
 
         LogManager.shared.saveProfile(profile)
-        
+
         // Add your segue or navigation to the next onboarding screen here
     }
-    
+
     // MARK: - UIGestureRecognizerDelegate
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         if touch.view is UITextField || touch.view is UIButton {

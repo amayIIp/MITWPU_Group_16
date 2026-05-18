@@ -8,7 +8,7 @@
 import UIKit
 
 class ExerciseCollectionViewCell: UICollectionViewCell {
-    
+
     static let identifier = "ExerciseCollectionViewCell"
     static let nibName = "ExerciseCollectionViewCell"
 
@@ -16,7 +16,7 @@ class ExerciseCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var captionLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var actionButton: UIButton!
-    
+
     var didTapButton: (() -> Void)?
 
     override func awakeFromNib() {
@@ -36,7 +36,7 @@ class ExerciseCollectionViewCell: UICollectionViewCell {
         captionLabel.text = exercise.description
         timeLabel.text = formatDuration(exercise.short_time)
     }
-    
+
     func formatDuration(_ seconds: Int) -> String {
         if seconds < 60 {
             return String("\(seconds)s")
@@ -45,11 +45,11 @@ class ExerciseCollectionViewCell: UICollectionViewCell {
             return String("\(minutes)m")
         }
     }
-    
+
     @IBAction func buttonPressed(_ sender: UIButton) {
         didTapButton?()
     }
-    
+
     override var isHighlighted: Bool {
         didSet {
             UIView.animate(withDuration: 0.2) {

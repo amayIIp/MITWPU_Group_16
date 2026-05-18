@@ -79,9 +79,9 @@ class StutterAnalyzer {
         }
 
         var correctCount      = 0
-        var rawRepetitions:   [String] = []
+        var rawRepetitions: [String] = []
         var rawProlongations: [String] = []
-        var rawAllStuttered:  [String] = []
+        var rawAllStuttered: [String] = []
 
         var refIndex   = 0
         var transIndex = 0
@@ -149,8 +149,8 @@ class StutterAnalyzer {
         }
 
         // Apply case-insensitive whitelist filter for repetitions and prolongations.
-        let repetitions     = rawRepetitions.filter     { paragraphWordsWhitelist.contains($0.lowercased()) }
-        let prolongations   = rawProlongations.filter   { paragraphWordsWhitelist.contains($0.lowercased()) }
+        let repetitions     = rawRepetitions.filter { paragraphWordsWhitelist.contains($0.lowercased()) }
+        let prolongations   = rawProlongations.filter { paragraphWordsWhitelist.contains($0.lowercased()) }
 
         // ── BLOCK DETECTION ───────────────────────────────────────────────────
         // A "block" = a word the speaker took significantly longer to say than
@@ -256,15 +256,15 @@ class StutterAnalyzer {
             stutteredWords: stutteredWords,
             blocks: detectedBlocks,
             breakdown: StutterBreakdown(
-                repetition:   repetitions,
+                repetition: repetitions,
                 prolongation: prolongations,
-                blocks:       detectedBlocks.count
+                blocks: detectedBlocks.count
             ),
             percentages: StutterPercentages(
-                repetition:   repPercent.rounded(toPlaces: 2),
+                repetition: repPercent.rounded(toPlaces: 2),
                 prolongation: proPercent.rounded(toPlaces: 2),
-                blocks:       blkPercent.rounded(toPlaces: 2),
-                correct:      corPercent.rounded(toPlaces: 2)
+                blocks: blkPercent.rounded(toPlaces: 2),
+                correct: corPercent.rounded(toPlaces: 2)
             ),
             letterAnalysis: letterCounts
         )
@@ -294,7 +294,7 @@ class StutterAnalyzer {
     /// sequence between `ref` and `hyp`.
     private static func levenshteinAlignment(ref: [String], hyp: [String]) -> [Operation] {
         let n = ref.count, m = hyp.count
-        if n == 0 { return Array(repeating: .insert,  count: m) }
+        if n == 0 { return Array(repeating: .insert, count: m) }
         if m == 0 { return Array(repeating: .delete, count: n) }
 
         var matrix = Array(repeating: Array(repeating: 0, count: m + 1), count: n + 1)

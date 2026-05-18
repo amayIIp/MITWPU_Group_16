@@ -11,13 +11,13 @@ import AVKit
 class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIAdaptivePresentationControllerDelegate {
 
     @IBOutlet weak var tableView: UITableView!
-    
+
     var audioLogs: [AudioLog] = []
     // MARK: - Properties (add at top of class)
     private var audioPlayer: AVPlayer?
     private var playerObserver: Any?
     private var playerTimeObserver: Any?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -34,7 +34,7 @@ class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, 
             }
         }
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         audioLogs = AudioMetadataManager.shared.loadLogs()
@@ -46,7 +46,7 @@ class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return audioLogs.count
     }
-    
+
     // MARK: - Modern Empty State Management
     func updateEmptyState() {
         if audioLogs.isEmpty {
@@ -55,7 +55,7 @@ class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, 
             config.image = UIImage(systemName: "waveform.slash")
             config.text = "No Voice Logs"
             config.secondaryText = "Your recorded diary entries will appear here."
-            
+
             self.contentUnavailableConfiguration = config
             tableView.isHidden = true
         } else {
@@ -69,23 +69,23 @@ class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, 
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "AudioHistoryCell", for: indexPath) as? AudioHistoryCell else {
             return UITableViewCell()
         }
-        
+
         let log = audioLogs[indexPath.row]
-        
+
         cell.headingLabel.text = log.heading
-        
+
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         cell.dateLabel.text = formatter.string(from: log.date)
-        
+
         let minutes = Int(log.duration) / 60
         let seconds = Int(log.duration) % 60
         cell.durationLabel.text = String(format: "%02d:%02d", minutes, seconds)
-        
+
         return cell
     }
-    
+
     // MARK: - Play Audio (Replace the entire didSelectRowAt)
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
@@ -111,7 +111,7 @@ class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, 
             }
         }
     }
-    
+
     // MARK: - Custom Audio Player Bottom Sheet
     private func presentAudioPlayerSheet(for log: AudioLog, player: AVPlayer) {
 
@@ -269,7 +269,7 @@ class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, 
             playPauseButton.configuration = cfg
         }
     }
-    
+
     // MARK: - Cleanup on Sheet Dismiss
     // Add UIAdaptivePresentationControllerDelegate conformance to the class declaration:
     // class StoryCubesHistoryViewController: UIViewController,
@@ -289,24 +289,24 @@ class StoryCubesHistoryViewController: UIViewController, UITableViewDataSource, 
         }
         audioPlayer = nil
     }
-    
+
     // MARK: - Delete Audio
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let log = audioLogs[indexPath.row]
-            
+
             // 1. Delete JSON entry
             AudioMetadataManager.shared.deleteLog(id: log.id)
-            
+
             // 2. Delete actual .m4a file
             let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
             let audioURL = documentsURL.appendingPathComponent("\(log.id).m4a")
             try? FileManager.default.removeItem(at: audioURL)
-            
+
             // 3. Update UI
             audioLogs.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
-            
+
             // 4. Update state
             updateEmptyState()
         }

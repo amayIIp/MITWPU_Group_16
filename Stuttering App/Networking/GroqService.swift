@@ -36,7 +36,7 @@ class GroqService {
 
         let messages: [[String: String]] = [
             ["role": "system", "content": systemInstruction],
-            ["role": "user",   "content": prompt]
+            ["role": "user", "content": prompt]
         ]
 
         let body: [String: Any] = [
@@ -73,7 +73,7 @@ class GroqService {
 
         let messages: [[String: String]] = [
             ["role": "system", "content": systemInstruction],
-            ["role": "user",   "content": prompt]
+            ["role": "user", "content": prompt]
         ]
 
         let body: [String: Any] = [

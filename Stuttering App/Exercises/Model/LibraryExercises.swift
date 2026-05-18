@@ -21,7 +21,7 @@ struct ModuleResponse: Codable {
     let description: String
     let moduleId: String
     let exercises: [LibraryExercises]
-    
+
     enum CodingKeys: String, CodingKey {
         case moduleName = "module_name"
         case description
@@ -53,7 +53,7 @@ struct ExampleDemonstration: Codable {
     let targetSound: String?
     let targetWord: String?
     let executionText: String?
-    
+
     var displayText: String {
         return targetSound ?? targetWord ?? "Example"
     }
@@ -75,7 +75,7 @@ struct ExerciseStep: Codable {
     let text: String
     let image: String
     let time: Int
-    
+
     enum CodingKeys: String, CodingKey {
         case stepNumber = "step_number"
         case label, text, image, time

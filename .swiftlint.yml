@@ -1,0 +1,12 @@
+included:
+  - Stuttering App
+
+excluded:
+  - Carthage
+  - Pods
+  - .build
+  - DerivedData
+
+line_length:
+  warning: 140
+  error: 200

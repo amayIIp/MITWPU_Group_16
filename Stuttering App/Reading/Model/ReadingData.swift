@@ -20,7 +20,6 @@ let presetTitles = [
 let presetContent = [
     // Daily Challenge (Dynamic)
 
-
     // Science
     """
     Science uncovers the hidden structure of the universe, slowly pulling back layers of mystery through observation, experimentation, and relentless curiosity. It is a long conversation between humanity and nature, where every discovery invites further questions and every answer opens yet another corridor of possibility. From the arrangement of particles deep inside atoms to the behaviour of galaxies millions of light-years away, science attempts to describe, predict, and understand how the world works—not in vague impressions, but in precise, testable explanations. This clarity gives science its power: it allows ideas to be challenged, improved, replaced, and strengthened across generations.
@@ -55,7 +54,7 @@ let presetContent = [
 
     Teamwork in sports mirrors the collaborative nature of modern society. Learning to rely on a teammate, to communicate under pressure, and to sacrifice personal glory for the success of the group are vital life lessons. The discipline of a morning practice or the focus required to execute a complex play builds a mental toughness that serves athletes long after they leave the field.
     """,
-    
+
     // Festival
     """
     Festivals mark the rhythm of the year, breaking the monotony of daily life with outbursts of colour, music, and shared joy. They connect communities to their history, religion, and harvest cycles. From the lantern-lit skies of Diwali to the rhythmic drumming of carnival, every festival tells a story of triumph, gratitude, or renewal. They are times when strangers become friends, and streets transform into stages for collective celebration.

@@ -8,41 +8,41 @@
 import UIKit
 
 class HomePageViewController: UIViewController {
-    
+
     @IBOutlet weak var radialChartView: RadialProgressView!
     @IBOutlet weak var progressBar1: ProgressBarView!
     @IBOutlet weak var progressBar2: ProgressBarView!
     @IBOutlet weak var progressBar3: ProgressBarView!
-    
+
     @IBOutlet weak var taskNameLabel1: UILabel!
     @IBOutlet weak var taskNameLabel2: UILabel!
     @IBOutlet weak var taskNameLabel3: UILabel!
     @IBOutlet weak var taskNameLabel4: UILabel!
     @IBOutlet weak var taskNameLabel5: UILabel!
-    
+
     @IBOutlet weak var taskIcon1: UIImageView!
     @IBOutlet weak var taskIcon2: UIImageView!
     @IBOutlet weak var taskIcon3: UIImageView!
     @IBOutlet weak var taskIcon4: UIImageView!
     @IBOutlet weak var taskIcon5: UIImageView!
-    
+
     @IBOutlet weak var completionStatusLabel: UILabel!
-    
+
     @IBOutlet weak var exerciseStat: UILabel!
     @IBOutlet weak var readingStat: UILabel!
     @IBOutlet weak var convoStat: UILabel!
-    
+
     @IBOutlet weak var achievedAwardImage: UIImageView!
     @IBOutlet weak var achievedAwardName: UILabel!
     @IBOutlet weak var achievedAwardDescription: UILabel!
-    
+
     @IBOutlet weak var quoteText: UILabel!
-    
+
     @IBOutlet weak var insightLabel: UILabel!
     @IBOutlet weak var streakCount: UILabel!
-    
+
     @IBOutlet weak var RadialCardWidthConstraint: NSLayoutConstraint!
-    
+
     private var exerciseLogs: [ExerciseLog] = []
     private var readingLogs: [ExerciseLog] = []
     private var conversationLogs: [ExerciseLog] = []
@@ -53,10 +53,10 @@ class HomePageViewController: UIViewController {
     private var insightTask: Task<Void, Never>?
 
     var currentDailyTasks: [DailyTask] = []
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         setupRadialChart()
         loadTaskName()
         AchievedAwardsUpdate()
@@ -67,21 +67,21 @@ class HomePageViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         let currentStreak = DatabaseManager.shared.fetchCurrentStreak()
         streakCount.text = String(currentStreak)
-        
+
         updateTaskStatus()
         loadProgressView()
         loadTaskName()
         AchievedAwardsUpdate()
         loadHomeInsight()
         setupRightBarButtons()
-        
+
         // Background cloud sync on every home screen visit
         syncFromCloudIfLoggedIn()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         // showcaseAnimationIfNeeded()
@@ -100,7 +100,7 @@ class HomePageViewController: UIViewController {
             NotificationManager.shared.requestAuthorization()
         }
     }
-    
+
     // MARK: - First-Launch Showcase Animation
     /*
     // Durations (seconds) — slowed down for a premium feel
@@ -185,7 +185,7 @@ class HomePageViewController: UIViewController {
         return (1 - cos(t * .pi)) / 2
     }
     */
-    
+
     private func syncFromCloudIfLoggedIn() {
         guard SessionManager.shared.isAccountMode else {
             print("📋 [GUEST] Skipping background cloud sync (guest mode)")
@@ -224,44 +224,44 @@ class HomePageViewController: UIViewController {
             }
         }
     }
-    
+
     func setupNotificationCentre() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("ProgressDataUpdated"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("dailyTasksUpdated"), object: nil)
     }
-    
+
     @objc func handleProfileUpdate() {
         loadProgressView()
         loadTaskName()
     }
-    
+
     func getRadialChartDimensions(for screenWidth: CGFloat) -> (radius: CGFloat, lineWidth: CGFloat, cardWidth: CGFloat) {
         // Reference points based on design requirements
         let baseScreenWidth: CGFloat = 402.0  // iPhone 17
         let maxScreenWidth: CGFloat = 440.0   // iPhone 17 Pro Max
         let baseCardWidth: CGFloat = 140.0
         let maxCardWidth: CGFloat = 180.0
-        
+
         // 1. Interpolate the dynamic card width based on current screen width
         // This ensures a smooth scale even on intermediate devices like standard Pro models.
         let widthRatio = (screenWidth - baseScreenWidth) / (maxScreenWidth - baseScreenWidth)
         let dynamicCardWidth = baseCardWidth + ((maxCardWidth - baseCardWidth) * widthRatio)
-        
+
         // 2. Apply the established 1:3 design ratio
         // Total Width = (Radius * 2) + LineWidth
         // Total Width = (3x * 2) + 1x = 7x
         let lineWidth = dynamicCardWidth / 7.0
         let radius = lineWidth * 3.0
         let cardWidth = (radius * 2.0) + lineWidth
-        
+
         return (radius, lineWidth, cardWidth)
     }
-    
+
     func setupRadialChart() {
         let screenWidth = view.bounds.width
         let dimensions = getRadialChartDimensions(for: screenWidth)
         RadialCardWidthConstraint.constant = dimensions.cardWidth
-        
+
         let initialChartData: [RadialData] = [
             RadialData(
                 title: "Daily Tasks",
@@ -272,9 +272,9 @@ class HomePageViewController: UIViewController {
                 order: 0
             )
         ]
-        
+
         radialChartView.chartData = initialChartData
-        
+
         let themeColor = UIColor(named: "ButtonTheme") ?? .systemBlue
         progressBar1.progressColor = themeColor
         progressBar2.progressColor = themeColor
@@ -291,10 +291,10 @@ class HomePageViewController: UIViewController {
         titleLabel.text = "Home"
         titleLabel.font = .systemFont(ofSize: 30, weight: .bold)
         titleLabel.textColor = .label
-        
+
         let container = UIView()
         container.addSubview(titleLabel)
-        
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -302,7 +302,7 @@ class HomePageViewController: UIViewController {
             titleLabel.bottomAnchor.constraint(equalTo: container.bottomAnchor),
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor)
         ])
-        
+
         navigationItem.titleView = container
     }
 
@@ -311,53 +311,53 @@ class HomePageViewController: UIViewController {
         let profileButton = UIButton(type: .system)
         var profileBtnConfig = UIButton.Configuration.plain()
         profileBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 4)
-        
+
         let profileConfig = UIImage.SymbolConfiguration(scale: .large)
         let profileImage = UIImage(systemName: "person.crop.circle.fill", withConfiguration: profileConfig)?
             .withTintColor(.buttonTheme, renderingMode: .alwaysOriginal)
-        
+
         profileBtnConfig.image = profileImage
         profileButton.configuration = profileBtnConfig
         profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
         let profileItem = UIBarButtonItem(customView: profileButton)
-        
+
         // 2. Streak Button Setup
         let streakButton = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
         config.imagePadding = 6
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 2)
-        
+
         let flameColor = UIColor(red: 1.0, green: 0.329, blue: 0.431, alpha: 1.0)
         let flameConfig = UIImage.SymbolConfiguration(scale: .medium)
         config.image = UIImage(systemName: "flame.fill", withConfiguration: flameConfig)?
             .withTintColor(flameColor, renderingMode: .alwaysOriginal)
-        
+
         var titleAttr = AttributeContainer()
         titleAttr.font = .systemFont(ofSize: 16, weight: .bold)
         titleAttr.foregroundColor = .label
         config.attributedTitle = AttributedString(String(DatabaseManager.shared.fetchCurrentStreak()), attributes: titleAttr)
-        
+
         streakButton.configuration = config
         streakButton.addTarget(self, action: #selector(streakTapped), for: .touchUpInside)
         let streakItem = UIBarButtonItem(customView: streakButton)
-        
+
         // 3. The Fix: Assign as an array (Order is Right-to-Left)
         navigationItem.rightBarButtonItems = [profileItem, streakItem]
     }
 
     @objc private func profileTapped() {
         let storyboard = UIStoryboard(name: "Profile", bundle: nil)
-        
+
         if SessionManager.shared.isAccountMode {
             guard let profileNav = storyboard.instantiateViewController(withIdentifier: "ProfileNav") as? UINavigationController else { return }
-            
+
             profileNav.modalPresentationStyle = .pageSheet
             if let sheet = profileNav.sheetPresentationController {
                 sheet.prefersGrabberVisible = true
             }
-            
+
             present(profileNav, animated: true)
-            
+
         } else {
             let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
             let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
@@ -387,24 +387,24 @@ class HomePageViewController: UIViewController {
         guard let modalVC = storyboard.instantiateViewController(withIdentifier: "Streak") as? StreaksViewController else {
             return
         }
-        
+
         if let sheet = modalVC.sheetPresentationController {
 
             sheet.prefersGrabberVisible = true
-            let customHeightDetent = UISheetPresentationController.Detent.custom { context in
+            let customHeightDetent = UISheetPresentationController.Detent.custom { _ in
                 return 250
             }
             sheet.detents = [customHeightDetent]
         }
         present(modalVC, animated: true)
     }
-    
+
     func displayRandomQuote() {
         quoteText.text = quotes.randomElement()
         quoteText.numberOfLines = 0
         quoteText.textAlignment = .center
     }
-    
+
     private func loadHomeInsight() {
         // Fast path: use cached insight if available (invalidated when a new session is saved)
         if let cached = LogManager.shared.cachedHomeInsight {
@@ -448,11 +448,11 @@ class HomePageViewController: UIViewController {
         let totalSeconds = logs.reduce(0) { (runningTotal, log) -> Int in
             return runningTotal + log.exerciseDuration
         }
-        
+
         let totalMinutes = Int((Double(totalSeconds) / 60.0).rounded())
         return totalMinutes
     }
-        
+
     func loadTaskName() {
         self.currentDailyTasks = DatabaseManager.shared.fetchDailyTasks()
         self.updateTaskStatus()
@@ -461,18 +461,18 @@ class HomePageViewController: UIViewController {
     func updateTaskStatus() {
         let nameLabels = [taskNameLabel1, taskNameLabel2, taskNameLabel3, taskNameLabel4, taskNameLabel5]
         let iconViews = [taskIcon1, taskIcon2, taskIcon3, taskIcon4, taskIcon5]
-        
+
         let checkmarkIcon = UIImage(systemName: "checkmark.circle.fill")
         let circleIcon = UIImage(systemName: "circle.fill")
-        
+
         var completedCount = 0
-        
+
         for (index, task) in currentDailyTasks.enumerated() {
-            
+
             guard index < nameLabels.count, index < iconViews.count else { break }
-            
+
             nameLabels[index]?.text = task.name
-            
+
             if task.isCompleted {
                 iconViews[index]?.image = checkmarkIcon
                 iconViews[index]?.tintColor = UIColor(named: "CompletedGreen")
@@ -482,19 +482,18 @@ class HomePageViewController: UIViewController {
                 iconViews[index]?.tintColor = UIColor(red: 0.925, green: 0.933, blue: 0.973, alpha: 1.0)
             }
         }
-        
+
         completionStatusLabel.text = "\(completedCount)"
-        
+
         guard !currentDailyTasks.isEmpty else {
             self.radialChartView.updateProgress(for: "Daily Tasks", to: 0.0)
             return
         }
-        
+
         let progress = Double(completedCount) / Double(currentDailyTasks.count)
         self.radialChartView.updateProgress(for: "Daily Tasks", to: progress)
     }
-        
-    
+
     func formatDuration(_ seconds: Int) -> Int {
         if seconds < 60 {
             return seconds
@@ -503,18 +502,18 @@ class HomePageViewController: UIViewController {
             return minutes
         }
     }
-    
+
     func loadProgressView() {
         let today = Date()
-        
+
         exerciseLogs = LogManager.shared.getLogs(for: .exercises, on: today)
         readingLogs = LogManager.shared.getLogs(for: .reading, on: today)
         conversationLogs = LogManager.shared.getLogs(for: .conversation, on: today)
-        
+
         let exerciseTarget = LogManager.shared.getGoal(name: LogManager.GoalKeys.exercise)
         let readingTarget = LogManager.shared.getGoal(name: LogManager.GoalKeys.reading)
         let conversationTarget = LogManager.shared.getGoal(name: LogManager.GoalKeys.conversation)
-        
+
         // --- Exercise Bar & Label -
         let exCount = exerciseLogs.count
         let exGoal = exerciseTarget
@@ -536,19 +535,19 @@ class HomePageViewController: UIViewController {
         progressBar3.setProgress(CGFloat(convoProgress), animated: true)
         convoStat.text = "\(convoCount)/\(convoGoal) min"
     }
-    
+
     @IBAction func dailySummaryTapped(_ sender: UIButton) {
         if AppState.isDailyProgressCompleted {
             let storyboard = UIStoryboard(name: "Home", bundle: nil)
             if let detailVC = storyboard.instantiateViewController(withIdentifier: "PracticeViewController") as? PracticeViewController {
-                
+
                 // 1. Enable Large Titles on your current navigation controller
                 self.navigationController?.navigationBar.prefersLargeTitles = true
-                
+
                 // 2. (Optional but recommended) Ensure this specific screen shows the large title,
                 // especially if the previous screen used a standard small title.
                 detailVC.navigationItem.largeTitleDisplayMode = .always
-                
+
                 // 3. Push the view controller as you originally did
                 self.navigationController?.pushViewController(detailVC, animated: true)
             }
@@ -558,30 +557,30 @@ class HomePageViewController: UIViewController {
             self.navigationController?.pushViewController(onboardingVC, animated: true)
         }
     }
-    
+
     @IBAction func awardsTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Awards", bundle: nil)
-        
+
         if let detailVC = storyboard.instantiateViewController(withIdentifier: "AwardMainViewController") as? AwardMainViewController {
-            
+
             detailVC.title = "Awards"
             detailVC.loadViewIfNeeded()
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
-    
+
     @IBAction func dailyTaskTapped(_ sender: UIButton) {
         let targetID = AppState.isDailyChallengesCompleted ? "DailyTasksViewController" : "DailyChallengesOnboarding"
-        
+
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let destinationVC = storyboard.instantiateViewController(withIdentifier: targetID)
-        
+
         self.navigationController?.pushViewController(destinationVC, animated: true)
     }
 
     @IBAction func warmUpTapped(_ sender: UIButton) {
         let targetID = AppState.isExercisesCompleted ? "WarmUpListViewController" : "WarmUpOnboarding"
-        
+
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let destinationVC = storyboard.instantiateViewController(withIdentifier: targetID)
         self.navigationController?.pushViewController(destinationVC, animated: true)
@@ -633,14 +632,14 @@ extension HomePageViewController {
             achievedAwardImage.image = UIImage(named: award.id)
             achievedAwardName.text = award.name
             achievedAwardImage.tintColor = .clear
-            
+
             if let date = award.completionDate {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "MMM d, yyyy"
                 achievedAwardDescription.text = "\(formatter.string(from: date))"
             }
             achievedAwardDescription.textColor = .secondaryLabel
-            
+
         } else {
             achievedAwardImage.image = UIImage(systemName: "figure.run.circle.fill")
             achievedAwardImage.tintColor = .systemOrange

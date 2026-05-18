@@ -27,7 +27,7 @@ class ControlsTemplateViewController: UIViewController {
 
     weak var delegate: AirFlowControlsDelegate?
     private var isPlaying: Bool = true
-    var screenHeight : CGFloat = 850
+    var screenHeight: CGFloat = 850
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,18 +35,18 @@ class ControlsTemplateViewController: UIViewController {
         // Initial state: Collapsed, secondary buttons hidden
         setExpandedState(isExpanded: false, animated: false)
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         adjustButtonSizes()
     }
-    
+
     private func setupUI() {
         let buttonConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-        
+
         playPauseButton.configuration = .glass()
         playPauseButton.setImage(UIImage(systemName: "pause", withConfiguration: buttonConfig), for: .normal)
-        
+
         stopButton.configuration = .prominentGlass()
         stopButton.configuration?.baseBackgroundColor = .systemRed
         stopButton.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
@@ -55,34 +55,34 @@ class ControlsTemplateViewController: UIViewController {
             return outgoing
         }
         stopButton.setTitle("End", for: .normal)
-        
+
         resetButton.configuration = .glass()
         resetButton.setImage(UIImage(systemName: "repeat", withConfiguration: buttonConfig), for: .normal)
     }
 
     private func adjustButtonSizes() {
         guard playPauseWidthConstraint != nil, resetWidthConstraint != nil else { return }
-        
+
         // Calculate a proportional width (e.g., 18% of the total screen/sheet width)
         let proportionalWidth = view.bounds.width * 0.22
-        
+
         // Clamp the values to maintain HIG minimum touch targets (44pt) and prevent oversized buttons
         let optimalWidth = max(80.0, min(proportionalWidth, 110))
-        
+
         playPauseWidthConstraint.constant = optimalWidth
         resetWidthConstraint.constant = optimalWidth
         stopHeightConstraint.constant = optimalWidth * 0.6
         stackTopConstraint.constant = (screenHeight - optimalWidth)/2
-        
+
     }
-    
+
     // Controls the visibility of secondary buttons based on sheet expansion
     func setExpandedState(isExpanded: Bool, animated: Bool = true) {
         let targetAlpha: CGFloat = isExpanded ? 1.0 : 0.0
-        
+
         // Ensure buttons are interactive only when visible
         self.stopButton.isUserInteractionEnabled = isExpanded
-        
+
         if animated {
             UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
                 self.stopButton.alpha = targetAlpha
@@ -98,19 +98,19 @@ class ControlsTemplateViewController: UIViewController {
             self.timerLabel.text = text
         }
     }
-    
+
     func setPlayPauseState(isPlaying: Bool) {
         self.isPlaying = isPlaying
         let iconName = isPlaying ? "pause" : "play"
         let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-        
+
         DispatchQueue.main.async {
             UIView.transition(with: self.playPauseButton, duration: 0.2, options: .transitionCrossDissolve) {
                 self.playPauseButton.setImage(UIImage(systemName: iconName, withConfiguration: config), for: .normal)
             }
         }
     }
-    
+
     func setPlayPauseEnabled(_ isEnabled: Bool) {
         DispatchQueue.main.async {
             self.playPauseButton.isEnabled = isEnabled
@@ -121,11 +121,11 @@ class ControlsTemplateViewController: UIViewController {
     @IBAction func playPauseTapped(_ sender: UIButton) {
         delegate?.didTapPlayPause()
     }
-    
+
     @IBAction func stopTapped(_ sender: UIButton) {
         delegate?.didTapStop()
     }
-    
+
     @IBAction func repeatTapped(_ sender: UIButton) {
         delegate?.didTapRepeat()
     }

@@ -9,9 +9,4 @@ import UIKit
 
 class CustomWorkspaceCell: UITableViewCell {
     @IBOutlet weak var inputTextView: UITextView!
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        
-    }
 }

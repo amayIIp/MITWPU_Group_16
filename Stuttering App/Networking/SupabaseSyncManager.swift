@@ -8,26 +8,26 @@ import Supabase
 import SQLite3
 
 class SupabaseSyncManager {
-    
+
     static let shared = SupabaseSyncManager()
-    
+
     private let client = SupabaseManager.shared.client
-    
+
     // MARK: - IST Date Formatter
     private var istFormatter: ISO8601DateFormatter {
         let formatter = ISO8601DateFormatter()
         formatter.timeZone = TimeZone(identifier: "Asia/Kolkata")
         return formatter
     }
-    
+
     // MARK: - Sync Timestamp (single source of truth in SessionManager)
     private var lastSyncDateString: String {
         get { SessionManager.shared.lastSyncTimestamp }
         set { SessionManager.shared.lastSyncTimestamp = newValue }
     }
-    
+
     private init() {}
-    
+
     /// Defense-in-depth: blocks any push call when in guest mode
     private func guardAccountMode(_ fn: String = #function) -> Bool {
         guard SessionManager.shared.isAccountMode else {
@@ -36,7 +36,7 @@ class SupabaseSyncManager {
         }
         return true
     }
-    
+
     // MARK: - Bulk Push Local to Cloud
     /// Pushes all local data to the cloud.
     /// Converted to async throws so callers can await it before navigating.
@@ -112,7 +112,7 @@ class SupabaseSyncManager {
 
         print("☁️ ✅ BULK PUSH COMPLETED SUCCESSFULLY")
     }
-    
+
     // MARK: - Auth Sync triggered on Login
     /// Fetches and restores all user data from cloud.
     /// Converted to async throws — callers can use flat await chains and
@@ -146,21 +146,21 @@ class SupabaseSyncManager {
         lastSyncDateString = syncStartTime
         print("☁️ ✅ ALL DATA SYNCED SUCCESSFULLY")
     }
-    
+
     func hasPendingCloudChanges() async throws -> Bool {
         guard let userId = client.auth.currentUser?.id.uuidString else {
             throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
         }
-        
+
         let params: [String: AnyJSON] = [
             "last_sync": .string(lastSyncDateString),
             "user_uuid": .string(userId)
         ]
-        
+
         let hasUpdates: Bool = try await client.rpc("has_pending_sync", params: params).execute().value
         return hasUpdates
     }
-    
+
     /// Re-applies today's cloud-completed daily tasks into the local SQLite DB.
     /// Converted to async — callers await it directly inside a Task {}.
     /// UTC-correct: compares the raw UTC timestamp from Supabase against
@@ -220,9 +220,9 @@ class SupabaseSyncManager {
             print("☁️ ❌ Failed to reapply daily tasks: \(error)")
         }
     }
-    
+
     // MARK: - Restore Helpers
-    
+
     private func fetchAndRestoreProfile(userId: String) async throws {
         struct ProfileRow: Decodable {
             let first_name: String?
@@ -231,7 +231,7 @@ class SupabaseSyncManager {
             let mobile: String?
             let is_onboarding_completed: Bool?
         }
-        
+
         let rows: [ProfileRow] = try await client
             .from("profiles")
             .select("first_name, last_name, dob, mobile, is_onboarding_completed")
@@ -239,15 +239,15 @@ class SupabaseSyncManager {
             .limit(1)
             .execute()
             .value
-        
+
         if let row = rows.first {
             // Guard against newly created cloud profiles (which default to false)
             // overwriting a local Guest profile that has already completed onboarding.
             let cloudSaysComplete = row.is_onboarding_completed ?? false
             let localSaysComplete = AppState.isOnboardingCompleted
-            
+
             let resolvedOnboarding = localSaysComplete ? true : cloudSaysComplete
-            
+
             let profile = UserProfile(
                 id: userId,
                 firstName: row.first_name,
@@ -257,10 +257,10 @@ class SupabaseSyncManager {
                 isOnboardingCompleted: resolvedOnboarding
             )
             LogManager.shared.saveProfile(profile, fromSync: true)
-            
+
             AppState.isOnboardingCompleted = resolvedOnboarding
             print("☁️ Onboarding status restored: \(resolvedOnboarding) (cloud=\(String(describing: row.is_onboarding_completed)))")
-            
+
             // If local was ahead of cloud, forcibly sync it upwards to rectify cloud state!
             if localSaysComplete && !cloudSaysComplete {
                 pushProfile(profile)
@@ -269,7 +269,7 @@ class SupabaseSyncManager {
         }
         print("Profile restored.")
     }
-    
+
     private func fetchAndRestoreGoals(userId: String) async throws {
         // --- Journey ---
         struct JourneyRow: Decodable {
@@ -297,7 +297,7 @@ class SupabaseSyncManager {
             DatabaseManager.shared.replaceJourney(with: restoredJourney)
             JourneyGenerationEngine.shared.markActivatedFromRestoreIfNeeded(journeyCount: restoredJourney.count)
         }
-        
+
         // --- Daily Tasks ---
         struct DailyTaskRow: Decodable {
             let id: Int
@@ -313,18 +313,18 @@ class SupabaseSyncManager {
             .eq("user_id", value: userId)
             .execute()
             .value
-        
+
         // Use UTC start-of-day for comparison
         var utcCalendar = Calendar(identifier: .gregorian)
         utcCalendar.timeZone = TimeZone(identifier: "UTC")!
         let todayUTCStart = utcCalendar.startOfDay(for: Date())
-        
+
         let todaysTasks = tasks.filter { task in
             guard let updatedAtStr = task.updated_at,
                   let updatedAt = self.parseSupabaseDate(updatedAtStr) else { return false }
             return updatedAt >= todayUTCStart
         }
-        
+
         if !todaysTasks.isEmpty {
             DatabaseManager.shared.clearDailyTasks()
             for t in todaysTasks {
@@ -342,7 +342,7 @@ class SupabaseSyncManager {
                 sqlite3_finalize(stmt)
             }
         }
-        
+
         // --- Streak ---
         struct StreakRow: Decodable {
             let current_streak: Int
@@ -355,7 +355,7 @@ class SupabaseSyncManager {
             .limit(1)
             .execute()
             .value
-        
+
         if let streak = streaks.first {
             let update = "UPDATE Streak SET currentStreak = ?, lastCompletedDate = ? WHERE id = 1"
             var stmt: OpaquePointer?
@@ -367,7 +367,7 @@ class SupabaseSyncManager {
             }
             sqlite3_finalize(stmt)
         }
-        
+
         // --- User Goals ---
         struct UserGoalRow: Decodable {
             let goal_name: String
@@ -379,22 +379,22 @@ class SupabaseSyncManager {
             .eq("user_id", value: userId)
             .execute()
             .value
-        
+
         if let goals = goals {
             for g in goals {
                 LogManager.shared.updateGoal(name: g.goal_name, value: g.goal_value, fromSync: true)
             }
         }
-        
+
         print("Goals & streak restored.")
     }
-    
+
     private func fetchAndRestoreAnalytics(userId: String) async throws {
         let logDB = LogManager.shared.db
-        
+
         LogManager.shared.initializeUserIfNeeded()
         let localUserId = LogManager.shared.getCurrentUserId() ?? userId
-        
+
         // --- Exercise Logs ---
         struct ExerciseRow: Decodable {
             let id: String
@@ -410,18 +410,18 @@ class SupabaseSyncManager {
             .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
-        
+
         let exInsert = "INSERT OR REPLACE INTO ExerciseLog (id, exerciseName, completionDate, source, exerciseDuration) VALUES (?, ?, ?, ?, ?);"
         for ex in exercises {
             var stmt: OpaquePointer?
             if sqlite3_prepare_v2(logDB, exInsert, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_text(stmt, 1, (ex.id as NSString).utf8String, -1, nil)
                 sqlite3_bind_text(stmt, 2, (ex.exercise_name as NSString).utf8String, -1, nil)
-                
+
                 // Parses using the centralized IST Formatter
                 let epoch = istFormatter.date(from: ex.completion_date)?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
                 sqlite3_bind_double(stmt, 3, epoch)
-                
+
                 sqlite3_bind_text(stmt, 4, (ex.source as NSString).utf8String, -1, nil)
                 sqlite3_bind_int(stmt, 5, Int32(ex.duration))
                 sqlite3_step(stmt)
@@ -429,7 +429,7 @@ class SupabaseSyncManager {
             sqlite3_finalize(stmt)
         }
         print("Exercise logs restored: \(exercises.count) records.")
-        
+
         // --- Reading Sessions ---
         struct ReadingRow: Decodable {
             let id: String
@@ -454,7 +454,7 @@ class SupabaseSyncManager {
             .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
-        
+
         let rsInsert = """
             INSERT OR REPLACE INTO ReadingSessions
             (id, userId, date, duration, fluencyScore,
@@ -491,7 +491,7 @@ class SupabaseSyncManager {
             sqlite3_finalize(stmt)
         }
         print("Reading sessions restored: \(readings.count) records.")
-        
+
         // --- Troubled Words ---
         struct TroubledWordRow: Decodable {
             let id: String
@@ -506,7 +506,7 @@ class SupabaseSyncManager {
             .eq("user_id", value: userId)
             .execute()
             .value
-        
+
         if let tws = troubledWords {
             let twInsert = "INSERT OR IGNORE INTO TroubledWords (id, sessionId, userId, word, type, firstLetter) VALUES (?, ?, ?, ?, ?, ?)"
             for tw in tws {
@@ -537,7 +537,7 @@ class SupabaseSyncManager {
             .eq("user_id", value: userId)
             .execute()
             .value
-        
+
         if let sls = sls {
             let slsInsert = "INSERT OR IGNORE INTO SessionLetterStats (sessionId, userId, letter, stutterCount) VALUES (?, ?, ?, ?)"
             for s in sls {
@@ -565,7 +565,7 @@ class SupabaseSyncManager {
             .eq("user_id", value: userId)
             .execute()
             .value
-        
+
         if let ls = ls {
             let lsInsert = "INSERT OR REPLACE INTO LetterStats (userId, letter, count) VALUES (?, ?, ?)"
             for l in ls {
@@ -580,7 +580,7 @@ class SupabaseSyncManager {
             }
             print("Letter stats restored: \(ls.count) records.")
         }
-        
+
         // --- Conversation Sessions ---
         struct ConvoRow: Decodable {
             let id: String
@@ -596,7 +596,7 @@ class SupabaseSyncManager {
             .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
-        
+
         let csInsert = """
             INSERT OR REPLACE INTO ConversationSessions
             (id, userId, date, duration, fillerWordPercent, longestSmoothTalk)
@@ -617,7 +617,7 @@ class SupabaseSyncManager {
         }
         print("Conversation sessions restored: \(convos.count) records.")
     }
-    
+
     private func fetchAndRestoreAwards(userId: String) async throws {
         struct AwardRow: Decodable {
             let award_id: String
@@ -631,12 +631,12 @@ class SupabaseSyncManager {
             .gt("updated_at", value: lastSyncDateString)
             .execute()
             .value
-        
+
         if AwardsManager.shared.db == nil {
             AwardsManager.shared.openDatabase()
             AwardsManager.shared.seedDatabaseIfNeeded()
         }
-        
+
         for award in awards {
             let query = "UPDATE Awards SET progress = ?, status = ?, completionDate = ? WHERE id = ?"
             var stmt: OpaquePointer?
@@ -659,10 +659,9 @@ class SupabaseSyncManager {
         }
         print("Awards restored: \(awards.count) records.")
     }
-    
-    
+
     // MARK: - Push Local Changes to Cloud (Local-First Sync)
-    
+
     func pushReadingSession(_ report: StutterJSONReport,
                             sessionId: String,
                             date: TimeInterval,
@@ -742,7 +741,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushStreak(currentStreak: Int) {
         guard guardAccountMode() else { return }
         Task {
@@ -762,7 +761,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushProfile(_ profile: UserProfile) {
         guard guardAccountMode() else { return }
         Task {
@@ -786,7 +785,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushOnboardingStatus(isCompleted: Bool) {
         guard guardAccountMode() else { return }
         Task {
@@ -807,7 +806,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushAwardUpdate(awardId: String, progress: Double, status: String, completionDate: Date? = nil) {
         guard guardAccountMode() else { return }
         Task {
@@ -830,9 +829,9 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     // MARK: - Exercise & Journey Sync
-    
+
     func pushExerciseLog(id: String, name: String, source: String, duration: Int, completionDate: Date? = nil) {
         guard guardAccountMode() else { return }
         Task {
@@ -855,7 +854,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushJourneyUpdate(id: Int, name: String, isCompleted: Bool) {
         guard guardAccountMode() else { return }
         Task {
@@ -909,7 +908,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushDailyTaskUpdate(id: Int, name: String, description: String, duration: Int, isCompleted: Bool) {
         guard guardAccountMode() else { return }
         Task {
@@ -937,7 +936,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func markDailyTaskCompletedInCloud(name: String) {
         guard guardAccountMode() else { return }
         Task {
@@ -962,7 +961,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushConversationSession(sessionId: String, duration: TimeInterval, fillerWordPercent: Double, longestSmoothTalk: Int) {
         guard guardAccountMode() else { return }
         Task {
@@ -987,7 +986,7 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     func pushLetterStats(userId: String) {
         guard guardAccountMode() else { return }
         Task {
@@ -1108,20 +1107,20 @@ class SupabaseSyncManager {
             }
         }
     }
-    
+
     // MARK: - Date Parsing Helper
     private func parseSupabaseDate(_ dateString: String) -> Date? {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         if let date = formatter.date(from: dateString) { return date }
-        
+
         formatter.formatOptions = [.withInternetDateTime]
         if let date = formatter.date(from: dateString) { return date }
-        
+
         let fallback = DateFormatter()
         fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
         if let date = fallback.date(from: dateString) { return date }
-        
+
         fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
         return fallback.date(from: dateString)
     }

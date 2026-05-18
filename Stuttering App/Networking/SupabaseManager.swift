@@ -8,12 +8,12 @@ import Supabase
 
 class SupabaseManager {
     static let shared = SupabaseManager()
-    
+
     private let supabaseURL = URL(string: "https://zolaxhyjzkvupkmogdpo.supabase.co")!
     private let supabaseKey = AppSecrets.supabaseKey
-    
+
     let client: SupabaseClient
-    
+
     private init() {
         self.client = SupabaseClient(
             supabaseURL: supabaseURL,
@@ -25,7 +25,7 @@ class SupabaseManager {
             )
         )
     }
-    
+
     var currentUser: User? {
         return client.auth.currentUser
     }

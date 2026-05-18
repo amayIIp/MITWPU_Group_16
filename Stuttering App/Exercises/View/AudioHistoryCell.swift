@@ -12,10 +12,10 @@ class AudioHistoryCell: UITableViewCell {
     @IBOutlet weak var headingLabel: UILabel!
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var durationLabel: UILabel!
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+
         headingLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         dateLabel.textColor = .secondaryLabel
         durationLabel.textColor = .secondaryLabel

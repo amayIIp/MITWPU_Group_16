@@ -13,7 +13,7 @@ struct AppState {
     static let kUserMode = "session.userMode"
     static let kDeviceId = "session.deviceId"
     static let kLastActiveUserId = "session.lastUserId"
-    
+
     static let kDailyChallengesCompleted = "dailyChallenges.isCompleted"
     static let kDailyProgressCompleted   = "dailyProgress.isCompleted"
     static let kExercisesCompleted       = "exercises.isCompleted"
@@ -29,9 +29,9 @@ struct AppState {
         get { UserDefaults.standard.bool(forKey: kOnboardingCompleted) }
         set { UserDefaults.standard.set(newValue, forKey: kOnboardingCompleted) }
     }
-    
+
     // Section Onboarding
-    
+
     static var isDailyChallengesCompleted: Bool {
         get { UserDefaults.standard.bool(forKey: kDailyChallengesCompleted) }
         set { UserDefaults.standard.set(newValue, forKey: kDailyChallengesCompleted) }
@@ -56,20 +56,19 @@ struct AppState {
         get { UserDefaults.standard.bool(forKey: kConvoCompleted) }
         set { UserDefaults.standard.set(newValue, forKey: kConvoCompleted) }
     }
-    
+
     /// Call on logout or new user login to reset all module onboarding gates.
     static func resetModuleOnboarding() {
         isExercisesCompleted = false
         isReadAloudCompleted = false
         isConvoCompleted    = false
     }
-    
-    
+
     /// Whether the current session is in guest mode
     static var isGuestMode: Bool {
         return SessionManager.shared.isGuestMode
     }
-    
+
     /// Whether the current session is in account mode
     static var isAccountMode: Bool {
         return SessionManager.shared.isAccountMode

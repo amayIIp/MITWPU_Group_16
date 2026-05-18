@@ -7,54 +7,54 @@ protocol AwardCellDelegate: AnyObject {
 }
 
 class AwardMainViewController: UIViewController {
-    
+
     // MARK: - Outlets
     @IBOutlet weak var collectionView: UICollectionView!
-    
+
     // MARK: - Data Models
     private var weeklyAward: AwardModel?
     private var achievedAward: AwardModel?
     private var lockedAward: AwardModel?
-    
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         fetchData()
         setupCollectionView()
     }
-    
+
     private func fetchData() {
         weeklyAward = AwardsManager.shared.getTopWeeklyChallenge()
         achievedAward = AwardsManager.shared.getTopAchievedAward()
         lockedAward = AwardsManager.shared.getTopLockedAward()
     }
-    
+
     private func setupCollectionView() {
         collectionView.register(UINib(nibName: "WeeklyChallengeCell", bundle: nil), forCellWithReuseIdentifier: "WeeklyChallengeCell")
         collectionView.register(UINib(nibName: "AwardStandardCell", bundle: nil), forCellWithReuseIdentifier: "AwardStandardCell")
-        
+
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.backgroundColor = .clear
         collectionView.collectionViewLayout = createCompositionalLayout()
     }
-    
+
     // MARK: - Unified Navigation Logic
     /// This handles navigation for both Card Taps and Show All button taps
     private func handleNavigation(at indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Awards", bundle: nil)
-        
+
         if indexPath.section == 0 {
             // Weekly Challenge Navigation
             let vcA = storyboard.instantiateViewController(withIdentifier: "WeeklyChallengesViewController")
             navigationController?.pushViewController(vcA, animated: true)
-            
+
         } else if indexPath.section == 1 {
             if indexPath.item == 0 {
                 // Achieved Navigation
                 let vcB = storyboard.instantiateViewController(withIdentifier: "AchievedViewController")
                 navigationController?.pushViewController(vcB, animated: true)
-                
+
             } else if indexPath.item == 1 {
                 // Locked Navigation
                 let vcC = storyboard.instantiateViewController(withIdentifier: "LockedViewController")
@@ -62,9 +62,9 @@ class AwardMainViewController: UIViewController {
             }
         }
     }
-    
+
     private func createCompositionalLayout() -> UICollectionViewLayout {
-        return UICollectionViewCompositionalLayout { (sectionIndex, layoutEnvironment) -> NSCollectionLayoutSection? in
+        return UICollectionViewCompositionalLayout { (sectionIndex, _) -> NSCollectionLayoutSection? in
             if sectionIndex == 0 {
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(320))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -89,15 +89,15 @@ class AwardMainViewController: UIViewController {
 
 // MARK: - UICollectionViewDataSource & Delegate
 extension AwardMainViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    
+
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 2
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return section == 0 ? 1 : 2
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.section == 0 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "WeeklyChallengeCell", for: indexPath) as! WeeklyChallengeCell
@@ -115,7 +115,7 @@ extension AwardMainViewController: UICollectionViewDataSource, UICollectionViewD
             return cell
         }
     }
-    
+
     // Card Tap
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         handleNavigation(at: indexPath)
@@ -124,14 +124,14 @@ extension AwardMainViewController: UICollectionViewDataSource, UICollectionViewD
 
 // MARK: - AwardCellDelegate
 extension AwardMainViewController: AwardCellDelegate {
-    
+
     // Button Tap
     func didTapShowAll(in cell: UICollectionViewCell) {
         if let indexPath = collectionView.indexPath(for: cell) {
             handleNavigation(at: indexPath)
         }
     }
-    
+
     // Image Tap (Specific Award Detail)
     func didTapAwardImage(with award: AwardModel?) {
         guard let selectedAward = award else { return }

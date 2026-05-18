@@ -13,7 +13,7 @@ class LockedViewController: AwardsBaseViewController {
         super.viewDidLoad()
         title = "Locked Awards"
     }
-    
+
     override func loadData() {
         // Fetch 'normal' awards that are NOT complete
         let query = "SELECT * FROM Awards WHERE groupType = 'normal' AND progress < 1.0"

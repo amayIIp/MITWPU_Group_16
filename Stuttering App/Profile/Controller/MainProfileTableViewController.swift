@@ -13,7 +13,7 @@ class MainProfileTableViewController: UITableViewController {
 
     // let datePicker = UIDatePicker() // Commented Out
     var isEditingProfile = false
-    
+
     private var allFields: [UITextField] {
         // Updated to only include active fields
         return [firstNameField, mobileField, emailField]
@@ -26,7 +26,7 @@ class MainProfileTableViewController: UITableViewController {
         loadData()
         loadUserName()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadData()
@@ -40,7 +40,7 @@ class MainProfileTableViewController: UITableViewController {
             field.backgroundColor = .clear
             field.textAlignment = .right
         }
-        
+
         editButton.title = "Edit"
         editButton.image = nil
     }
@@ -68,7 +68,7 @@ class MainProfileTableViewController: UITableViewController {
             ? SupabaseManager.shared.client.auth.currentUser?.email
             : "Guest Mode"
     }
-    
+
     private func loadUserName() {
         if let userId = LogManager.shared.getCurrentUserId(),
            let profile = LogManager.shared.getProfile(userId: userId),
@@ -78,49 +78,49 @@ class MainProfileTableViewController: UITableViewController {
             nameLabel.text = "User"
         }
     }
-    
+
     private func saveData() {
         if let userId = LogManager.shared.getCurrentUserId() {
             var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: true)
-            
+
             profile.firstName = firstNameField.text
             // profile.lastName = lastNameField.text // Commented Out
             profile.mobile = mobileField.text
             // profile.dob = dobField.text           // Commented Out
-            
+
             LogManager.shared.saveProfile(profile)
         }
-        
+
         loadUserName()
         NotificationCenter.default.post(name: NSNotification.Name("ProfileDataUpdated"), object: nil)
     }
 
     @IBAction func toggleEditing(_ sender: UIBarButtonItem) {
         isEditingProfile.toggle()
-              
+
         UIView.animate(withDuration: 0.3) {
             if self.isEditingProfile {
-                
+
                 self.editButton.title = nil
                 self.editButton.image = UIImage(systemName: "checkmark")
-                
+
                 for field in self.allFields {
                     field.isEnabled = true
                     field.textColor = .label
                 }
 
                 self.firstNameField.becomeFirstResponder()
-                
+
             } else {
                 self.editButton.image = nil
                 self.editButton.title = "Edit"
-                
+
                 for field in self.allFields {
                     field.isEnabled = false
                     field.textColor = .secondaryLabel
                     field.backgroundColor = .clear
                 }
-                
+
                 self.view.endEditing(true)
                 self.saveData()
             }

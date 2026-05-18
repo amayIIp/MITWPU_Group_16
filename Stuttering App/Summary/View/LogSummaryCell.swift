@@ -8,8 +8,8 @@
 import UIKit
 
 class LogSummaryCell: UITableViewCell {
-    
+
     @IBOutlet weak var exerciseNameLabel: UILabel!
     @IBOutlet weak var durationLabel: UILabel!
-    
+
 }

@@ -6,16 +6,15 @@ class DailyTasksCell: UITableViewCell {
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var timeLabel: UILabel!
-    
-    
+
     var playButtonAction: (() -> Void)?
-    
+
     func setCompleted(_ completed: Bool) {
         if completed {
             playButton.tintColor = .systemGreen
             let checkmarkIcon = UIImage(systemName: "checkmark.circle.fill")
             playButton.setImage(checkmarkIcon, for: .normal)
-            
+
         } else {
             playButton.tintColor = UIColor(named: "ButtonTheme") ?? .systemBlue
             let playIcon = UIImage(systemName: "play.circle.fill")
@@ -29,7 +28,7 @@ class DailyTasksCell: UITableViewCell {
         timeLabel.text = formatDuration(task.duration)
         setCompleted(task.isCompleted)
     }
-    
+
     func formatDuration(_ seconds: Int) -> String {
         if seconds < 60 {
             return String("\(seconds)s")
@@ -38,7 +37,7 @@ class DailyTasksCell: UITableViewCell {
             return String("\(minutes)m")
         }
     }
-    
+
     @IBAction func playButtonTapped(_ sender: UIButton) {
         playButtonAction?()
     }
