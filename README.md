@@ -1,41 +1,6 @@
 
 
 # Spasht: Real-Time Speech Therapy App
-<p align="center">
-
-<img  src="https://github.com/user-attachments/assets/cef2abff-da21-4821-b782-4900c5a155ea" width="120"/>
-<img src="https://github.com/user-attachments/assets/2701d49f-8325-401e-b89d-58255aa77dd9" width="120"/>
-<img src="https://github.com/user-attachments/assets/74304498-e948-4f73-a15b-08761795f55e" width="120"/>
-<img  src="https://github.com/user-attachments/assets/6fcc67ec-d159-402c-afd4-24f9ca4fb4ac" width="120"/>
-<img  src="https://github.com/user-attachments/assets/68c85f4e-4632-432e-b192-629edf961c28" width="120"/>
-<img src="https://github.com/user-attachments/assets/3dfe3a95-6b7d-49ec-9832-caaed14b7a48" width="120"/>
-<img  src="https://github.com/user-attachments/assets/6bbe3a39-9df4-49be-958f-f4942289fb6d" width="120"/>
-<img  src="https://github.com/user-attachments/assets/d922c119-9170-4128-b612-7df3bc98bfec" width="120"/>
-<img  src="https://github.com/user-attachments/assets/4d7da62e-34d8-4250-9f63-9c03e114d6c3" width="120"/>
-<img src="https://github.com/user-attachments/assets/477e3992-79b8-4866-8abc-e673f43abd6e" width="120"/>
-
-
-
-
-  <img src="https://github.com/user-attachments/assets/165bf6aa-1042-4a04-a6e1-5e36c64cf9ed" width="120"/>
-  <img src="https://github.com/user-attachments/assets/39995724-5da4-4994-b3ea-521396bc0ef7" width="120"/>
-   <img src="https://github.com/user-attachments/assets/881a5b2b-a862-4199-a326-41a5175f5c3d" width="120"/>
-  <img src="https://github.com/user-attachments/assets/9b9d79ae-afd6-4578-953a-614b20fa750b" width="120"/>
-   <img src="https://github.com/user-attachments/assets/905cc7ec-9627-4a79-9923-a114115e88e6" width="120"/>
-   <img src="https://github.com/user-attachments/assets/c5f7d8e0-a5c8-45d5-b3f2-825de4927c21" width="120"/>
- <img src="https://github.com/user-attachments/assets/10b5f180-5947-4207-85ad-eb9b34848306" width="120"/>
-  
- 
-  
-  <img src="https://github.com/user-attachments/assets/73fceb13-739a-4b10-b8b8-5ab87ccffeeb" width="120"/>
-  
-</p>
-
-
-
-
-
-# Spasht — Real-Time Speech Therapy App
 
 > An iOS app that delivers immediate, on-device feedback to people with stuttering disfluencies. Spasht listens to your speech, aligns it to reference text in real time using Dynamic Time Warping, and gives you detailed fluency metrics — all without a single byte leaving your phone.
 
