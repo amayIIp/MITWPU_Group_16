@@ -90,6 +90,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         super.init()
         synthesizer.delegate = self
         configureAudioSession()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioRouteChange(_:)), name: AVAudioSession.routeChangeNotification, object: nil)
     }
     
     // MARK: - Public Interface
@@ -124,6 +126,12 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         stopListening()
         state = .idle
         currentBufferText = ""
+        
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("VoiceViewModel: Failed to deactivate audio session - \(error)")
+        }
     }
     
     func resetConversation() {
@@ -490,6 +498,32 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                     print("VoiceViewModel: Foundation Model error (\(error.localizedDescription)), falling back to Groq")
                     self.useGroq = true
                     await MainActor.run { self.commitUserBuffer() }
+                }
+            }
+        }
+    }
+    
+    @objc private func handleAudioRouteChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
+        
+        print("🔊 [VoiceViewModel] Audio route changed. Reason: \(reasonValue)")
+        
+        if reason == .oldDeviceUnavailable || reason == .newDeviceAvailable {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                if self.state == .listening {
+                    print("🔊 [VoiceViewModel] Re-initializing audio engine for new route...")
+                    
+                    // Stop current listener to free hardware bindings
+                    self.stopListening()
+                    
+                    // Wait 0.2s to clear cancellation async races before restarting
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                        self?.startListening()
+                    }
                 }
             }
         }

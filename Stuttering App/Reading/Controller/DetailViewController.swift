@@ -59,7 +59,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         audioEngine.connect(audioEngine.inputNode, to: delayNode, format: format)
         audioEngine.connect(delayNode, to: audioEngine.mainMixerNode, format: format)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioRouteChange(_:)), name: AVAudioSession.routeDidChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioRouteChange(_:)), name: AVAudioSession.routeChangeNotification, object: nil)
     }
     
     override func viewDidAppear(_ animated: Bool) {
