@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TwK-Tn-5kw">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TwK-Tn-5kw">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -126,11 +126,11 @@
                     </view>
                     <navigationItem key="navigationItem" id="IFc-88-9x7"/>
                     <connections>
-                        <outlet property="signUpButton" destination="0mP-7F-HIq" id="Mtp-Qg-oEn"/>
-                        <outlet property="signinButton" destination="bZ6-NB-0Tu" id="NVP-aw-4Ax"/>
                         <outlet property="buttonView" destination="IBB-4Q-b5v" id="r7g-af-A9X"/>
                         <outlet property="headerLabel" destination="5SD-em-ehy" id="IGp-Lu-LB2"/>
                         <outlet property="infoLabel" destination="Mls-Qx-OPB" id="In5-Kb-K1s"/>
+                        <outlet property="signUpButton" destination="0mP-7F-HIq" id="Mtp-Qg-oEn"/>
+                        <outlet property="signinButton" destination="bZ6-NB-0Tu" id="NVP-aw-4Ax"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eVD-9m-vEp" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -417,18 +417,18 @@
                     </view>
                     <navigationItem key="navigationItem" title="Create Account" id="a48-1k-Pnu"/>
                     <connections>
-                        <outlet property="signUpButton" destination="cnZ-jG-hAN" id="OE4-bS-iUa"/>
                         <outlet property="continueAsGuest" destination="Yio-ca-6iA" id="zqq-wO-wF2"/>
                         <outlet property="emailTextField" destination="366-Yt-WOk" id="LiA-TU-Pok"/>
                         <outlet property="googleSignIn" destination="sy9-1f-Ug4" id="pot-gi-7rc"/>
                         <outlet property="nameTextField" destination="aGR-Ug-eUI" id="cuD-B7-iRe"/>
                         <outlet property="passwordTextField" destination="8W4-RN-TKD" id="exy-Cf-R88"/>
                         <outlet property="passwordToggleButton" destination="22x-5f-WUi" id="zqq-wO-wFF"/>
+                        <outlet property="signUpButton" destination="cnZ-jG-hAN" id="OE4-bS-iUa"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="AAy-q6-jCd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5823.6641221374048" y="2250"/>
+            <point key="canvasLocation" x="-4483" y="751"/>
         </scene>
         <!--Enter your name-->
         <scene sceneID="6sK-ct-3cw">
@@ -498,7 +498,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="XDi-Ve-XdS" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-4104.580152671756" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="-2741" y="1477"/>
         </scene>
         <!--Onboarding Instructions View Controller-->
         <scene sceneID="Pei-Q8-0XH">
@@ -521,7 +521,7 @@
                                     <action selector="continueButtonTapped:" destination="ddt-Di-a0D" eventType="touchUpInside" id="lit-d9-s6R"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0h5-AS-7fF">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0h5-AS-7fF">
                                 <rect key="frame" x="32" y="386.66666666666669" width="329" height="79"/>
                                 <string key="text">label
 </string>
@@ -550,7 +550,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NXx-di-doU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1638.9312977099237" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="-1071" y="1477"/>
         </scene>
         <!--Result-->
         <scene sceneID="vEA-0O-L4Q">
@@ -792,7 +792,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jr5-Pp-Ifl" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="980.91603053435108" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="1312" y="1477"/>
         </scene>
         <!--About Speech Patterns-->
         <scene sceneID="LLa-eb-DSM">
@@ -942,7 +942,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qGK-oT-K1D" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3125.9541984732823" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="2094" y="2254"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="NhZ-Cz-F2g">
@@ -1116,7 +1116,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6Wq-65-QUd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-886.25954198473278" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="-274" y="1477"/>
         </scene>
         <!--Phonemes Selection View Controller-->
         <scene sceneID="vDw-kt-QEp">
@@ -1639,7 +1639,7 @@ to say?</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="TT0-7k-Rrc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2399.2366412213742" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="-1833" y="1477"/>
         </scene>
         <!--Sign In-->
         <scene sceneID="Mgd-6X-12b">
@@ -1899,7 +1899,7 @@ to say?</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ktC-At-ZPQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-4174.8091603053435" y="2250"/>
+            <point key="canvasLocation" x="-4483" y="1477"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="3Dy-wB-oop">
@@ -1918,7 +1918,7 @@ to say?</string>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ysq-fR-IK8" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2401" y="752"/>
+            <point key="canvasLocation" x="-1833" y="751"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="yoR-gk-Btf">
@@ -1936,7 +1936,7 @@ to say?</string>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="U8j-qA-o3z" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="54.198473282442748" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="552" y="1477"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="wD3-70-jBR">
@@ -1955,7 +1955,7 @@ to say?</string>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gnD-X0-TH4" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5031.2977099236641" y="1476.7605633802818"/>
+            <point key="canvasLocation" x="-3498" y="1477"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="S5K-dY-whn">
@@ -1963,6 +1963,7 @@ to say?</string>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="JMr-IO-r3c" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="lmC-DR-rqm">
+                        <rect key="frame" x="0.0" y="16" width="393" height="106"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1972,7 +1973,7 @@ to say?</string>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HUc-PD-9VX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2323" y="1477"/>
+            <point key="canvasLocation" x="1311" y="2254"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="mnt-G6-JMo">
@@ -1980,6 +1981,7 @@ to say?</string>
                 <navigationController storyboardIdentifier="SignupNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="1Os-i5-dul" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="Q96-iv-28q">
+                        <rect key="frame" x="0.0" y="118" width="393" height="106"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1989,7 +1991,7 @@ to say?</string>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9zP-fe-CHZ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5101.5267175572517" y="2250"/>
+            <point key="canvasLocation" x="-5182" y="1477"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="71t-sE-wiJ">
@@ -2007,7 +2009,7 @@ to say?</string>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Had-4r-mnt" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-6750.3816793893129" y="2250"/>
+            <point key="canvasLocation" x="-5181" y="751"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
@@ -2040,16 +2042,16 @@ to say?</string>
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray2Color">
-            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.68235294120000001" green="0.68235294120000001" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
