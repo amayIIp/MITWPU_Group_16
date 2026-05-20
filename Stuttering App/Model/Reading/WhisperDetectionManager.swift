@@ -54,9 +54,12 @@ class WhisperDetectionManager {
 
         let path = audioURL.path
 
-        // WhisperKit provides an easy audioPath transcription taking care of resampling
+        // WhisperKit provides an easy audioPath transcription taking care of resampling.
+        // Return nil if WhisperKit produced no usable transcript (empty segments or silence)
+        // so the caller can fall back to the Apple Speech result instead.
         let transcriptionResult = try await whisperKit.transcribe(audioPath: path)
-
-        return transcriptionResult.map { $0.text }.joined(separator: " ")
+        let joined = transcriptionResult.map { $0.text }.joined(separator: " ")
+        let trimmed = joined.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

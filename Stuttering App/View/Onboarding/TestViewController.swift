@@ -305,8 +305,12 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             var finalTranscript = self.recordedTranscript
             if let url = self.tempAudioURL {
                 do {
-                    if let whisperResult = try await WhisperDetectionManager.shared.transcribe(audioURL: url) {
+                    if let whisperResult = try await WhisperDetectionManager.shared.transcribe(audioURL: url),
+                       !whisperResult.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         finalTranscript = whisperResult
+                        print("✅ Using WhisperKit transcript (\(whisperResult.count) chars)")
+                    } else {
+                        print("⚠️ WhisperKit returned empty transcript — keeping Apple Speech result")
                     }
                 } catch {
                     print("WhisperKit failed, falling back to Apple Speech: \(error)")

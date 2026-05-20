@@ -143,7 +143,8 @@ class StutterAnalyzer {
                 transIndex += 1
 
             case .delete:
-                // Speaker skipped a reference word — lowers fluency, not a stutter event.
+                // Speaker skipped a reference word. This is not counted in the
+                // spoken-word fluency score because it was not spoken.
                 refIndex += 1
             }
         }
@@ -218,22 +219,21 @@ class StutterAnalyzer {
         let stutteredWords = uniqueStuttered
 
         // ── FLUENCY SCORE ─────────────────────────────────────────────────────
-        // Weighted penalty against reference word count so score is independent
-        // of how much the speaker repeated / inserted.
+        // Weighted penalty against spoken word count so the score reflects the
+        // portion the user actually attempted, not the full paragraph length.
         //   Repetition   = 1.0 pt penalty per event  (mild)
         //   Prolongation = 1.5 pt penalty per event  (moderate)
         //   Block        = 2.0 pt penalty per event  (severe)
-        let totalRefWords = Double(refWords.count)
+        let totalSpoken = Double(transWords.count)
         var score = 0
-        if totalRefWords > 0 {
+        if totalSpoken > 0 {
             let penalty = (Double(repetitions.count)   * 1.0)
                         + (Double(prolongations.count) * 1.5)
                         + (Double(detectedBlocks.count) * 2.0)
-            score = Int(max(0, 100 - (penalty / totalRefWords * 100)))
+            score = Int(max(0, 100 - (penalty / totalSpoken * 100)))
         }
 
         // ── PERCENTAGES ───────────────────────────────────────────────────────
-        let totalSpoken = Double(transWords.count)
         let repPercent  = totalSpoken > 0 ? (Double(repetitions.count)    / totalSpoken) * 100 : 0.0
         let proPercent  = totalSpoken > 0 ? (Double(prolongations.count)  / totalSpoken) * 100 : 0.0
         let blkPercent  = totalSpoken > 0 ? (Double(detectedBlocks.count) / totalSpoken) * 100 : 0.0
