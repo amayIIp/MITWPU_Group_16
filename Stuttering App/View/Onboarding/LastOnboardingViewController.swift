@@ -303,6 +303,11 @@ class LastOnboardingViewController: UIViewController {
 
         LogicMaker().checkForNewDay(isFromLogin: true)
 
+        // ✅ Onboarding is now fully complete — request notification permission.
+        // Reset the flag so HomePageViewController also runs cleanly on first visit.
+        UserDefaults.standard.removeObject(forKey: "hasRequestedNotificationPermission")
+        NotificationManager.shared.requestAuthorization()
+
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
 

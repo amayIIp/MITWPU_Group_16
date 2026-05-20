@@ -88,6 +88,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     }
 
     @IBAction func signUpButtonTapped(_ sender: UIButton) {
+        view.endEditing(true)
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty
               else {
@@ -282,6 +283,8 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     func handleNavigationLogic() {
         let executeTransition = {
             if AppState.isOnboardingCompleted {
+                // Re-schedule notifications for returning users (safe to call multiple times)
+                NotificationManager.shared.scheduleNotifications()
                 if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
                    let window = sceneDelegate.window {
                     let storyboard = UIStoryboard(name: "Home", bundle: nil)

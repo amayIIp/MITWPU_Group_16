@@ -481,6 +481,7 @@ class DatabaseManager {
 
         if isDailyGoalCompleted {
             NotificationManager.shared.cancelTodayNightReminder()
+            NotificationManager.shared.cancelTodayGoalReminder()
         }
 
         NotificationCenter.default.post(

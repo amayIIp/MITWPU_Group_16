@@ -88,9 +88,13 @@ class HomePageViewController: UIViewController {
         requestNotificationPermissionIfNeeded()
     }
 
-    /// Asks for notification permission exactly once — after the user first
-    /// lands on the Home screen, so the prompt feels contextually appropriate.
+    /// Asks for notification permission exactly once — but ONLY after the user has
+    /// fully completed onboarding (either as a guest or with their email account).
+    /// This prevents the system permission dialog from appearing during the onboarding flow.
     private func requestNotificationPermissionIfNeeded() {
+        // Guard: only proceed if onboarding is fully complete
+        guard AppState.isOnboardingCompleted else { return }
+
         let key = "hasRequestedNotificationPermission"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         UserDefaults.standard.set(true, forKey: key)
