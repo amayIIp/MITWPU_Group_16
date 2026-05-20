@@ -255,6 +255,14 @@ class AwardsEvaluator {
         let progress = Double(current) / Double(total)
         let status   = "\(current) of \(total) \(unit)"
         awardsManager.updateAwardProgress(id: id, progress: progress, newStatus: status)
+
+        // Notify user when they are very close (>= 95%) to earning an award
+        if progress >= 0.95 && progress < 1.0 {
+            // Fetch the award name for the notification body
+            if let award = awardsManager.fetchAwards(query: "SELECT * FROM Awards WHERE id = '\(id)' LIMIT 1").first {
+                NotificationManager.shared.scheduleAwardProximityNotification(for: award.name, progress: progress)
+            }
+        }
     }
 
     private func computeCurrentStreak(from logs: [ExerciseLog], requiredPerDay: Int) -> Int {

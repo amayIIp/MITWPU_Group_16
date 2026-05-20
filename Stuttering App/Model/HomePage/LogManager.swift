@@ -525,6 +525,33 @@ class LogManager {
         } else {
             print("📋 [GUEST] Exercise log saved locally only (guest mode)")
         }
+
+        // 4. Check if today's daily GOAL (progress bars) is now fully met and cancel the reminder
+        checkAndCancelDailyGoalReminderIfNeeded()
+    }
+
+    /// Checks whether today's exercise, reading, and conversation goals are all met.
+    /// If so, cancels the 8:30 PM goal reminder notification for today.
+    func checkAndCancelDailyGoalReminderIfNeeded() {
+        let today = Date()
+
+        let exerciseLogs     = getLogs(for: .exercises,     on: today)
+        let readingLogs      = getLogs(for: .reading,       on: today)
+        let conversationLogs = getLogs(for: .conversation,  on: today)
+
+        let exerciseGoal     = getGoal(name: GoalKeys.exercise)     // session count
+        let readingGoal      = getGoal(name: GoalKeys.reading)      // minutes
+        let conversationGoal = getGoal(name: GoalKeys.conversation) // minutes
+
+        let exerciseDone  = exerciseGoal > 0 && exerciseLogs.count >= exerciseGoal
+        let readingMins   = readingLogs.reduce(0) { $0 + $1.exerciseDuration } / 60
+        let readingDone   = readingGoal > 0 && readingMins >= readingGoal
+        let convoMins     = conversationLogs.reduce(0) { $0 + $1.exerciseDuration } / 60
+        let convoDone     = conversationGoal > 0 && convoMins >= conversationGoal
+
+        if exerciseDone && readingDone && convoDone {
+            NotificationManager.shared.cancelTodayGoalReminder()
+        }
     }
 
     func getLogs(for source: ExerciseSource, on date: Date? = nil) -> [ExerciseLog] {
@@ -650,6 +677,9 @@ class LogManager {
 
         // Invalidate cached home insight so it regenerates with new data
         cachedHomeInsight = nil
+
+        // Check if today's daily GOAL (progress bars) is now fully met
+        checkAndCancelDailyGoalReminderIfNeeded()
 
         return sessionId
     }
@@ -956,6 +986,9 @@ class LogManager {
             }
         }
         sqlite3_finalize(statement)
+
+        // Check if today's daily GOAL (progress bars) is now fully met
+        checkAndCancelDailyGoalReminderIfNeeded()
     }
 
     func updateStutterStats(letterCounts: [String: Int]) {
