@@ -1,0 +1,29 @@
+Test Plan: Reading
+
+1. Reading Categories
+   - Navigate to the Reading tab.
+   - Verify the Categories view loads with different reading topics/genres.
+   - Select a category and verify it opens a detailed list of reading passages or cards.
+
+2. Reading Selection
+   - In the Detail View of a category, scroll through the available reading items (Custom Cards, Random Cards).
+   - Verify placeholder texts load properly.
+   - Tap on a reading passage to start.
+
+3. Reading Controls
+   - Verify the Reading Controls screen loads with the text to read.
+   - Tap the microphone/record button to start reading.
+   - Read the text aloud. Ensure the app is picking up the audio.
+   - Tap stop to finish recording.
+
+4. Reading Results
+   - Verify navigation to the Reading Result screen.
+   - Check the analyzed results (accuracy, stuttering instances, pace).
+   - Verify that specific words or phenomes struggled with are highlighted.
+   - Try the "Listen" or "Playback" feature if available to hear your recording.
+   - Tap "Done" to return to the categories or home.
+
+5. Custom Workspaces
+   - If applicable, test creating or selecting a Custom Workspace for reading.
+   - Add custom text and read it.
+   - Verify results are generated accurately for custom text.

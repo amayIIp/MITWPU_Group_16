@@ -1,0 +1,37 @@
+Test Plan: Exercises
+
+1. Exercise Tab Overview
+   - Navigate to the Exercises tab.
+   - Verify the main exercise categories and library are visible.
+   - Verify the layout matches the designs (collection views load correctly).
+
+2. Exercise Library
+   - Tap on the Exercise Library.
+   - Verify a list of all available exercises is displayed.
+   - Tap an exercise to view its details/instructions.
+
+3. Starting an Exercise
+   - Select an exercise (e.g., from a category or the library).
+   - Verify the Exercise Instruction screen loads with clear instructions.
+   - Tap "Start" or "Begin".
+
+4. During the Exercise (Controls Template)
+   - Verify the audio/video recording or playback controls are present and functional.
+   - Verify the waveform or audio visualizer responds to voice input.
+   - Perform the exercise following the prompts.
+   - Stop or finish the exercise.
+
+5. Exercise Results
+   - Verify the transition to the Exercise Result screen.
+   - Check if the score, feedback, and accuracy are displayed.
+   - Test the "Retry" button (should restart the exercise).
+   - Test the "Done" or "Back to Home/Exercises" button.
+
+6. Fun Exercises
+   - Navigate to the Fun Exercises section.
+   - Open a Fun Exercise.
+   - Verify it loads correctly and complete the fun activity.
+   - Verify results and progress tracking.
+
+7. Audio/Video History
+   - If applicable, check the history cells for previous exercises to ensure audio/video snippets are saved and can be replayed.

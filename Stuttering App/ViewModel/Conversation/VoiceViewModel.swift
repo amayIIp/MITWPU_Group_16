@@ -171,10 +171,12 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
     private func configureAudioSession() {
         do {
             let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothA2DP])
+            // Using .default instead of .voiceChat to prevent the robotic TTS downgrade, 
+            // while keeping the mic fully functional in a single stable session.
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothA2DP])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            delegate?.didEncounterError("Audio setup failed. Please restart the app.")
+            print("VoiceViewModel: Audio setup failed - \(error)")
         }
     }
 
@@ -225,6 +227,20 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
 
     // MARK: - Speech Synthesis
 
+    private func cleanTextForSpeech(_ text: String) -> String {
+        // Strip markdown and emojis which are notorious for silently freezing AVSpeechSynthesizer
+        var cleaned = text
+            .replacingOccurrences(of: "*", with: "")
+            .replacingOccurrences(of: "_", with: "")
+            .replacingOccurrences(of: "#", with: "")
+            .replacingOccurrences(of: "`", with: "")
+            .replacingOccurrences(of: "~", with: "")
+            .replacingOccurrences(of: "\"", with: "")
+        
+        cleaned = cleaned.replacingOccurrences(of: "[\\p{Emoji}]", with: "", options: .regularExpression, range: nil)
+        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     func speak(_ text: String) {
         guard !text.isEmpty else { return }
 
@@ -240,9 +256,20 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
             }
             self.delegate?.addMessageToConversation(speaker: "AI", text: text)
 
-            let utterance = AVSpeechUtterance(string: text)
-            utterance.voice = AVSpeechSynthesisVoice(language: "en-IN")
-            utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
+            let cleanText = self.cleanTextForSpeech(text)
+            guard !cleanText.isEmpty else {
+                // If LLM returned only emojis/asterisks, skip speech and resume listening
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.startListening()
+                }
+                return
+            }
+
+            let utterance = AVSpeechUtterance(string: cleanText)
+            utterance.voice = self.getBestAvailableVoice()
+            // CRITICAL: Do not alter the rate for Premium/Enhanced voices. 
+            // Time-stretching a neural voice causes severe robotic artifacting and stuttering.
+            utterance.rate = AVSpeechUtteranceDefaultSpeechRate
             utterance.pitchMultiplier = 1.0
             utterance.volume = 1.0
 
@@ -261,6 +288,32 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
         if state == .speaking {
             state = .idle
         }
+    }
+
+    private func getBestAvailableVoice() -> AVSpeechSynthesisVoice? {
+        let allVoices = AVSpeechSynthesisVoice.speechVoices()
+
+        // 1. Filter for Indian English voices and sort by highest quality
+        // (Premium = 2, Enhanced = 1, Default = 0)
+        let indianVoices = allVoices.filter { $0.language == "en-IN" }
+
+        if let bestIN = indianVoices.max(by: { $0.quality.rawValue < $1.quality.rawValue }) {
+            print("🎤 [TTS] Selected en-IN Voice: \(bestIN.name) (Quality: \(bestIN.quality.rawValue), ID: \(bestIN.identifier))")
+
+            // Re-fetching by identifier sometimes prevents weird iOS fallback bugs
+            return AVSpeechSynthesisVoice(identifier: bestIN.identifier) ?? bestIN
+        }
+
+        // 2. Fallback to any other English Premium or Enhanced
+        let englishVoices = allVoices.filter { $0.language.starts(with: "en-") }
+        if let bestEN = englishVoices.max(by: { $0.quality.rawValue < $1.quality.rawValue }) {
+            print("🎤 [TTS] Selected Fallback Voice: \(bestEN.name) (Quality: \(bestEN.quality.rawValue), ID: \(bestEN.identifier))")
+            return AVSpeechSynthesisVoice(identifier: bestEN.identifier) ?? bestEN
+        }
+
+        // 3. Absolute fallback
+        print("🎤 [TTS] No custom voices found, using absolute fallback en-US.")
+        return AVSpeechSynthesisVoice(language: "en-US")
     }
 
     // MARK: - Speech Recognition & Audio Metering
@@ -480,16 +533,24 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                         return (role: role, text: turn.text)
                     }
 
+                print("🤖 [Groq] ---------------------------------------")
+                print("🤖 [Groq] System Prompt length: \(self.personaInstructions.count) chars")
+                print("🤖 [Groq] History (\(groqHistory.count) turns): \(groqHistory)")
+                print("🤖 [Groq] Latest User Message: \(userInput)")
+                print("🤖 [Groq] ---------------------------------------")
+
                 if let reply = await GroqService.shared.generateChat(
                     systemInstruction: self.personaInstructions,
                     history: groqHistory,
                     latestUserMessage: userInput
                 ) {
+                    print("🤖 [Groq] Received Reply: \(reply)")
                     await MainActor.run {
                         guard self.state == .thinking else { return }
                         self.speak(reply)
                     }
                 } else {
+                    print("🤖 [Groq] ❌ ERROR: Received nil reply from GroqService")
                     await MainActor.run {
                         guard self.state == .thinking else { return }
                         self.speak("Sorry, could you say that again?")
@@ -513,10 +574,17 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                 }
 
                 do {
-                    let prompt = self.conversationHistory
+                    var prompt = self.conversationHistory
                         .suffix(6)
                         .map { "\($0.speaker): \($0.text)" }
                         .joined(separator: "\n")
+                    
+                    // Force the Foundation Model to continue as the AI, preventing generic assistant responses
+                    prompt += "\nAI:"
+
+                    print("🤖 [Foundation] ---------------------------------------")
+                    print("🤖 [Foundation] Sending Prompt:\n\(prompt)")
+                    print("🤖 [Foundation] ---------------------------------------")
 
                     let responseContent = try await withThrowingTaskGroup(of: String.self) { group in
                         group.addTask {
@@ -532,6 +600,8 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                         return firstResult
                     }
 
+                    print("🤖 [Foundation] Received Reply: \(responseContent)")
+
                     await MainActor.run {
                         guard self.state == .thinking else { return }
                         self.speak(responseContent)
@@ -542,6 +612,10 @@ class VoiceViewModel: NSObject, AVSpeechSynthesizerDelegate {
                     self.useGroq = true
                     await MainActor.run {
                         guard self.state == .thinking else { return }
+                        // Prevent duplicate user entries in the history array on retry
+                        if self.conversationHistory.last?.speaker == "User" {
+                            self.conversationHistory.removeLast()
+                        }
                         self.commitUserBuffer()
                     }
                 }

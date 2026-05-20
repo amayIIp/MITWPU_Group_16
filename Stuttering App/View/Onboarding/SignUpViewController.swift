@@ -88,6 +88,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     }
 
     @IBAction func signUpButtonTapped(_ sender: UIButton) {
+        view.endEditing(true)
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty
               else {

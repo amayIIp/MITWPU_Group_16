@@ -1,0 +1,32 @@
+Test Plan: Profile
+
+1. Profile Main View
+   - Navigate to the Profile tab.
+   - Verify the user's avatar, name, and email are displayed correctly (MainProfileTableViewController).
+   - Check the overall layout of the profile menu options.
+
+2. Personal Information Update
+   - Open personal information settings.
+   - Attempt to update name or email.
+   - Verify changes are saved and reflected on the profile screen.
+
+3. Setting Goals
+   - Navigate to the "Set Goals" section (SetGoalsViewController).
+   - Modify the daily or weekly practice goals (e.g., time to practice, number of exercises).
+   - Save the goals.
+   - Return to the Home tab and verify that the Daily Tasks or Progress Bars have updated to reflect the new goals.
+
+4. Notifications
+   - Navigate to the Notifications section (NotificationsViewController / NotificationsTableViewController).
+   - Toggle various notification settings (e.g., daily reminders, streak alerts).
+   - Verify changes are saved.
+
+5. Progress Details
+   - Navigate to the detailed Progress view (ProgressViewController) from the profile, if available.
+   - Verify personal progress metrics are displayed accurately.
+
+6. Logout
+   - Scroll to the bottom of the profile options.
+   - Tap "Logout".
+   - Verify a confirmation prompt appears.
+   - Confirm logout and verify the app returns to the initial Onboarding/Login screen.

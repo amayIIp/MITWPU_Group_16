@@ -80,7 +80,6 @@ class RandomCardCell: UICollectionViewCell {
     var collapsedHeightConstraint: NSLayoutConstraint!
     var rowViews: [SubcategoryRowView] = []
     let subcategories = ["Science", "Space", "Astronomy", "Mindset", "Sports"]
-    private var contentWidthConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) { super.init(frame: frame); setupUI() }
     required init?(coder: NSCoder) { super.init(coder: coder); setupUI() }
@@ -90,9 +89,10 @@ class RandomCardCell: UICollectionViewCell {
         contentView.layer.cornerRadius = 24
         contentView.clipsToBounds = true
 
-        // STRICT WIDTH FIX: Force the cell to stretch
-        contentWidthConstraint = contentView.widthAnchor.constraint(equalToConstant: 0)
-        contentWidthConstraint?.isActive = true
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            let screenWidth = windowScene.screen.bounds.width
+            contentView.widthAnchor.constraint(equalToConstant: screenWidth - 32).isActive = true
+        }
 
         headerStack.translatesAutoresizingMaskIntoConstraints = false
         headerStack.axis = .horizontal
@@ -163,11 +163,6 @@ class RandomCardCell: UICollectionViewCell {
 
     @objc private func headerDidTap() {
         onHeaderTapped?()
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        contentWidthConstraint?.constant = max(bounds.width, 0)
     }
 
     func setExpanded(_ isExpanded: Bool, animated: Bool) {

@@ -1,6 +1,7 @@
 // VoiceViewController.swift
 
 import UIKit
+import AVFoundation
 
 // MARK: - Chat Message Model
 
@@ -204,8 +205,6 @@ class VoiceViewController: UIViewController {
 
         // Topic selection overlay (on top of everything)
         setupTopicSelectionView()
-
-        // Touch fix hack removed — was causing double-firing of button actions
     }
 
     private func setupStackViews() {
