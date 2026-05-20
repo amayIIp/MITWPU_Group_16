@@ -21,6 +21,8 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     private(set) var isPlaying = false
     private var currentWordBlockIndex = 0
     private var highlightTimer: Timer?
+    private var sessionLimitTimer: Timer?
+    private let maxRecordingDuration: TimeInterval = 15 * 60  // 15-minute hard cap
     private var wordRanges: [NSRange] = []
     private var defaultAttributes: [NSAttributedString.Key: Any] = [:]
     private var highlightAttributes: [NSAttributedString.Key: Any] = [:]
@@ -232,6 +234,47 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
     }
 
+    // MARK: - Session Limit Timer
+
+    private func startSessionLimitTimer() {
+        cancelSessionLimitTimer()
+        // Remaining time = cap minus what the user has already accumulated
+        let remaining = maxRecordingDuration - accumulatedDuration
+        guard remaining > 0 else {
+            // Already at or past limit — stop immediately
+            handleSessionLimitReached()
+            return
+        }
+        sessionLimitTimer = Timer.scheduledTimer(withTimeInterval: remaining, repeats: false) { [weak self] _ in
+            self?.handleSessionLimitReached()
+        }
+    }
+
+    private func cancelSessionLimitTimer() {
+        sessionLimitTimer?.invalidate()
+        sessionLimitTimer = nil
+    }
+
+    @objc private func handleSessionLimitReached() {
+        guard isPlaying else { return }
+        pausePlayback()
+
+        // Show a non-blocking banner-style alert
+        let alert = UIAlertController(
+            title: "⏱ Session Limit Reached",
+            message: "Reading sessions are capped at 15 minutes to protect device storage. Your session has been saved automatically.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "View Results", style: .default) { [weak self] _ in
+            self?.didTapShowResult()
+        })
+        alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel))
+
+        // Present on the sheet if visible, otherwise directly
+        let presenter = sheetVC ?? self
+        presenter.present(alert, animated: true)
+    }
+
     private func startTimer() {
         highlightTimer?.invalidate()
         highlightTimer = Timer.scheduledTimer(withTimeInterval: highlightDuration, repeats: true) { [weak self] _ in
@@ -265,6 +308,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
 
         startRecording()
         startTimer()
+        startSessionLimitTimer()
         highlightBlock(at: currentWordBlockIndex)
         currentWordBlockIndex += 1
 
@@ -282,6 +326,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
         stopRecording()
         highlightTimer?.invalidate()
         highlightTimer = nil
+        cancelSessionLimitTimer()
 
         notifySheetOfStateChange()
         animateSheet(to: .init("half"))
@@ -298,7 +343,7 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
 
     func resetReading() {
-        pausePlayback()
+        pausePlayback()  // also cancels sessionLimitTimer
         accumulatedDuration = 0.0
         startTime = nil
         currentWordBlockIndex = 0
