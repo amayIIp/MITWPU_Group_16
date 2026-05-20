@@ -596,6 +596,95 @@ class LogManager {
         return resultLogs
     }
 
+    // MARK: - Delta Sync Helpers
+
+    /// Returns only ExerciseLogs newer than `sinceDate` for the given source.
+    /// Used by delta-sync to avoid re-uploading historical data on every launch.
+    func getLogs(for source: ExerciseSource, since sinceDate: Date) -> [ExerciseLog] {
+        let sql = "SELECT * FROM ExerciseLog WHERE source = ? AND completionDate > ?;"
+        var statement: OpaquePointer?
+        var resultLogs: [ExerciseLog] = []
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (source.rawValue as NSString).utf8String, -1, nil)
+            sqlite3_bind_double(statement, 2, sinceDate.timeIntervalSince1970)
+            while sqlite3_step(statement) == SQLITE_ROW {
+                guard
+                    let idCStr     = sqlite3_column_text(statement, 0),
+                    let nameCStr   = sqlite3_column_text(statement, 1),
+                    let sourceCStr = sqlite3_column_text(statement, 3)
+                else { continue }
+
+                let idString     = String(cString: idCStr)
+                let nameString   = String(cString: nameCStr)
+                let dateDouble   = sqlite3_column_double(statement, 2)
+                let sourceString = String(cString: sourceCStr)
+                let durationInt  = Int(sqlite3_column_int(statement, 4))
+
+                if let sourceEnum = ExerciseSource(rawValue: sourceString),
+                   let uuid = UUID(uuidString: idString) {
+                    resultLogs.append(ExerciseLog(
+                        id: uuid,
+                        exerciseName: nameString,
+                        completionDate: Date(timeIntervalSince1970: dateDouble),
+                        source: sourceEnum,
+                        exerciseDuration: durationInt
+                    ))
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+        return resultLogs
+    }
+
+    /// Returns only ReadingSessions whose date (Unix timestamp) is newer than `sinceDate`.
+    func getReadingSessionSyncRecords(for userId: String, since sinceDate: Date) -> [ReadingSessionSyncRecord] {
+        let sql = """
+            SELECT id, userId, date, duration, fluencyScore,
+                   repetitionPercent, prolongationPercent, blockPercent, correctPercent,
+                   repetitionCount, prolongationCount, blockCount, stutteredWordCount,
+                   longestSmoothParagraph, insight
+            FROM ReadingSessions
+            WHERE userId = ? AND date > ?
+            ORDER BY date ASC;
+            """
+        var statement: OpaquePointer?
+        var sessions: [ReadingSessionSyncRecord] = []
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, (userId as NSString).utf8String, -1, nil)
+            sqlite3_bind_double(statement, 2, sinceDate.timeIntervalSince1970)
+            while sqlite3_step(statement) == SQLITE_ROW {
+                guard let idCStr = sqlite3_column_text(statement, 0),
+                      let userIdCStr = sqlite3_column_text(statement, 1) else { continue }
+
+                sessions.append(
+                    ReadingSessionSyncRecord(
+                        id: String(cString: idCStr),
+                        userId: String(cString: userIdCStr),
+                        date: sqlite3_column_double(statement, 2),
+                        duration: sqlite3_column_double(statement, 3),
+                        fluencyScore: Int(sqlite3_column_int(statement, 4)),
+                        repetitionPercent: sqlite3_column_double(statement, 5),
+                        prolongationPercent: sqlite3_column_double(statement, 6),
+                        blockPercent: sqlite3_column_double(statement, 7),
+                        correctPercent: sqlite3_column_double(statement, 8),
+                        repetitionCount: Int(sqlite3_column_int(statement, 9)),
+                        prolongationCount: Int(sqlite3_column_int(statement, 10)),
+                        blockCount: Int(sqlite3_column_int(statement, 11)),
+                        stutteredWordCount: Int(sqlite3_column_int(statement, 12)),
+                        longestSmoothParagraph: Int(sqlite3_column_int(statement, 13)),
+                        insight: sqlite3_column_text(statement, 14).map { String(cString: $0) }
+                    )
+                )
+            }
+        }
+        sqlite3_finalize(statement)
+        return sessions
+    }
+
+
+
     /// Saves a reading session with an optional pre-generated insight.
     /// Returns the sessionId so callers can update the insight later.
     @discardableResult

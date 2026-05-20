@@ -37,31 +37,60 @@ class SupabaseSyncManager {
         return true
     }
 
-    // MARK: - Bulk Push Local to Cloud
-    /// Pushes all local data to the cloud.
-    /// Converted to async throws so callers can await it before navigating.
+    // MARK: - Delta Push Local to Cloud
+    /// Pushes ONLY data created/updated after the last successful sync timestamp.
+    /// On first run (timestamp = epoch) it behaves as a full push.
+    /// On subsequent runs it only sends new records — O(new) instead of O(total).
     func pushAllLocalDataToCloud() async throws {
         guard let userId = client.auth.currentUser?.id.uuidString else {
             throw NSError(domain: "SupabaseSync", code: 401, userInfo: [NSLocalizedDescriptionKey: "No logged in user"])
         }
 
-        print("☁️ Starting bulk push of local data to cloud for user: \(userId)")
+        // Resolve the delta window
+        let isoParser = ISO8601DateFormatter()
+        isoParser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let sinceDate = isoParser.date(from: lastSyncDateString)
+            ?? ISO8601DateFormatter().date(from: lastSyncDateString)
+            ?? Date(timeIntervalSince1970: 0)
 
-        // 1. Profile
+        let isFirstSync = sinceDate.timeIntervalSince1970 < 1
+        print("☁️ [DELTA-SYNC] Starting push — since: \(lastSyncDateString) (firstSync=\(isFirstSync))")
+
+        // Record the new watermark BEFORE we start so a partial push
+        // doesn't cause records created during the sync to be missed next time.
+        let newWatermark = istFormatter.string(from: Date())
+
+        // 1. Profile — always upsert (lightweight, idempotent)
         if let profile = LogManager.shared.getProfile(userId: userId) {
             pushProfile(profile)
         }
 
-        // 2. Exercise Logs
+        // 2. Exercise Logs — delta only
         let sources: [ExerciseSource] = [.dailyTasks, .exercises, .warmup, .reading, .conversation]
+        var totalLogs = 0
         for source in sources {
-            let logs = LogManager.shared.getLogs(for: source)
+            let logs = isFirstSync
+                ? LogManager.shared.getLogs(for: source)
+                : LogManager.shared.getLogs(for: source, since: sinceDate)
+            totalLogs += logs.count
             for log in logs {
-                pushExerciseLog(id: log.id.uuidString, name: log.exerciseName, source: log.source.rawValue, duration: log.exerciseDuration, completionDate: log.completionDate)
+                pushExerciseLog(
+                    id: log.id.uuidString,
+                    name: log.exerciseName,
+                    source: log.source.rawValue,
+                    duration: log.exerciseDuration,
+                    completionDate: log.completionDate
+                )
             }
         }
+        print("☁️ [DELTA-SYNC] Exercise logs pushed: \(totalLogs)")
 
-        let readingSessions = LogManager.shared.getAllReadingSessionSyncRecords(for: userId)
+        // 3. Reading Sessions — delta only
+        let readingSessions = isFirstSync
+            ? LogManager.shared.getAllReadingSessionSyncRecords(for: userId)
+            : LogManager.shared.getReadingSessionSyncRecords(for: userId, since: sinceDate)
+
+        print("☁️ [DELTA-SYNC] Reading sessions to push: \(readingSessions.count)")
         for session in readingSessions {
             let troubledWords = LogManager.shared.getTroubledWordSyncRecords(sessionId: session.id)
             let sessionLetterStats = LogManager.shared.getSessionLetterStatSyncRecords(sessionId: session.id)
@@ -85,9 +114,11 @@ class SupabaseSyncManager {
                 sessionLetterStats: sessionLetterStats
             )
         }
+
+        // Letter stats are aggregated — always push the latest totals
         pushLetterStats(userId: userId)
 
-        // 3. Daily Tasks & Journey & Goals & Streak
+        // 4. Daily Tasks, Journey, Goals, Streak — always push (tiny payloads, idempotent)
         pushFullJourneyToCloud()
         DatabaseManager.shared.syncLocalDailyTasksToCloud()
 
@@ -100,7 +131,7 @@ class SupabaseSyncManager {
             pushUserGoal(goalName: name, goalValue: val)
         }
 
-        // 4. Awards
+        // 5. Awards — only push those with progress (idempotent upserts)
         if AwardsManager.shared.db == nil {
             AwardsManager.shared.openDatabase()
             AwardsManager.shared.seedDatabaseIfNeeded()
@@ -110,7 +141,9 @@ class SupabaseSyncManager {
             pushAwardUpdate(awardId: award.id, progress: award.progress, status: award.status, completionDate: award.completionDate)
         }
 
-        print("☁️ ✅ BULK PUSH COMPLETED SUCCESSFULLY")
+        // Stamp the new watermark only after a successful push
+        lastSyncDateString = newWatermark
+        print("☁️ ✅ [DELTA-SYNC] COMPLETED — watermark updated to: \(newWatermark)")
     }
 
     // MARK: - Auth Sync triggered on Login
