@@ -1,17 +1,6 @@
-# Spasht: Real-Time Speech Therapy App
+# Spasht — Real-Time Speech Therapy App
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/cef2abff-da21-4821-b782-4900c5a155ea" width="120"/>
-  <img src="https://github.com/user-attachments/assets/2701d49f-8325-401e-b89d-58255aa77dd9" width="120"/>
-  <img src="https://github.com/user-attachments/assets/74304498-e948-4f73-a15b-08761795f55e" width="120"/>
-  <img src="https://github.com/user-attachments/assets/6fcc67ec-d159-402c-afd4-24f9ca4fb4ac" width="120"/>
-  <img src="https://github.com/user-attachments/assets/68c85f4e-4632-432e-b192-629edf961c28" width="120"/>
-  <img src="https://github.com/user-attachments/assets/3dfe3a95-6b7d-49ec-9832-caaed14b7a48" width="120"/>
-  <img src="https://github.com/user-attachments/assets/6bbe3a39-9df4-49be-958f-f4942289fb6d" width="120"/>
-  <img src="https://github.com/user-attachments/assets/d922c119-9170-4128-b612-7df3bc98bfec" width="120"/>
-</p>
-
-> **Spasht** (meaning *clear* or *articulate* in Sanskrit) is an iOS app that delivers immediate, on-device feedback to people with stuttering disfluencies. It listens to your speech, aligns it to reference texts in real time using Dynamic Time Warping, and provides detailed fluency metrics—all powered by local models and AI.
+> An iOS app that helps people who stutter practice speech independently, receive fluency feedback, and track improvement over time.
 
 ---
 
@@ -22,6 +11,16 @@
 - Runs speech recognition on-device using Apple's `SFSpeechRecognizer` (`requiresOnDeviceRecognition = true`).
 - A custom **StutterAnalyzer** uses Dynamic Time Warping (DTW) to pinpoint repetitions, prolongations, and blocks with timestamp-level precision.
 - Generates post-session `StutterJSONReport` analytics containing fluency scores, per-letter heatmaps, and trouble-word tracking.
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Module Breakdown](#module-breakdown)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [WhisperKit Model Setup](#whisperkit-model-setup)
+- [Data & Privacy](#data--privacy)
+- [Team](#team)
+- [License](#license)
 
 ### 🤖 Interactive AI Conversational Partner
 - Engage in free-form, open-ended spoken conversations with an AI specifically instructed to help you practice your speech.
