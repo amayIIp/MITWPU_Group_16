@@ -1,0 +1,26 @@
+Test Plan: Home Page
+
+1. Home Screen Loading
+   - Navigate to the Home tab.
+   - Verify the user's name and greeting are displayed correctly.
+   - Verify the Daily Progress (Radial/Progress Bar) is visible and matches current progress.
+   - Verify the Streaks count is displayed.
+
+2. Daily Tasks / Challenges
+   - Scroll to the Daily Tasks section.
+   - Verify a list of daily tasks is displayed.
+   - Tap on a daily task and verify it opens the relevant exercise.
+   - Complete the task and verify the progress bar updates on the Home page.
+
+3. Warm-Up Section
+   - Locate the Warm-Up section.
+   - Tap to open the Warm-Up List.
+   - Select a warm-up exercise and complete it.
+   - Verify successful completion and navigation back to Home.
+
+4. Onboarding Overlays (If first time)
+   - If this is a new user, verify that Module Onboarding Overlays appear explaining the Daily Tasks, Warm-Ups, and Progress.
+   - Dismiss overlays and ensure they don't reappear unnecessarily.
+
+5. Navigation
+   - Verify all buttons and quick links on the Home page lead to the correct destinations (e.g., specific exercises, profile).

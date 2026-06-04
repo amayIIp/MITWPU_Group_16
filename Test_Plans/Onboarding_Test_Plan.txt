@@ -1,0 +1,43 @@
+Test Plan: Onboarding Flow
+
+1. Application Launch
+   - Open the app.
+   - Verify that the first page animation/splash screen appears.
+   - Verify transition to the Login/Sign Up selection screen.
+
+2. Sign Up Flow
+   - Tap "Sign Up".
+   - Enter a valid name, email, and password.
+   - Verify password requirements are checked (if any).
+   - Tap submit/create account.
+   - Verify successful account creation and transition to Onboarding Instructions.
+
+3. Login Flow
+   - Go back or log out to test Login.
+   - Tap "Login".
+   - Enter valid credentials.
+   - Tap "Login" button.
+   - Verify successful login and transition to the Home Page.
+   - Test "Forgot Password" or "Guest Login" (Guest Gate) if applicable.
+
+4. Onboarding Instructions & Name Input
+   - After signing up, verify the instructional text is clear.
+   - Enter the user's name on the Onboarding Name screen.
+   - Tap continue.
+
+5. Phenome Selection
+   - Verify the Phenome Selection screen loads.
+   - Select one or more phenomes to practice.
+   - Verify the selections are highlighted/stored.
+   - Tap continue.
+
+6. Initial Test / Assessment
+   - Verify the TestViewController loads.
+   - Follow the instructions to perform the initial speech test.
+   - Verify microphone permissions are requested.
+   - Complete the test and verify it proceeds to the Last Onboarding screen.
+
+7. Completion
+   - Verify the final onboarding success screen.
+   - Tap "Get Started" or equivalent.
+   - Verify the app navigates to the Home Page.

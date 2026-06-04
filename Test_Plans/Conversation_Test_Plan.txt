@@ -1,0 +1,20 @@
+Test Plan: Conversation
+
+1. Free Conversation Mode
+   - Navigate to the Conversation tab.
+   - Verify the interface for voice recording loads (VoiceViewController).
+   - Tap the microphone button to start a conversation/recording session.
+
+2. Recording and Real-time Feedback
+   - Speak freely into the microphone.
+   - Verify that any visualizers (waveforms) react to voice input.
+   - Tap to pause or stop the recording.
+
+3. Conversation Analysis
+   - After stopping, verify that the app processes the audio.
+   - Check the resulting analysis for fluency, speech rate, and instances of stuttering.
+   - Verify if actionable feedback or a transcript is provided.
+
+4. Saving and History
+   - Verify that the conversation session can be saved to the user's history.
+   - Navigate away and back to verify state is reset appropriately for a new session.

@@ -1,0 +1,23 @@
+Test Plan: Awards
+
+1. Awards Main Screen
+   - Navigate to the Awards tab or section.
+   - Verify the main view (AwardMainViewController) loads, displaying a summary of earned awards and progress towards new ones.
+
+2. Viewing Awards
+   - Scroll through the list or collection of standard awards (AwardStandardCell, AwardCollectionViewCell).
+   - Verify that earned awards appear unlocked (colored/bright) and unearned awards appear locked (grayed out or locked icon).
+   - Tap on an unlocked award.
+   - Verify the Award Detail screen (AwardDetailViewController) opens with the award's name, description, and date earned.
+   - Tap on a locked award.
+   - Verify the Locked View (LockedViewController) explains what needs to be done to achieve the award.
+
+3. Weekly Challenges
+   - Navigate to the Weekly Challenges section (WeeklyChallengesViewController).
+   - View the current weekly challenges (WeeklyChallengeCell).
+   - Verify progress indicators for each challenge.
+
+4. New Achievements
+   - (Simulate or perform an action to earn an award, if possible in the test environment).
+   - Verify the Achieved View (AchievedViewController) or a pop-up appears announcing the new award.
+   - Return to the Awards screen and verify the award is now unlocked.

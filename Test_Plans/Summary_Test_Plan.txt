@@ -1,0 +1,22 @@
+Test Plan: Summary
+
+1. Summary Dashboard Overview
+   - Navigate to the Summary tab.
+   - Verify the main dashboard loads with overarching statistics (e.g., total practice time, average fluency, streaks).
+   - Check that the charts or graphs load correctly and represent data visually.
+
+2. Calendar View
+   - Open the Calendar View section.
+   - Verify the calendar loads with the current month.
+   - Check for visual indicators on days where practice occurred.
+   - Tap on a specific past date.
+   - Verify that the log summary or details for that day's practice are displayed correctly.
+
+3. Log Summaries
+   - Scroll through recent log summaries (LogSummaryCell).
+   - Tap a log summary to view detailed metrics for that specific session.
+   - Verify all details (duration, exercises completed, accuracy) are correct.
+
+4. Progress Over Time
+   - Verify any "Progress Over Time" graphs or metrics.
+   - Change the timeframe (e.g., Weekly, Monthly) if the option is available, and ensure data updates accordingly.

@@ -7,14 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		192A5D122F7A917E00DB8C96 /* SpeakerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D112F7A917E00DB8C96 /* SpeakerKit */; };
-		192A5D142F7A917E00DB8C96 /* TTSKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D132F7A917E00DB8C96 /* TTSKit */; };
 		192A5D162F7A917E00DB8C96 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 192A5D152F7A917E00DB8C96 /* WhisperKit */; };
 		1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08A2F69460700C78634 /* GoogleSignIn */; };
-		1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08C2F69460700C78634 /* GoogleSignInSwift */; };
-		1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 1993B08F2F69462B00C78634 /* RiveRuntime */; };
 		19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 19B7F8C42F5E961600E02FB6 /* Supabase */; };
-		19EB3DD52ED71B340003B76D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 19EB3DD42ED71B340003B76D /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,9 +30,22 @@
 		19EB3DD42ED71B340003B76D /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BC4DFF792FBAF9340007B13C /* Exceptions for "Stuttering App" folder in "Stuttering App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 19EB3D322ED6ED290003B76D /* Stuttering App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		19EB3D352ED6ED290003B76D /* Stuttering App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BC4DFF792FBAF9340007B13C /* Exceptions for "Stuttering App" folder in "Stuttering App" target */,
+			);
 			path = "Stuttering App";
 			sourceTree = "<group>";
 		};
@@ -48,11 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1993B08D2F69460700C78634 /* GoogleSignInSwift in Frameworks */,
-				1993B0902F69462B00C78634 /* RiveRuntime in Frameworks */,
 				19B7F8C52F5E961600E02FB6 /* Supabase in Frameworks */,
-				192A5D142F7A917E00DB8C96 /* TTSKit in Frameworks */,
-				192A5D122F7A917E00DB8C96 /* SpeakerKit in Frameworks */,
 				1993B08B2F69460700C78634 /* GoogleSignIn in Frameworks */,
 				192A5D162F7A917E00DB8C96 /* WhisperKit in Frameworks */,
 			);
@@ -85,6 +89,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 19EB3D462ED6ED2A0003B76D /* Build configuration list for PBXNativeTarget "Stuttering App" */;
 			buildPhases = (
+				BC9F2A112FBB0001007B13C /* Run SwiftLint */,
 				19EB3D2F2ED6ED290003B76D /* Sources */,
 				19EB3D302ED6ED290003B76D /* Frameworks */,
 				19EB3D312ED6ED290003B76D /* Resources */,
@@ -101,10 +106,6 @@
 			packageProductDependencies = (
 				19B7F8C42F5E961600E02FB6 /* Supabase */,
 				1993B08A2F69460700C78634 /* GoogleSignIn */,
-				1993B08C2F69460700C78634 /* GoogleSignInSwift */,
-				1993B08F2F69462B00C78634 /* RiveRuntime */,
-				192A5D112F7A917E00DB8C96 /* SpeakerKit */,
-				192A5D132F7A917E00DB8C96 /* TTSKit */,
 				192A5D152F7A917E00DB8C96 /* WhisperKit */,
 			);
 			productName = "Stuttering App";
@@ -138,7 +139,6 @@
 			packageReferences = (
 				19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
-				1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */,
 				192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -156,11 +156,32 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				19EB3DD52ED71B340003B76D /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BC9F2A112FBB0001007B13C /* Run SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run SwiftLint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Add Homebrew's standard install paths to the PATH environment variable\nexport PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\n\nif which swiftlint > /dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed. Download it from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		19EB3D2F2ED6ED290003B76D /* Sources */ = {
@@ -180,7 +201,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3R2UHS38TG;
+				DEVELOPMENT_TEAM = JGBU3XBL5N;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Spasht;
@@ -192,6 +214,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -199,15 +222,19 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.stutteringapp1347;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spasht.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -218,7 +245,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3R2UHS38TG;
+				DEVELOPMENT_TEAM = JGBU3XBL5N;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Stuttering App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Spasht;
@@ -230,6 +258,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -237,15 +266,19 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.stutteringapp1347;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spasht.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -408,14 +441,6 @@
 				minimumVersion = 9.1.0;
 			};
 		};
-		1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/rive-app/rive-ios";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.17.0;
-			};
-		};
 		19B7F8C32F5E961600E02FB6 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift";
@@ -427,16 +452,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		192A5D112F7A917E00DB8C96 /* SpeakerKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
-			productName = SpeakerKit;
-		};
-		192A5D132F7A917E00DB8C96 /* TTSKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
-			productName = TTSKit;
-		};
 		192A5D152F7A917E00DB8C96 /* WhisperKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 192A5D102F7A917E00DB8C96 /* XCRemoteSwiftPackageReference "WhisperKit" */;
@@ -446,16 +461,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
-		};
-		1993B08C2F69460700C78634 /* GoogleSignInSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1993B0892F69460700C78634 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
-			productName = GoogleSignInSwift;
-		};
-		1993B08F2F69462B00C78634 /* RiveRuntime */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1993B08E2F69462B00C78634 /* XCRemoteSwiftPackageReference "rive-ios" */;
-			productName = RiveRuntime;
 		};
 		19B7F8C42F5E961600E02FB6 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
