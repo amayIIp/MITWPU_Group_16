@@ -23,7 +23,13 @@ final class NetworkMonitor {
 
     private init() {
         monitor.pathUpdateHandler = { [weak self] path in
-            self?.isConnected = (path.status == .satisfied)
+            let connected = (path.status == .satisfied)
+            let wasConnected = self?.isConnected ?? false
+            self?.isConnected = connected
+            
+            if connected && !wasConnected {
+                NotificationCenter.default.post(name: NSNotification.Name("NetworkMonitorConnected"), object: nil)
+            }
         }
         monitor.start(queue: queue)
     }

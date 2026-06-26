@@ -26,6 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Start loading the WhisperKit model in the background immediately
         _ = WhisperDetectionManager.shared
+        
+        // Start background upload manager for pending sessions
+        _ = UploadSessionManager.shared
 
         return true
     }

@@ -445,6 +445,12 @@ class DetailViewController: UIViewController, SFSpeechRecognizerDelegate {
             // Step 3 — Save stats while overlay is still visible
             await MainActor.run {
                 LogManager.shared.updateStutterStats(letterCounts: report.letterAnalysis)
+                
+                // Register and upload the session audio to Supabase Edge Function in the background
+                if let url = self.tempAudioURL {
+                    let sessionId = UUID().uuidString
+                    UploadSessionManager.shared.registerAndUpload(sessionId: sessionId, audioURL: url)
+                }
             }
 
             // Step 4 — Pre-fetch insight so result screen is fully ready on first paint
