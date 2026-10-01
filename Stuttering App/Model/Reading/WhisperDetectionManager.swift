@@ -8,19 +8,28 @@ class WhisperDetectionManager {
     private var whisperKit: WhisperKit?
     private(set) var isReady = false
 
-    private init() {
+    private init() {}
+
+    /// Starts loading the model, once.
+    ///
+    /// Previously this ran from the singleton's initialiser, which
+    /// `AppDelegate.didFinishLaunchingWithOptions` triggered — so a 464 MB model
+    /// began loading while the app was still launching, competing for I/O and
+    /// memory with everything else on the launch path. iOS kills apps that take
+    /// too long to launch, and App Review runs on devices under load.
+    ///
+    /// It is now called once the home screen is up and the app is interactive,
+    /// which keeps the pre-warm (so the first reading session doesn't wait on a
+    /// cold load) without putting it in front of the watchdog.
+    func prewarm() {
+        guard initTask == nil else { return }
         initTask = Task { @MainActor in
-            // Locate the bundled model folder shipped inside the app bundle.
-            // The folder "openai_whisper-small.en" must be added to the Xcode
-            // project as a folder reference (blue folder icon) with "Copy items
-            // if needed" checked and the app target selected.
-            guard let modelFolderURL = Bundle.main.resourceURL?
-                .appendingPathComponent("openai_whisper-small.en") else {
+            guard let modelFolderURL = Self.bundledModelFolder() else {
                 print("❌ WhisperKit: bundled model folder not found in app bundle.")
                 throw NSError(
                     domain: "WhisperDetectionManager",
                     code: -3,
-                    userInfo: [NSLocalizedDescriptionKey: "Bundled model folder 'openai_whisper-small.en' not found. Make sure it is added to the Xcode target."]
+                    userInfo: [NSLocalizedDescriptionKey: "Bundled model weights not found in the app bundle."]
                 )
             }
 
@@ -35,13 +44,45 @@ class WhisperDetectionManager {
         }
     }
 
+    /// Finds the model weights in the app bundle.
+    ///
+    /// The target uses a file-system-synchronized group, which does not keep
+    /// "openai_whisper-small.en" as a directory — it copies the five files
+    /// inside it to the bundle root as loose resources. So the folder the old
+    /// code looked for has never existed in a build, and every Whisper load
+    /// failed with `modelsUnavailable(".../openai_whisper-small.en/MelSpectrogram.mlmodelc")`.
+    ///
+    /// Checks for the real subdirectory first, so this keeps working if the
+    /// weights are later added as a folder reference, and otherwise uses the
+    /// bundle root, which is where they actually are today. Presence of
+    /// MelSpectrogram.mlmodelc is what tells the two apart.
+    private static func bundledModelFolder() -> URL? {
+        guard let resources = Bundle.main.resourceURL else { return nil }
+
+        let marker = "MelSpectrogram.mlmodelc"
+        let nested = resources.appendingPathComponent("openai_whisper-small.en")
+        let fm = FileManager.default
+
+        if fm.fileExists(atPath: nested.appendingPathComponent(marker).path) {
+            return nested
+        }
+        if fm.fileExists(atPath: resources.appendingPathComponent(marker).path) {
+            return resources
+        }
+        return nil
+    }
+
     /// Waits for WhisperKit to finish initialising (near-instant when bundled).
+    /// Starts the load if nothing has yet, so a caller that arrives before the
+    /// pre-warm still gets a model rather than silence.
     func awaitReady() async {
+        prewarm()
         guard let initTask = initTask else { return }
         _ = try? await initTask.value
     }
 
     func transcribe(audioURL: URL) async throws -> String? {
+        prewarm()
         guard let initTask = initTask else {
             throw NSError(domain: "WhisperDetectionManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "WhisperKit initialization not started."])
         }

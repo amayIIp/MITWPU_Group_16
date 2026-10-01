@@ -30,16 +30,12 @@ class GuestGateViewController: UIViewController {
     }
 
     @IBAction func loginButtonTapped(_ sender: UIButton) {
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginVC")
-
-        navigationController?.pushViewController(loginVC, animated: true)
+        guard let navigationController else { return }
+        AuthScreens.push(.signIn, onto: navigationController)
     }
 
     @IBAction func signUpButtonTapped(_ sender: UIButton) {
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        let signUpVC = storyboard.instantiateViewController(withIdentifier: "SignUpVC")
-
-        navigationController?.pushViewController(signUpVC, animated: true)
+        guard let navigationController else { return }
+        AuthScreens.push(.signUp, onto: navigationController)
     }
 }

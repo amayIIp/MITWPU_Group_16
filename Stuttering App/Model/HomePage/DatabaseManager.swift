@@ -633,6 +633,20 @@ class DatabaseManager {
         return phonemes
     }
 
+    /// Closes the SQLite connection without deleting the file. See
+    /// `LogManager.closeDatabaseForRestore()`.
+    func closeDatabaseForRestore() {
+        if db != nil {
+            sqlite3_close(db)
+            db = nil
+        }
+    }
+
+    func reopenDatabaseAfterRestore() {
+        openDatabase()
+        createTables()
+    }
+
     func resetDatabaseForNewUser() {
         if db != nil {
             if sqlite3_close(db) != SQLITE_OK {

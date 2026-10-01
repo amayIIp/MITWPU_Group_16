@@ -175,7 +175,7 @@ class LogManager {
         let createStutterStats = "CREATE TABLE IF NOT EXISTS StutterStats (letter TEXT PRIMARY KEY, count INTEGER);"
         let createUsers = "CREATE TABLE IF NOT EXISTS Users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, createdAt REAL);"
         let createProfiles = "CREATE TABLE IF NOT EXISTS Profiles (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, dob TEXT, mobile TEXT, isOnboardingCompleted INTEGER DEFAULT 0, FOREIGN KEY(id) REFERENCES Users(id));"
-        let createReadingSessions = "CREATE TABLE IF NOT EXISTS ReadingSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fluencyScore INTEGER, repetitionPercent REAL, prolongationPercent REAL, blockPercent REAL, correctPercent REAL, repetitionCount INTEGER DEFAULT 0, prolongationCount INTEGER DEFAULT 0, blockCount INTEGER DEFAULT 0, stutteredWordCount INTEGER DEFAULT 0, longestSmoothParagraph INTEGER DEFAULT 0, insight TEXT, FOREIGN KEY(userId) REFERENCES Users(id));"
+        let createReadingSessions = "CREATE TABLE IF NOT EXISTS ReadingSessions (id TEXT PRIMARY KEY, userId TEXT, date REAL, duration REAL, fluencyScore INTEGER, repetitionPercent REAL, prolongationPercent REAL, blockPercent REAL, correctPercent REAL, repetitionCount INTEGER DEFAULT 0, prolongationCount INTEGER DEFAULT 0, blockCount INTEGER DEFAULT 0, stutteredWordCount INTEGER DEFAULT 0, longestSmoothParagraph INTEGER DEFAULT 0, insight TEXT, misreadPercent REAL DEFAULT 0, misreadCount INTEGER DEFAULT 0, FOREIGN KEY(userId) REFERENCES Users(id));"
         let createTroubledWords = "CREATE TABLE IF NOT EXISTS TroubledWords (id TEXT PRIMARY KEY, sessionId TEXT, userId TEXT, word TEXT, type TEXT, firstLetter TEXT, FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
         let createLetterStats = "CREATE TABLE IF NOT EXISTS LetterStats (userId TEXT, letter TEXT, count INTEGER, PRIMARY KEY(userId, letter), FOREIGN KEY(userId) REFERENCES Users(id));"
         let createSessionLetterStats = "CREATE TABLE IF NOT EXISTS SessionLetterStats (sessionId TEXT, userId TEXT, letter TEXT, stutterCount INTEGER, PRIMARY KEY(sessionId, letter), FOREIGN KEY(sessionId) REFERENCES ReadingSessions(id), FOREIGN KEY(userId) REFERENCES Users(id));"
@@ -199,7 +199,19 @@ class LogManager {
             ("prolongationCount", "ALTER TABLE ReadingSessions ADD COLUMN prolongationCount INTEGER DEFAULT 0;"),
             ("blockCount", "ALTER TABLE ReadingSessions ADD COLUMN blockCount INTEGER DEFAULT 0;"),
             ("stutteredWordCount", "ALTER TABLE ReadingSessions ADD COLUMN stutteredWordCount INTEGER DEFAULT 0;"),
-            ("insight", "ALTER TABLE ReadingSessions ADD COLUMN insight TEXT;")
+            ("insight", "ALTER TABLE ReadingSessions ADD COLUMN insight TEXT;"),
+            // Misreadings used to be filed under `prolongation`, which made the
+            // prolongation columns mean two different things across the app's
+            // history. They now have a column of their own, and the
+            // prolongation columns hold measured prolongations again.
+            ("misreadPercent", "ALTER TABLE ReadingSessions ADD COLUMN misreadPercent REAL DEFAULT 0;"),
+            ("misreadCount", "ALTER TABLE ReadingSessions ADD COLUMN misreadCount INTEGER DEFAULT 0;"),
+            // Words the reader audibly said that the recogniser never
+            // transcribed, kept apart from words they actually skipped: the
+            // first is the microphone's failure, the second the reader's.
+            ("unrecognisedCount", "ALTER TABLE ReadingSessions ADD COLUMN unrecognisedCount INTEGER DEFAULT 0;"),
+            ("skippedCount", "ALTER TABLE ReadingSessions ADD COLUMN skippedCount INTEGER DEFAULT 0;"),
+            ("confidence", "ALTER TABLE ReadingSessions ADD COLUMN confidence TEXT;")
         ]
 
         for (columnName, sql) in readingSessionMigrations where !columnExists(tableName: "ReadingSessions", columnName: columnName) {
@@ -255,7 +267,7 @@ class LogManager {
     /// Initialize a guest user using the device ID — NO Supabase calls
     func initializeGuestUser() {
         let guestId = SessionManager.shared.deviceId
-        print("📋 [GUEST] Initializing guest user with deviceId: \(guestId)")
+        print("📋 [GUEST] Initializing guest user")
         currentUserId = createOrGetUser(email: "guest@local", userId: guestId)
 
         // Ensure a profile exists for the guest
@@ -273,7 +285,7 @@ class LogManager {
         let guestId = SessionManager.shared.deviceId
         var stmt: OpaquePointer?
 
-        print("🔄 [MIGRATE] Starting migration from guest (\(guestId)) to account (\(newUserId))")
+        print("🔄 [MIGRATE] Starting migration from guest to account")
 
         let checkSQL = "SELECT isOnboardingCompleted FROM Profiles WHERE id = ?;"
         var hasGuest = false
@@ -314,7 +326,7 @@ class LogManager {
                 }
                 sqlite3_finalize(stmt)
             }
-            print("🔄 [MIGRATE] All guest data tables migrated to userId: \(newUserId)")
+            print("🔄 [MIGRATE] All guest data tables migrated to the new account")
 
             let deleteOldLogs = "DELETE FROM ExerciseLog;"
             sqlite3_exec(db, deleteOldLogs, nil, nil, nil)
@@ -702,6 +714,7 @@ class LogManager {
         let resolvedDuration = duration > 0 ? duration : Self.parseDurationString(report.duration)
         let repetitionCount = report.breakdown.repetition.count
         let prolongationCount = report.breakdown.prolongation.count
+        let misreadCount = report.breakdown.misread.count
         let blockCount = report.breakdown.blocks
         let stutteredWordCount = report.stutteredWords.count
 
@@ -711,8 +724,9 @@ class LogManager {
              repetitionPercent, prolongationPercent,
              blockPercent, correctPercent, repetitionCount,
              prolongationCount, blockCount, stutteredWordCount,
-             longestSmoothParagraph, insight)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+             longestSmoothParagraph, insight, misreadPercent, misreadCount,
+             unrecognisedCount, skippedCount, confidence)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
 
         var statement: OpaquePointer?
@@ -736,6 +750,11 @@ class LogManager {
             } else {
                 sqlite3_bind_null(statement, 15)
             }
+            sqlite3_bind_double(statement, 16, report.percentages.misread)
+            sqlite3_bind_int(statement, 17, Int32(misreadCount))
+            sqlite3_bind_int(statement, 18, Int32(report.reading.unrecognisedWords))
+            sqlite3_bind_int(statement, 19, Int32(report.reading.skippedWords))
+            sqlite3_bind_text(statement, 20, (report.confidence as NSString).utf8String, -1, nil)
 
             if sqlite3_step(statement) == SQLITE_DONE {
                 print("ReadingSession inserted successfully.")
@@ -748,7 +767,7 @@ class LogManager {
         saveTroubledWords(report: report, userId: userId, sessionId: sessionId)
         updateLetterStats(userId: userId, letterCounts: report.letterAnalysis)
         saveSessionLetterStats(userId: userId, sessionId: sessionId, letterCounts: report.letterAnalysis)
-        print("Saved reading session for user: \(userId)")
+        print("Saved reading session")
 
         if SessionManager.shared.isAccountMode {
             SupabaseSyncManager.shared.pushReadingSession(
@@ -820,7 +839,13 @@ class LogManager {
                 let firstLetter = String(word.prefix(1)).uppercased()
                 let type: String
 
-                if report.breakdown.repetition.contains(word) { type = "repetition" } else if report.breakdown.prolongation.contains(word) { type = "prolongation" } else { type = "block" }
+                if report.breakdown.repetition.contains(word) {
+                    type = "repetition"
+                } else if report.breakdown.prolongation.contains(word) {
+                    type = "prolongation"
+                } else {
+                    type = "block"
+                }
 
                 sqlite3_bind_text(statement, 1, (wordId as NSString).utf8String, -1, nil)
                 sqlite3_bind_text(statement, 2, (sessionId as NSString).utf8String, -1, nil)
@@ -1756,6 +1781,27 @@ extension LogManager {
         if d < -1 { return .up }
         if d > 1 { return .down }
         return .neutral
+    }
+
+    /// Closes the SQLite connection without deleting the file.
+    ///
+    /// Used by `LocalDataSnapshot` so a failed login can put the previous
+    /// database back. Replacing a SQLite file underneath a live connection
+    /// corrupts it, so the connection has to be closed first and reopened after.
+    func closeDatabaseForRestore() {
+        if db != nil {
+            sqlite3_close(db)
+            db = nil
+        }
+        currentUserId = nil
+    }
+
+    /// Reopens after `closeDatabaseForRestore()` and a file swap.
+    /// `createTables()` uses IF NOT EXISTS throughout, so it is safe on a
+    /// restored file that already has them.
+    func reopenDatabaseAfterRestore() {
+        openDatabase()
+        createTables()
     }
 
     func resetDatabaseForNewUser() {

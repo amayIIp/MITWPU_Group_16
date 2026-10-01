@@ -76,6 +76,7 @@ class HomePageViewController: UIViewController {
         loadTaskName()
         achievedAwardsUpdate()
         loadHomeInsight()
+        setupBarAppearance()
         setupRightBarButtons()
 
         // Background cloud sync on every home screen visit
@@ -85,7 +86,65 @@ class HomePageViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         // showcaseAnimationIfNeeded()
-        requestNotificationPermissionIfNeeded()
+        // The disclaimer gates the notification prompt rather than racing it.
+        // Presented together, iOS puts the system alert on top and the
+        // disclaimer is read by nobody — which defeats the point of showing it.
+        // The AI question sits between them for the same reason: one prompt at
+        // a time, each answered before the next appears.
+        presentMedicalDisclaimerIfNeeded { [weak self] in
+            self?.requestAIConsentIfNeeded {
+                self?.requestNotificationPermissionIfNeeded()
+            }
+        }
+
+        // Pre-warm the speech model now the app is up and interactive, rather
+        // than on the launch path where it risks the watchdog. Idempotent.
+        WhisperDetectionManager.shared.prewarm()
+    }
+
+    // MARK: - Medical disclaimer (Guideline 1.4.1)
+
+    /// Shown once, before the user reads their first fluency score.
+    ///
+    /// Spasht reports percentages produced by automated speech analysis and
+    /// describes itself as a coach; without saying plainly what those numbers
+    /// are not, that reads as a clinical claim. Shown here rather than during
+    /// onboarding so it lands in the same session as the first real result,
+    /// and so guests see it too.
+    /// - Parameter completion: runs once the disclaimer is dismissed, or
+    ///   immediately when it has already been acknowledged.
+    private func presentMedicalDisclaimerIfNeeded(completion: @escaping () -> Void) {
+        guard !AppState.hasSeenMedicalDisclaimer, presentedViewController == nil else {
+            completion()
+            return
+        }
+
+        let alert = UIAlertController(
+            title: "Before you start",
+            message: LegalLinks.medicalDisclaimer,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "I Understand", style: .default) { _ in
+            AppState.hasSeenMedicalDisclaimer = true
+            completion()
+        })
+        present(alert, animated: true)
+    }
+
+    // MARK: - AI data sharing (Guideline 5.1.2(i))
+
+    /// Asks a signed-in user, once, whether their data may go to Groq.
+    ///
+    /// Asked here because Home is where the first AI call would happen — the
+    /// daily insight — and until they answer, `GroqService` sends nothing and
+    /// the insight comes from the on-device fallbacks. Guests are never asked:
+    /// AI features are account-only.
+    private func requestAIConsentIfNeeded(completion: @escaping () -> Void) {
+        guard AIConsent.needsPrompt, presentedViewController == nil else {
+            completion()
+            return
+        }
+        AIConsent.requestPermission(from: self) { _ in completion() }
     }
 
     /// Asks for notification permission exactly once — but ONLY after the user has
@@ -232,6 +291,15 @@ class HomePageViewController: UIViewController {
     func setupNotificationCentre() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("ProgressDataUpdated"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleProfileUpdate), name: NSNotification.Name("dailyTasksUpdated"), object: nil)
+
+        // A sheet presented over this screen doesn't re-run viewWillAppear when
+        // it closes, so changing the photo in the profile sheet would otherwise
+        // leave a stale button behind until the next visit.
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshProfileButton), name: AvatarStore.didChangeNotification, object: nil)
+    }
+
+    @objc private func refreshProfileButton() {
+        setupRightBarButtons()
     }
 
     @objc func handleProfileUpdate() {
@@ -286,8 +354,13 @@ class HomePageViewController: UIViewController {
     }
 
     private func configureNavigationBar() {
+        setupBarAppearance()
         setupLeftTitle()
         setupRightBarButtons()
+    }
+
+    private func setupBarAppearance() {
+        //PageBarAppearance.apply(to: self)
     }
 
     private func setupLeftTitle() {
@@ -317,12 +390,15 @@ class HomePageViewController: UIViewController {
         profileBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 4)
 
         let profileConfig = UIImage.SymbolConfiguration(scale: .large)
-        let profileImage = UIImage(systemName: "person.crop.circle.fill", withConfiguration: profileConfig)?
-            .withTintColor(.buttonTheme, renderingMode: .alwaysOriginal)
+        let profileImage = AvatarStore.circularImage(
+            for: LogManager.shared.getCurrentUserId(), diameter: 30)
+            ?? UIImage(systemName: "person.crop.circle.fill", withConfiguration: profileConfig)?
+                .withTintColor(.buttonTheme, renderingMode: .alwaysOriginal)
 
         profileBtnConfig.image = profileImage
         profileButton.configuration = profileBtnConfig
         profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
+        profileButton.accessibilityLabel = "Profile"
         let profileItem = UIBarButtonItem(customView: profileButton)
 
         // 2. Streak Button Setup
@@ -363,26 +439,7 @@ class HomePageViewController: UIViewController {
             present(profileNav, animated: true)
 
         } else {
-            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-            let nextModalVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewController")
-
-            // 1. Wrap your destination in a Navigation Controller
-            // This allows you to have a navigation bar and push/pop logic inside the modal.
-            let navController = UINavigationController(rootViewController: nextModalVC)
-
-            // 2. Enable Large Titles on the Navigation Bar
-            navController.navigationBar.prefersLargeTitles = true
-
-            // 3. Configure the Sheet (Modal) behavior
-            // We apply the presentation style to the navigation controller itself.
-            navController.modalPresentationStyle = .pageSheet
-            if let sheet = navController.sheetPresentationController {
-                sheet.detents = [.large()]
-                sheet.prefersGrabberVisible = true
-            }
-
-            // 4. Present the Navigation Controller
-            present(navController, animated: true)
+            AuthScreens.present(.signUp, from: self)
         }
     }
 
@@ -592,40 +649,22 @@ class HomePageViewController: UIViewController {
 
     // MARK: - Tab Onboarding Gates
 
+    // These three switch tabs and nothing more. They used to push
+    // "ExerciseOnboarding" / "ReadAloudOnboarding" / "ConversationOnboarding",
+    // none of which exist in Home.storyboard — wiring any of them to a control
+    // would have crashed on the first tap. The per-module intro screens the
+    // gate was reaching for already live on the tabs themselves.
+
     @IBAction func exerciseTapped(_ sender: UIButton) {
-        print("DEBUG [HomePageViewController]: exerciseTapped — isExercisesCompleted=\(AppState.isExercisesCompleted)")
-        if AppState.isExercisesCompleted {
-            // Already seen onboarding — go straight to Exercise tab
-            self.tabBarController?.selectedIndex = 1
-        } else {
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "ExerciseOnboarding")
-            self.navigationController?.pushViewController(onboardingVC, animated: true)
-        }
+        tabBarController?.selectedIndex = 1
     }
 
     @IBAction func readAloudTapped(_ sender: UIButton) {
-        print("DEBUG [HomePageViewController]: readAloudTapped — isReadAloudCompleted=\(AppState.isReadAloudCompleted)")
-        if AppState.isReadAloudCompleted {
-            // Already seen onboarding — go straight to Read Aloud tab
-            self.tabBarController?.selectedIndex = 2
-        } else {
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "ReadAloudOnboarding")
-            self.navigationController?.pushViewController(onboardingVC, animated: true)
-        }
+        tabBarController?.selectedIndex = 2
     }
 
     @IBAction func conversationTapped(_ sender: UIButton) {
-        print("DEBUG [HomePageViewController]: conversationTapped — isConvoCompleted=\(AppState.isConvoCompleted)")
-        if AppState.isConvoCompleted {
-            // Already seen onboarding — go straight to Conversation tab
-            self.tabBarController?.selectedIndex = 3
-        } else {
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            let onboardingVC = storyboard.instantiateViewController(withIdentifier: "ConversationOnboarding")
-            self.navigationController?.pushViewController(onboardingVC, animated: true)
-        }
+        tabBarController?.selectedIndex = 3
     }
 
 }

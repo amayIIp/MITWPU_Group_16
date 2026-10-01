@@ -156,7 +156,7 @@ class SupabaseSyncManager {
         }
 
         let syncStartTime = istFormatter.string(from: Date())
-        print("☁️ Starting cloud sync for user: \(userId)")
+        print("☁️ Starting cloud sync")
 
         if AwardsManager.shared.db == nil {
             AwardsManager.shared.openDatabase()
@@ -300,6 +300,11 @@ class SupabaseSyncManager {
                 print("☁️ Pushed corrected onboarding status upward to cloud")
             }
         }
+
+        // Best-effort and deliberately not thrown: a missing avatar must never
+        // fail the sign-in transaction this runs inside.
+        await AvatarStore.syncWithCloud(userId: userId)
+
         print("Profile restored.")
     }
 

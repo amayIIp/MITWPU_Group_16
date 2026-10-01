@@ -20,6 +20,17 @@ struct AppState {
     static let kReadAloudCompleted       = "readAloud.isCompleted"
     static let kConvoCompleted           = "convo.isCompleted"
 
+    /// Whether the user has acknowledged the medical disclaimer.
+    /// Deliberately NOT cleared by resetModuleOnboarding() or by account
+    /// deletion — it is a property of the person using the device, and
+    /// re-showing it on every sign-out would be nagging, not informing.
+    static let kMedicalDisclaimerSeen    = "legal.medicalDisclaimerSeen"
+
+    static var hasSeenMedicalDisclaimer: Bool {
+        get { UserDefaults.standard.bool(forKey: kMedicalDisclaimerSeen) }
+        set { UserDefaults.standard.set(newValue, forKey: kMedicalDisclaimerSeen) }
+    }
+
     static var isLoginCompleted: Bool {
         get { UserDefaults.standard.bool(forKey: kLoginCompleted) }
         set { UserDefaults.standard.set(newValue, forKey: kLoginCompleted) }

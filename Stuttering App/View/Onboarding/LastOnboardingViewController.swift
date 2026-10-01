@@ -138,7 +138,7 @@ class LastOnboardingViewController: UIViewController {
     func setupResults(report: StutterJSONReport) {
         blocks.text = "\(Int(report.percentages.blocks))%"
         repitition.text = "\(Int(report.percentages.repetition))%"
-        prolongation.text = "\(Int(report.percentages.prolongation))%"
+        prolongation.text = String(format: "%.1f%%", report.percentages.prolongation)
         loadTroubledWords(words: report.stutteredWords)
 
         if !hasSavedData {

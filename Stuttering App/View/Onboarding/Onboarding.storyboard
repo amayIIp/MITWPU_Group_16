@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="TwK-Tn-5kw">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="UPJ-sX-5LM">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
@@ -37,10 +37,9 @@
                                                     <constraint firstAttribute="height" constant="50" id="zxF-6I-5vk"/>
                                                 </constraints>
                                                 <state key="normal" title="Button"/>
-                                                <buttonConfiguration key="configuration" style="filled" title="Create Account" cornerStyle="capsule">
+                                                <buttonConfiguration key="configuration" style="filled" title="Get Started" cornerStyle="capsule">
                                                     <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
-                                                    <color key="baseForegroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                                    <color key="baseBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="signUpTapped:" destination="QqP-2e-2ML" eventType="touchUpInside" id="1hK-Nx-Dyp"/>
@@ -52,20 +51,14 @@
                                                     <constraint firstAttribute="height" constant="50" id="9SK-Df-ofM"/>
                                                 </constraints>
                                                 <state key="normal" title="Button"/>
-                                                <buttonConfiguration key="configuration" style="filled" title="Get Started" cornerStyle="capsule">
-                                                    <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
-                                                    <color key="baseBackgroundColor" name="ButtonThemeMain"/>
+                                                <buttonConfiguration key="configuration" style="plain" title="I already have an account">
+                                                    <fontDescription key="titleFontDescription" style="UICTFontTextStyleSubhead"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="signInTapped:" destination="QqP-2e-2ML" eventType="touchUpInside" id="0TU-bD-bbJ"/>
                                                 </connections>
                                             </button>
                                         </subviews>
-                                        <variation key="default">
-                                            <mask key="subviews">
-                                                <exclude reference="0mP-7F-HIq"/>
-                                            </mask>
-                                        </variation>
                                     </stackView>
                                 </subviews>
                                 <color key="backgroundColor" name="bg"/>
@@ -1867,9 +1860,6 @@ to say?</string>
                                                 <buttonConfiguration key="configuration" style="plain" title="Continue as guest">
                                                     <fontDescription key="titleFontDescription" style="UICTFontTextStyleFootnote"/>
                                                 </buttonConfiguration>
-                                                <connections>
-                                                    <segue destination="r2J-MU-bcO" kind="presentation" modalPresentationStyle="fullScreen" id="j59-D5-VXm"/>
-                                                </connections>
                                             </button>
                                         </subviews>
                                     </stackView>
@@ -1941,7 +1931,7 @@ to say?</string>
         <!--Navigation Controller-->
         <scene sceneID="wD3-70-jBR">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="r2J-MU-bcO" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="OnboardingNameNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="r2J-MU-bcO" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="r2e-On-Dz7"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="yBa-r3-XIf">

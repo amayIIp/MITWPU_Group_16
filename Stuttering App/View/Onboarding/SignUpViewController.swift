@@ -1,6 +1,7 @@
 import UIKit
 import Supabase
 import GoogleSignIn
+import AuthenticationServices
 
 class SignUpViewController: UIViewController, UITextFieldDelegate {
 
@@ -17,12 +18,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     private let client = SupabaseManager.shared.client
     var onSwitchToSignin: (() -> Void)?
     private var loadingOverlay: WaveLoadingOverlay?
+    private var keyboardAvoider: KeyboardAvoider?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        keyboardAvoider = KeyboardAvoider(view: view)
         setupUI()
         setupTextField()
         googleSignIn.addTarget(self, action: #selector(googleSignInTapped), for: .touchUpInside)
+        AppleSignInManager.installButton(above: googleSignIn,
+                                         target: self,
+                                         action: #selector(appleSignInTapped))
         setupDismissButtonIfNeeded()
     }
 
@@ -54,7 +60,15 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         // Hide "Continue as Guest" if they are already a guest upgrading their account
         if SessionManager.shared.isGuestMode {
             continueAsGuest?.isHidden = true
+        } else {
+            // The storyboard has never had an action on this button, so until now
+            // it did nothing at all — the guest path only worked from sign-in.
+            continueAsGuest?.addTarget(self,
+                                       action: #selector(continueAsGuestTapped),
+                                       for: .touchUpInside)
         }
+
+        installLegalLinks()
 
         // --- Fat-finger fix: ensure minimum 44pt touch targets ---
         applyButtonInsets(to: continueAsGuest, top: 12, leading: 16, bottom: 12, trailing: 16)
@@ -72,6 +86,100 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         passwordTextField.rightViewMode = .always
     }
 
+    @objc private func continueAsGuestTapped() {
+        GuestEntry.start(from: self)
+    }
+
+    // MARK: - Email confirmation
+
+    /// Shown when Supabase has email confirmation switched on, so `signUp`
+    /// returns without a session.
+    ///
+    /// Previously this was a bare "check your email" alert that dropped the user
+    /// back on the same form with no next step and no way to ask for another
+    /// email — a dead end if the first one never arrived, which is exactly the
+    /// situation a reviewer creating a test account can land in.
+    private func presentConfirmationPending(email: String) {
+        let alert = UIAlertController(
+            title: "Confirm Your Email",
+            message: "We've sent a confirmation link to \(email). Tap it, then sign in.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Resend Email", style: .default) { _ in
+            self.resendConfirmation(to: email)
+        })
+        alert.addAction(UIAlertAction(title: "Go to Sign In", style: .default) { _ in
+            self.switchToSignIn()
+        })
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func resendConfirmation(to email: String) {
+        Task {
+            do {
+                try await client.auth.resend(email: email, type: .signup)
+                await MainActor.run {
+                    self.showAlert(message: "Sent again. Check your inbox, and your spam folder.")
+                }
+            } catch {
+                await MainActor.run {
+                    self.showAlert(message: error.localizedDescription)
+                }
+            }
+        }
+    }
+
+    /// Same transition as the "Sign In" link at the bottom of the form.
+    private func switchToSignIn() {
+        guard let presentingVC = self.presentingViewController else { return }
+        self.dismiss(animated: true) {
+            let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+            let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+            let navController = UINavigationController(rootViewController: loginVC)
+            navController.navigationBar.prefersLargeTitles = true
+            navController.modalPresentationStyle = .pageSheet
+            if let sheet = navController.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.prefersGrabberVisible = true
+            }
+            presentingVC.present(navController, animated: true)
+        }
+    }
+
+    // MARK: - Legal links (Guideline 5.1.1(i))
+
+    /// Adds the privacy/terms/support row to the sign-up sheet.
+    ///
+    /// This is the screen where a user actually hands over personal data, so it
+    /// is where the policy most needs to be reachable. It is also the only
+    /// screen guests can get to from the home screen, which makes it their one
+    /// route to the privacy policy.
+    private func installLegalLinks() {
+        guard let anchor = continueAsGuest, let parent = anchor.superview else { return }
+
+        let row = LegalLinks.makeLinkRow(
+            target: self,
+            privacyAction: #selector(openPrivacy),
+            termsAction: #selector(openTerms),
+            supportAction: #selector(openSupport)
+        )
+
+        if let stack = parent as? UIStackView {
+            stack.addArrangedSubview(row)
+        } else {
+            parent.addSubview(row)
+            NSLayoutConstraint.activate([
+                row.centerXAnchor.constraint(equalTo: anchor.centerXAnchor),
+                row.topAnchor.constraint(equalTo: anchor.bottomAnchor, constant: 4)
+            ])
+        }
+    }
+
+    @objc private func openPrivacy() { LegalLinks.open(LegalLinks.privacyPolicy, from: self) }
+    @objc private func openTerms()   { LegalLinks.open(LegalLinks.termsOfUse, from: self) }
+    @objc private func openSupport() { LegalLinks.openSupport(from: self) }
+
     // NEW ACTION: Connect your button's "Touch Up Inside" to this
     @IBAction func togglePasswordVisibility(_ sender: UIButton) {
         passwordTextField.isSecureTextEntry.toggle()
@@ -84,6 +192,79 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         if let text = passwordTextField.text {
             passwordTextField.text = nil
             passwordTextField.text = text
+        }
+    }
+
+    // MARK: - Shared post-registration
+
+    /// Everything that has to happen after a successful registration, whichever
+    /// provider it came from. Unlike the login path this *pushes* local data up
+    /// rather than pulling it down — a new account starts from whatever the
+    /// user built in guest mode.
+    ///
+    /// `displayName` is applied only when the profile doesn't already have one,
+    /// so a provider that gives us nothing can't blank out a real name.
+    private func completeSignUp(userId: String, displayName: String?) async throws {
+        SessionManager.shared.startAccountSession(userId: userId)
+        LogManager.shared.initializeUserIfNeeded()
+
+        LogManager.shared.migrateGuestData(to: userId)
+
+        var profile = LogManager.shared.getProfile(userId: userId)
+            ?? UserProfile(id: userId, isOnboardingCompleted: false)
+        if let displayName, !displayName.isEmpty,
+           profile.firstName?.trimmingCharacters(in: .whitespaces).isEmpty ?? true {
+            profile.firstName = displayName
+        }
+        LogManager.shared.saveProfile(profile)
+
+        // ISSUE-09 fix: await the push so we only navigate after data
+        // is safely in the cloud (no navigation-before-push data loss).
+        try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
+
+        AppState.isLoginCompleted = true
+    }
+
+    @objc private func appleSignInTapped() {
+        showLoading(message: "Connecting with Apple")
+
+        Task {
+            do {
+                let result = try await AppleSignInManager.shared.signIn(presentingFrom: self)
+
+                try await completeSignUp(userId: result.supabaseUserId,
+                                         displayName: result.fullName)
+
+                // Apple hands the name over exactly once, on first authorization.
+                // completeSignUp has already stored it locally; this also puts it
+                // in Supabase user metadata.
+                if let name = result.fullName {
+                    await AppleSignInManager.shared.persistFirstAuthorizationName(
+                        name, userId: result.supabaseUserId)
+                }
+
+                // Lets account deletion revoke the Apple grant later (Phase 3).
+                if let code = result.authorizationCode {
+                    await AccountDeletionService.shared.registerAppleAuthorizationCode(code)
+                }
+
+                await MainActor.run {
+                    self.hideLoading()
+                    self.handleNavigationLogic()
+                }
+
+            } catch AppleSignInManager.AppleSignInError.cancelled,
+                    AppleSignInManager.AppleSignInError.alreadyInProgress {
+                // Backing out of the Apple sheet is a choice, not an error, and
+                // a double-tap that lost the race isn't one either.
+                await MainActor.run { self.hideLoading() }
+
+            } catch {
+                await MainActor.run {
+                    self.hideLoading()
+                    self.showAlert(message: error.localizedDescription)
+                }
+            }
         }
     }
 
@@ -130,7 +311,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     await MainActor.run {
                         self.hideLoading()
                         self.signUpButton.isEnabled = true
-                        self.showAlert(message: "Account created! Please check your email to confirm your account before logging in.")
+                        self.presentConfirmationPending(email: email)
                     }
                     return
                 }
@@ -138,19 +319,8 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 // ISSUE-11 fix: use the userId from authResponse directly.
                 // Do NOT re-fetch from LogManager which may still hold the guest ID.
                 let userId = authResponse.user.id.uuidString
-                SessionManager.shared.startAccountSession(userId: userId)
-                LogManager.shared.initializeUserIfNeeded()
 
-                LogManager.shared.migrateGuestData(to: userId)
-                var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
-                profile.firstName = name
-                LogManager.shared.saveProfile(profile)
-
-                // ISSUE-09 fix: await the push so we only navigate after data
-                // is safely in the cloud (no navigation-before-push data loss).
-                try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
-
-                AppState.isLoginCompleted = true
+                try await completeSignUp(userId: userId, displayName: name)
 
                 await MainActor.run {
                     self.hideLoading()
@@ -255,18 +425,10 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 guard let supabaseUser = SupabaseManager.shared.currentUser else { return }
                 // ISSUE-11 fix: use the confirmed Supabase user ID directly.
                 let userId = supabaseUser.id.uuidString
-                SessionManager.shared.startAccountSession(userId: userId)
-                LogManager.shared.initializeUserIfNeeded()
 
-                LogManager.shared.migrateGuestData(to: userId)
-                var profile = LogManager.shared.getProfile(userId: userId) ?? UserProfile(id: userId, isOnboardingCompleted: false)
-                if let displayName = result.user.profile?.name { profile.firstName = displayName }
-                LogManager.shared.saveProfile(profile)
+                try await completeSignUp(userId: userId,
+                                         displayName: result.user.profile?.name)
 
-                // ISSUE-09 fix: await push before navigating.
-                try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
-
-                AppState.isLoginCompleted = true
                 await MainActor.run {
                     self.hideLoading()
                     self.handleNavigationLogic()

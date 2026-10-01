@@ -85,7 +85,17 @@ Spasht/
    ```
 3. **Configure API Keys & Signing**
    - In Xcode, go to *Signing & Capabilities* and set your Apple Developer Team.
-   - If using the AI conversation fallback, ensure your Groq API key is set in `AppSecrets.swift`.
+   - Create your secrets file from the template:
+     ```bash
+     cp "Stuttering App/AppSecrets.example.swift" "Stuttering App/AppSecrets.swift"
+     ```
+     Then fill in the Groq API key (Groq console → API Keys) and the Supabase
+     publishable key (Supabase → Project Settings → API).
+
+   > ⚠️ `AppSecrets.swift` is gitignored and must stay that way. Everything in it is
+   > compiled into the binary as a plain string and is recoverable from a shipped IPA,
+   > so it holds only keys that are safe to be public. Never commit a filled-in copy,
+   > and never add a provider key that isn't meant to be world-readable.
 4. **Build & Run** on your connected iPhone (`Cmd + R`).
 
 ---
@@ -95,7 +105,8 @@ Spasht/
 Spasht is built with a privacy-first mindset:
 - **Zero Audio Uploads:** Raw audio is processed strictly on-device using `SFSpeechRecognizer`. Your voice never leaves your phone.
 - **Local First:** All fluency analytics and heatmaps are stored locally in SQLite. 
-- **Optional Cloud Sync:** Users can opt-in to sync their *scores* (not audio) to a secure Supabase backend to track progress across devices. Guest mode completely disables all network traffic.
+- **Optional Cloud Sync:** Users can opt-in to sync their *scores* (not audio) to a secure Supabase backend to track progress across devices. Guest mode stores everything locally and makes no Supabase calls.
+- **AI features reach a third party, and require an account:** post-session feedback and the conversation partner send text (session metrics, or the transcript of what you said) to Groq. They are disabled in guest mode, where nothing leaves the device. No audio is ever sent, in any mode.
 
 ---
 

@@ -27,8 +27,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = launchStoryboard.instantiateInitialViewController() ?? UIViewController()
         window.makeKeyAndVisible()
 
+
         // 2. Restore session using SessionManager
         Task {
+            await SessionManager.shared.prepareFreshInstallIfNeeded()
             let restoredMode = await SessionManager.shared.restoreSession()
 
             // Initialize the correct user context
@@ -99,7 +101,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         guard let url = URLContexts.first?.url else { return }
+
+        // Password-recovery links come back on the spasht:// scheme. Checked
+        // first because GoogleSignIn will happily swallow a URL that isn't its
+        // own and return true.
+        if PasswordRecovery.isRecoveryLink(url) {
+            PasswordRecovery.handle(url, from: topMostViewController())
+            return
+        }
+
         GIDSignIn.sharedInstance.handle(url)
+    }
+
+    /// The controller a recovery prompt should be presented from — whatever is
+    /// currently on screen, which may be a modally presented sign-in sheet.
+    private func topMostViewController() -> UIViewController? {
+        var top = window?.rootViewController
+        while let presented = top?.presentedViewController {
+            top = presented
+        }
+        return top
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {}

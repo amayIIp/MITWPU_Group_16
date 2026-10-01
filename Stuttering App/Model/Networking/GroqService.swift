@@ -2,49 +2,81 @@
 //  GroqService.swift
 //  Stuttering App
 //
-//  Groq API service for conversation mode.
-//  Uses the OpenAI-compatible chat completions endpoint
-//  with Llama 3.3 70B for fast, reliable responses.
+//  Groq-backed text generation, routed through the `groq-chat` Edge Function.
+//
+//  The Groq API key used to live here as a Swift string constant, which meant it
+//  shipped inside the app binary and was recoverable from the IPA with `strings`
+//  — anyone could bill inference to the account. The key now exists only as a
+//  function secret; this client sends the caller's Supabase session instead, or
+//  a device id when the user is a guest with no account.
+//
+//  The request and response shapes are unchanged (OpenAI-compatible chat
+//  completions), so `extractText` and the retry logic still apply as written.
 //
 
 import Foundation
+import Supabase
 
 class GroqService {
 
     static let shared = GroqService()
 
-    // Read securely from AppSecrets
-    private let apiKey = AppSecrets.groqAPIKey
-    private let model  = "llama-3.3-70b-versatile"
-
-    private let baseURL = "https://api.groq.com/openai/v1/chat/completions"
+    /// The `groq-chat` Edge Function. The model is chosen server-side now, so
+    /// changing it no longer needs an app update.
+    private let baseURL = "https://zolaxhyjzkvupkmogdpo.supabase.co/functions/v1/groq-chat"
 
     /// Max retries for rate-limited (429) responses
     private let maxRetries = 3
 
     private init() {}
 
-    // MARK: - Single-Turn Generation (Insight Engine)
+    /// The AI features are account-only (decision D6).
+    ///
+    /// This is what lets the `groq-chat` Edge Function require a real user
+    /// token instead of accepting anonymous callers, and it keeps guest mode
+    /// genuinely local-only: nothing a guest does leaves the device.
+    ///
+    /// Every caller already handles a nil return by falling back to
+    /// rule-based text, so guests degrade rather than break. The conversation
+    /// partner is the exception — its fallback is an apology loop — so that
+    /// feature is gated at the screen instead, in `VoiceViewController`.
+    ///
+    /// Signed-in users must also have agreed to share data with Groq, which is
+    /// what Guideline 5.1.2(i) requires before anything is sent — see `AIConsent`.
+    var isAvailable: Bool { SessionManager.shared.isAccountMode && AIConsent.isGranted }
 
-    /// Send a prompt with system instructions to Groq and return the text response.
-    /// Returns `nil` on any failure so the caller can fall back to rule-based logic.
-    func generate(systemInstruction: String, prompt: String) async -> String? {
+    // MARK: - Request construction
+
+    /// Builds a request to the proxy.
+    ///
+    /// Always authorised with the user's Supabase session — `isAvailable` has
+    /// already established there is an account, and the `groq-chat` function
+    /// refuses anything that isn't a real user token. There is deliberately no
+    /// anonymous or device-id path; an earlier version had one, back when guests
+    /// could use the AI features.
+    private func proxiedRequest(messages: [[String: String]],
+                                temperature: Double,
+                                maxTokens: Int,
+                                timeout: TimeInterval) async -> URLRequest? {
         guard let url = URL(string: baseURL) else {
             print("GroqService: Invalid URL")
             return nil
         }
 
-        let messages: [[String: String]] = [
-            ["role": "system", "content": systemInstruction],
-            ["role": "user", "content": prompt]
+        let body: [String: Any] = [
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": maxTokens
         ]
 
-        let body: [String: Any] = [
-            "model": model,
-            "messages": messages,
-            "temperature": 0.7,
-            "max_tokens": 200
-        ]
+        // Account-only, so there is always a session here. No anonymous
+        // fallback: the proxy requires a real user token.
+        guard let session = try? await SupabaseManager.shared.client.auth.session,
+              !session.isExpired else {
+            print("GroqService: no valid session — skipping AI call")
+            return nil
+        }
+        let token = session.accessToken
 
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
             print("GroqService: Failed to serialize request body")
@@ -53,10 +85,29 @@ class GroqService {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-        request.timeoutInterval = 10
+        request.timeoutInterval = timeout
+        return request
+    }
+
+    // MARK: - Single-Turn Generation (Insight Engine)
+
+    /// Send a prompt with system instructions to Groq and return the text response.
+    /// Returns `nil` on any failure so the caller can fall back to rule-based logic.
+    func generate(systemInstruction: String, prompt: String) async -> String? {
+        guard isAvailable else { return nil }
+
+        let messages: [[String: String]] = [
+            ["role": "system", "content": systemInstruction],
+            ["role": "user", "content": prompt]
+        ]
+
+        guard let request = await proxiedRequest(messages: messages,
+                                                 temperature: 0.7,
+                                                 maxTokens: 200,
+                                                 timeout: 10) else { return nil }
 
         return await performWithRetry(request: request, label: "Generate")
     }
@@ -66,34 +117,17 @@ class GroqService {
     /// Generate long-form content (e.g., reading passages).
     /// Uses a higher token limit and longer timeout than the insight generator.
     func generateLongForm(systemInstruction: String, prompt: String) async -> String? {
-        guard let url = URL(string: baseURL) else {
-            print("GroqService: Invalid URL")
-            return nil
-        }
+        guard isAvailable else { return nil }
 
         let messages: [[String: String]] = [
             ["role": "system", "content": systemInstruction],
             ["role": "user", "content": prompt]
         ]
 
-        let body: [String: Any] = [
-            "model": model,
-            "messages": messages,
-            "temperature": 0.75,
-            "max_tokens": 4096
-        ]
-
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            print("GroqService: Failed to serialize request body")
-            return nil
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-        request.timeoutInterval = 30
+        guard let request = await proxiedRequest(messages: messages,
+                                                 temperature: 0.75,
+                                                 maxTokens: 4096,
+                                                 timeout: 30) else { return nil }
 
         return await performWithRetry(request: request, label: "LongForm")
     }
@@ -106,10 +140,7 @@ class GroqService {
     func generateChat(systemInstruction: String,
                       history: [(role: String, text: String)],
                       latestUserMessage: String) async -> String? {
-        guard let url = URL(string: baseURL) else {
-            print("GroqService: Invalid URL")
-            return nil
-        }
+        guard isAvailable else { return nil }
 
         // Build OpenAI-style messages array
         var messages: [[String: String]] = [
@@ -122,24 +153,10 @@ class GroqService {
 
         messages.append(["role": "user", "content": latestUserMessage])
 
-        let body: [String: Any] = [
-            "model": model,
-            "messages": messages,
-            "temperature": 0.8,
-            "max_tokens": 150
-        ]
-
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            print("GroqService: Failed to serialize request body")
-            return nil
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-        request.timeoutInterval = 15
+        guard let request = await proxiedRequest(messages: messages,
+                                                 temperature: 0.8,
+                                                 maxTokens: 150,
+                                                 timeout: 15) else { return nil }
 
         return await performWithRetry(request: request, label: "Chat")
     }

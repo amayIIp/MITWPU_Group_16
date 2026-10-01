@@ -25,6 +25,7 @@ class SessionManager {
         static let deviceId        = "session.deviceId"
         static let lastUserId      = "session.lastUserId"
         static let lastSyncDate    = "LastDeltaSyncDate"
+        static let installSeen     = "session.installSeen"
     }
 
     // MARK: - Properties
@@ -48,7 +49,7 @@ class SessionManager {
         }
         let newId = UUID().uuidString
         UserDefaults.standard.set(newId, forKey: Keys.deviceId)
-        print("🚪 [SESSION] Generated new deviceId: \(newId)")
+        print("🚪 [SESSION] Generated a new deviceId")
         return newId
     }
 
@@ -87,7 +88,7 @@ class SessionManager {
     var hasActiveSession: Bool { currentMode != .none }
 
     private init() {
-        print("🚪 [SESSION] Initialized — mode: \(currentMode.rawValue), deviceId: \(deviceId)")
+        print("🚪 [SESSION] Initialized — mode: \(currentMode.rawValue)")
     }
 
     // MARK: - Session Lifecycle
@@ -96,7 +97,7 @@ class SessionManager {
     /// Always pairs with LogManager guest initialisation so that
     /// getCurrentUserId() never returns nil for a guest user.
     func startGuestSession() {
-        print("🚪 [SESSION] Starting GUEST session with deviceId: \(deviceId)")
+        print("🚪 [SESSION] Starting GUEST session")
         currentMode = .guest
         lastUserId = nil
         AppState.isLoginCompleted = true
@@ -107,7 +108,7 @@ class SessionManager {
 
     /// Transition to account session after successful Supabase auth
     func startAccountSession(userId: String) {
-        print("🚪 [SESSION] Starting ACCOUNT session for userId: \(userId)")
+        print("🚪 [SESSION] Starting ACCOUNT session")
         currentMode = .account
         lastUserId = userId
 
@@ -151,7 +152,44 @@ class SessionManager {
         // restoreSession() cannot restore this session on next launch.
         try? await SupabaseManager.shared.client.auth.signOut()
 
-        print("🚪 [SESSION] Session ended. DeviceId preserved: \(preservedDeviceId)")
+        print("🚪 [SESSION] Session ended; deviceId preserved")
+    }
+
+    /// Clears anything a previous install left behind, before the session is
+    /// restored.
+    ///
+    /// Deleting an iOS app wipes its UserDefaults but *not* its keychain, and
+    /// Supabase keeps the auth token in the keychain. So a reinstall starts
+    /// with `currentMode == .none` — correctly showing the landing page — while
+    /// the SDK still holds a live session for the previous user. Sign-up then
+    /// sees a non-nil `currentUser` where it expects nil and takes the wrong
+    /// branch, and a stale token is left on a device the user thought they had
+    /// cleared.
+    ///
+    /// The marker lives in UserDefaults precisely because it dies with the
+    /// install: its absence is what identifies a fresh one.
+    func prepareFreshInstallIfNeeded() async {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: Keys.installSeen) else { return }
+
+        // An app updating from a build that predates this marker also arrives
+        // here with no marker, and signing those users out would be a bug of
+        // its own. A genuine fresh install has *empty* UserDefaults, so any
+        // trace of a previous run means this is an upgrade: adopt the marker
+        // and leave the session alone.
+        let hasPriorState = defaults.string(forKey: Keys.deviceId) != nil
+            || defaults.string(forKey: Keys.userMode) != nil
+        guard !hasPriorState else {
+            print("🚪 [SESSION] Existing install — adopting install marker, session untouched")
+            defaults.set(true, forKey: Keys.installSeen)
+            return
+        }
+
+        print("🚪 [SESSION] Fresh install — clearing any keychain session left by a previous one")
+        try? await SupabaseManager.shared.client.auth.signOut()
+
+        currentMode = .none
+        defaults.set(true, forKey: Keys.installSeen)
     }
 
     /// Restore session on app launch — determines which mode to enter

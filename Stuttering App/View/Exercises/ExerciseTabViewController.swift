@@ -52,6 +52,7 @@ class ExerciseTabViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        //PageBarAppearance.apply(to: self)
         forceRefreshUI()
     }
 
@@ -71,7 +72,11 @@ class ExerciseTabViewController: UIViewController {
         let overlay = ModuleOnboardingOverlayView(
             subtitle: "Targeted exercises to improve your speech fluency and confidence.",
             features: features,
-            footerText: "Progress is synced with your profile. Manage goals in Settings."
+            // Guests never reach Settings — the profile button sends them to the
+            // sign-up sheet instead — so pointing them there is a dead end.
+            footerText: SessionManager.shared.isAccountMode
+                ? "Progress is synced with your profile. Manage goals in Settings."
+                : "Progress is saved on this device."
         )
         overlay.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(overlay)

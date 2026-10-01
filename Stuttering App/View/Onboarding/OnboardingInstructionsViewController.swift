@@ -19,6 +19,23 @@ class OnboardingInstructionsViewController: UIViewController {
         }
     }
 
+    /// Closed from the moment Continue is tapped until the screen has finished
+    /// reacting to that tap.
+    ///
+    /// Both of the button's jobs used to be re-entrant: the page change takes
+    /// 0.6s of animation before the label reads differently, and "Start the
+    /// test" waits on two permission callbacks before the countdown begins. A
+    /// second tap inside either window skipped a page, or pushed a second copy
+    /// of the test onto the navigation stack.
+    private var isAdvancing = false
+
+    /// `isEnabled` would grey the button out for the 0.6s of the page change,
+    /// which reads as a glitch, so interaction is what gets switched off.
+    private func setAdvancing(_ advancing: Bool) {
+        isAdvancing = advancing
+        continueButton.isUserInteractionEnabled = !advancing
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -40,6 +57,9 @@ class OnboardingInstructionsViewController: UIViewController {
         self.instructionLabel.text = instructions[currentPage]
 
         self.navigationItem.setHidesBackButton(false, animated: false)
+
+        // Coming back from the test screen leaves the button locked otherwise.
+        setAdvancing(false)
     }
 
     func setupUI() {
@@ -79,7 +99,9 @@ class OnboardingInstructionsViewController: UIViewController {
                         self.instructionLabel.alpha = 1
                         self.instructionLabel.transform = .identity
                     },
-                    completion: nil
+                    completion: { _ in
+                        self.setAdvancing(false)
+                    }
                 )
             }
         )
@@ -146,15 +168,24 @@ class OnboardingInstructionsViewController: UIViewController {
     }
 
     func navigateToTestVC() {
+        // Last line of defence: if anything has already pushed, don't push again.
+        guard navigationController?.topViewController === self else { return }
+
         let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
         let testVC = storyboard.instantiateViewController(withIdentifier: "TestVC")
         self.navigationController?.pushViewController(testVC, animated: true)
     }
 
     @IBAction func continueButtonTapped(_ sender: UIButton) {
+        guard !isAdvancing else { return }
+        setAdvancing(true)
+
         if currentPage < instructions.count - 1 {
+            // Re-opened by animateInstructionChange's completion.
             currentPage += 1
         } else {
+            // Stays closed until the permission prompts come back: either the
+            // countdown takes over, or showPermissionAlert re-opens it.
             checkPermissionsAndStart()
         }
     }
@@ -167,7 +198,7 @@ class OnboardingInstructionsViewController: UIViewController {
                 case .denied, .restricted, .notDetermined:
                     self?.showPermissionAlert(message: "Speech recognition is required for this test.")
                 @unknown default:
-                    break
+                    self?.setAdvancing(false)
                 }
             }
         }
@@ -186,6 +217,8 @@ class OnboardingInstructionsViewController: UIViewController {
     }
 
     private func showPermissionAlert(message: String) {
+        setAdvancing(false)
+
         let alert = UIAlertController(title: "Permissions Required", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
             if let settingsURL = URL(string: UIApplication.openSettingsURLString) {

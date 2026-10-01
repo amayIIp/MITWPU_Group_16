@@ -8,6 +8,7 @@
 import UIKit
 import Supabase
 import GoogleSignIn
+import AuthenticationServices
 
 class LoginViewController: UIViewController {
 
@@ -23,6 +24,7 @@ class LoginViewController: UIViewController {
     var onSwitchToSignup: (() -> Void)?
 
     private var loadingOverlay: WaveLoadingOverlay?
+    private var keyboardAvoider: KeyboardAvoider?
 
     private func showLoading(message: String = "Signing you in") {
         guard loadingOverlay == nil else { return }
@@ -37,9 +39,13 @@ class LoginViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        keyboardAvoider = KeyboardAvoider(view: view)
         setupUI()
         forgotPassword.addTarget(self, action: #selector(forgotPasswordTapped), for: .touchUpInside)
         googleSignIn.addTarget(self, action: #selector(googleSignInTapped), for: .touchUpInside)
+        AppleSignInManager.installButton(above: googleSignIn,
+                                         target: self,
+                                         action: #selector(appleSignInTapped))
         setupDismissButtonIfNeeded()
     }
 
@@ -66,10 +72,16 @@ class LoginViewController: UIViewController {
         // Hide "Continue as Guest" if they are already a guest upgrading their account
         if SessionManager.shared.isGuestMode {
             continueAsGuest?.isHidden = true
+        } else {
+            continueAsGuest?.addTarget(self,
+                                       action: #selector(continueAsGuestTapped),
+                                       for: .touchUpInside)
         }
 
         // --- Fat-finger fix: ensure minimum 44pt touch targets ---
         applyButtonInsets(to: continueAsGuest, top: 12, leading: 16, bottom: 12, trailing: 16)
+
+        installLegalLinks()
 
         passwordTextField.isSecureTextEntry = true
 
@@ -85,6 +97,40 @@ class LoginViewController: UIViewController {
         passwordTextField.rightView = passwordToggleButton
         passwordTextField.rightViewMode = .always
     }
+    // MARK: - Legal links (Guideline 5.1.1(i))
+
+    /// The sign-up sheet has carried this row for a while; sign-in is the other
+    /// screen where credentials are handed over, and it is the screen the
+    /// landing page's secondary button leads to, so it needs the same links.
+    private func installLegalLinks() {
+        guard let anchor = continueAsGuest, let parent = anchor.superview else { return }
+
+        let row = LegalLinks.makeLinkRow(
+            target: self,
+            privacyAction: #selector(openPrivacy),
+            termsAction: #selector(openTerms),
+            supportAction: #selector(openSupport)
+        )
+
+        if let stack = parent as? UIStackView {
+            stack.addArrangedSubview(row)
+        } else {
+            parent.addSubview(row)
+            NSLayoutConstraint.activate([
+                row.centerXAnchor.constraint(equalTo: anchor.centerXAnchor),
+                row.topAnchor.constraint(equalTo: anchor.bottomAnchor, constant: 4)
+            ])
+        }
+    }
+
+    @objc private func openPrivacy() { LegalLinks.open(LegalLinks.privacyPolicy, from: self) }
+    @objc private func openTerms()   { LegalLinks.open(LegalLinks.termsOfUse, from: self) }
+    @objc private func openSupport() { LegalLinks.openSupport(from: self) }
+
+    @objc private func continueAsGuestTapped() {
+        GuestEntry.start(from: self)
+    }
+
     @IBAction func togglePasswordVisibility(_ sender: UIButton) {
         passwordTextField.isSecureTextEntry.toggle()
 
@@ -101,6 +147,117 @@ class LoginViewController: UIViewController {
                 passwordTextField.text = nil
                 passwordTextField.text = text
             }
+    }
+
+    // MARK: - Shared post-authentication
+
+    /// Everything that has to happen after a successful authentication,
+    /// whichever provider it came from. Previously copy-pasted between the
+    /// email and Google paths; Apple would have made three copies.
+    ///
+    /// Transactional (Q1). The old ordering reset all three local databases and
+    /// *then* pulled the user's data down, so a sync failure left the user
+    /// signed in with nothing while the alert blamed their password. The
+    /// databases are now photocopied first and put back if any part of the
+    /// sync throws, so a failed sign-in leaves the device exactly as it was.
+    private func completeSignIn(userId: String) async throws {
+        // Guest data has to go up before anything is reset, and it is genuinely
+        // destructive to retry, so it stays outside the transaction.
+        if SessionManager.shared.isGuestMode {
+            LogManager.shared.migrateGuestData(to: userId)
+            try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
+        }
+
+        let previousMode = SessionManager.shared.currentMode
+        let previousOnboarding = AppState.isOnboardingCompleted
+        let snapshot = LocalDataSnapshot.capture()
+
+        do {
+            SessionManager.shared.startAccountSession(userId: userId)
+
+            LogManager.shared.resetDatabaseForNewUser()
+            DatabaseManager.shared.resetDatabaseForNewUser()
+            AwardsManager.shared.resetDatabaseForNewUser()
+            AppState.resetModuleOnboarding()
+            LogManager.shared.initializeUserIfNeeded()
+
+            AppState.isOnboardingCompleted = false
+
+            try await SupabaseSyncManager.shared.syncAllDataFromCloud()
+
+            // Restore cloud completions BEFORE checkForNewDay.
+            // reapplyDailyTaskCompletions marks the locally-inserted tasks as
+            // completed so that checkForNewDay sees a non-empty, partially-done
+            // list and does NOT wipe it.
+            await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
+
+            // Now checkForNewDay. If today's tasks were just restored from the
+            // cloud they already exist locally, so the guard in checkForNewDay
+            // bails out early (no reset, no cloud push).
+            //
+            // The caller then navigates, and must NOT push daily tasks back to
+            // the cloud: the cloud is already the source of truth, and pushing
+            // here would overwrite completed=true rows with completed=false.
+            await MainActor.run {
+                let logic = LogicMaker()
+                logic.checkForNewDay(isFromLogin: true)
+            }
+
+            snapshot?.discard()
+
+        } catch {
+            // Put the device back exactly as it was, then let the caller show
+            // the error. Without this the user is signed in with wiped data.
+            snapshot?.restore()
+            AppState.isOnboardingCompleted = previousOnboarding
+            if previousMode == .guest {
+                SessionManager.shared.startGuestSession()
+            } else {
+                await SessionManager.shared.endSession()
+            }
+            throw error
+        }
+    }
+
+    @objc private func appleSignInTapped() {
+        showLoading(message: "Connecting with Apple")
+
+        Task {
+            do {
+                let result = try await AppleSignInManager.shared.signIn(presentingFrom: self)
+
+                try await completeSignIn(userId: result.supabaseUserId)
+
+                // Apple hands the name over exactly once, on first authorization.
+                if let name = result.fullName {
+                    await AppleSignInManager.shared.persistFirstAuthorizationName(
+                        name, userId: result.supabaseUserId)
+                }
+
+                // Lets account deletion revoke the Apple grant later (Phase 3).
+                if let code = result.authorizationCode {
+                    await AccountDeletionService.shared.registerAppleAuthorizationCode(code)
+                }
+
+                await MainActor.run {
+                    self.hideLoading()
+                    self.performLoginTransition()
+                }
+
+            } catch AppleSignInManager.AppleSignInError.cancelled,
+                    AppleSignInManager.AppleSignInError.alreadyInProgress {
+                // Backing out of the Apple sheet is a choice, not an error, and
+                // a double-tap that lost the race isn't one either.
+                await MainActor.run { self.hideLoading() }
+
+            } catch {
+                await MainActor.run {
+                    self.hideLoading()
+                    self.showAlert(title: "Sign in with Apple Failed",
+                                   message: error.localizedDescription)
+                }
+            }
+        }
     }
 
     @IBAction func loginButtonTapped(_ sender: UIButton) {
@@ -121,42 +278,9 @@ class LoginViewController: UIViewController {
                 guard let userId = SupabaseManager.shared.currentUser?.id.uuidString else {
                     throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID after login"])
                 }
-                if SessionManager.shared.isGuestMode {
-                    LogManager.shared.migrateGuestData(to: userId)
-                    try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
-                }
 
-                SessionManager.shared.startAccountSession(userId: userId)
+                try await completeSignIn(userId: userId)
 
-                LogManager.shared.resetDatabaseForNewUser()
-                DatabaseManager.shared.resetDatabaseForNewUser()
-                AwardsManager.shared.resetDatabaseForNewUser()
-                AppState.resetModuleOnboarding()
-                LogManager.shared.initializeUserIfNeeded()
-
-                AppState.isOnboardingCompleted = false
-
-                // Flat async chain — errors bubble to the single catch block below
-                // so the loading overlay is always dismissed.
-                try await SupabaseSyncManager.shared.syncAllDataFromCloud()
-
-                // Step 1: Restore cloud completions FIRST, before checkForNewDay.
-                // reapplyDailyTaskCompletions marks the locally-inserted tasks as
-                // completed so that checkForNewDay sees a non-empty, partially-done
-                // list and does NOT wipe it.
-                await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
-
-                // Step 2: Now checkForNewDay. If today's tasks were just restored
-                // from the cloud they will already exist locally, so the guard in
-                // checkForNewDay will bail out early (no reset, no cloud push).
-                await MainActor.run {
-                    let logic = LogicMaker()
-                    logic.checkForNewDay(isFromLogin: true)
-                }
-
-                // Step 3: Navigate — do NOT push daily tasks back to cloud here.
-                // The cloud is already the source of truth; pushing at this point
-                // would overwrite completed=true rows with completed=false.
                 await MainActor.run {
                     self.continueButton.isEnabled = true
                     self.hideLoading()
@@ -199,9 +323,12 @@ class LoginViewController: UIViewController {
     private func sendPasswordReset(email: String) {
         Task {
             do {
-                try await client.auth.resetPasswordForEmail(email)
+                try await PasswordRecovery.sendResetEmail(to: email)
                 DispatchQueue.main.async {
-                    self.showAlert(title: "Email Sent ✅", message: "Check your inbox for a password reset link.")
+                    self.showAlert(
+                        title: "Email Sent",
+                        message: "Check your inbox and tap the link — it opens Spasht so you can set a new password."
+                    )
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -251,29 +378,8 @@ class LoginViewController: UIViewController {
                 guard let userId = SupabaseManager.shared.currentUser?.id.uuidString else {
                     throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID after Google login"])
                 }
-                if SessionManager.shared.isGuestMode {
-                    LogManager.shared.migrateGuestData(to: userId)
-                    try await SupabaseSyncManager.shared.pushAllLocalDataToCloud()
-                }
 
-                SessionManager.shared.startAccountSession(userId: userId)
-
-                LogManager.shared.resetDatabaseForNewUser()
-                DatabaseManager.shared.resetDatabaseForNewUser()
-                AwardsManager.shared.resetDatabaseForNewUser()
-                AppState.resetModuleOnboarding()
-                LogManager.shared.initializeUserIfNeeded()
-
-                AppState.isOnboardingCompleted = false
-
-                // Flat async chain — errors bubble to the single catch block below.
-                try await SupabaseSyncManager.shared.syncAllDataFromCloud()
-                await SupabaseSyncManager.shared.reapplyDailyTaskCompletions()
-
-                await MainActor.run {
-                    let logic = LogicMaker()
-                    logic.checkForNewDay(isFromLogin: true)
-                }
+                try await completeSignIn(userId: userId)
 
                 await MainActor.run {
                     self.hideLoading()

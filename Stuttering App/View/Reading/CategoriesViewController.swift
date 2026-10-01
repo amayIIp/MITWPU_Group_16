@@ -24,6 +24,7 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        //PageBarAppearance.apply(to: self)
         setupCollectionView()
         setupButtons()
         setupKeyboardDismiss()
@@ -44,7 +45,9 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
         let overlay = ModuleOnboardingOverlayView(
             subtitle: "Practice your speaking skills by reading through the list of curated topics.",
             features: features,
-            footerText: "Progress is synced with your profile."
+            footerText: SessionManager.shared.isAccountMode
+                ? "Progress is synced with your profile."
+                : "Progress is saved on this device."
         )
         overlay.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(overlay)
@@ -332,9 +335,16 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
         self.view.isUserInteractionEnabled = false
 
         Task {
-            let paragraph = await BackgroundParagraphManager.shared.awaitParagraph(
-                for: topic, troubledLetters: troubledLetters
-            )
+            // Bounded: this spinner used to wait on the on-device model with
+            // no limit, and stayed up indefinitely when the model was busy.
+            // Past the deadline the reader gets the offline passage instead;
+            // the AI one keeps generating and is cached for their next read.
+            let manager = BackgroundParagraphManager.shared
+            manager.beginForegroundWork()
+            let paragraph = await withDeadline(seconds: Self.storyDeadline) {
+                await manager.awaitParagraph(for: topic, troubledLetters: troubledLetters)
+            } ?? nil
+            manager.endForegroundWork()
 
             await MainActor.run {
                 loadingOverlay.dismiss()
@@ -352,6 +362,9 @@ class CategoriesViewController: UIViewController, UICollectionViewDelegate, UICo
             }
         }
     }
+
+    /// How long "Generating your story" may stay up before falling back.
+    private static let storyDeadline: TimeInterval = 20
 
     func getFallbackContent(for topic: String) -> String {
         let normalized = topic.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()

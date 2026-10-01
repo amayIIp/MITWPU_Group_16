@@ -126,6 +126,16 @@ actor InsightEngine {
         parts.append("Accuracy: \(Int(report.percentages.correct))%.")
         parts.append("Repetition percentage: \(Int(report.percentages.repetition))%.")
         parts.append("Prolongation percentage: \(Int(report.percentages.prolongation))%.")
+        parts.append("Misread word percentage: \(Int(report.percentages.misread))%.")
+        // Percent syllables stuttered is the clinical measure; the banded
+        // severity is what actually tells the model how the session went.
+        parts.append("Percent syllables stuttered: \(String(format: "%.1f", report.percentages.stutteredSyllables))% (\(report.severity)).")
+        if !report.isReliable {
+            parts.append("Note: this session was very short, so treat the figures as provisional.")
+        }
+        if !report.acousticAnalysisRan {
+            parts.append("Note: audio analysis did not run, so blocks and prolongations are unmeasured — do not comment on them.")
+        }
 
         if !report.stutteredWords.isEmpty {
             let topWords = report.stutteredWords.prefix(5).joined(separator: ", ")
@@ -142,6 +152,11 @@ actor InsightEngine {
         Write a short, warm, specific insight about this session. \
         Maximum 2 sentences. Do not include any numbers.
         """
+    }
+
+    /// The rule-based sentence on its own, for when the AI tiers ran out of time.
+    func sessionInsightOffline(report: StutterJSONReport) -> String {
+        sessionInsightRuleBased(report: report)
     }
 
     private func sessionInsightRuleBased(report: StutterJSONReport) -> String {

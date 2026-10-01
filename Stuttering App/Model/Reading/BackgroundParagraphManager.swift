@@ -1,6 +1,11 @@
 import Foundation
 
-class BackgroundParagraphManager {
+/// Main-actor isolated because `inFlightTasks` is shared between the launch
+/// batch, on-demand requests and replacements. Those used to run on arbitrary
+/// executors and mutate the dictionary concurrently. The generation itself
+/// still runs off the main thread inside `AIParagraphGenerator`.
+@MainActor
+final class BackgroundParagraphManager {
     static let shared = BackgroundParagraphManager()
 
     private let topics = [
@@ -12,9 +17,19 @@ class BackgroundParagraphManager {
 
     private init() {}
 
+    // MARK: - Foreground priority
+
+    /// Screens the user is waiting on. While any exist, the batch holds off
+    /// starting its next passage so the on-device model is free for them.
+    private var foregroundWaiters = 0
+
+    /// Brackets AI work a user is actively waiting on — the story they picked,
+    /// the analysis of the reading they just finished.
+    func beginForegroundWork() { foregroundWaiters += 1 }
+    func endForegroundWork() { foregroundWaiters = max(0, foregroundWaiters - 1) }
+
     // MARK: - Initial Batch (called at app launch)
 
-    @MainActor
     func startInitialBatch() {
         print("DEBUG: BackgroundParagraphManager starting initial batch.")
 
@@ -51,13 +66,8 @@ class BackgroundParagraphManager {
         let lowerTopic = topic.lowercased()
 
         // 1. Already cached in UserDefaults — fast path
-        let cached: String? = await MainActor.run {
-            UserDefaults.standard.string(forKey: key)
-        }
-        if let cached = cached {
-            await MainActor.run {
-                UserDefaults.standard.removeObject(forKey: key)
-            }
+        if let cached = UserDefaults.standard.string(forKey: key) {
+            UserDefaults.standard.removeObject(forKey: key)
             print("DEBUG: Consumed cached paragraph for '\(topic)'. Queuing background replacement.")
             queueReplacement(topic: topic, troubledLetters: troubledLetters)
             return cached
@@ -68,9 +78,7 @@ class BackgroundParagraphManager {
             print("DEBUG: Background generation in-flight for '\(topic)'. Awaiting...")
             let result = await existingTask.value
             if result != nil {
-                await MainActor.run {
-                    UserDefaults.standard.removeObject(forKey: key)
-                }
+                UserDefaults.standard.removeObject(forKey: key)
                 queueReplacement(topic: topic, troubledLetters: troubledLetters)
             }
             return result
@@ -80,6 +88,9 @@ class BackgroundParagraphManager {
         print("DEBUG: No cache or in-flight task for '\(topic)'. Generating on-demand.")
         let result = await generateSingle(topic: topic, troubledLetters: troubledLetters)
         if result != nil {
+            // generateSingle caches in case the caller gave up waiting; the
+            // caller didn't, so this one is consumed now.
+            UserDefaults.standard.removeObject(forKey: key)
             queueReplacement(topic: topic, troubledLetters: troubledLetters)
         }
         return result
@@ -93,10 +104,15 @@ class BackgroundParagraphManager {
         for (index, topic) in topics.enumerated() {
             let lowerTopic = topic.lowercased()
 
-            // Skip if already cached (another path may have generated it)
-            let alreadyCached: Bool = await MainActor.run {
-                UserDefaults.standard.string(forKey: getStorageKey(for: topic)) != nil
+            // Let a screen the user is waiting on have the model first. The
+            // passage already being written can't be interrupted, but the
+            // next one doesn't start until they're served.
+            while foregroundWaiters > 0 {
+                try? await Task.sleep(nanoseconds: 500_000_000)
             }
+
+            // Skip if already cached (another path may have generated it)
+            let alreadyCached = UserDefaults.standard.string(forKey: getStorageKey(for: topic)) != nil
             if alreadyCached {
                 print("DEBUG: '\(topic)' already cached. Skipping.")
                 continue
@@ -107,9 +123,7 @@ class BackgroundParagraphManager {
                     print("DEBUG: Starting actual AI generation for '\(topic)'.")
                     let text = try await AIParagraphGenerator.shared.generate(for: troubledLetters, topic: topic)
                     print("DEBUG: AI generation complete for '\(topic)'. Storing in UserDefaults.")
-                    await MainActor.run {
-                        UserDefaults.standard.set(text, forKey: self.getStorageKey(for: topic))
-                    }
+                    UserDefaults.standard.set(text, forKey: self.getStorageKey(for: topic))
                     return text
                 } catch {
                     print("DEBUG: Failed to generate paragraph for '\(topic)': \(error.localizedDescription)")
@@ -135,7 +149,12 @@ class BackgroundParagraphManager {
         let task = Task<String?, Never> {
             do {
                 print("DEBUG: On-demand AI generation for '\(topic)'.")
-                return try await AIParagraphGenerator.shared.generate(for: troubledLetters, topic: topic)
+                let text = try await AIParagraphGenerator.shared.generate(for: troubledLetters, topic: topic)
+                // Cached straight away: if the reader's screen stopped waiting
+                // and fell back to other text, this is ready for next time
+                // instead of thrown away.
+                UserDefaults.standard.set(text, forKey: self.getStorageKey(for: topic))
+                return text
             } catch {
                 print("DEBUG: On-demand generation failed for '\(topic)': \(error.localizedDescription)")
                 return nil

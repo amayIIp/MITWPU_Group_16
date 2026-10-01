@@ -274,6 +274,19 @@ extension AwardsManager {
         return result
     }
 
+    /// Closes the SQLite connection without deleting the file. See
+    /// `LogManager.closeDatabaseForRestore()`.
+    func closeDatabaseForRestore() {
+        if db != nil {
+            sqlite3_close(db)
+            db = nil
+        }
+    }
+
+    func reopenDatabaseAfterRestore() {
+        openDatabase()
+    }
+
     func resetDatabaseForNewUser() {
         // 1. Safely close the existing SQLite connection in memory
         if db != nil {

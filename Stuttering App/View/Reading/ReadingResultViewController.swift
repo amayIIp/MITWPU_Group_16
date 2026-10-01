@@ -208,7 +208,7 @@ class ReadingResultViewController: UIViewController {
         readingTime.text = report.duration
         blockPercentage.text = "\(Int(report.percentages.blocks))"
         repetitionPercentage.text = "\(Int(report.percentages.repetition))"
-        prolongationPercentage.text = "\(Int(report.percentages.prolongation))"
+        prolongationPercentage.text = String(format: "%.1f", report.percentages.prolongation)
 
         loadTroubledWords(words: report.stutteredWords)
         LogManager.shared.debugPrintAllReadingSessions()

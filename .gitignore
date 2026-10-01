@@ -113,5 +113,11 @@ Stuttering App/openai_whisper-tiny.en/
 ###############################
 # API Keys & Secrets
 ###############################
-Stuttering App/Networking/AppSecrets.swift
-Stuttering App/Model/Networking/AppSecrets.swift
+# Match AppSecrets.swift wherever it sits in the tree. The previous rules
+# named two specific paths and the file was moved to a third, so it sat
+# untracked-but-unignored and one `git add .` away from being committed.
+AppSecrets.swift
+!AppSecrets.example.swift
+
+# Apple Sign in with Apple private keys — never commit
+*.p8

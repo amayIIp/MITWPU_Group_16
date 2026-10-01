@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mYL-Ay-kqI">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="25098" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mYL-Ay-kqI">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="25073"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -70,7 +70,7 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="329" height="91.666666666666671"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="98t-FQ-yR4">
-                                                        <rect key="frame" x="0.0" y="3.0000000000000036" width="35" height="31.333333333333325"/>
+                                                        <rect key="frame" x="0.0" y="2.3333333333333357" width="35" height="32.666666666666664"/>
                                                         <color key="tintColor" name="ButtonTheme"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="35" id="oIX-lR-S2F"/>
@@ -101,7 +101,7 @@
                                                 <rect key="frame" x="0.0" y="120.66666666666666" width="329" height="91.666666666666657"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="zXy-eM-I7A">
-                                                        <rect key="frame" x="0.0" y="-1.3333333333333321" width="35" height="37"/>
+                                                        <rect key="frame" x="0.0" y="-2" width="35" height="38.333333333333329"/>
                                                         <color key="tintColor" name="ButtonTheme"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="35" id="l7t-Mz-lZP"/>
@@ -317,7 +317,7 @@
                                                         <rect key="frame" x="10" y="19.999999999999996" width="333" height="40.666666666666657"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="HII-rE-zeN">
-                                                                <rect key="frame" x="0.0" y="-1" width="27" height="41.333333333333329"/>
+                                                                <rect key="frame" x="0.0" y="-1.3333333333333321" width="27" height="41.999999999999986"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" constant="27" id="j1Y-gL-i5y"/>
                                                                 </constraints>
@@ -381,7 +381,7 @@
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="chevron.forward" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="WkJ-oD-cMU">
-                                                                <rect key="frame" x="300" y="2" width="13" height="21"/>
+                                                                <rect key="frame" x="300" y="1.6666666666666661" width="13" height="21.666666666666671"/>
                                                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="24.670000000000002" id="dgV-2t-TPB"/>
@@ -432,7 +432,7 @@
                                                                         <rect key="frame" x="0.0" y="0.0" width="142.66666666666666" height="20.333333333333332"/>
                                                                         <subviews>
                                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="checkmark.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="mdI-0i-6lY">
-                                                                                <rect key="frame" x="0.0" y="0.66666666666666607" width="20" height="19"/>
+                                                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="20" height="19.666666666666661"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" constant="20" id="Hmo-ep-rUu"/>
                                                                                 </constraints>
@@ -449,7 +449,7 @@
                                                                         <rect key="frame" x="0.0" y="28.333333333333343" width="142.66666666666666" height="20.333333333333329"/>
                                                                         <subviews>
                                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="checkmark.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Qnh-1y-VTl">
-                                                                                <rect key="frame" x="0.0" y="0.66666666666666607" width="20" height="19"/>
+                                                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="20" height="19.666666666666661"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" constant="20" id="ooI-qO-SeL"/>
                                                                                 </constraints>
@@ -466,7 +466,7 @@
                                                                         <rect key="frame" x="0.0" y="56.666666666666693" width="142.66666666666666" height="20.333333333333336"/>
                                                                         <subviews>
                                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="checkmark.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Bge-Kj-fJ4">
-                                                                                <rect key="frame" x="0.0" y="0.66666666666666607" width="20" height="19"/>
+                                                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="20" height="19.666666666666661"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" constant="20" id="Fz4-jc-Ptm"/>
                                                                                 </constraints>
@@ -483,7 +483,7 @@
                                                                         <rect key="frame" x="0.0" y="85" width="142.66666666666666" height="20.333333333333329"/>
                                                                         <subviews>
                                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="checkmark.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="TLh-NS-Ohn">
-                                                                                <rect key="frame" x="0.0" y="0.66666666666666607" width="20" height="19"/>
+                                                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="20" height="19.666666666666661"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" constant="20" id="uDC-WI-LnL"/>
                                                                                 </constraints>
@@ -500,7 +500,7 @@
                                                                         <rect key="frame" x="0.0" y="113.33333333333334" width="142.66666666666666" height="20.333333333333343"/>
                                                                         <subviews>
                                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="checkmark.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="024-Zc-8mc">
-                                                                                <rect key="frame" x="0.0" y="0.66666666666666607" width="20" height="19"/>
+                                                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="20" height="19.666666666666661"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" constant="20" id="Asw-bI-mCn"/>
                                                                                 </constraints>
@@ -649,7 +649,7 @@
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="chevron.forward" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Vty-mq-2jD">
-                                                                <rect key="frame" x="300" y="2" width="13" height="21"/>
+                                                                <rect key="frame" x="300" y="1.6666666666666661" width="13" height="21.666666666666671"/>
                                                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="24.670000000000002" id="ESb-xJ-IrN"/>
@@ -717,7 +717,7 @@
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="chevron.forward" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Ms9-Yc-a7j">
-                                                                <rect key="frame" x="142" y="16" width="13" height="21"/>
+                                                                <rect key="frame" x="142" y="15.666666666666668" width="13" height="21.666666666666668"/>
                                                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="24.670000000000002" id="Bno-eA-Trx"/>
@@ -783,7 +783,7 @@
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="chevron.forward" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="3kp-bA-2nD">
-                                                                <rect key="frame" x="142" y="16" width="13" height="21"/>
+                                                                <rect key="frame" x="142" y="15.666666666666668" width="13" height="21.666666666666668"/>
                                                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="24.670000000000002" id="Bda-Ws-EnX"/>
@@ -1011,7 +1011,7 @@
                                 <rect key="frame" x="84.333333333333329" y="163" width="224.66666666666669" height="135"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="flame.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="rco-sU-DC9">
-                                        <rect key="frame" x="0.0" y="-0.3333333333333286" width="100" height="134.66666666666669"/>
+                                        <rect key="frame" x="0.0" y="-0.6666666666666714" width="100" height="135.33333333333331"/>
                                         <color key="tintColor" red="0.9296875" green="0.42430091619999999" blue="0.46125762910000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="100" id="Dg1-F5-YXS"/>
@@ -1109,7 +1109,7 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="329" height="69.666666666666671"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" image="scope" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Pfu-GX-d5O">
-                                                        <rect key="frame" x="0.0" y="-2" width="35" height="41"/>
+                                                        <rect key="frame" x="0.0" y="-2.6666666666666679" width="35" height="42.333333333333329"/>
                                                         <color key="tintColor" name="ButtonTheme"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="35" id="GMP-sH-euW"/>
@@ -1139,7 +1139,7 @@
                                                 <rect key="frame" x="0.0" y="98.666666666666657" width="329" height="69.666666666666657"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" image="chart.line.uptrend.xyaxis" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="2eZ-Uq-T3T">
-                                                        <rect key="frame" x="0.0" y="2.6666666666666679" width="35" height="32"/>
+                                                        <rect key="frame" x="0.0" y="2" width="35" height="33.333333333333343"/>
                                                         <color key="tintColor" name="ButtonTheme"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="35" id="gTU-SR-ZWz"/>
@@ -1169,7 +1169,7 @@
                                                 <rect key="frame" x="0.0" y="197.33333333333334" width="329" height="69.666666666666657"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" image="calendar" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Ujh-s8-zdT">
-                                                        <rect key="frame" x="0.0" y="2.6666666666666679" width="35" height="32"/>
+                                                        <rect key="frame" x="0.0" y="2" width="35" height="33.333333333333343"/>
                                                         <color key="tintColor" name="ButtonTheme"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="35" id="jv6-Ca-ChJ"/>
@@ -1266,7 +1266,7 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="329" height="91.666666666666671"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" image="microphone.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="R1k-JR-cbP">
-                                                        <rect key="frame" x="0.0" y="-0.3333333333333357" width="35" height="36.333333333333336"/>
+                                                        <rect key="frame" x="0.0" y="-1.0000000000000036" width="35" height="37.666666666666671"/>
                                                         <color key="tintColor" name="ButtonTheme"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="35" id="ZHr-Ax-oP4"/>
@@ -1296,7 +1296,7 @@
                                                 <rect key="frame" x="0.0" y="120.66666666666669" width="329" height="91.666666666666686"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.80000000000000004" contentMode="scaleAspectFit" image="person.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="JJO-mC-VeS">
-                                                        <rect key="frame" x="0.0" y="3.0000000000000036" width="35" height="31.333333333333325"/>
+                                                        <rect key="frame" x="0.0" y="2.3333333333333357" width="35" height="32.666666666666664"/>
                                                         <color key="tintColor" name="ButtonTheme"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="35" id="xT7-x7-X6B"/>
@@ -1381,7 +1381,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="ZCJ-29-2vO">
-                                        <rect key="frame" x="136" y="218.66666666666663" width="81" height="81"/>
+                                        <rect key="frame" x="136" y="218.33333333333329" width="81" height="81.666666666666657"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="83.670000000000002" id="Gir-cC-Lcl"/>
                                             <constraint firstAttribute="width" constant="81" id="pUo-yf-di7"/>
@@ -1530,19 +1530,19 @@
     <resources>
         <image name="FirstStep" width="500" height="500"/>
         <image name="Warmup" width="110" height="110"/>
-        <image name="calendar" catalog="system" width="128" height="107"/>
-        <image name="chart.bar.fill" catalog="system" width="128" height="90"/>
-        <image name="chart.line.uptrend.xyaxis" catalog="system" width="128" height="102"/>
-        <image name="checkmark.circle" catalog="system" width="128" height="123"/>
-        <image name="checkmark.circle.fill" catalog="system" width="128" height="123"/>
-        <image name="chevron.forward" catalog="system" width="97" height="128"/>
-        <image name="flame.fill" catalog="system" width="106" height="128"/>
-        <image name="house" catalog="system" width="128" height="104"/>
-        <image name="microphone.fill" catalog="system" width="110" height="128"/>
-        <image name="person.circle" catalog="system" width="128" height="123"/>
-        <image name="person.fill" catalog="system" width="128" height="120"/>
-        <image name="scope" catalog="system" width="128" height="124"/>
-        <image name="sparkles" catalog="system" width="115" height="128"/>
+        <image name="calendar" catalog="system" width="128" height="111"/>
+        <image name="chart.bar.fill" catalog="system" width="128" height="93"/>
+        <image name="chart.line.uptrend.xyaxis" catalog="system" width="128" height="106"/>
+        <image name="checkmark.circle" catalog="system" width="128" height="128"/>
+        <image name="checkmark.circle.fill" catalog="system" width="128" height="128"/>
+        <image name="chevron.forward" catalog="system" width="93" height="128"/>
+        <image name="flame.fill" catalog="system" width="103" height="128"/>
+        <image name="house" catalog="system" width="128" height="108"/>
+        <image name="microphone.fill" catalog="system" width="107" height="128"/>
+        <image name="person.circle" catalog="system" width="128" height="128"/>
+        <image name="person.fill" catalog="system" width="128" height="125"/>
+        <image name="scope" catalog="system" width="128" height="128"/>
+        <image name="sparkles" catalog="system" width="112" height="128"/>
         <namedColor name="ButtonTheme">
             <color red="0.59215686274509804" green="0.62745098039215685" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
@@ -1550,25 +1550,25 @@
             <color red="0.92941176470588238" green="0.90980392156862744" blue="0.93333333333333335" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.53333333329999999" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.53333333333333333" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGray2Color">
-            <color red="0.68235294120000001" green="0.68235294120000001" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
-            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemOrangeColor">
-            <color red="1" green="0.55294117649999996" blue="0.15686274510000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.55294117647058827" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

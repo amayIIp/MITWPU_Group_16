@@ -136,6 +136,18 @@ class NotificationManager {
     // MARK: - Cancel Today's Reminders
 
     /// Call this when the user completes all daily TASKS today.
+    /// Removes every scheduled and delivered notification.
+    ///
+    /// Used by account deletion: reminders that keep firing after a user has
+    /// deleted their account are both a bad experience and a data-remnant
+    /// problem, since the notification text can carry practice details.
+    func cancelAllNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+        print("🔔 [NOTIFICATIONS] Cancelled all pending and delivered notifications")
+    }
+
     func cancelTodayNightReminder() {
         let dateString = formatDate(Date())
         let taskIdentifier = "night_task_reminder_\(dateString)"

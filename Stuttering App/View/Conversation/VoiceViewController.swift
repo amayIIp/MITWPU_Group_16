@@ -2,6 +2,7 @@
 
 import UIKit
 import AVFoundation
+import FoundationModels
 
 // MARK: - Chat Message Model
 
@@ -130,7 +131,9 @@ class VoiceViewController: UIViewController {
         let overlay = ModuleOnboardingOverlayView(
             subtitle: "Master your speaking skills through real-time AI interaction and feedback.",
             features: features,
-            footerText: "Progress is synced with your profile."
+            footerText: SessionManager.shared.isAccountMode
+                ? "Progress is synced with your profile."
+                : "Progress is saved on this device."
         )
         overlay.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(overlay)
@@ -160,6 +163,7 @@ class VoiceViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        //PageBarAppearance.apply(to: self)
         viewModel.delegate = self
         tabBarController?.delegate = self
 
@@ -174,6 +178,43 @@ class VoiceViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+
+        // Conversation practice is account-only (D6): it is the one feature
+        // whose fallback — apologising and asking the user to repeat
+        // themselves — is worse than not offering it. Gated here rather than at
+        // the home-screen card because the tab bar reaches this screen directly.
+        if SessionManager.shared.isGuestMode {
+            GuestUpgradePrompt.present(
+                from: self,
+                featureName: "Conversation practice",
+                reason: "Conversation practice sends what you say to an AI partner, so it needs an account. Everything else in Spasht works in guest mode and stays on your device."
+            ) { [weak self] in
+                self?.tabBarController?.selectedIndex = 0
+            }
+            return
+        }
+
+        // Signed in but hasn't agreed to share with Groq (Guideline 5.1.2(i)).
+        // Only matters when the partner would actually run on Groq: with Apple
+        // Intelligence available it runs on-device and nothing leaves the
+        // phone. Asked afresh each visit rather than only once, because without
+        // it the partner cannot work at all and the question is the only
+        // useful thing this screen can show.
+        if !AIConsent.isGranted, SystemLanguageModel.default.availability != .available {
+            guard presentedViewController == nil else { return }
+            AIConsent.requestPermission(from: self) { [weak self] granted in
+                guard let self else { return }
+                if granted {
+                    if !self.viewModel.isModelReady {
+                        Task { await self.viewModel.prepareModel() }
+                    }
+                } else {
+                    self.tabBarController?.selectedIndex = 0
+                }
+            }
+            return
+        }
+
         if !viewModel.isModelReady {
             Task { await viewModel.prepareModel() }
         }

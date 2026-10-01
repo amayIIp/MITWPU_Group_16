@@ -16,7 +16,7 @@ class AIParagraphGenerator {
         Write a comprehension on "\(topic)".
         Naturally include words starting with these letters: [\(lettersString)].
         Keep the language simple and easy to read.
-        Length should be between 1800 words.
+        Length should be about 450 words.
         Break the content into small readable paragraphs.
         Do not use headings subheadings or bullet points.
         """
@@ -34,8 +34,16 @@ class AIParagraphGenerator {
         if model.availability == .available {
             do {
                 let session = LanguageModelSession(model: model, instructions: instructions)
-                let response = try await session.respond(to: prompt)
-                let rawContent = response.content
+                // The on-device model has a context window of roughly 4,096
+                // tokens shared between prompt and answer, and writes a few
+                // dozen tokens a second. The old 1,800-word request ran for
+                // minutes and could overflow that window outright, which is
+                // what left "Generating your story" on screen. 450 words is
+                // several minutes of reading aloud; the cap stops a model that
+                // ignores the length instruction from running on regardless.
+                let options = GenerationOptions(maximumResponseTokens: Self.maxResponseTokens)
+                let response = try await session.respond(to: prompt, options: options)
+                let rawContent = Self.trimToLastSentence(response.content)
                 return rawContent
                     .replacingOccurrences(of: "\n", with: "\n\n")
                     .replacingOccurrences(of: "\n\n\n", with: "\n\n")
@@ -58,6 +66,19 @@ class AIParagraphGenerator {
         // ── Tier 3: Hardcoded Rule-Based Fallback ──────────────────────
         print("AIParagraphGenerator: Both AI layers failed. Using rule-based fallback.")
         return generateFallbackParagraph(for: topic)
+    }
+
+    /// About 450 words of English, with headroom.
+    private static let maxResponseTokens = 900
+
+    /// A response stopped by the token cap ends mid-sentence; a passage the
+    /// user reads aloud should not. Drops the unfinished tail, unless that
+    /// would throw away most of the text.
+    private static func trimToLastSentence(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let last = trimmed.lastIndex(where: { ".!?".contains($0) }) else { return trimmed }
+        let kept = String(trimmed[...last])
+        return kept.count >= trimmed.count / 2 ? kept : trimmed
     }
 
     // MARK: - Topic Prompt Builder

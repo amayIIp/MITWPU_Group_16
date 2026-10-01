@@ -81,31 +81,11 @@ class FirstPageAnimationViewController: UIViewController {
     // MARK: - Button Actions
 
     @IBAction func signUpTapped(_ sender: UIButton) {
-        presentModal(identifier: "SignUpViewController")
+        AuthScreens.present(.signUp, from: self)
     }
 
     @IBAction func signInTapped(_ sender: UIButton) {
-        presentModal(identifier: "LoginViewController")
-    }
-
-    private func presentModal(identifier: String) {
-        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
-        let nextModalVC = storyboard.instantiateViewController(withIdentifier: identifier)
-
-        // 1. Wrap your destination in a Navigation Controller
-        let navController = UINavigationController(rootViewController: nextModalVC)
-
-        // 2. Enable Large Titles on the Navigation Bar
-        navController.navigationBar.prefersLargeTitles = true
-
-        // 3. Configure the Sheet (Modal) behavior
-        navController.modalPresentationStyle = .pageSheet // Explicitly use pageSheet for the "card" look
-        if let sheet = navController.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-        }
-
-        present(navController, animated: true)
+        AuthScreens.present(.signIn, from: self)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

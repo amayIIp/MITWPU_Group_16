@@ -17,15 +17,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Google Sign-In Setup (Replace YOUR_IOS_CLIENT_ID_HERE with the ID from Google Cloud Console)
          GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: "630158194253-8nfr47iertgg9gku2bfgtn080e6nd1qj.apps.googleusercontent.com")
 
+        // Before any window exists, so every bar in every storyboard picks it up.
+        //PageBarAppearance.installGlobally()
+
         AwardsManager.shared.openDatabase()
         AwardsManager.shared.seedDatabaseIfNeeded()
 
         Task { @MainActor in
             BackgroundParagraphManager.shared.startInitialBatch()
         }
-
-        // Start loading the WhisperKit model in the background immediately
-        _ = WhisperDetectionManager.shared
 
         return true
     }

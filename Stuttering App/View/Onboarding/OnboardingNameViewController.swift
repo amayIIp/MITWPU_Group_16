@@ -53,8 +53,17 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
     }
 
     @objc private func backButtonTapped() {
+        // The guest session only starts on Continue, so there is usually nothing
+        // to tear down here. Unconditionally calling endSession() also cleared
+        // `onboarding.isCompleted` and signed out of Supabase, which is real
+        // damage to do to someone who just tapped Back.
+        guard SessionManager.shared.isGuestMode else {
+            dismiss(animated: true)
+            return
+        }
+
         Task {
-            await SessionManager.shared.endSession()  // cancel the premature guest session
+            await SessionManager.shared.endSession()
             await MainActor.run {
                 self.dismiss(animated: true) {
                     print("🚪 [SESSION] Backed out of guest mode")
@@ -84,7 +93,15 @@ class OnboardingNameViewController: UIViewController, UITextFieldDelegate, UIGes
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        // Optional: Trigger continueButtonTapped here if you want "Done" on the keyboard to auto-continue
+
+        // The keyboard opens over the Continue button on every screen size, so
+        // Done has to be able to finish the screen on its own — otherwise the
+        // only way forward is to guess that tapping the background dismisses
+        // the keyboard. sendActions runs the storyboard's action *and* its
+        // segue, which is what a real tap does.
+        if continueButton.isEnabled {
+            continueButton.sendActions(for: .touchUpInside)
+        }
         return true
     }
 

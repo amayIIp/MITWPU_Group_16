@@ -32,7 +32,12 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     var paragraphLabels: [UILabel] = []
     var currentIndex: Int = 0
 
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
+    /// Not force-unwrapped: `SFSpeechRecognizer(locale:)` returns nil when the
+    /// device has no en-US recognition available — a different region, or
+    /// dictation switched off. As a `let ... !` stored property that crashed
+    /// the instant this controller was created, which is in the middle of
+    /// onboarding, on someone's very first run.
+    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
@@ -40,10 +45,15 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     var startTime: Date?
 
     var recordedTranscript = ""
-    var recordedSegments: [SFTranscriptionSegment] = []
+    // The onboarding test is a single continuous recognition request, so
+    // segment timings already sit on the session clock (offset 0).
+    var recordedSegments: [SpeechSegment] = []
 
     private var tempAudioFile: AVAudioFile?
     private var tempAudioURL: URL?
+    /// The onboarding test records one continuous take, so envelope time and
+    /// segment time both start at zero and need no re-basing.
+    private let envelopeBuilder = SpeechEnvelopeBuilder()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,7 +61,6 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         setupButtons()
         createParagraphLabels()
         highlightParagraph(at: currentIndex, animated: false)
-        setupPermissions()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -67,10 +76,23 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             await MainActor.run {
                 SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
                     DispatchQueue.main.async {
-                        if authStatus == .authorized {
-                            try? self?.startRecording()
-                        } else {
-                            print("Speech recognition not authorized.")
+                        guard let self else { return }
+                        guard authStatus == .authorized else {
+                            // Denying was silent before: the screen stayed up
+                            // recording nothing and the user read the passage to
+                            // a microphone that wasn't listening, then got a 0%
+                            // result with no explanation. App Review denies
+                            // every permission at least once.
+                            self.presentRecordingProblem(
+                                "Spasht needs Speech Recognition to measure your reading. You can turn it on in Settings.",
+                                offerSettings: true)
+                            return
+                        }
+                        do {
+                            try self.startRecording()
+                        } catch {
+                            self.presentRecordingProblem(error.localizedDescription,
+                                                         offerSettings: false)
                         }
                     }
                 }
@@ -83,9 +105,25 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         stopRecording()
     }
 
-    func setupPermissions() {
-        SFSpeechRecognizer.requestAuthorization { _ in
+    /// Tells the user why nothing is being recorded, and offers the one action
+    /// that can fix it. Both paths leave them able to back out of the test
+    /// rather than stranding them on a dead screen.
+    private func presentRecordingProblem(_ message: String, offerSettings: Bool) {
+        let alert = UIAlertController(title: "Can't Record", message: message, preferredStyle: .alert)
+        if offerSettings, let url = URL(string: UIApplication.openSettingsURLString) {
+            alert.addAction(UIAlertAction(title: "Open Settings", style: .default) { _ in
+                UIApplication.shared.open(url)
+            })
         }
+        alert.addAction(UIAlertAction(title: "Go Back", style: .cancel) { [weak self] _ in
+            guard let self else { return }
+            if let nav = self.navigationController, nav.viewControllers.count > 1 {
+                nav.popViewController(animated: true)
+            } else {
+                self.dismiss(animated: true)
+            }
+        })
+        present(alert, animated: true)
     }
 
     func updateWaveform(with magnitude: CGFloat) {
@@ -99,6 +137,14 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
 
         // 3. Feed the data to the custom view (it automatically triggers UI updates)
         waveformView.amplitudes = waveformHistory
+    }
+
+    enum RecordingError: LocalizedError {
+        case recognizerUnavailable
+
+        var errorDescription: String? {
+            "Speech recognition isn't available on this device right now. Check that Dictation is enabled in Settings › General › Keyboard."
+        }
     }
 
     func startRecording() throws {
@@ -117,8 +163,14 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         startTime = Date()
         waveformHistory.removeAll()
         smoothedMagnitude = 0.0
+        envelopeBuilder.reset()
 
-        guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create request") }
+        guard let speechRecognizer, speechRecognizer.isAvailable else {
+            throw RecordingError.recognizerUnavailable
+        }
+        guard let recognitionRequest else {
+            throw RecordingError.recognizerUnavailable
+        }
         recognitionRequest.shouldReportPartialResults = true
         recognitionRequest.requiresOnDeviceRecognition = true
 
@@ -127,7 +179,9 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
                 let newText = result.bestTranscription.formattedString
                 if !newText.isEmpty {
                     self.recordedTranscript = newText
-                    self.recordedSegments = result.bestTranscription.segments
+                    self.recordedSegments = result.bestTranscription.segments.map {
+                        SpeechSegment($0, sessionOffset: 0)
+                    }
                 }
             }
             if let error = error {
@@ -152,6 +206,7 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
             guard let self = self else { return }
             self.recognitionRequest?.append(buffer)
             try? self.tempAudioFile?.write(from: buffer)
+            self.envelopeBuilder.append(buffer)
 
             guard let channelData = buffer.floatChannelData?[0] else { return }
             let frameLength = UInt32(buffer.frameLength)
@@ -197,6 +252,12 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
                 self.waveformHistory = Array(repeating: 0.0, count: self.waveformHistory.count)
                 self.waveformView.amplitudes = self.waveformHistory
             }
+            // Hand the session back. It was activated with .duckOthers and was
+            // never deactivated, so the orange microphone indicator stayed lit
+            // and other apps stayed ducked for the rest of the app's life.
+            try? AVAudioSession.sharedInstance()
+                .setActive(false, options: .notifyOthersOnDeactivation)
+
             print("🛑 Test Recording Stopped.")
         }
     }
@@ -302,25 +363,35 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
         let loadingOverlay = WaveLoadingOverlay.showOnWindow(message: "Analysing your speech")
 
         Task {
+            // Apple's recogniser is primary: it keeps more of the disfluency
+            // Whisper is trained to tidy away, and its word timings belong to
+            // the same transcript being aligned. Whisper only stands in when
+            // Apple heard nothing, and then the timings are dropped rather than
+            // matched against a different engine's words.
             var finalTranscript = self.recordedTranscript
-            if let url = self.tempAudioURL {
+            var timedSegments = self.recordedSegments
+            var acousticEnvelope: SpeechEnvelope? = self.envelopeBuilder.makeEnvelope()
+
+            if finalTranscript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               let url = self.tempAudioURL {
                 do {
                     if let whisperResult = try await WhisperDetectionManager.shared.transcribe(audioURL: url),
                        !whisperResult.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         finalTranscript = whisperResult
-                        print("✅ Using WhisperKit transcript (\(whisperResult.count) chars)")
-                    } else {
-                        print("⚠️ WhisperKit returned empty transcript — keeping Apple Speech result")
+                        timedSegments = []
+                        acousticEnvelope = nil
+                        print("⚠️ Apple Speech returned nothing — using WhisperKit transcript, timing and acoustic analysis skipped")
                     }
                 } catch {
-                    print("WhisperKit failed, falling back to Apple Speech: \(error)")
+                    print("WhisperKit fallback failed: \(error)")
                 }
             }
 
             let jsonResult = StutterAnalyzer.analyze(
                 reference: fullReferenceText,
                 transcript: finalTranscript,
-                segments: self.recordedSegments,
+                segments: timedSegments,
+                envelope: acousticEnvelope,
                 duration: duration
             )
 

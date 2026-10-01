@@ -40,6 +40,22 @@ class ReadingResultViewController2: UIViewController {
     private let repValueLabel  = UILabel()
     private let proValueLabel  = UILabel()
     private let blkValueLabel  = UILabel()
+    private let misValueLabel  = UILabel()
+
+    private let repDetailLabel = UILabel()
+    private let proDetailLabel = UILabel()
+    private let blkDetailLabel = UILabel()
+    private let misDetailLabel = UILabel()
+
+    private let statsFooterLabel = UILabel()
+
+    // The score is a product of three terms and the breakdown tiles describe
+    // only one of them. Skipped words, re-reads and untranscribed words moved
+    // the score with nothing on screen to explain it, which is how a session
+    // could show every tile at 0.0% next to a score of 67.
+    private let readingCard = UIView()
+    private let scoreMathLabel = UILabel()
+    private let readingRowsStack = UIStackView()
 
     // MARK: - Lifecycle
 
@@ -101,6 +117,7 @@ class ReadingResultViewController2: UIViewController {
         buildRingHeader()
         buildInsightCard()
         buildStatsCard()
+        buildReadingCard()
         buildTroubledCard()
     }
 
@@ -121,6 +138,20 @@ class ReadingResultViewController2: UIViewController {
             ringView.widthAnchor.constraint(equalToConstant: 160),
             ringView.heightAnchor.constraint(equalToConstant: 160)
         ])
+
+        // Long press opens the diagnostics dump. Deliberately undiscoverable:
+        // it is for working out why a device session reported what it did, not
+        // a feature for readers.
+        //
+        // Debug builds only. Undocumented functionality hidden behind a secret
+        // gesture is exactly the pattern guideline 2.5.1 is about, and the dump
+        // exposes internal pipeline state that nothing in a shipped app should.
+        #if DEBUG
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(ringLongPressed(_:)))
+        longPress.minimumPressDuration = 1.2
+        ringContainerView.addGestureRecognizer(longPress)
+        ringContainerView.isUserInteractionEnabled = true
+        #endif
 
         // Subtitle under ring
         let subtitle = UILabel()
@@ -152,17 +183,31 @@ class ReadingResultViewController2: UIViewController {
         contentStack.addArrangedSubview(statsCard)
 
         let title = sectionTitle("Stutter Breakdown")
-        let hStack = UIStackView()
-        hStack.axis = .horizontal
-        hStack.distribution = .fillEqually
-        hStack.spacing = 10
-        hStack.translatesAutoresizingMaskIntoConstraints = false
 
-        hStack.addArrangedSubview(makeStatTile(valueLabel: repValueLabel, name: "Repetition", color: brandColor))
-        hStack.addArrangedSubview(makeStatTile(valueLabel: proValueLabel, name: "Prolongation", color: brandColor))
-        hStack.addArrangedSubview(makeStatTile(valueLabel: blkValueLabel, name: "Blocks", color: brandColor))
+        // Two rows of two rather than one row of four: at phone width a quarter
+        // of the card cannot hold "Prolongation" beside a percentage without
+        // shrinking both into illegibility.
+        //
+        // The top row is the three clinical disfluencies, all now measured —
+        // repetitions from the transcript, prolongations and blocks from the
+        // audio envelope. "Misread" sits apart from them because it is reading
+        // feedback rather than a disfluency: at word level a genuine misreading
+        // and a recogniser error look identical.
+        let topRow = makeTileRow([
+            makeStatTile(valueLabel: repValueLabel, detailLabel: repDetailLabel, name: "Repetition", color: brandColor),
+            makeStatTile(valueLabel: proValueLabel, detailLabel: proDetailLabel, name: "Prolongation", color: brandColor)
+        ])
+        let bottomRow = makeTileRow([
+            makeStatTile(valueLabel: blkValueLabel, detailLabel: blkDetailLabel, name: "Blocks", color: brandColor),
+            makeStatTile(valueLabel: misValueLabel, detailLabel: misDetailLabel, name: "Misread", color: brandColor)
+        ])
 
-        let vStack = UIStackView(arrangedSubviews: [title, hStack])
+        statsFooterLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        statsFooterLabel.textColor = .secondaryLabel
+        statsFooterLabel.numberOfLines = 0
+        statsFooterLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let vStack = UIStackView(arrangedSubviews: [title, topRow, bottomRow, statsFooterLabel])
         vStack.axis = .vertical
         vStack.spacing = 8
         vStack.translatesAutoresizingMaskIntoConstraints = false
@@ -175,14 +220,27 @@ class ReadingResultViewController2: UIViewController {
         ])
     }
 
-    private func makeStatTile(valueLabel: UILabel, name: String, color: UIColor) -> UIView {
+    private func makeTileRow(_ tiles: [UIView]) -> UIStackView {
+        let row = UIStackView(arrangedSubviews: tiles)
+        row.axis = .horizontal
+        row.distribution = .fillEqually
+        row.spacing = 10
+        row.translatesAutoresizingMaskIntoConstraints = false
+        return row
+    }
+
+    private func makeStatTile(valueLabel: UILabel, detailLabel: UILabel, name: String, color: UIColor) -> UIView {
         let tile = UIView()
         tile.clipsToBounds = true
 
-        valueLabel.font = .systemFont(ofSize: 28, weight: .bold)
+        // 22pt rather than 28pt: the value now carries a decimal place, so
+        // "12.5%" has to fit a third of the card width without truncating.
+        valueLabel.font = .systemFont(ofSize: 22, weight: .bold)
         valueLabel.textColor = .label
         valueLabel.textAlignment = .left
-        valueLabel.text = "0%"
+        valueLabel.text = "0.0%"
+        valueLabel.adjustsFontSizeToFitWidth = true
+        valueLabel.minimumScaleFactor = 0.7
         valueLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let nameLabel = UILabel()
@@ -190,11 +248,25 @@ class ReadingResultViewController2: UIViewController {
         nameLabel.font = .systemFont(ofSize: 13, weight: .regular)
         nameLabel.textColor = brandColor
         nameLabel.textAlignment = .left
-        nameLabel.numberOfLines = 2
+        nameLabel.numberOfLines = 1
+        nameLabel.adjustsFontSizeToFitWidth = true
+        nameLabel.minimumScaleFactor = 0.75
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        // Rates under 1% used to render as a flat "0%", which made a good
+        // session look like a broken screen. The raw count says what happened.
+        detailLabel.font = .systemFont(ofSize: 11, weight: .regular)
+        detailLabel.textColor = .secondaryLabel
+        detailLabel.textAlignment = .left
+        detailLabel.text = "none"
+        detailLabel.numberOfLines = 1
+        detailLabel.adjustsFontSizeToFitWidth = true
+        detailLabel.minimumScaleFactor = 0.75
+        detailLabel.translatesAutoresizingMaskIntoConstraints = false
 
         tile.addSubview(valueLabel)
         tile.addSubview(nameLabel)
+        tile.addSubview(detailLabel)
         NSLayoutConstraint.activate([
             valueLabel.topAnchor.constraint(equalTo: tile.topAnchor, constant: 16),
             valueLabel.leadingAnchor.constraint(equalTo: tile.leadingAnchor, constant: 4),
@@ -202,9 +274,170 @@ class ReadingResultViewController2: UIViewController {
             nameLabel.topAnchor.constraint(equalTo: valueLabel.bottomAnchor, constant: 4),
             nameLabel.leadingAnchor.constraint(equalTo: tile.leadingAnchor, constant: 6),
             nameLabel.trailingAnchor.constraint(equalTo: tile.trailingAnchor, constant: -6),
-            nameLabel.bottomAnchor.constraint(equalTo: tile.bottomAnchor, constant: -14)
+            detailLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 2),
+            detailLabel.leadingAnchor.constraint(equalTo: tile.leadingAnchor, constant: 6),
+            detailLabel.trailingAnchor.constraint(equalTo: tile.trailingAnchor, constant: -6),
+            detailLabel.bottomAnchor.constraint(equalTo: tile.bottomAnchor, constant: -14)
         ])
         return tile
+    }
+
+    // ── Reading Card ──────────────────────────────────────────────────────────
+
+    private func buildReadingCard() {
+        styleCard(readingCard)
+        contentStack.addArrangedSubview(readingCard)
+
+        let title = sectionTitle("How the score was reached")
+
+        scoreMathLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        scoreMathLabel.textColor = .secondaryLabel
+        scoreMathLabel.numberOfLines = 0
+        scoreMathLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        readingRowsStack.axis = .vertical
+        readingRowsStack.spacing = 0
+        readingRowsStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let vStack = UIStackView(arrangedSubviews: [title, scoreMathLabel, readingRowsStack])
+        vStack.axis = .vertical
+        vStack.spacing = 10
+        vStack.translatesAutoresizingMaskIntoConstraints = false
+        readingCard.addSubview(vStack)
+        NSLayoutConstraint.activate([
+            vStack.topAnchor.constraint(equalTo: readingCard.topAnchor, constant: 16),
+            vStack.leadingAnchor.constraint(equalTo: readingCard.leadingAnchor, constant: 16),
+            vStack.trailingAnchor.constraint(equalTo: readingCard.trailingAnchor, constant: -16),
+            vStack.bottomAnchor.constraint(equalTo: readingCard.bottomAnchor, constant: -16)
+        ])
+    }
+
+    /// One label/value line. A hairline rule rather than a nested card: these
+    /// are readings of one thing, not four separate objects.
+    private func makeReadingRow(_ label: String, _ value: String, note: String?, isLast: Bool) -> UIView {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let nameLabel = UILabel()
+        nameLabel.text = label
+        nameLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        nameLabel.textColor = .label
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let valueLabel = UILabel()
+        valueLabel.text = value
+        valueLabel.font = .monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
+        valueLabel.textColor = .label
+        valueLabel.textAlignment = .right
+        valueLabel.translatesAutoresizingMaskIntoConstraints = false
+        valueLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        container.addSubview(nameLabel)
+        container.addSubview(valueLabel)
+        NSLayoutConstraint.activate([
+            nameLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 9),
+            nameLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            valueLabel.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
+            valueLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            valueLabel.leadingAnchor.constraint(greaterThanOrEqualTo: nameLabel.trailingAnchor, constant: 12)
+        ])
+
+        var lastAnchor = nameLabel.bottomAnchor
+        if let note {
+            let noteLabel = UILabel()
+            noteLabel.text = note
+            noteLabel.font = .systemFont(ofSize: 12, weight: .regular)
+            noteLabel.textColor = .secondaryLabel
+            noteLabel.numberOfLines = 0
+            noteLabel.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(noteLabel)
+            NSLayoutConstraint.activate([
+                noteLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 1),
+                noteLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                noteLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor)
+            ])
+            lastAnchor = noteLabel.bottomAnchor
+        }
+
+        if isLast {
+            lastAnchor.constraint(equalTo: container.bottomAnchor, constant: -2).isActive = true
+        } else {
+            let rule = UIView()
+            rule.backgroundColor = .separator
+            rule.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(rule)
+            NSLayoutConstraint.activate([
+                rule.topAnchor.constraint(equalTo: lastAnchor, constant: 9),
+                rule.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                rule.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+                rule.heightAnchor.constraint(equalToConstant: 0.5),
+                rule.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+            ])
+        }
+        return container
+    }
+
+    private func populateReadingCard(_ r: StutterJSONReport) {
+        readingRowsStack.arrangedSubviews.forEach {
+            readingRowsStack.removeArrangedSubview($0); $0.removeFromSuperview()
+        }
+
+        let reading = r.reading
+        var rows: [(String, String, String?)] = []
+
+        rows.append(("Words read correctly",
+                     "\(reading.matchedWords) of \(reading.judgeableWords)",
+                     nil))
+
+        if reading.skippedWords > 0 {
+            rows.append(("Skipped",
+                         "\(reading.skippedWords)",
+                         "Words in the paragraph you didn't say."))
+        }
+        if r.breakdown.misread.count > 0 {
+            rows.append(("Read differently",
+                         "\(r.breakdown.misread.count)",
+                         nil))
+        }
+        if reading.extraWords > 0 {
+            rows.append(("Re-read or extra",
+                         "\(reading.extraWords)",
+                         "Backtracking and filler. These lower accuracy."))
+        }
+        if reading.unrecognisedWords > 0 {
+            rows.append(("Not transcribed",
+                         "\(reading.unrecognisedWords)",
+                         "You said these — we couldn't make them out, so they aren't counted against you."))
+        }
+        rows.append(("Paragraph covered",
+                     String(format: "%.0f%%", reading.coverage * 100),
+                     nil))
+
+        for (index, row) in rows.enumerated() {
+            readingRowsStack.addArrangedSubview(
+                makeReadingRow(row.0, row.1, note: row.2, isLast: index == rows.count - 1)
+            )
+        }
+
+        scoreMathLabel.text = scoreMathText(for: r)
+    }
+
+    /// Spells out the product, because the tiles above account for only the
+    /// first of its three terms.
+    private func scoreMathText(for r: StutterJSONReport) -> String {
+        let fluency = r.percentages.stutteredSyllables
+        let completeness = r.reading.completeness * 100
+        let accuracy = r.reading.accuracy * 100
+
+        var parts = [String]()
+        parts.append(String(format: "%.1f%% of syllables stuttered", fluency))
+        if completeness < 99.5 { parts.append(String(format: "%.0f%% of what you read matched", completeness)) }
+        if accuracy < 99.5 { parts.append(String(format: "%.0f%% of what you said was on the page", accuracy)) }
+
+        if parts.count == 1 {
+            return "Score \(r.fluencyScore) — \(parts[0]), and everything you read matched the paragraph."
+        }
+        return "Score \(r.fluencyScore) comes from three things: " + parts.joined(separator: ", ") + "."
     }
 
     // ── Insight Card ──────────────────────────────────────────────────────────
@@ -283,9 +516,12 @@ class ReadingResultViewController2: UIViewController {
         guard let r = report else {
             insightLabel.text = "No audio data recorded."
             durationLabel.text = "0 sec"
-            repValueLabel.text = "0%"
-            proValueLabel.text = "0%"
-            blkValueLabel.text = "0%"
+            repValueLabel.text = "0.0%"
+            proValueLabel.text = "0.0%"
+            blkValueLabel.text = "0.0%"
+            misValueLabel.text = "0.0%"
+            statsFooterLabel.text = nil
+            readingCard.isHidden = true
             buildTroubledChips(words: [])
             return
         }
@@ -298,10 +534,76 @@ class ReadingResultViewController2: UIViewController {
 
         insightLabel.text = preloadedInsight ?? "You showed up and practiced — that matters."
         durationLabel.text = "Duration: \(r.duration)"
-        repValueLabel.text = "\(Int(r.percentages.repetition))%"
-        proValueLabel.text = "\(Int(r.percentages.prolongation))%"
-        blkValueLabel.text = "\(Int(r.percentages.blocks))%"
+
+        repValueLabel.text  = String(format: "%.1f%%", r.percentages.repetition)
+        proValueLabel.text  = String(format: "%.1f%%", r.percentages.prolongation)
+        blkValueLabel.text  = String(format: "%.1f%%", r.percentages.blocks)
+        misValueLabel.text  = String(format: "%.1f%%", r.percentages.misread)
+
+        repDetailLabel.text = eventCountText(r.breakdown.repetition.count)
+        // Without an envelope these two are unmeasured, not zero. Saying "0"
+        // would be a claim the session cannot support.
+        proDetailLabel.text = r.acousticAnalysisRan ? eventCountText(r.breakdown.prolongation.count) : "not measured"
+        blkDetailLabel.text = r.acousticAnalysisRan ? eventCountText(r.breakdown.blocks) : "not measured"
+        misDetailLabel.text = eventCountText(r.breakdown.misread.count)
+
+        statsFooterLabel.text = statsFooterText(for: r)
+        readingCard.isHidden = false
+        populateReadingCard(r)
         buildTroubledChips(words: r.stutteredWords)
+    }
+
+    private func eventCountText(_ count: Int) -> String {
+        switch count {
+        case 0:  return "none"
+        case 1:  return "1 word"
+        default: return "\(count) words"
+        }
+    }
+
+    /// The line under the breakdown tiles: what the rates are a share of, and
+    /// whether the session was long enough to mean anything.
+    private func statsFooterText(for report: StutterJSONReport) -> String {
+        guard report.isReliable else {
+            return "This session was too short to score reliably — read a full paragraph for a result you can compare."
+        }
+
+        let severityPhrase: String
+        switch report.severity {
+        case "typical":  severityPhrase = "within the typical range"
+        case "mild":     severityPhrase = "mild"
+        case "moderate": severityPhrase = "moderate"
+        default:         severityPhrase = "high this session"
+        }
+
+        let judgeable = report.reading.judgeableWords
+
+        // Low confidence means the transcript was too broken to index the
+        // paragraph reliably. Printing %SS to a decimal place then claims more
+        // than the session can support, so the wording drops the precision.
+        var line: String
+        switch report.confidence {
+        case "low":
+            line = String(
+                format: "Roughly %.0f%% of syllables stuttered, but this session was hard to transcribe — treat the figures as a rough guide rather than a measurement.",
+                report.percentages.stutteredSyllables
+            )
+        case "moderate":
+            line = String(
+                format: "About %.1f%% of syllables stuttered — %@. Parts of this session were hard to transcribe, so the figures are approximate.",
+                report.percentages.stutteredSyllables, severityPhrase
+            )
+        default:
+            line = String(
+                format: "%.1f%% of syllables stuttered — %@. Rates are a share of the %d words we could assess.",
+                report.percentages.stutteredSyllables, severityPhrase, judgeable
+            )
+        }
+
+        if !report.acousticAnalysisRan {
+            line += " Audio analysis didn't run this session, so prolongations and blocks aren't included."
+        }
+        return line
     }
 
     // MARK: - Troubled Chips (Wrapping Flow)
@@ -562,6 +864,14 @@ class ReadingResultViewController2: UIViewController {
     }
 
     // MARK: - Navigation
+
+    #if DEBUG
+    @objc private func ringLongPressed(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began, let report else { return }
+        let diagnostics = SessionDiagnosticsViewController(report: report)
+        present(UINavigationController(rootViewController: diagnostics), animated: true)
+    }
+    #endif
 
     @objc private func closeTapped() {
         if let presenter = presentingViewController?.presentingViewController {
