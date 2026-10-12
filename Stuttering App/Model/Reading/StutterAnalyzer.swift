@@ -141,25 +141,7 @@ class StutterAnalyzer {
         // Both sides pass through the same folding: one spelling variety,
         // punctuation stripped, numbers spelled out. See `TextNormalizer`.
         let (refWords, refEndsClause) = TextNormalizer.tokenizeWithBoundaries(reference)
-
-        // When timings are available the spoken stream is built **from the
-        // segments**, not from the formatted transcript string. That keeps a
-        // word's index and its timing provably the same object, which is what
-        // lets a silence be attributed to the right word further down.
-        let transWords: [String]
-        var wordToSegment: [Int] = []
-        if segments.isEmpty {
-            transWords = TextNormalizer.tokenize(transcript)
-        } else {
-            var spoken: [String] = []
-            for (segmentIndex, segment) in segments.enumerated() {
-                for token in TextNormalizer.tokenize(segment.substring) {
-                    spoken.append(token)
-                    wordToSegment.append(segmentIndex)
-                }
-            }
-            transWords = spoken
-        }
+        let (transWords, wordToSegment) = spokenStream(transcript: transcript, segments: segments)
 
         guard !refWords.isEmpty, !transWords.isEmpty else {
             return encode(emptyReport(duration: durationString))
@@ -175,46 +157,183 @@ class StutterAnalyzer {
         // ── Alignment ─────────────────────────────────────────────────────────
         let ops = alignment(ref: refChars, hyp: transChars)
 
-        // ── What did the reader actually attempt? ─────────────────────────────
-        // The last operation that consumed a spoken word against a reference
-        // word marks how far the reading got. Reference words after that were
-        // never reached — the reader stopped — so they are not errors.
-        //
-        // This replaces the old "ignore everything after the last *match*"
-        // rule, which also threw away genuine errors in a stretch that was read
-        // badly enough to produce no matches at all.
-        //
-        // The last aligned operation has to be *supported* by another one close
-        // behind it. A common word carries enormous stray-match potential: a
-        // reader who says only "Science uncovers the" will have that final
-        // "the" aligned against some "the" forty words downstream, which would
-        // otherwise report thirty-odd skipped words for a three-word reading.
-        // Requiring company inside a short window discards those strays.
-        var lastAlignedOpIndex = -1
-        var lastAlignedFallback = -1
-        for (index, op) in ops.enumerated() where op == .match || op == .substitute {
-            lastAlignedFallback = index
-        }
-        var scanIndex = ops.count - 1
-        while scanIndex >= 0 {
-            if ops[scanIndex] == .match || ops[scanIndex] == .substitute {
-                let windowStart = max(0, scanIndex - alignmentSupportWindow)
-                let isSupported = (windowStart..<scanIndex).contains {
-                    ops[$0] == .match || ops[$0] == .substitute
-                }
-                if isSupported {
-                    lastAlignedOpIndex = scanIndex
-                    break
-                }
-            }
-            scanIndex -= 1
-        }
-        // A reading too short to contain a supported run still gets scored on
-        // what it has; the reliability flag is what marks it as thin.
-        if lastAlignedOpIndex < 0 { lastAlignedOpIndex = lastAlignedFallback }
+        var tally = tallyAlignment(
+            ops: ops,
+            lastAttemptedOpIndex: lastAttemptedOpIndex(in: ops),
+            refWords: refWords,
+            transWords: transWords,
+            transChars: transChars
+        )
+        resolveUnalignedWords(
+            in: &tally,
+            refWords: refWords,
+            segments: segments,
+            wordToSegment: wordToSegment,
+            envelope: envelope
+        )
 
-        var correctCount   = 0
-        var skippedCount   = 0
+        // Repetitions come from the spoken stream, so they need the allowlist
+        // to keep filler and recogniser artefacts out. Misreadings are already
+        // reference words by construction.
+        let filteredRepetitions = tally.repetitions.filter { paragraphWordsAllowlist.contains($0) }
+        let filteredMisreadings = tally.misreadings
+
+        // ── BLOCKS AND PROLONGATIONS ──────────────────────────────────────────
+        let timingsAreUsable = segmentTimingsAreUsable(segments)
+        let acousticAnalysisRan = timingsAreUsable && !(envelope?.isEmpty ?? true)
+
+        var acoustic = AcousticFindings()
+        if acousticAnalysisRan, let envelope {
+            acoustic = detectAcousticEvents(
+                segments: segments,
+                envelope: envelope,
+                wordToSegment: wordToSegment,
+                tally: tally,
+                refWords: refWords,
+                refEndsClause: refEndsClause,
+                transWords: transWords,
+                paragraphWordsAllowlist: paragraphWordsAllowlist
+            )
+        }
+
+        // ── TROUBLE WORDS ─────────────────────────────────────────────────────
+        // The three stuttering-like disfluencies. Misreadings are reported
+        // separately, so recogniser noise no longer feeds the letter histogram.
+        let stutteredWords = uniqued(filteredRepetitions + acoustic.prolongationWords + acoustic.blockWords)
+        let uniqueMisread  = uniqued(filteredMisreadings)
+
+        // ── READING ACCURACY ──────────────────────────────────────────────────
+        let spokenCount        = tally.spokenInRegion
+        let syllablesAttempted = TextNormalizer.syllableCount(of: tally.attemptedRefWords)
+        // Words the recogniser dropped are excluded from every judgement:
+        // they were reached (so they count toward coverage) but nothing can be
+        // concluded about how they were read.
+        let judgeableCount     = max(0, tally.attemptedCount - tally.unrecognisedCount)
+        let completeness       = judgeableCount > 0 ? Double(tally.correctCount) / Double(judgeableCount) : 0
+        let accuracy           = spokenCount    > 0 ? Double(tally.correctCount) / Double(spokenCount)    : 0
+        let coverage           = refWords.count > 0 ? Double(tally.attemptedCount) / Double(refWords.count) : 0
+
+        // ── FLUENCY SCORE ─────────────────────────────────────────────────────
+        // Percent syllables stuttered is the clinical measure, so it is the
+        // spine of the score. Syllables rather than words, because a long word
+        // offers more opportunities to stutter than a short one.
+        //
+        // Completeness and accuracy enter as square roots: they temper the
+        // score without dominating it, so reading a passage carefully and
+        // correctly is what earns a high number — and reading three words
+        // fluently no longer scores 100, because a session that short is also
+        // marked unreliable below.
+        //
+        // All three disfluency types now count. Prolongations rejoined the
+        // total once they became a measurement rather than a label pinned on
+        // whatever the aligner could not explain.
+        let stutterEvents = filteredRepetitions.count
+                          + acoustic.prolongationWords.count
+                          + acoustic.detectedBlocks.count
+        let percentSyllablesStuttered = syllablesAttempted > 0
+            ? Double(stutterEvents) / Double(syllablesAttempted) * 100
+            : 0
+
+        let fluencyTerm = exp(-percentSyllablesStuttered / scoreDecayRate)
+        let rawScore = 100 * fluencyTerm * completeness.squareRoot() * accuracy.squareRoot()
+        let score = min(100, max(0, Int(rawScore.rounded())))
+
+        let severity = severityBand(forPercentSyllablesStuttered: percentSyllablesStuttered)
+
+        // ── CONFIDENCE ────────────────────────────────────────────────────────
+        // How much the transcript can be trusted as an index into the
+        // paragraph. When a reader stutters heavily the recogniser degrades,
+        // and a %SS printed to two decimals from a transcript full of holes
+        // claims more than it knows.
+        let misreadRate      = judgeableCount > 0 ? Double(filteredMisreadings.count) / Double(judgeableCount) : 0
+        let unrecognisedRate = tally.attemptedCount > 0
+            ? Double(tally.unrecognisedCount) / Double(tally.attemptedCount)
+            : 0
+        let confidence = confidenceBand(forWorstRate: max(misreadRate, unrecognisedRate))
+
+        // ── PERCENTAGES ───────────────────────────────────────────────────────
+        // Per 100 attempted words, so the figures mean the same thing whether
+        // the paragraph was long or short.
+        let attemptedDenominator = Double(max(1, judgeableCount))
+        let repPercent = Double(filteredRepetitions.count)        / attemptedDenominator * 100
+        let proPercent = Double(acoustic.prolongationWords.count) / attemptedDenominator * 100
+        let misPercent = Double(filteredMisreadings.count)        / attemptedDenominator * 100
+        let blkPercent = Double(acoustic.detectedBlocks.count)    / attemptedDenominator * 100
+        let corPercent = completeness * 100
+
+        // ── LETTER ANALYSIS ───────────────────────────────────────────────────
+        // Still keyed on the first letter, which is spelling rather than sound —
+        // that remains open work. It is at least now fed only by genuine
+        // disfluencies rather than by every recogniser substitution.
+        var letterCounts: [String: Int] = [:]
+        for word in stutteredWords {
+            if let firstChar = word.first {
+                letterCounts[String(firstChar).uppercased(), default: 0] += 1
+            }
+        }
+
+        let reportData = StutterJSONReport(
+            fluencyScore: score,
+            duration: durationString,
+            stutteredWords: stutteredWords,
+            misreadWords: uniqueMisread,
+            blocks: acoustic.detectedBlocks,
+            breakdown: StutterBreakdown(
+                repetition: filteredRepetitions,
+                prolongation: acoustic.prolongationWords,
+                misread: filteredMisreadings,
+                blocks: acoustic.detectedBlocks.count
+            ),
+            percentages: StutterPercentages(
+                repetition: repPercent.rounded(toPlaces: 2),
+                prolongation: proPercent.rounded(toPlaces: 2),
+                misread: misPercent.rounded(toPlaces: 2),
+                blocks: blkPercent.rounded(toPlaces: 2),
+                correct: corPercent.rounded(toPlaces: 2),
+                stutteredSyllables: percentSyllablesStuttered.rounded(toPlaces: 2)
+            ),
+            letterAnalysis: letterCounts,
+            reading: ReadingAccuracy(
+                referenceWords: refWords.count,
+                attemptedWords: tally.attemptedCount,
+                matchedWords: tally.correctCount,
+                spokenWords: spokenCount,
+                skippedWords: tally.skippedCount,
+                unrecognisedWords: tally.unrecognisedCount,
+                judgeableWords: judgeableCount,
+                extraWords: tally.extraWordCount,
+                syllablesAttempted: syllablesAttempted,
+                completeness: completeness.rounded(toPlaces: 3),
+                accuracy: accuracy.rounded(toPlaces: 3),
+                coverage: coverage.rounded(toPlaces: 3)
+            ),
+            severity: severity,
+            confidence: confidence,
+            acousticAnalysisRan: acousticAnalysisRan,
+            isReliable: syllablesAttempted >= minimumReliableSyllables,
+            diagnostics: diagnostics(
+                refWordCount: refWords.count,
+                spokenWordCount: transWords.count,
+                segments: segments,
+                envelope: envelope,
+                timingsAreUsable: timingsAreUsable,
+                tally: tally,
+                judgeableCount: judgeableCount,
+                repetitionCount: filteredRepetitions.count,
+                acoustic: acoustic
+            )
+        )
+
+        return encode(reportData)
+    }
+
+    // MARK: - Analysis stages
+
+    /// What walking the alignment found. Filled by `tallyAlignment`, then
+    /// refined by `resolveUnalignedWords`.
+    private struct AlignmentTally {
+        var correctCount      = 0
+        var skippedCount      = 0
         var unrecognisedCount = 0
         /// Extra spoken words that were not repetitions: backtracking,
         /// re-reads and filler. They cost the reader through the accuracy
@@ -232,30 +351,123 @@ class StutterAnalyzer {
         var repetitions:  [String] = []
         var misreadings:  [String] = []
         var attemptedRefWords: [String] = []
-
-        var refIndex   = 0
-        var transIndex = 0
-
         /// For each spoken word, the reference word it aligned to (-1 if none).
         /// Chained with `wordToSegment`, this turns a timing event on a segment
         /// into a position in the paragraph.
-        var spokenToReference = [Int](repeating: -1, count: transWords.count)
+        var spokenToReference: [Int]
         /// Spoken words that fell inside the attempted region.
-        var spokenWasAttempted = [Bool](repeating: false, count: transWords.count)
+        var spokenWasAttempted: [Bool]
+
+        init(spokenWordCount: Int) {
+            spokenToReference  = [Int](repeating: -1, count: spokenWordCount)
+            spokenWasAttempted = [Bool](repeating: false, count: spokenWordCount)
+        }
+    }
+
+    /// Blocks and prolongations measured from the envelope, plus the counters
+    /// that explain an empty result.
+    private struct AcousticFindings {
+        var detectedBlocks:    [String] = []
+        var blockWords:        [String] = []
+        var prolongationWords: [String] = []
+
+        // Counted purely so a session that reports nothing can explain why.
+        var gapsConsidered         = 0
+        var gapsRejectedTooShort   = 0
+        var gapsRejectedAtBoundary = 0
+        var gapsRejectedNotSilent  = 0
+        var gapsRejectedUnnamed    = 0
+        var wordsCheckedForHold    = 0
+        var longestHoldSeen: TimeInterval = 0
+    }
+
+    /// The spoken words, and for each one the segment it came from.
+    ///
+    /// When timings are available the spoken stream is built **from the
+    /// segments**, not from the formatted transcript string. That keeps a
+    /// word's index and its timing provably the same object, which is what
+    /// lets a silence be attributed to the right word further down.
+    private static func spokenStream(
+        transcript: String,
+        segments: [SpeechSegment]
+    ) -> (words: [String], wordToSegment: [Int]) {
+        guard !segments.isEmpty else {
+            return (TextNormalizer.tokenize(transcript), [])
+        }
+        var spoken: [String] = []
+        var wordToSegment: [Int] = []
+        for (segmentIndex, segment) in segments.enumerated() {
+            for token in TextNormalizer.tokenize(segment.substring) {
+                spoken.append(token)
+                wordToSegment.append(segmentIndex)
+            }
+        }
+        return (spoken, wordToSegment)
+    }
+
+    /// The index of the last operation the reader actually reached.
+    ///
+    /// The last operation that consumed a spoken word against a reference
+    /// word marks how far the reading got. Reference words after that were
+    /// never reached — the reader stopped — so they are not errors.
+    ///
+    /// This replaces the old "ignore everything after the last *match*"
+    /// rule, which also threw away genuine errors in a stretch that was read
+    /// badly enough to produce no matches at all.
+    ///
+    /// The last aligned operation has to be *supported* by another one close
+    /// behind it. A common word carries enormous stray-match potential: a
+    /// reader who says only "Science uncovers the" will have that final
+    /// "the" aligned against some "the" forty words downstream, which would
+    /// otherwise report thirty-odd skipped words for a three-word reading.
+    /// Requiring company inside a short window discards those strays.
+    private static func lastAttemptedOpIndex(in ops: [Operation]) -> Int {
+        var lastAlignedFallback = -1
+        for (index, op) in ops.enumerated() where op == .match || op == .substitute {
+            lastAlignedFallback = index
+        }
+        var scanIndex = ops.count - 1
+        while scanIndex >= 0 {
+            if ops[scanIndex] == .match || ops[scanIndex] == .substitute {
+                let windowStart = max(0, scanIndex - alignmentSupportWindow)
+                let isSupported = (windowStart..<scanIndex).contains {
+                    ops[$0] == .match || ops[$0] == .substitute
+                }
+                if isSupported { return scanIndex }
+            }
+            scanIndex -= 1
+        }
+        // A reading too short to contain a supported run still gets scored on
+        // what it has; the reliability flag is what marks it as thin.
+        return lastAlignedFallback
+    }
+
+    /// Walks the alignment once, classifying every operation inside the
+    /// attempted region.
+    private static func tallyAlignment(
+        ops: [Operation],
+        lastAttemptedOpIndex: Int,
+        refWords: [String],
+        transWords: [String],
+        transChars: [[Character]]
+    ) -> AlignmentTally {
+        var tally = AlignmentTally(spokenWordCount: transWords.count)
+        var refIndex   = 0
+        var transIndex = 0
 
         for (opIndex, op) in ops.enumerated() {
-            let wasAttempted = opIndex <= lastAlignedOpIndex
+            let wasAttempted = opIndex <= lastAttemptedOpIndex
 
             switch op {
 
             case .match:
-                spokenToReference[transIndex] = refIndex
-                spokenWasAttempted[transIndex] = wasAttempted
+                tally.spokenToReference[transIndex] = refIndex
+                tally.spokenWasAttempted[transIndex] = wasAttempted
                 if wasAttempted {
-                    correctCount   += 1
-                    attemptedCount += 1
-                    spokenInRegion += 1
-                    attemptedRefWords.append(refWords[refIndex])
+                    tally.correctCount   += 1
+                    tally.attemptedCount += 1
+                    tally.spokenInRegion += 1
+                    tally.attemptedRefWords.append(refWords[refIndex])
                 }
                 refIndex   += 1
                 transIndex += 1
@@ -266,13 +478,13 @@ class StutterAnalyzer {
                 // indistinguishable, so it is reported as "misread" rather than
                 // dressed up as a prolongation. It still costs the reader, via
                 // the accuracy term in the score.
-                spokenToReference[transIndex] = refIndex
-                spokenWasAttempted[transIndex] = wasAttempted
+                tally.spokenToReference[transIndex] = refIndex
+                tally.spokenWasAttempted[transIndex] = wasAttempted
                 if wasAttempted {
-                    attemptedCount += 1
-                    spokenInRegion += 1
-                    attemptedRefWords.append(refWords[refIndex])
-                    misreadings.append(refWords[refIndex])
+                    tally.attemptedCount += 1
+                    tally.spokenInRegion += 1
+                    tally.attemptedRefWords.append(refWords[refIndex])
+                    tally.misreadings.append(refWords[refIndex])
                 }
                 refIndex   += 1
                 transIndex += 1
@@ -295,11 +507,11 @@ class StutterAnalyzer {
                 let isRepetition = repeatsPrevious || repeatsNext
 
                 if wasAttempted {
-                    spokenInRegion += 1
+                    tally.spokenInRegion += 1
                     if isRepetition {
-                        repetitions.append(insertedWord)
+                        tally.repetitions.append(insertedWord)
                     } else {
-                        extraWordCount += 1
+                        tally.extraWordCount += 1
                     }
                 }
                 // Extra words that are not repetitions are filler or
@@ -312,25 +524,35 @@ class StutterAnalyzer {
                 // attempted region the reader simply stopped. Inside it, the
                 // word was either skipped or said-but-not-transcribed, and
                 // only the audio can tell those apart — so defer the verdict
-                // until the envelope can be consulted below.
+                // until the envelope can be consulted.
                 if wasAttempted {
-                    pendingDeletes.append((referenceIndex: refIndex, spokenIndex: transIndex))
+                    tally.pendingDeletes.append((referenceIndex: refIndex, spokenIndex: transIndex))
                 }
                 refIndex += 1
             }
         }
+        return tally
+    }
 
-        // ── SKIPPED, OR SAID AND NOT TRANSCRIBED? ─────────────────────────────
-        // A reference word with nothing aligned to it only counts against the
-        // reader if the reader was silent there. If the envelope shows speech
-        // in the window where that word belongs, they said it and the
-        // recogniser dropped it — scoring that against them penalises the user
-        // for the recogniser's failure. It lowers confidence instead.
-        //
-        // Consecutive unaligned words share one window, so they are judged as
-        // a group: enough speech to account for their syllables means spoken.
+    /// Skipped, or said and not transcribed?
+    ///
+    /// A reference word with nothing aligned to it only counts against the
+    /// reader if the reader was silent there. If the envelope shows speech
+    /// in the window where that word belongs, they said it and the
+    /// recogniser dropped it — scoring that against them penalises the user
+    /// for the recogniser's failure. It lowers confidence instead.
+    ///
+    /// Consecutive unaligned words share one window, so they are judged as
+    /// a group: enough speech to account for their syllables means spoken.
+    private static func resolveUnalignedWords(
+        in tally: inout AlignmentTally,
+        refWords: [String],
+        segments: [SpeechSegment],
+        wordToSegment: [Int],
+        envelope: SpeechEnvelope?
+    ) {
         var deletesBySpokenIndex: [Int: [Int]] = [:]
-        for pending in pendingDeletes {
+        for pending in tally.pendingDeletes {
             deletesBySpokenIndex[pending.spokenIndex, default: []].append(pending.referenceIndex)
         }
 
@@ -355,340 +577,233 @@ class StutterAnalyzer {
                 }
             }
 
-            attemptedCount += words.count
+            tally.attemptedCount += words.count
             if wasSpoken {
                 // Reached, but nothing can be concluded about how it was read.
-                unrecognisedCount += words.count
+                tally.unrecognisedCount += words.count
             } else {
-                skippedCount += words.count
-                attemptedRefWords.append(contentsOf: words)
+                tally.skippedCount += words.count
+                tally.attemptedRefWords.append(contentsOf: words)
             }
         }
+    }
 
-        // Repetitions come from the spoken stream, so they need the allowlist
-        // to keep filler and recogniser artefacts out. Misreadings are already
-        // reference words by construction.
-        let filteredRepetitions = repetitions.filter { paragraphWordsAllowlist.contains($0) }
-        let filteredMisreadings = misreadings
+    /// Whether the word timings can be measured from at all.
+    ///
+    /// Partial recognition results routinely carry zero durations, and a
+    /// chunk finalised from a partial hands over a whole minute of segments
+    /// with no timing in them. Gaps and word spans computed from those are
+    /// meaningless — and because every gap is then zero, the report comes
+    /// back with no blocks and no prolongations, which reads as a fluent
+    /// session rather than a failed measurement.
+    private static func segmentTimingsAreUsable(_ segments: [SpeechSegment]) -> Bool {
+        guard segments.count >= 2 else { return false }
+        let timed = segments.filter { $0.duration > 0.01 }.count
+        guard Double(timed) >= Double(segments.count) * 0.6 else { return false }
+        let monotone = zip(segments, segments.dropFirst()).allSatisfy { $0.timestamp <= $1.timestamp }
+        guard monotone else { return false }
+        let span = (segments.last?.endTimestamp ?? 0) - (segments.first?.timestamp ?? 0)
+        return span > 0.5
+    }
 
-        // ── BLOCKS AND PROLONGATIONS ──────────────────────────────────────────
-        // Both are acoustic events, measured from the envelope rather than
-        // guessed at from the transcript.
-        //
-        // A **block** is a tense, silent stoppage before a word. Its evidence
-        // is the gap between one word ending and the next beginning — not, as
-        // the previous implementation had it, the duration of the word itself,
-        // which is a prolongation's signature. Two conditions have to hold:
-        // the gap must be long enough for the position it occupies (a pause
-        // after a comma is the paragraph asking for one), and it must actually
-        // be silent. A "gap" full of sound is a filled pause or a word the
-        // recogniser clipped, and neither is a block.
-        //
-        // A **prolongation** is a sound held. Inside the word's own span, the
-        // envelope is asked for the longest stretch where sound is present and
-        // neither loudness nor spectrum is changing. Articulated speech never
-        // holds still for 300 ms; a held "sss" or "mmm" does.
+    /// Blocks and prolongations, measured from the envelope.
+    ///
+    /// Both are acoustic events, measured from the envelope rather than
+    /// guessed at from the transcript.
+    ///
+    /// A **block** is a tense, silent stoppage before a word. Its evidence
+    /// is the gap between one word ending and the next beginning — not, as
+    /// the previous implementation had it, the duration of the word itself,
+    /// which is a prolongation's signature. Two conditions have to hold:
+    /// the gap must be long enough for the position it occupies (a pause
+    /// after a comma is the paragraph asking for one), and it must actually
+    /// be silent. A "gap" full of sound is a filled pause or a word the
+    /// recogniser clipped, and neither is a block.
+    ///
+    /// A **prolongation** is a sound held. Inside the word's own span, the
+    /// envelope is asked for the longest stretch where sound is present and
+    /// neither loudness nor spectrum is changing. Articulated speech never
+    /// holds still for 300 ms; a held "sss" or "mmm" does.
+    private static func detectAcousticEvents(
+        segments: [SpeechSegment],
+        envelope: SpeechEnvelope,
+        wordToSegment: [Int],
+        tally: AlignmentTally,
+        refWords: [String],
+        refEndsClause: [Bool],
+        transWords: [String],
+        paragraphWordsAllowlist: Set<String>
+    ) -> AcousticFindings {
+        var found = AcousticFindings()
 
-        var detectedBlocks: [String] = []
-        var blockWords: [String] = []
-        var prolongationWords: [String] = []
-
-        // Counted purely so a session that reports nothing can explain why.
-        var gapsConsidered = 0
-        var gapsRejectedTooShort = 0
-        var gapsRejectedAtBoundary = 0
-        var gapsRejectedNotSilent = 0
-        var gapsRejectedUnnamed = 0
-        var wordsCheckedForHold = 0
-        var longestHoldSeen: TimeInterval = 0
-        // Word timings have to be usable before anything is measured from
-        // them. Partial recognition results routinely carry zero durations,
-        // and a chunk finalised from a partial hands over a whole minute of
-        // segments with no timing in them. Gaps and word spans computed from
-        // those are meaningless — and because every gap is then zero, the
-        // report comes back with no blocks and no prolongations, which reads
-        // as a fluent session rather than a failed measurement.
-        let timingsAreUsable: Bool = {
-            guard segments.count >= 2 else { return false }
-            let timed = segments.filter { $0.duration > 0.01 }.count
-            guard Double(timed) >= Double(segments.count) * 0.6 else { return false }
-            let monotone = zip(segments, segments.dropFirst()).allSatisfy { $0.timestamp <= $1.timestamp }
-            guard monotone else { return false }
-            let span = (segments.last?.endTimestamp ?? 0) - (segments.first?.timestamp ?? 0)
-            return span > 0.5
-        }()
-
-        let acousticAnalysisRan = timingsAreUsable && !(envelope?.isEmpty ?? true)
-
-        if acousticAnalysisRan, let envelope {
-            // First and last spoken-word index belonging to each segment.
-            var firstWordOfSegment = [Int](repeating: -1, count: segments.count)
-            var lastWordOfSegment  = [Int](repeating: -1, count: segments.count)
-            for (wordIndex, segmentIndex) in wordToSegment.enumerated() {
-                if firstWordOfSegment[segmentIndex] < 0 { firstWordOfSegment[segmentIndex] = wordIndex }
-                lastWordOfSegment[segmentIndex] = wordIndex
-            }
-
-            /// The paragraph word an acoustic event belongs to.
-            ///
-            /// This used to require the *spoken* word to appear in the
-            /// paragraph, which discarded the event whenever the disfluency
-            /// distorted recognition — so the harder someone stuttered, the
-            /// more evidence was thrown away, and a held sound came back as a
-            /// misreading instead. Even a successful fuzzy match lost its
-            /// event, because the matched word carried the recogniser's
-            /// spelling rather than the paragraph's.
-            ///
-            /// The alignment already knows which reference word this is, so
-            /// use that and let the acoustic evidence stand on its own.
-            /// Removing the old condition took detection recall across 26
-            /// simulated readers from 54% to 86%, and raised precision too.
-            func attemptedWord(at wordIndex: Int) -> String? {
-                guard wordIndex >= 0, wordIndex < transWords.count,
-                      spokenWasAttempted[wordIndex] else { return nil }
-                let referenceIndex = spokenToReference[wordIndex]
-                if referenceIndex >= 0, referenceIndex < refWords.count {
-                    return refWords[referenceIndex]
-                }
-                let word = transWords[wordIndex]
-                return paragraphWordsAllowlist.contains(word) ? word : nil
-            }
-
-            // ── Blocks: silence before a word ─────────────────────────────
-            for segmentIndex in 1..<segments.count {
-                let previous = segments[segmentIndex - 1]
-                let current  = segments[segmentIndex]
-                let gap = current.timestamp - previous.endTimestamp
-                gapsConsidered += 1
-
-                guard gap >= SpeechEnvelope.Tuning.minimumBlockGap,
-                      gap <= SpeechEnvelope.Tuning.maximumBlockGap else {
-                    gapsRejectedTooShort += 1
-                    continue
-                }
-
-                // Does the paragraph put a clause break before this word? If so
-                // the reader is pausing as written and needs more silence
-                // before it means anything.
-                let previousWordIndex = lastWordOfSegment[segmentIndex - 1]
-                var isAtClauseBoundary = false
-                if previousWordIndex >= 0 {
-                    let referenceIndex = spokenToReference[previousWordIndex]
-                    if referenceIndex >= 0, referenceIndex < refEndsClause.count {
-                        isAtClauseBoundary = refEndsClause[referenceIndex]
-                    }
-                }
-                if isAtClauseBoundary, gap < SpeechEnvelope.Tuning.minimumBoundaryGap {
-                    gapsRejectedAtBoundary += 1
-                    continue
-                }
-
-                // The gap has to be genuinely empty of speech. `nil` means the
-                // span falls outside recorded audio, which is a reason to
-                // abstain rather than to accuse.
-                guard let gapSpeech = envelope.speechTime(from: previous.endTimestamp,
-                                                          to: current.timestamp),
-                      gapSpeech <= SpeechEnvelope.Tuning.maximumGapSpeechTime
-                else {
-                    gapsRejectedNotSilent += 1
-                    continue
-                }
-
-                guard let word = attemptedWord(at: firstWordOfSegment[segmentIndex]) else {
-                    gapsRejectedUnnamed += 1
-                    continue
-                }
-                detectedBlocks.append("\(word) (blocked \(String(format: "%.2f", gap))s)")
-                blockWords.append(word)
-            }
-
-            // ── Prolongations: sound held inside a word ───────────────────
-            for (segmentIndex, segment) in segments.enumerated() {
-                guard segment.duration > SpeechEnvelope.Tuning.minimumProlongation else { continue }
-                wordsCheckedForHold += 1
-                let held = envelope.longestSustainedStretch(
-                    from: segment.timestamp,
-                    to: segment.endTimestamp
-                )
-                longestHoldSeen = max(longestHoldSeen, held)
-                guard held >= SpeechEnvelope.Tuning.minimumProlongation else { continue }
-                guard let word = attemptedWord(at: firstWordOfSegment[segmentIndex]) else { continue }
-                prolongationWords.append(word)
-            }
+        // First and last spoken-word index belonging to each segment.
+        var firstWordOfSegment = [Int](repeating: -1, count: segments.count)
+        var lastWordOfSegment  = [Int](repeating: -1, count: segments.count)
+        for (wordIndex, segmentIndex) in wordToSegment.enumerated() {
+            if firstWordOfSegment[segmentIndex] < 0 { firstWordOfSegment[segmentIndex] = wordIndex }
+            lastWordOfSegment[segmentIndex] = wordIndex
         }
 
-        // ── TROUBLE WORDS ─────────────────────────────────────────────────────
-        // The three stuttering-like disfluencies. Misreadings are reported
-        // separately, so recogniser noise no longer feeds the letter histogram.
-        var uniqueStuttered = [String]()
-        var seenWords = Set<String>()
-        for word in filteredRepetitions + prolongationWords + blockWords where !seenWords.contains(word) {
-            seenWords.insert(word)
-            uniqueStuttered.append(word)
-        }
-        let stutteredWords = uniqueStuttered
-
-        var uniqueMisread = [String]()
-        var seenMisread = Set<String>()
-        for word in filteredMisreadings where !seenMisread.contains(word) {
-            seenMisread.insert(word)
-            uniqueMisread.append(word)
-        }
-
-        // ── READING ACCURACY ──────────────────────────────────────────────────
-        let spokenCount        = spokenInRegion
-        let syllablesAttempted = TextNormalizer.syllableCount(of: attemptedRefWords)
-        // Words the recogniser dropped are excluded from every judgement:
-        // they were reached (so they count toward coverage) but nothing can be
-        // concluded about how they were read.
-        let judgeableCount     = max(0, attemptedCount - unrecognisedCount)
-        let completeness       = judgeableCount > 0 ? Double(correctCount) / Double(judgeableCount) : 0
-        let accuracy           = spokenCount    > 0 ? Double(correctCount) / Double(spokenCount)    : 0
-        let coverage           = refWords.count > 0 ? Double(attemptedCount) / Double(refWords.count) : 0
-
-        // ── FLUENCY SCORE ─────────────────────────────────────────────────────
-        // Percent syllables stuttered is the clinical measure, so it is the
-        // spine of the score. Syllables rather than words, because a long word
-        // offers more opportunities to stutter than a short one.
-        //
-        // Completeness and accuracy enter as square roots: they temper the
-        // score without dominating it, so reading a passage carefully and
-        // correctly is what earns a high number — and reading three words
-        // fluently no longer scores 100, because a session that short is also
-        // marked unreliable below.
-        //
-        // All three disfluency types now count. Prolongations rejoined the
-        // total once they became a measurement rather than a label pinned on
-        // whatever the aligner could not explain.
-        let stutterEvents = filteredRepetitions.count
-                          + prolongationWords.count
-                          + detectedBlocks.count
-        let percentSyllablesStuttered = syllablesAttempted > 0
-            ? Double(stutterEvents) / Double(syllablesAttempted) * 100
-            : 0
-
-        let fluencyTerm = exp(-percentSyllablesStuttered / scoreDecayRate)
-        let rawScore = 100 * fluencyTerm * completeness.squareRoot() * accuracy.squareRoot()
-        let score = min(100, max(0, Int(rawScore.rounded())))
-
-        let severity: String
-        switch percentSyllablesStuttered {
-        case ..<3.0:  severity = "typical"
-        case ..<7.0:  severity = "mild"
-        case ..<12.0: severity = "moderate"
-        default:      severity = "severe"
+        /// The paragraph word an acoustic event belongs to.
+        ///
+        /// This used to require the *spoken* word to appear in the
+        /// paragraph, which discarded the event whenever the disfluency
+        /// distorted recognition — so the harder someone stuttered, the
+        /// more evidence was thrown away, and a held sound came back as a
+        /// misreading instead. Even a successful fuzzy match lost its
+        /// event, because the matched word carried the recogniser's
+        /// spelling rather than the paragraph's.
+        ///
+        /// The alignment already knows which reference word this is, so
+        /// use that and let the acoustic evidence stand on its own.
+        /// Removing the old condition took detection recall across 26
+        /// simulated readers from 54% to 86%, and raised precision too.
+        func attemptedWord(at wordIndex: Int) -> String? {
+            guard wordIndex >= 0, wordIndex < transWords.count,
+                  tally.spokenWasAttempted[wordIndex] else { return nil }
+            let referenceIndex = tally.spokenToReference[wordIndex]
+            if referenceIndex >= 0, referenceIndex < refWords.count {
+                return refWords[referenceIndex]
+            }
+            let word = transWords[wordIndex]
+            return paragraphWordsAllowlist.contains(word) ? word : nil
         }
 
-        // ── CONFIDENCE ────────────────────────────────────────────────────────
-        // How much the transcript can be trusted as an index into the
-        // paragraph. When a reader stutters heavily the recogniser degrades,
-        // and a %SS printed to two decimals from a transcript full of holes
-        // claims more than it knows.
-        let misreadRate      = judgeableCount > 0 ? Double(filteredMisreadings.count) / Double(judgeableCount) : 0
-        let unrecognisedRate = attemptedCount > 0 ? Double(unrecognisedCount) / Double(attemptedCount) : 0
-        let worstRate = max(misreadRate, unrecognisedRate)
-        let confidence: String
+        // ── Blocks: silence before a word ─────────────────────────────────────
+        for segmentIndex in 1..<segments.count {
+            let previous = segments[segmentIndex - 1]
+            let current  = segments[segmentIndex]
+            let gap = current.timestamp - previous.endTimestamp
+            found.gapsConsidered += 1
+
+            guard gap >= SpeechEnvelope.Tuning.minimumBlockGap,
+                  gap <= SpeechEnvelope.Tuning.maximumBlockGap else {
+                found.gapsRejectedTooShort += 1
+                continue
+            }
+
+            // Does the paragraph put a clause break before this word? If so
+            // the reader is pausing as written and needs more silence
+            // before it means anything.
+            let previousWordIndex = lastWordOfSegment[segmentIndex - 1]
+            var isAtClauseBoundary = false
+            if previousWordIndex >= 0 {
+                let referenceIndex = tally.spokenToReference[previousWordIndex]
+                if referenceIndex >= 0, referenceIndex < refEndsClause.count {
+                    isAtClauseBoundary = refEndsClause[referenceIndex]
+                }
+            }
+            if isAtClauseBoundary, gap < SpeechEnvelope.Tuning.minimumBoundaryGap {
+                found.gapsRejectedAtBoundary += 1
+                continue
+            }
+
+            // The gap has to be genuinely empty of speech. `nil` means the
+            // span falls outside recorded audio, which is a reason to
+            // abstain rather than to accuse.
+            guard let gapSpeech = envelope.speechTime(from: previous.endTimestamp,
+                                                      to: current.timestamp),
+                  gapSpeech <= SpeechEnvelope.Tuning.maximumGapSpeechTime
+            else {
+                found.gapsRejectedNotSilent += 1
+                continue
+            }
+
+            guard let word = attemptedWord(at: firstWordOfSegment[segmentIndex]) else {
+                found.gapsRejectedUnnamed += 1
+                continue
+            }
+            found.detectedBlocks.append("\(word) (blocked \(String(format: "%.2f", gap))s)")
+            found.blockWords.append(word)
+        }
+
+        // ── Prolongations: sound held inside a word ───────────────────────────
+        for (segmentIndex, segment) in segments.enumerated() {
+            guard segment.duration > SpeechEnvelope.Tuning.minimumProlongation else { continue }
+            found.wordsCheckedForHold += 1
+            let held = envelope.longestSustainedStretch(
+                from: segment.timestamp,
+                to: segment.endTimestamp
+            )
+            found.longestHoldSeen = max(found.longestHoldSeen, held)
+            guard held >= SpeechEnvelope.Tuning.minimumProlongation else { continue }
+            guard let word = attemptedWord(at: firstWordOfSegment[segmentIndex]) else { continue }
+            found.prolongationWords.append(word)
+        }
+
+        return found
+    }
+
+    /// The words in order of first appearance, each once.
+    private static func uniqued(_ words: [String]) -> [String] {
+        var seen = Set<String>()
+        return words.filter { seen.insert($0).inserted }
+    }
+
+    /// Clinical %SS bands. Used internally and in diagnostics; the result
+    /// screen deliberately doesn't show them (Guideline 1.4.1).
+    private static func severityBand(forPercentSyllablesStuttered percent: Double) -> String {
+        switch percent {
+        case ..<3.0:  return "typical"
+        case ..<7.0:  return "mild"
+        case ..<12.0: return "moderate"
+        default:      return "severe"
+        }
+    }
+
+    private static func confidenceBand(forWorstRate worstRate: Double) -> String {
         switch worstRate {
-        case ..<0.12: confidence = "high"
-        case ..<0.25: confidence = "moderate"
-        default:      confidence = "low"
+        case ..<0.12: return "high"
+        case ..<0.25: return "moderate"
+        default:      return "low"
         }
+    }
 
-        // ── PERCENTAGES ───────────────────────────────────────────────────────
-        // Per 100 attempted words, so the figures mean the same thing whether
-        // the paragraph was long or short.
-        let attemptedDenominator = Double(max(1, judgeableCount))
-        let repPercent = Double(filteredRepetitions.count) / attemptedDenominator * 100
-        let proPercent = Double(prolongationWords.count)   / attemptedDenominator * 100
-        let misPercent = Double(filteredMisreadings.count) / attemptedDenominator * 100
-        let blkPercent = Double(detectedBlocks.count)      / attemptedDenominator * 100
-        let corPercent = completeness * 100
-
-        // ── LETTER ANALYSIS ───────────────────────────────────────────────────
-        // Still keyed on the first letter, which is spelling rather than sound —
-        // that remains open work. It is at least now fed only by genuine
-        // disfluencies rather than by every recogniser substitution.
-        var letterCounts: [String: Int] = [:]
-        for word in stutteredWords {
-            if let firstChar = word.first {
-                letterCounts[String(firstChar).uppercased(), default: 0] += 1
-            }
-        }
-
-        let reportData = StutterJSONReport(
-            fluencyScore: score,
-            duration: durationString,
-            stutteredWords: stutteredWords,
-            misreadWords: uniqueMisread,
-            blocks: detectedBlocks,
-            breakdown: StutterBreakdown(
-                repetition: filteredRepetitions,
-                prolongation: prolongationWords,
-                misread: filteredMisreadings,
-                blocks: detectedBlocks.count
-            ),
-            percentages: StutterPercentages(
-                repetition: repPercent.rounded(toPlaces: 2),
-                prolongation: proPercent.rounded(toPlaces: 2),
-                misread: misPercent.rounded(toPlaces: 2),
-                blocks: blkPercent.rounded(toPlaces: 2),
-                correct: corPercent.rounded(toPlaces: 2),
-                stutteredSyllables: percentSyllablesStuttered.rounded(toPlaces: 2)
-            ),
-            letterAnalysis: letterCounts,
-            reading: ReadingAccuracy(
-                referenceWords: refWords.count,
-                attemptedWords: attemptedCount,
-                matchedWords: correctCount,
-                spokenWords: spokenCount,
-                skippedWords: skippedCount,
-                unrecognisedWords: unrecognisedCount,
-                judgeableWords: judgeableCount,
-                extraWords: extraWordCount,
-                syllablesAttempted: syllablesAttempted,
-                completeness: completeness.rounded(toPlaces: 3),
-                accuracy: accuracy.rounded(toPlaces: 3),
-                coverage: coverage.rounded(toPlaces: 3)
-            ),
-            severity: severity,
-            confidence: confidence,
-            acousticAnalysisRan: acousticAnalysisRan,
-            isReliable: syllablesAttempted >= minimumReliableSyllables,
-            diagnostics: [
-                "referenceWords": "\(refWords.count)",
-                "spokenWords": "\(transWords.count)",
-                "segments": "\(segments.count)",
-                "segmentsWithDuration": "\(segments.filter { $0.duration > 0.01 }.count)",
-                "segmentTimingSpan": String(format: "%.2fs",
-                    (segments.last?.endTimestamp ?? 0) - (segments.first?.timestamp ?? 0)),
-                "timingsAreUsable": "\(timingsAreUsable)",
-                "envelopeFrames": "\(envelope?.frames.count ?? 0)",
-                "envelopeDuration": String(format: "%.2fs", envelope?.duration ?? 0),
-                "envelopeNoiseFloor": String(format: "%.4f", envelope?.noiseFloor ?? 0),
-                "envelopeSpeechLevel": String(format: "%.4f", envelope?.speechLevel ?? 0),
-                "envelopeSilenceThreshold": String(format: "%.4f", envelope?.silenceThreshold ?? 0),
-                "envelopeVoicingThreshold": String(format: "%.4f", envelope?.voicingThreshold ?? 0),
-                "matched": "\(correctCount)",
-                "substituted": "\(filteredMisreadings.count)",
-                "skipped": "\(skippedCount)",
-                "unrecognised": "\(unrecognisedCount)",
-                "extra": "\(extraWordCount)",
-                "attempted": "\(attemptedCount)",
-                "judgeable": "\(judgeableCount)",
-                "repetitionsFound": "\(filteredRepetitions.count)",
-                "prolongationsFound": "\(prolongationWords.count)",
-                "blocksFound": "\(detectedBlocks.count)",
-                "gapsConsidered": "\(gapsConsidered)",
-                "gapsRejectedTooShort": "\(gapsRejectedTooShort)",
-                "gapsRejectedAtBoundary": "\(gapsRejectedAtBoundary)",
-                "gapsRejectedNotSilent": "\(gapsRejectedNotSilent)",
-                "gapsRejectedUnnamed": "\(gapsRejectedUnnamed)",
-                "wordsCheckedForHold": "\(wordsCheckedForHold)",
-                "longestHoldSeen": String(format: "%.3fs", longestHoldSeen)
-            ]
-        )
-
-        return encode(reportData)
+    /// Why the report says what it says: counts and measurements from each
+    /// stage of the pipeline, for the diagnostics view.
+    private static func diagnostics(
+        refWordCount: Int,
+        spokenWordCount: Int,
+        segments: [SpeechSegment],
+        envelope: SpeechEnvelope?,
+        timingsAreUsable: Bool,
+        tally: AlignmentTally,
+        judgeableCount: Int,
+        repetitionCount: Int,
+        acoustic: AcousticFindings
+    ) -> [String: String] {
+        [
+            "referenceWords": "\(refWordCount)",
+            "spokenWords": "\(spokenWordCount)",
+            "segments": "\(segments.count)",
+            "segmentsWithDuration": "\(segments.filter { $0.duration > 0.01 }.count)",
+            "segmentTimingSpan": String(format: "%.2fs",
+                (segments.last?.endTimestamp ?? 0) - (segments.first?.timestamp ?? 0)),
+            "timingsAreUsable": "\(timingsAreUsable)",
+            "envelopeFrames": "\(envelope?.frames.count ?? 0)",
+            "envelopeDuration": String(format: "%.2fs", envelope?.duration ?? 0),
+            "envelopeNoiseFloor": String(format: "%.4f", envelope?.noiseFloor ?? 0),
+            "envelopeSpeechLevel": String(format: "%.4f", envelope?.speechLevel ?? 0),
+            "envelopeSilenceThreshold": String(format: "%.4f", envelope?.silenceThreshold ?? 0),
+            "envelopeVoicingThreshold": String(format: "%.4f", envelope?.voicingThreshold ?? 0),
+            "matched": "\(tally.correctCount)",
+            "substituted": "\(tally.misreadings.count)",
+            "skipped": "\(tally.skippedCount)",
+            "unrecognised": "\(tally.unrecognisedCount)",
+            "extra": "\(tally.extraWordCount)",
+            "attempted": "\(tally.attemptedCount)",
+            "judgeable": "\(judgeableCount)",
+            "repetitionsFound": "\(repetitionCount)",
+            "prolongationsFound": "\(acoustic.prolongationWords.count)",
+            "blocksFound": "\(acoustic.detectedBlocks.count)",
+            "gapsConsidered": "\(acoustic.gapsConsidered)",
+            "gapsRejectedTooShort": "\(acoustic.gapsRejectedTooShort)",
+            "gapsRejectedAtBoundary": "\(acoustic.gapsRejectedAtBoundary)",
+            "gapsRejectedNotSilent": "\(acoustic.gapsRejectedNotSilent)",
+            "gapsRejectedUnnamed": "\(acoustic.gapsRejectedUnnamed)",
+            "wordsCheckedForHold": "\(acoustic.wordsCheckedForHold)",
+            "longestHoldSeen": String(format: "%.3fs", acoustic.longestHoldSeen)
+        ]
     }
 
     // MARK: - Helpers
