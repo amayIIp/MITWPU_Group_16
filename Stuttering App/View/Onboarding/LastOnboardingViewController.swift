@@ -284,47 +284,7 @@ class LastOnboardingViewController: UIViewController {
     }
 
     @IBAction func getStartedButtonTapped(_ sender: UIButton) {
-        if !SessionManager.shared.isAccountMode {
-            SessionManager.shared.startGuestSession()
-        }
-
-        AppState.isOnboardingCompleted = true
-        AppState.isLoginCompleted = true
-        AwardsManager.shared.updateAwardProgress(id: "nm_001", progress: 1.0, newStatus: "1 of 1 completed")
-
-        guard let currentUserId = LogManager.shared.getCurrentUserId() else { return }
-        var profile = LogManager.shared.getProfile(userId: currentUserId) ?? UserProfile(id: currentUserId, isOnboardingCompleted: false)
-        profile.isOnboardingCompleted = true
-        LogManager.shared.saveProfile(profile)
-
-        if SessionManager.shared.isAccountMode {
-            SupabaseSyncManager.shared.pushProfile(profile)
-        }
-
-        LogicMaker().checkForNewDay(isFromLogin: true)
-
-        // ✅ Onboarding is now fully complete — request notification permission.
-        // Reset the flag so HomePageViewController also runs cleanly on first visit.
-        UserDefaults.standard.removeObject(forKey: "hasRequestedNotificationPermission")
-        NotificationManager.shared.requestAuthorization()
-
-        let storyboard = UIStoryboard(name: "Home", bundle: nil)
-        let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeVC")
-
-        guard let window = view.window else { return }
-        window.backgroundColor = .systemBackground
-
-        UIView.animate(
-            withDuration: 0.3,
-            animations: {
-                window.rootViewController?.view.alpha = 0
-            },
-            completion: { _ in
-                homeVC.view.alpha = 0
-                window.rootViewController = homeVC
-                UIView.animate(withDuration: 0.3) { homeVC.view.alpha = 1 }
-            }
-        )
+        OnboardingCompletion.finish(from: self)
     }
 
     @objc func didTapResetButton() {

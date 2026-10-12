@@ -45,11 +45,11 @@ struct AuthField<Content: View>: View {
                 .animation(.easeOut(duration: 0.15), value: isFocused)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(caption)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+//                Text(caption)
+//                    .font(.caption2)
+//                    .foregroundStyle(.secondary)
                 content
-                    .font(.body)
+                    .font(Font.body)
                     .textFieldStyle(.plain)
             }
         }

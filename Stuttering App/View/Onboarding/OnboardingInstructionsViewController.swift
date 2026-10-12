@@ -216,15 +216,26 @@ class OnboardingInstructionsViewController: UIViewController {
         }
     }
 
+    /// Shown when speech recognition or the microphone is refused.
+    ///
+    /// Offers a way past the test, not just a way back to it. Without the skip,
+    /// declining was a dead end: Cancel returned to this screen, Continue asked
+    /// again, and iOS answers a second request with an instant refusal — so the
+    /// user could never reach Home, or Delete Account (5.1.1(iv), 5.1.1(v)).
     private func showPermissionAlert(message: String) {
         setAdvancing(false)
 
-        let alert = UIAlertController(title: "Permissions Required", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
+        let alert = UIAlertController(
+            title: "Permissions Required",
+            message: message + " " + OnboardingCompletion.skipExplanation,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Open Settings", style: .default) { _ in
             if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
                 UIApplication.shared.open(settingsURL)
             }
         })
+        alert.addAction(OnboardingCompletion.skipTestAction(from: self))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }

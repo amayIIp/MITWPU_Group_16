@@ -34,8 +34,8 @@ final class AuthModel: ObservableObject {
 
         var subtitle: String {
             switch self {
-            case .signIn: return "Sign in to pick up your practice where you left off."
-            case .signUp: return "A few seconds now, and your progress follows you everywhere."
+            case .signIn: return ""
+            case .signUp: return ""
             }
         }
 

@@ -89,7 +89,7 @@ struct SignUpView: View {
             Divider().padding(.leading, 50)
 
             AuthField(icon: "lock", caption: "Password", isFocused: focus == .password) {
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {
                     passwordField
                     PasswordVisibilityToggle(isVisible: $model.showsPassword)
                 }

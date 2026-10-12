@@ -207,7 +207,7 @@ class ReadingResultViewController2: UIViewController {
         statsFooterLabel.numberOfLines = 0
         statsFooterLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        let vStack = UIStackView(arrangedSubviews: [title, topRow, bottomRow, statsFooterLabel])
+        let vStack = UIStackView(arrangedSubviews: [title, topRow, bottomRow, statsFooterLabel, makeMethodologyButton()])
         vStack.axis = .vertical
         vStack.spacing = 8
         vStack.translatesAutoresizingMaskIntoConstraints = false
@@ -218,6 +218,42 @@ class ReadingResultViewController2: UIViewController {
             vStack.trailingAnchor.constraint(equalTo: statsCard.trailingAnchor, constant: -16),
             vStack.bottomAnchor.constraint(equalTo: statsCard.bottomAnchor, constant: -14)
         ])
+    }
+
+    /// "ⓘ How is this measured?" — Guideline 1.4.1 asks apps to disclose the
+    /// methodology behind health measurements and to remind users to check with
+    /// a professional. It sits under the line it explains, on every result.
+    private func makeMethodologyButton() -> UIButton {
+        var config = UIButton.Configuration.plain()
+        config.title = "How is this measured?"
+        config.image = UIImage(systemName: "info.circle")
+        config.imagePadding = 6
+        config.imagePlacement = .leading
+        config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .footnote)
+        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 0, bottom: 2, trailing: 0)
+        config.baseForegroundColor = brandColor
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var out = incoming
+            out.font = .preferredFont(forTextStyle: .footnote)
+            return out
+        }
+
+        let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in
+            self?.showMethodology()
+        })
+        button.contentHorizontalAlignment = .leading
+        button.accessibilityHint = "Explains how the fluency figures are calculated and what they can get wrong."
+        return button
+    }
+
+    private func showMethodology() {
+        let nav = UINavigationController(rootViewController: MeasurementInfoViewController())
+        nav.modalPresentationStyle = .pageSheet
+        if let sheet = nav.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(nav, animated: true)
     }
 
     private func makeTileRow(_ tiles: [UIView]) -> UIStackView {
@@ -568,13 +604,11 @@ class ReadingResultViewController2: UIViewController {
             return "This session was too short to score reliably — read a full paragraph for a result you can compare."
         }
 
-        let severityPhrase: String
-        switch report.severity {
-        case "typical":  severityPhrase = "within the typical range"
-        case "mild":     severityPhrase = "mild"
-        case "moderate": severityPhrase = "moderate"
-        default:         severityPhrase = "high this session"
-        }
+        // No severity grade here. Banding %SS into mild / moderate / severe is
+        // the shape of a clinical assessment, and Guideline 1.4.1 rejects health
+        // measurements whose accuracy can't be validated — which this one hasn't
+        // been, on real speakers. The number stays; the ⓘ below explains it.
+        // `report.severity` is still computed for the diagnostics view.
 
         let judgeable = report.reading.judgeableWords
 
@@ -590,13 +624,13 @@ class ReadingResultViewController2: UIViewController {
             )
         case "moderate":
             line = String(
-                format: "About %.1f%% of syllables stuttered — %@. Parts of this session were hard to transcribe, so the figures are approximate.",
-                report.percentages.stutteredSyllables, severityPhrase
+                format: "About %.1f%% of syllables stuttered. Parts of this session were hard to transcribe, so the figures are approximate.",
+                report.percentages.stutteredSyllables
             )
         default:
             line = String(
-                format: "%.1f%% of syllables stuttered — %@. Rates are a share of the %d words we could assess.",
-                report.percentages.stutteredSyllables, severityPhrase, judgeable
+                format: "%.1f%% of syllables stuttered, across the %d words we could assess.",
+                report.percentages.stutteredSyllables, judgeable
             )
         }
 

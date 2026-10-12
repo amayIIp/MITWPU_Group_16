@@ -113,7 +113,7 @@ actor InsightEngine {
     Rules:
     - Exactly 2 sentences, under 25 words total.
     - Speak about THIS specific reading session only.
-    - Warm, encouraging, never clinical.
+    - Warm, encouraging, never clinical. Never describe stuttering with a severity level such as mild, moderate or severe.
     - Do not use any numbers or percentages.
     - No emojis, no markdown, no bullet points.
     - Output ONLY the insight text.
@@ -127,9 +127,18 @@ actor InsightEngine {
         parts.append("Repetition percentage: \(Int(report.percentages.repetition))%.")
         parts.append("Prolongation percentage: \(Int(report.percentages.prolongation))%.")
         parts.append("Misread word percentage: \(Int(report.percentages.misread))%.")
-        // Percent syllables stuttered is the clinical measure; the banded
-        // severity is what actually tells the model how the session went.
-        parts.append("Percent syllables stuttered: \(String(format: "%.1f", report.percentages.stutteredSyllables))% (\(report.severity)).")
+        // The model gets how the session went, not the clinical band. Its
+        // reply is shown on the result screen, and a word like "moderate"
+        // echoed back would reintroduce the severity grade that was removed
+        // there for Guideline 1.4.1.
+        let sessionFeel: String
+        switch report.severity {
+        case "typical":  sessionFeel = "a smooth session"
+        case "mild":     sessionFeel = "a mostly smooth session"
+        case "moderate": sessionFeel = "a session with some noticeable stuttering"
+        default:         sessionFeel = "a challenging session"
+        }
+        parts.append("Overall this was \(sessionFeel).")
         if !report.isReliable {
             parts.append("Note: this session was very short, so treat the figures as provisional.")
         }
@@ -241,7 +250,7 @@ actor InsightEngine {
     Rules:
     - Exactly 2 sentences, under 25 words total.
     - Do not use any numbers or percentages in your response.
-    - Warm and encouraging, never clinical.
+    - Warm and encouraging, never clinical. Never describe stuttering with a severity level such as mild, moderate or severe.
     - No emojis, no markdown, no bullet points.
     - If letter improvement data exists, lead with it.
     - Output ONLY the insight text.
@@ -323,7 +332,7 @@ actor InsightEngine {
     - Total length must be less than 15 words.
     - Both sentences must be similar length (roughly equal words).
     - Do not use any numbers or percentages in your response.
-    - Warm and encouraging, never clinical.
+    - Warm and encouraging, never clinical. Never describe stuttering with a severity level such as mild, moderate or severe.
     - No emojis, no markdown, no bullet points.
     - If letter improvement data exists, lead with it.
     - Output ONLY the insight text.

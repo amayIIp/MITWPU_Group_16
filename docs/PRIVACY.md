@@ -35,6 +35,7 @@ If you create an account:
 |------|-----|---------------|
 | Email address | To identify your account and let you sign back in | Our authentication provider (Supabase) |
 | First name | To address you in the app | Supabase |
+| Phone number *(optional)* | Only if you choose to add it to your profile | Supabase |
 | Profile photo *(optional)* | Only if you choose to add one. Stored so it survives reinstalling the app or signing in on another iPhone | Supabase Storage, in a private folder only your account can read |
 
 If you sign in with **Apple** or **Google**, we receive your name and email address from them, and nothing else. If you use Apple's **Hide My Email**, we only ever see the relay address Apple generates — we never learn your real one.
@@ -90,7 +91,11 @@ _[Confirm and state Groq's data-retention terms for your account tier.]_
 
 If you choose to sign in with Apple or Google, they handle the sign-in and tell us your name and email address. Their own privacy policies govern what they do with the fact that you signed in.
 
-### 3.4 We do not sell your data
+### 3.4 The same protection, wherever your data goes
+
+Every provider we share data with — Supabase, Groq, Apple and Google — is required to protect it to at least the standard described in this policy, and may use it only to provide its service to us.
+
+### 3.5 We do not sell your data
 
 We have never sold personal data and do not share it for advertising or cross-context behavioural advertising.
 

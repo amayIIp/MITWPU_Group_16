@@ -1262,6 +1262,9 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
                                         <listContentConfiguration key="contentConfiguration" text="About Us"/>
+                                        <connections>
+                                            <segue destination="Abt-Vc-100" kind="show" id="Abt-Sg-100"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -1298,6 +1301,22 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FDm-WX-Udg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="618" y="89"/>
+        </scene>
+        <!--About-->
+        <scene sceneID="Abt-Sc-100">
+            <objects>
+                <viewController storyboardIdentifier="AboutViewController" title="About" id="Abt-Vc-100" customClass="AboutViewController" customModule="Stuttering_App" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Abt-Vw-100">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" name="bg"/>
+                        <viewLayoutGuide key="safeArea" id="Abt-Sa-100"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="About" id="Abt-Ni-100"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Abt-Fr-100" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3290" y="89"/>
         </scene>
     </scenes>
     <resources>

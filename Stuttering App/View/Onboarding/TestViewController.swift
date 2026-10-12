@@ -106,15 +106,20 @@ class TestViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
 
     /// Tells the user why nothing is being recorded, and offers the one action
-    /// that can fix it. Both paths leave them able to back out of the test
-    /// rather than stranding them on a dead screen.
+    /// that can fix it — plus a way past the test entirely. "Go Back" alone
+    /// only returned to the instructions, which led straight back here.
     private func presentRecordingProblem(_ message: String, offerSettings: Bool) {
-        let alert = UIAlertController(title: "Can't Record", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: "Can't Record",
+            message: message + " " + OnboardingCompletion.skipExplanation,
+            preferredStyle: .alert
+        )
         if offerSettings, let url = URL(string: UIApplication.openSettingsURLString) {
             alert.addAction(UIAlertAction(title: "Open Settings", style: .default) { _ in
                 UIApplication.shared.open(url)
             })
         }
+        alert.addAction(OnboardingCompletion.skipTestAction(from: self))
         alert.addAction(UIAlertAction(title: "Go Back", style: .cancel) { [weak self] _ in
             guard let self else { return }
             if let nav = self.navigationController, nav.viewControllers.count > 1 {

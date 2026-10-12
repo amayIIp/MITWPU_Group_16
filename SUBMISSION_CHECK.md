@@ -68,7 +68,7 @@ This sets `APPLE_TEAM_ID`, `APPLE_CLIENT_ID=com.spasht.app`, `APPLE_KEY_ID` and 
 - [ ] **Screen recording on a physical iPhone**: sign in with the demo account → profile picture → Profile → Delete Account → type DELETE → "Account Deleted". Put it in App Review Information → **Notes**. Apple asked for this explicitly.
 - [ ] **Demo account**: email and password, **already email-confirmed**, with some practice data in it.
 - [ ] **Screenshots re-shot** from a real build showing the Apple button on the sign-in screen. Take them from a build that includes the 24 Sep navigation-bar fix (`PageBarAppearance.installGlobally()`). Older builds show a hard white line under the bar on iOS 26 and later.
-- [ ] **App Privacy questionnaire** matches `PrivacyInfo.xcprivacy`: Email, Name, **Photos or Videos**, User ID, Other User Content, **Health**, Product Interaction. All linked to the user, none used for tracking, all for App Functionality. **Phone Number is no longer collected**, so untick it if it was ticked.
+- [ ] **App Privacy questionnaire** matches `PrivacyInfo.xcprivacy`: Email, Name, **Phone Number**, **Photos or Videos**, User ID, Other User Content, **Health**, Product Interaction. All linked to the user, none used for tracking, all for App Functionality. **Phone Number *is* collected** — the optional "Mobile No" field on the Profile screen syncs to Supabase — so make sure it's ticked. (Corrected 5 Oct 2026: an earlier version of this line said to untick it.)
 - [ ] Privacy policy URL and support URL filled in.
 - [ ] Age rating matches the minimum age chosen in step C.
 - [ ] Description avoids "therapy", "treatment", "diagnosis" and "clinically proven".
